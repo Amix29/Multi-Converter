@@ -9,7 +9,7 @@
     <img alt="Release" src="https://img.shields.io/github/v/release/Amix29/Multi-Converter?label=Release&color=2563eb">
   </a>
   <a href="https://github.com/Amix29/Multi-Converter/actions/workflows/build.yml">
-    <img alt="Build status" src="https://github.com/Amix29/Multi-Converter/actions/workflows/build.yml/badge.svg?branch=main">
+    <img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/Amix29/Multi-Converter/build.yml?branch=main&label=Build">
   </a>
   <a href="LICENSE">
     <img alt="License" src="https://img.shields.io/github/license/Amix29/Multi-Converter?label=License&color=0f766e">
