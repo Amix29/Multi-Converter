@@ -19,6 +19,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,12 +39,9 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            ${{ runner.temp }}/mc-cargo-target-tests
-            src-tauri/target
-            tools/pdfium-render-wrapper/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock', 'tools/pdfium-render-wrapper/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-registry-v2-${{ hashFiles('src-tauri/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-
+            ${{ runner.os }}-cargo-registry-v2-
 
       - run: npm ci
       - run: cargo install cargo-audit --locked
