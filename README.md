@@ -1,7 +1,7 @@
 # Multi-Converter
 
 <p align="center">
-  <img src="docs/readme-banner.svg" alt="Multi-Converter - Conversion locale, privée et open source" width="100%">
+  <img src="docs/readme-banner.svg" alt="Multi-Converter - Local, private and open source file conversion" width="100%">
 </p>
 
 <p align="center">
@@ -9,157 +9,157 @@
     <img alt="Release" src="https://img.shields.io/github/v/release/Amix29/Multi-Converter?label=Release&color=2563eb">
   </a>
   <a href="LICENSE">
-    <img alt="Licence" src="https://img.shields.io/github/license/Amix29/Multi-Converter?label=Licence&color=0f766e">
+    <img alt="License" src="https://img.shields.io/github/license/Amix29/Multi-Converter?label=License&color=0f766e">
   </a>
 </p>
 
 <p align="center">
-  <strong>Multi-Converter</strong> est un logiciel <strong>gratuit</strong> et <strong>open source</strong> pour convertir vos fichiers directement sur votre ordinateur.<br>
-  Documents, images, audio et vidéo — sans compte, sans cloud et sans envoyer vos fichiers sur un serveur.
+  <strong>Multi-Converter</strong> is a <strong>free</strong> and <strong>open source</strong> tool to convert your files directly on your computer.<br>
+  Documents, images, audio and video — no account, no cloud, no file upload to any server.
 </p>
 
 <p align="center">
   <a href="https://github.com/Amix29/Multi-Converter/releases/latest">
-    <img alt="Télécharger pour Windows" src="https://img.shields.io/badge/⬇️%20Télécharger%20pour%20Windows-.exe-2563eb?style=for-the-badge">
+    <img alt="Download for Windows" src="https://img.shields.io/badge/⬇️%20Download%20for%20Windows-.exe-2563eb?style=for-the-badge">
   </a>
 </p>
 
 ---
 
-## Table des matières
+## Table of Contents
 
-- [Pourquoi utiliser Multi-Converter ?](#pourquoi-utiliser-multi-converter-)
-- [Télécharger](#télécharger)
-- [Aperçu](#aperçu)
-- [Formats pris en charge](#formats-pris-en-charge)
-- [Confidentialité](#confidentialité)
-- [Extension Qualité maximale](#extension-qualité-maximale)
-- [Licences](#licences)
-- [Note légale](#note-légale)
-- [Développement](#développement)
-- [Contribution](#contribution)
-- [Sécurité](#sécurité)
-- [Historique des étoiles](#historique-des-étoiles)
+- [Why use Multi-Converter?](#why-use-multi-converter)
+- [Download](#download)
+- [Overview](#overview)
+- [Supported Formats](#supported-formats)
+- [Privacy](#privacy)
+- [Maximum Quality Extension](#maximum-quality-extension)
+- [Licenses](#licenses)
+- [Legal Notice](#legal-notice)
+- [Development](#development)
+- [Contributing](#contributing)
+- [Security](#security)
+- [Star History](#star-history)
 
 ---
 
-## Pourquoi utiliser Multi-Converter ?
+## Why use Multi-Converter?
 
-| Point clé | Ce que cela change pour vous |
+| Key point | What it means for you |
 | --- | --- |
-| 🆓 **Gratuit et open source** | Vous pouvez utiliser **Multi-Converter** librement et consulter son code source. |
-| 🔒 **Local et privé** | Vos fichiers restent sur votre ordinateur pendant toute la conversion. |
-| 🔄 **Multi-format** | Documents, images, audio et vidéo sont gérés dans une seule application. |
-| ⚡ **Mode avancé optionnel** | L'extension **Qualité maximale** ajoute des moteurs spécialisés pour les conversions complexes. |
+| 🆓 **Free and open source** | Use **Multi-Converter** freely and browse its source code. |
+| 🔒 **Local and private** | Your files stay on your computer throughout the conversion. |
+| 🔄 **Multi-format** | Documents, images, audio and video — all handled in a single app. |
+| ⚡ **Optional advanced mode** | The **Maximum Quality** extension adds specialized engines for complex conversions. |
 
 ---
 
-## Télécharger
+## Download
 
-| Système | Statut | Téléchargement |
+| System | Status | Download |
 | --- | --- | --- |
-| 🪟 Windows x64 | ✅ Disponible | [`.exe`](https://github.com/Amix29/Multi-Converter/releases/latest) |
-| 🍎 macOS | 🚧 En développement | Pas encore disponible |
-| 🐧 Linux | 📋 Prévu | Pas encore disponible |
+| 🪟 Windows x64 | ✅ Available | [`.exe`](https://github.com/Amix29/Multi-Converter/releases/latest) |
+| 🍎 macOS | 🚧 In development | Not yet available |
+| 🐧 Linux | 📋 Planned | Not yet available |
 
 ---
 
-## Aperçu
+## Overview
 
 <p align="center">
-  <img src="docs/screenshots/01-files.png" alt="Ajout de fichiers" width="32%">
-  <img src="docs/screenshots/02-format.png" alt="Choix du format" width="32%">
-  <img src="docs/screenshots/03-output.png" alt="Conversion terminée" width="32%">
+  <img src="docs/screenshots/01-files.png" alt="Adding files" width="32%">
+  <img src="docs/screenshots/02-format.png" alt="Choosing a format" width="32%">
+  <img src="docs/screenshots/03-output.png" alt="Conversion complete" width="32%">
 </p>
 
 ---
 
-## Formats pris en charge
+## Supported Formats
 
-**Multi-Converter** détecte les formats ci-dessous et propose les conversions compatibles selon les moteurs disponibles.
+**Multi-Converter** detects the formats listed below and offers compatible conversions based on the available engines.
 
-| Catégorie | Formats reconnus |
+| Category | Recognized formats |
 | --- | --- |
-| 📄 Documents et texte | PDF, DOCX, TXT/LOG, HTML/HTM, CSV, JSON, ODT, RTF, Markdown/MD, EPUB, XML |
+| 📄 Documents & text | PDF, DOCX, TXT/LOG, HTML/HTM, CSV, JSON, ODT, RTF, Markdown/MD, EPUB, XML |
 | 🖼️ Images | PNG, JPEG/JPG, SVG, WebP, TIFF/TIF, BMP, ICO |
 | 🎵 Audio | MP3, AAC/M4A, FLAC, WAV, OGG/OGA, WMA, OPUS, AIFF/AIF, ALAC, AC3, MP2, AMR, AU/SND, CAF |
-| 🎬 Vidéo | MP4/M4V, MKV, WebM, MOV, AVI, WMV, 3GP/3G2, MTS/M2TS, MPEG-2/MPG/MPEG, OGV |
+| 🎬 Video | MP4/M4V, MKV, WebM, MOV, AVI, WMV, 3GP/3G2, MTS/M2TS, MPEG-2/MPG/MPEG, OGV |
 
 > **Note**
-> Certains formats peuvent être reconnus sans offrir toutes les conversions vers tous les autres formats. Les choix affichés dans l'application dépendent du fichier source et des moteurs disponibles.
+> Some formats may be recognized without supporting every possible conversion to every other format. The options shown in the app depend on the source file and the available engines.
 
 ---
 
-## Confidentialité
+## Privacy
 
-Les conversions se font sur **votre machine**. Une connexion Internet peut être nécessaire pour télécharger l'application, installer une mise à jour ou récupérer l'extension optionnelle **Qualité maximale**, mais **Multi-Converter** n'envoie pas vos fichiers dans le cloud.
+Conversions run on **your machine**. An internet connection may be required to download the app, install an update, or retrieve the optional **Maximum Quality** extension, but **Multi-Converter** never sends your files to the cloud.
 
 ---
 
-## Extension Qualité maximale
+## Maximum Quality Extension
 
-L'extension **Qualité maximale** télécharge des moteurs tiers pour améliorer les conversions **Office**, **PDF**, **Markdown/HTML/EPUB** et **images avancées**.
+The **Maximum Quality** extension downloads third-party engines to improve **Office**, **PDF**, **Markdown/HTML/EPUB** and **advanced image** conversions.
 
-*Installation complète Windows x64 déclarée dans le manifeste, tailles arrondies :*
+*Full Windows x64 installation as declared in the manifest, sizes rounded:*
 
-| Moteur | Sert principalement à | Téléchargement | Une fois installé | Licence |
+| Engine | Mainly used for | Download | Once installed | License |
 | --- | --- | ---: | ---: | --- |
-| PDFium | Rendu PDF vers image | 5,6 Mo | 13,1 Mo | BSD-3-Clause |
-| LibreOffice headless | Conversions Office et PDF fidèles | 483,8 Mo | 1,51 Go | MPL-2.0 |
-| Pandoc | Markdown, HTML, EPUB, DOCX | 40,7 Mo | 231,1 Mo | GPL-2.0-or-later |
-| libvips | Images avancées | 10,8 Mo | 28,5 Mo | LGPL-2.1-or-later |
-| **Total** | Extension complète | **540,9 Mo** | **1,79 Go** | Licences multiples |
+| PDFium | PDF to image rendering | 5.6 MB | 13.1 MB | BSD-3-Clause |
+| LibreOffice headless | Accurate Office and PDF conversions | 483.8 MB | 1.51 GB | MPL-2.0 |
+| Pandoc | Markdown, HTML, EPUB, DOCX | 40.7 MB | 231.1 MB | GPL-2.0-or-later |
+| libvips | Advanced images | 10.8 MB | 28.5 MB | LGPL-2.1-or-later |
+| **Total** | Full extension | **540.9 MB** | **1.79 GB** | Multiple licenses |
 
 > **Note**
-> Vous pouvez garder uniquement les conversions de base si vous n'avez pas besoin de ces moteurs avancés.
+> You can keep only the base conversions if you don't need these advanced engines.
 
 ---
 
-## Licences
+## Licenses
 
-Le code de **Multi-Converter** est sous licence **Apache 2.0**. Voir [LICENSE](LICENSE).
+**Multi-Converter**'s code is licensed under **Apache 2.0**. See [LICENSE](LICENSE).
 
-**Multi-Converter** utilise des moteurs de conversion tiers qui conservent leurs propres licences, notices et conditions de redistribution. Ils ne changent pas de licence parce que vous les utilisez via **Multi-Converter**.
+**Multi-Converter** uses third-party conversion engines that retain their own licenses, notices and redistribution conditions. They do not change license because you use them through **Multi-Converter**.
 
-Points importants :
+Key points:
 
-- **Multi-Converter** lui-même est sous licence **Apache 2.0**.
-- Les moteurs tiers restent des logiciels séparés avec leurs propres licences.
-- La version **Windows x64 V1** embarque **FFmpeg** et **ffprobe** `8.1.1-essentials_build-www.gyan.dev`, configurés avec `--enable-gpl` : les exécutables embarqués sont traités comme des logiciels tiers couverts par la GPL dans cette distribution.
-- L'extension **Qualité maximale** peut installer **PDFium**, **LibreOffice**, **Pandoc** et **libvips**, chacun avec ses propres licences.
+- **Multi-Converter** itself is licensed under **Apache 2.0**.
+- Third-party engines remain separate software with their own licenses.
+- The **Windows x64 V1** release bundles **FFmpeg** and **ffprobe** `8.1.1-essentials_build-www.gyan.dev`, built with `--enable-gpl`: the bundled executables are treated as third-party software covered by the GPL in this distribution.
+- The **Maximum Quality** extension may install **PDFium**, **LibreOffice**, **Pandoc** and **libvips**, each under their own license.
 
-Voir [NOTICE](NOTICE) et [docs/THIRD_PARTY_ENGINES.md](docs/THIRD_PARTY_ENGINES.md) pour les détails.
-
----
-
-## Note légale
-
-*Cette documentation n'est pas un conseil juridique. Les mainteneurs d'une release doivent vérifier les obligations exactes des binaires et moteurs tiers qu'ils distribuent.*
+See [NOTICE](NOTICE) and [docs/THIRD_PARTY_ENGINES.md](docs/THIRD_PARTY_ENGINES.md) for details.
 
 ---
 
-<h2 id="développement" align="center">Développement</h2>
+## Legal Notice
 
-Cette partie s'adresse aux personnes qui souhaitent lancer le projet en local, corriger un bug, proposer une amélioration ou explorer le code. **La préparation des releases, des installeurs, des archives de moteurs et des notes de version est assurée par les mainteneurs du projet.**
+*This documentation is not legal advice. Release maintainers must verify the exact obligations of the binaries and third-party engines they distribute.*
 
-### Stack technique
+---
 
-| Couche | Technologie |
+<h2 id="development" align="center">Development</h2>
+
+This section is for anyone who wants to run the project locally, fix a bug, suggest an improvement, or explore the code. **Releases, installers, engine archives and release notes are prepared by the project maintainers.**
+
+### Tech Stack
+
+| Layer | Technology |
 | --- | --- |
-| Application desktop | Tauri 2 |
-| Interface | React + TypeScript |
+| Desktop application | Tauri 2 |
+| UI | React + TypeScript |
 | Backend | Rust + Cargo |
-| Build frontend | Vite |
-| Scripts internes | Node.js |
+| Frontend build | Vite |
+| Internal scripts | Node.js |
 
-### Prérequis
+### Prerequisites
 
-- Windows x64 pour le développement de la version actuellement supportée.
-- Node.js `>=24 <25` et npm `>=11 <12`.
-- Rust et Cargo.
-- Les [prérequis Tauri pour Windows](https://v2.tauri.app/start/prerequisites/).
+- Windows x64 for developing the currently supported version.
+- Node.js `>=24 <25` and npm `>=11 <12`.
+- Rust and Cargo.
+- The [Tauri prerequisites for Windows](https://v2.tauri.app/start/prerequisites/).
 
-### Installation du projet
+### Project Setup
 
 ```bash
 git clone https://github.com/Amix29/Multi-Converter.git
@@ -167,21 +167,21 @@ cd Multi-Converter
 npm install
 ```
 
-### Lancer l'application
+### Running the App
 
 ```bash
-# Application desktop complète : Tauri, conversions réelles, sidecars
+# Full desktop app: Tauri, real conversions, sidecars
 npm start
 
-# Commande équivalente
+# Equivalent command
 npm run tauri:dev
 ```
 
-> `npm run dev` lance seulement le frontend Vite avec une API simulée. Pour tester les **conversions réelles**, les **sidecars**, le runtime **Tauri** ou l'accès aux fichiers, utilisez `npm start` ou `npm run tauri:dev`.
+> `npm run dev` only starts the Vite frontend with a simulated API. To test **real conversions**, **sidecars**, the **Tauri** runtime or file system access, use `npm start` or `npm run tauri:dev`.
 
-### Commandes utiles
+### Useful Commands
 
-Vérifications recommandées avant une pull request :
+Recommended checks before a pull request:
 
 ```bash
 npm run check
@@ -189,9 +189,9 @@ npm run test:rust
 npm run test:pdfium-wrapper
 ```
 
-`npm run check` regroupe la génération des assets d'installeur, la validation des moteurs de base, la validation du manifeste embarqué, la validation i18n, le typecheck TypeScript et la validation de packaging des moteurs.
+`npm run check` covers installer asset generation, base engine validation, embedded manifest validation, i18n validation, TypeScript typechecking and engine packaging validation.
 
-Commandes ciblées utiles pendant le développement :
+Targeted commands useful during development:
 
 ```bash
 npm run typecheck
@@ -201,14 +201,14 @@ npm run validate:bundled-base-engines
 npm run validate:engines
 ```
 
-Build :
+Build:
 
 ```bash
 npm run build
 npm run tauri:build
 ```
 
-Formatage et lint Rust :
+Rust formatting and linting:
 
 ```bash
 npm run fmt:rust:check
@@ -216,75 +216,75 @@ npm run clippy:rust
 npm run clippy:pdfium-wrapper
 ```
 
-Sous Windows PowerShell, les commandes Cargo directes peuvent aussi utiliser un dossier de build temporaire :
+On Windows PowerShell, direct Cargo commands can also use a temporary build folder:
 
 ```powershell
 cargo fmt --manifest-path src-tauri/Cargo.toml
 cargo test --manifest-path src-tauri/Cargo.toml --target-dir "$env:TEMP\mc-cargo-target-engine-registry"
 ```
 
-`npm run tauri:dev` et `npm run tauri:build` utilisent un `CARGO_TARGET_DIR` temporaire pour éviter les artefacts Tauri périmés dans `src-tauri/target`.
+`npm run tauri:dev` and `npm run tauri:build` use a temporary `CARGO_TARGET_DIR` to avoid stale Tauri artifacts in `src-tauri/target`.
 
-### Structure du projet
+### Project Structure
 
 ```text
-src/                         Interface React
-src/i18n/                    Traductions de l'interface
-src-tauri/                   Backend Tauri/Rust
-src-tauri/binaries/          Sidecars de base embarqués pour Windows x64
+src/                         React UI
+src/i18n/                    UI translations
+src-tauri/                   Tauri/Rust backend
+src-tauri/binaries/          Base sidecars bundled for Windows x64
 src-tauri/engines-manifest.json
-docs/                        Documentation licences, sécurité et moteurs tiers
-tools/                       Configuration technique des moteurs
-scripts/                     Scripts de build, validation et maintenance
+docs/                        License, security and third-party engine documentation
+tools/                       Engine technical configuration
+scripts/                     Build, validation and maintenance scripts
 ```
 
-Les dossiers générés (`dist`, `node_modules`, caches de build, sources locales de moteurs, archives de moteurs, résultats de tests) ne doivent pas être versionnés.
+Generated folders (`dist`, `node_modules`, build caches, local engine sources, engine archives, test results) must not be committed.
 
-### Moteurs de conversion
+### Conversion Engines
 
-**Multi-Converter** fonctionne avec deux niveaux de moteurs :
+**Multi-Converter** works with two engine tiers:
 
-| Niveau | Rôle | Distribution |
+| Tier | Role | Distribution |
 | --- | --- | --- |
-| Base | Conversions courantes disponibles avec l'application | Moteurs intégrés ou sidecars embarqués |
-| Qualité maximale | Conversions plus fidèles ou plus avancées | Archives optionnelles distribuées séparément |
+| Base | Common conversions available with the app | Integrated engines or bundled sidecars |
+| Maximum Quality | More accurate or more advanced conversions | Optional archives distributed separately |
 
-Les moteurs de base Windows x64 `ffmpeg` et `ffprobe` sont embarqués dans `src-tauri/binaries` et validés avant chaque build.
+The Windows x64 base engines `ffmpeg` and `ffprobe` are bundled in `src-tauri/binaries` and validated before each build.
 
-Restaurer et valider les moteurs de base :
+Restore and validate the base engines:
 
 ```bash
 npm run prepare:bundled-base-engines
 npm run validate:bundled-base-engines
 ```
 
-Pour travailler localement sur les scripts moteur, les sources temporaires se placent sous :
+To work locally on engine scripts, place temporary sources under:
 
 ```text
 engine-sources/windows-x64/<engineId>/
 ```
 
 > **Important**
-> Ne commitez pas d'archives générées, de sources locales de moteurs, de checksums de release ou de changements de version moteur sans demande explicite d'un mainteneur.
+> Do not commit generated archives, local engine sources, release checksums or engine version changes without explicit approval from a maintainer.
 
-Voir [tools/ENGINE_PACKAGING.md](tools/ENGINE_PACKAGING.md) et [docs/THIRD_PARTY_ENGINES.md](docs/THIRD_PARTY_ENGINES.md) pour le contexte technique.
-
----
-
-## Contribution
-
-Les contributions sont bienvenues. Lisez [CONTRIBUTING.md](CONTRIBUTING.md) avant d'ouvrir une pull request.
-
-Les contributions attendues concernent les **corrections de bugs**, les **optimisations**, les **améliorations d'interface**, les **traductions**, les **tests** et les **suggestions de fonctionnalités**. Avant de proposer une modification, lancez les vérifications adaptées à la zone modifiée.
+See [tools/ENGINE_PACKAGING.md](tools/ENGINE_PACKAGING.md) and [docs/THIRD_PARTY_ENGINES.md](docs/THIRD_PARTY_ENGINES.md) for technical context.
 
 ---
 
-## Sécurité
+## Contributing
 
-Pour signaler une vulnérabilité ou un problème de sécurité, ouvrez une **issue GitHub**. Voir [SECURITY.md](SECURITY.md) pour le périmètre et les informations utiles à fournir.
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+Expected contributions include **bug fixes**, **optimizations**, **UI improvements**, **translations**, **tests** and **feature suggestions**. Before submitting a change, run the checks relevant to the area you modified.
 
 ---
 
-## Historique des étoiles
+## Security
+
+To report a vulnerability or security issue, open a **GitHub issue**. See [SECURITY.md](SECURITY.md) for scope and what information to include.
+
+---
+
+## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Amix29/Multi-Converter&type=Date)](https://www.star-history.com/#Amix29/Multi-Converter&Date)
