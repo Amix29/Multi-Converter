@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Frontend build output
+dist/
+out/
+release/
+
+# Tauri/Rust build output
+src-tauri/target/
+target/
+
+# Engine packaging inputs and generated archives
+engine-sources/
+dist-engines/
+dist-engines-*/
+
+# Local test and automation artifacts
+test-results/
+playwright-report/
+.playwright-cli/
+tmp/
+tmp-test/
+*.tmp
+tmp-*.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and local machine config
+.env
+.env.*
+!.env.example
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

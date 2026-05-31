@@ -1,0 +1,35 @@
+[package]
+name = "multi-converter"
+version = "1.0.0"
+description = "Local desktop file converter for documents, images, audio and video."
+authors = ["Multi-Converter"]
+license = "Apache-2.0"
+edition = "2024"
+rust-version = "1.88"
+
+[lib]
+name = "multi_converter_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.5.3", features = [] }
+
+[dependencies]
+csv = "1.4"
+encoding_rs = "0.8"
+dirs = "6"
+html-escape = "0.2"
+image = { version = "0.25.10", default-features = true }
+pdf-extract = "0.10"
+resvg = "0.47"
+rfd = "0.15"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2.11.0", features = [] }
+tempfile = "3"
+thiserror = "2"
+time = { version = "0.3", features = ["formatting"] }
+uuid = { version = "1", features = ["v4"] }
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Networking_WinHttp"] }
+zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+tauri-plugin-notification = "2.3.3"

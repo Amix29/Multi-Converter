@@ -1,0 +1,99 @@
+{
+  "manifestVersion": 1,
+  "generatedAt": "2026-05-10T17:08:43.889Z",
+  "engines": [
+    {
+      "id": "pdfium",
+      "displayName": "PDFium",
+      "mode": "qualityMax",
+      "version": "compatible",
+      "platform": "windows-x64",
+      "archiveType": "zip",
+      "downloadUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.0-alpha.0/pdfium-compatible-windows-x64.zip",
+      "sha256": "bb0ca2504d4961d675fb5bbf45412fc7a9d3bb2e2f1208f8f05e261ca1c37749",
+      "compressedSizeBytes": 5626403,
+      "installedSizeBytes": 13080831,
+      "binaryPaths": [
+        "bin/pdfium.dll",
+        "bin/pdfium-render-x86_64-pc-windows-msvc.exe"
+      ],
+      "healthCheck": "pdfium-render",
+      "licenseName": "BSD-3-Clause",
+      "licenseUrl": "https://github.com/bblanchon/pdfium-binaries",
+      "noticeFiles": [
+        "licenses/THIRD_PARTY_NOTICES.txt"
+      ],
+      "required": false,
+      "dependencies": []
+    },
+    {
+      "id": "libreoffice",
+      "displayName": "LibreOffice headless",
+      "mode": "qualityMax",
+      "version": "compatible",
+      "platform": "windows-x64",
+      "archiveType": "zip",
+      "downloadUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.0-alpha.0/libreoffice-compatible-windows-x64.zip",
+      "sha256": "dcd78e44960098bb34ed2db3d752087f1a5975ed7e8ea8938afadf2b571a4801",
+      "compressedSizeBytes": 483796141,
+      "installedSizeBytes": 1513332017,
+      "binaryPaths": [
+        "program/soffice.exe"
+      ],
+      "healthCheck": "libreoffice-headless",
+      "licenseName": "MPL-2.0",
+      "licenseUrl": "https://www.libreoffice.org/about-us/licenses/",
+      "noticeFiles": [
+        "licenses/THIRD_PARTY_NOTICES.txt"
+      ],
+      "required": false,
+      "dependencies": []
+    },
+    {
+      "id": "pandoc",
+      "displayName": "Pandoc",
+      "mode": "qualityMax",
+      "version": "compatible",
+      "platform": "windows-x64",
+      "archiveType": "zip",
+      "downloadUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.0-alpha.0/pandoc-compatible-windows-x64.zip",
+      "sha256": "3093dbaab77239d9731efdc6fd2f8bdab33d1a0eed3376effafe5ccafa80998c",
+      "compressedSizeBytes": 40664566,
+      "installedSizeBytes": 231066554,
+      "binaryPaths": [
+        "bin/pandoc.exe"
+      ],
+      "healthCheck": "pandoc-md-html",
+      "licenseName": "GPL-2.0-or-later",
+      "licenseUrl": "https://github.com/jgm/pandoc/blob/main/COPYRIGHT",
+      "noticeFiles": [
+        "licenses/THIRD_PARTY_NOTICES.txt"
+      ],
+      "required": false,
+      "dependencies": []
+    },
+    {
+      "id": "libvips",
+      "displayName": "libvips",
+      "mode": "qualityMax",
+      "version": "compatible",
+      "platform": "windows-x64",
+      "archiveType": "zip",
+      "downloadUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.0-alpha.0/libvips-compatible-windows-x64.zip",
+      "sha256": "f81b1fb25547bd370a3f3663b654d4db079b6977958f5ed54b8298788e349dbf",
+      "compressedSizeBytes": 10820757,
+      "installedSizeBytes": 28468131,
+      "binaryPaths": [
+        "bin/vips.exe"
+      ],
+      "healthCheck": "libvips-image",
+      "licenseName": "LGPL-2.1-or-later",
+      "licenseUrl": "https://github.com/libvips/libvips/blob/master/LICENSE",
+      "noticeFiles": [
+        "licenses/THIRD_PARTY_NOTICES.txt"
+      ],
+      "required": false,
+      "dependencies": []
+    }
+  ]
+}

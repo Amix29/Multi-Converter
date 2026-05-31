@@ -1,0 +1,10 @@
+{
+  "baseEngines": {
+    "ffmpeg": {
+      "sourceName": "Gyan FFmpeg release essentials",
+      "url": "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip",
+      "archiveName": "ffmpeg-release-essentials.zip",
+      "sha256": "6f58ce889f59c311410f7d2b18895b33c03456463486f3b1ebc93d97a0f54541"
+    }
+  }
+}

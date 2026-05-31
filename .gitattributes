@@ -1,0 +1,18 @@
+* text=auto
+
+*.rs text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.nsh text eol=crlf
+
+*.png binary
+*.ico binary
+*.icns binary
+*.bmp binary
+*.exe binary
+src-tauri/binaries/*.exe filter=lfs diff=lfs merge=lfs -text
+*.zip binary

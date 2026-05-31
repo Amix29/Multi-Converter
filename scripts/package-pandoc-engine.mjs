@@ -1,0 +1,64 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import process from "node:process";
+import { pathToFileURL } from "node:url";
+
+const root = process.cwd();
+const fullConfigPath = path.join(root, "tools", "engine-packages.config.json");
+const pandocConfigPath = path.join(root, "engine-sources", ".pandoc-engine-packages.config.json");
+const outputDir = path.join(root, "dist-engines-quality");
+const embeddedManifestPath = path.join(root, "src-tauri", "engines-manifest.json");
+const releaseBaseUrl = process.env.ENGINE_RELEASE_BASE_URL ?? fileBaseUrl(outputDir);
+
+const fullConfig = JSON.parse(await fs.readFile(fullConfigPath, "utf8"));
+const pandocConfig = {
+  ...fullConfig,
+  downloadBaseUrl: releaseBaseUrl,
+  engines: fullConfig.engines.filter((engine) => engine.engineId === "pandoc"),
+};
+if (pandocConfig.engines.length !== 1) {
+  throw new Error("Configuration Pandoc introuvable dans tools/engine-packages.config.json.");
+}
+
+await fs.mkdir(path.dirname(pandocConfigPath), { recursive: true });
+await fs.writeFile(pandocConfigPath, `${JSON.stringify(pandocConfig, null, 2)}\n`, "utf8");
+
+const result = spawnSync(
+  process.execPath,
+  [
+    "scripts/package-engines.mjs",
+    "--config",
+    path.relative(root, pandocConfigPath),
+    "--output",
+    path.relative(root, outputDir),
+    "--release-base-url",
+    releaseBaseUrl,
+    "--no-clean",
+  ],
+  { cwd: root, stdio: "inherit", windowsHide: true },
+);
+if (result.status !== 0) process.exit(result.status ?? 1);
+
+const generatedManifestPath = path.join(outputDir, "engines-manifest.json");
+const generated = JSON.parse(await fs.readFile(generatedManifestPath, "utf8"));
+const embedded = JSON.parse(await fs.readFile(embeddedManifestPath, "utf8"));
+const generatedById = new Map(generated.engines.map((engine) => [engine.id, engine]));
+embedded.generatedAt = generated.generatedAt;
+embedded.engines = embedded.engines.map((engine) => generatedById.get(engine.id) ?? engine);
+await fs.writeFile(embeddedManifestPath, `${JSON.stringify(embedded, null, 2)}\n`, "utf8");
+await writeMergedQualityManifest(generatedManifestPath, embedded);
+console.log(`Embedded manifest updated with Pandoc from ${path.relative(root, generatedManifestPath)}`);
+
+function fileBaseUrl(dir) {
+  return `${pathToFileURL(path.resolve(dir)).href}/`;
+}
+
+async function writeMergedQualityManifest(target, embedded) {
+  const qualityEngines = embedded.engines.filter((engine) => engine.mode === "qualityMax");
+  await fs.writeFile(
+    target,
+    `${JSON.stringify({ manifestVersion: embedded.manifestVersion, generatedAt: embedded.generatedAt, engines: qualityEngines }, null, 2)}\n`,
+    "utf8",
+  );
+}

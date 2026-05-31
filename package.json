@@ -1,0 +1,85 @@
+{
+  "name": "multi-converter",
+  "version": "1.0.0",
+  "description": "Local desktop file converter for documents, images, audio and video.",
+  "homepage": "https://github.com/Amix29/Multi-Converter#readme",
+  "bugs": {
+    "url": "https://github.com/Amix29/Multi-Converter/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Amix29/Multi-Converter.git"
+  },
+  "packageManager": "npm@11.7.0",
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11 <12"
+  },
+  "scripts": {
+    "start": "npm run tauri:dev",
+    "dev": "vite",
+    "build": "npm run prepare:installer-assets && npm run prepare:bundled-base-engines && npm run validate:bundled-base-engines && npm run validate:embedded-manifest && npm run validate:i18n && tsc --noEmit && vite build",
+    "check": "npm run prepare:installer-assets && npm run validate:bundled-base-engines && npm run validate:embedded-manifest && npm run validate:i18n && npm run typecheck && npm run validate:engines",
+    "typecheck": "tsc --noEmit",
+    "validate:i18n": "node scripts/validate-i18n.mjs",
+    "sync:i18n": "node scripts/sync-i18n.mjs",
+    "tauri": "tauri",
+    "tauri:dev": "node scripts/run-tauri.mjs dev",
+    "tauri:build": "node scripts/run-tauri.mjs build",
+    "package:engines": "node scripts/package-engines.mjs",
+    "prepare:base-engines": "node scripts/prepare-base-engines.mjs",
+    "prepare:bundled-base-engines": "node scripts/prepare-bundled-base-engines.mjs",
+    "prepare:installer-assets": "node scripts/generate-installer-assets.mjs",
+    "package:base-engines": "node scripts/package-base-engines.mjs",
+    "audit:rust": "cargo audit --file src-tauri/Cargo.lock",
+    "prepare:pdfium-engine": "node scripts/prepare-pdfium-engine.mjs",
+    "package:pdfium-engine": "node scripts/package-pdfium-engine.mjs",
+    "prepare:libreoffice-engine": "node scripts/prepare-libreoffice-engine.mjs",
+    "package:libreoffice-engine": "node scripts/package-libreoffice-engine.mjs",
+    "prepare:pandoc-engine": "node scripts/prepare-pandoc-engine.mjs",
+    "package:pandoc-engine": "node scripts/package-pandoc-engine.mjs",
+    "prepare:libvips-engine": "node scripts/prepare-libvips-engine.mjs",
+    "package:libvips-engine": "node scripts/package-libvips-engine.mjs",
+    "validate:engines": "node scripts/package-engines.mjs --validate",
+    "validate:bundled-base-engines": "node scripts/validate-bundled-base-engines.mjs",
+    "validate:embedded-manifest": "node scripts/validate-embedded-manifest.mjs",
+    "fmt:rust:check": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check",
+    "clippy:rust": "node scripts/cargo-test-temp.mjs clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
+    "test": "npm run test:rust && npm run test:conversions",
+    "test:rust": "node scripts/cargo-test-temp.mjs test --manifest-path src-tauri/Cargo.toml",
+    "test:conversions": "node scripts/cargo-test-temp.mjs test --manifest-path src-tauri/Cargo.toml conversion_matrix -- --ignored --nocapture",
+    "test:pdf": "node scripts/cargo-test-temp.mjs test --manifest-path src-tauri/Cargo.toml pdf_text_conversions -- --nocapture",
+    "test:pdfium-wrapper": "node scripts/pdfium-wrapper-cargo.mjs test",
+    "clippy:pdfium-wrapper": "node scripts/pdfium-wrapper-cargo.mjs clippy --all-targets -- -D warnings"
+  },
+  "keywords": [
+    "tauri",
+    "converter",
+    "offline",
+    "documents",
+    "images",
+    "audio",
+    "video"
+  ],
+  "author": "Multi-Converter",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/plugin-notification": "^2.3.3",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10"
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  }
+}

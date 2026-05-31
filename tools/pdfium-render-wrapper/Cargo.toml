@@ -1,0 +1,17 @@
+[package]
+name = "multi-converter-pdfium-render"
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.88"
+license = "Apache-2.0"
+
+[[bin]]
+name = "pdfium-render"
+path = "src/main.rs"
+
+[dependencies]
+image = "0.25.10"
+pdfium-render = "0.9.1"
+
+[dev-dependencies]
+tempfile = "3"

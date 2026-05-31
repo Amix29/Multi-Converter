@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      CARGO_TERM_COLOR: always
+      RUST_BACKTRACE: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ runner.temp }}/mc-cargo-target-tests
+            src-tauri/target
+            tools/pdfium-render-wrapper/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('src-tauri/Cargo.lock', 'tools/pdfium-render-wrapper/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - run: npm ci
+      - run: cargo install cargo-audit --locked
+      - run: npm run check
+      - run: npm run fmt:rust:check
+      - run: npm run clippy:rust
+      - run: npm run audit:rust
+      - run: npm run validate:engines
+      - run: npm run test:rust
+      - run: npm run test:conversions
+      - run: npm run test:pdfium-wrapper
+      - run: npm run clippy:pdfium-wrapper
+      - run: npm run tauri:build

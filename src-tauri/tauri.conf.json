@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Multi-Converter",
+  "version": "1.0.0",
+  "identifier": "com.multiconverter.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Multi-Converter",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 940,
+        "minHeight": 640,
+        "backgroundColor": "#f6f4ef"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob:; font-src 'self'; connect-src ipc: http://ipc.localhost http://localhost:1420 ws://localhost:1420; object-src 'none'; base-uri 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "nsis",
+    "icon": [
+      "icons/icon.ico"
+    ],
+    "externalBin": [
+      "binaries/ffmpeg",
+      "binaries/ffprobe"
+    ],
+    "resources": [],
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "headerImage": "installer-assets/nsis-header.bmp",
+        "sidebarImage": "installer-assets/nsis-sidebar.bmp",
+        "installMode": "currentUser",
+        "languages": [
+          "English"
+        ],
+        "startMenuFolder": "Multi-Converter",
+        "installerHooks": "nsis-hooks.nsh"
+      }
+    }
+  }
+}
