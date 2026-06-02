@@ -12,7 +12,7 @@
     <img alt="Build status" src="https://img.shields.io/github/check-runs/Amix29/Multi-Converter/main?name=quality-gate&label=Build">
   </a>
   <a href="LICENSE">
-    <img alt="License" src="https://img.shields.io/github/license/Amix29/Multi-Converter?label=License&color=0f766e">
+    <img alt="License" src="https://img.shields.io/badge/License-AGPL--3.0--or--later-0f766e">
   </a>
 </p>
 
