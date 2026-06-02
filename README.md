@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_1.0.0_x64-setup.exe">
+  <a href="https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_windows-x64_setup.exe">
     <img alt="Download for Windows" src="https://img.shields.io/badge/⬇️%20Download%20for%20Windows-.exe-2563eb?style=for-the-badge">
   </a>
 </p>
@@ -62,7 +62,7 @@
 
 | System | Status | Download |
 | --- | --- | --- |
-| 🪟 Windows x64 | ✅ Available | [`.exe`](https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_1.0.0_x64-setup.exe) |
+| 🪟 Windows x64 | ✅ Available | [`.exe`](https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_windows-x64_setup.exe) |
 | 🍎 macOS | 🚧 In development | Not yet available |
 | 🐧 Linux | 📋 Planned | Not yet available |
 
