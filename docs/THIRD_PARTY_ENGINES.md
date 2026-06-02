@@ -2,7 +2,7 @@
 
 This document is a maintainer release checklist for Multi-Converter V1. It is not legal advice. Community contributors are not expected to prepare engine releases, checksums, release notes, or redistribution packages. Verify the exact license files and notices for the specific binaries published in each release.
 
-Multi-Converter itself is licensed under Apache-2.0. Optional or bundled conversion engines remain separate third-party software. Their licenses are not replaced by the Multi-Converter license.
+Multi-Converter itself is licensed under AGPL-3.0-or-later. Optional or bundled conversion engines remain separate third-party software. Their licenses are not replaced by the Multi-Converter license.
 
 ## Required release rule
 

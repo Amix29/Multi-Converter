@@ -3,7 +3,7 @@ name = "multi-converter-pdfium-render"
 version = "0.2.0"
 edition = "2024"
 rust-version = "1.88"
-license = "Apache-2.0"
+license = "AGPL-3.0-or-later"
 
 [[bin]]
 name = "pdfium-render"

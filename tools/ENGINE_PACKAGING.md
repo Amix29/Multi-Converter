@@ -2,7 +2,7 @@
 
 Cette page est une checklist technique de conformité et de packaging pour les mainteneurs du projet. Les contributions communautaires ne sont pas censées préparer les releases, checksums, notes de version ou archives de moteurs, sauf demande explicite d'un mainteneur. Elle ne remplace pas une revue juridique.
 
-La V1 Windows x64 assume des moteurs de base FFmpeg/ffprobe intégrés. Les exécutables actuellement validés sont les builds Gyan `8.1.1-essentials_build-www.gyan.dev`, configurés avec `--enable-gpl`. Ils doivent être documentés et redistribués comme composants tiers GPL/LGPL séparés du code Apache-2.0 de Multi-Converter.
+La V1 Windows x64 assume des moteurs de base FFmpeg/ffprobe intégrés. Les exécutables actuellement validés sont les builds Gyan `8.1.1-essentials_build-www.gyan.dev`, configurés avec `--enable-gpl`. Ils doivent être documentés et redistribués comme composants tiers GPL/LGPL séparés du code AGPL-3.0-or-later de Multi-Converter.
 
 ## Entrées locales
 

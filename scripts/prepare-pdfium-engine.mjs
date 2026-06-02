@@ -69,7 +69,7 @@ await fs.writeFile(
     "The extracted package includes third-party notices under licenses/pdfium-third-party/.",
     "",
     "Wrapper: Multi-Converter pdfium-render, built with the Rust pdfium-render crate.",
-    "Wrapper license: Apache-2.0 for Multi-Converter code; pdfium-render crate is MIT OR Apache-2.0.",
+    "Wrapper license: AGPL-3.0-or-later for Multi-Converter code; pdfium-render crate keeps its own MIT OR Apache-2.0 license.",
     "",
   ].join("\n"),
   "utf8",

@@ -62,7 +62,7 @@
     "video"
   ],
   "author": "Multi-Converter",
-  "license": "Apache-2.0",
+  "license": "AGPL-3.0-or-later",
   "type": "module",
   "dependencies": {
     "@tauri-apps/api": "^2.11.0",

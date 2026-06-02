@@ -121,13 +121,13 @@ The **Maximum Quality** extension downloads third-party engines to improve **Off
 
 ## Licenses
 
-**Multi-Converter**'s code is licensed under **Apache 2.0**. See [LICENSE](LICENSE).
+**Multi-Converter**'s code is licensed under the **GNU Affero General Public License v3.0 or later** (`AGPL-3.0-or-later`). See [LICENSE](LICENSE).
 
 **Multi-Converter** uses third-party conversion engines that retain their own licenses, notices and redistribution conditions. They do not change license because you use them through **Multi-Converter**.
 
 Key points:
 
-- **Multi-Converter** itself is licensed under **Apache 2.0**.
+- **Multi-Converter** itself is licensed under **AGPL-3.0-or-later**.
 - Third-party engines remain separate software with their own licenses.
 - The **Windows x64 V1** release bundles **FFmpeg** and **ffprobe** `8.1.1-essentials_build-www.gyan.dev`, built with `--enable-gpl`: the bundled executables are treated as third-party software covered by the GPL in this distribution.
 - The **Maximum Quality** extension may install **PDFium**, **LibreOffice**, **Pandoc** and **libvips**, each under their own license.

@@ -1,7 +1,8 @@
 Multi-Converter
 Copyright 2026 Multi-Converter contributors
 
-Multi-Converter is licensed under the Apache License, Version 2.0.
+Multi-Converter is licensed under the GNU Affero General Public License
+version 3.0 or later (AGPL-3.0-or-later).
 See the LICENSE file for the full license text.
 
 Multi-Converter can use, download, install, update, repair, or uninstall
@@ -13,12 +14,12 @@ The Windows x64 V1 application bundles FFmpeg and ffprobe
 8.1.1-essentials_build-www.gyan.dev as base sidecar executables. That build
 is configured with --enable-gpl, so the bundled FFmpeg/ffprobe executables are
 treated as GPL-covered third-party software in this distribution. Multi-Converter
-uses those executables as separate sidecar processes; the Apache License 2.0
-for Multi-Converter does not replace the FFmpeg/ffprobe licenses.
+uses those executables as separate sidecar processes; the AGPL-3.0-or-later
+license for Multi-Converter does not replace the FFmpeg/ffprobe licenses.
 
 Each engine archive must include the applicable license files and, when
 required or configured, third-party notices for the engine and its bundled
-components. The Apache License 2.0 for Multi-Converter does not automatically
+components. The AGPL-3.0-or-later license for Multi-Converter does not automatically
 apply to FFmpeg, ffprobe, PDFium, LibreOffice, Pandoc, libvips, 7-Zip,
 or any other third-party engine distributed separately.
 
