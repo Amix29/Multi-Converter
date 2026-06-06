@@ -67,6 +67,11 @@ interface AppUpdateInfo {
   body: string | null;
 }
 
+interface UpdateDownloadSize {
+  downloaded: number;
+  total: number | null;
+}
+
 const statusLabelKeys: Record<Status, Parameters<typeof t>[1]> = {
   pending: "status.pending",
   ready: "status.ready",
@@ -119,25 +124,29 @@ async function fetchReleaseBodyForVersion(version: string, fallback: string | nu
   }
 }
 
-function rememberUpdateInstallation(version: string, progress: number | null) {
+function rememberUpdateInstallation(version: string, progress: number | null, size: UpdateDownloadSize | null) {
   localStorage.setItem(
     updateInstallStorageKey,
     JSON.stringify({
       version,
       progress,
+      downloaded: size?.downloaded ?? null,
+      total: size?.total ?? null,
       updatedAt: Date.now(),
     }),
   );
 }
 
-function readPendingUpdateInstallation(): { version: string; progress: number | null } | null {
+function readPendingUpdateInstallation(): { version: string; progress: number | null; size: UpdateDownloadSize | null } | null {
   try {
     const raw = localStorage.getItem(updateInstallStorageKey);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as { version?: unknown; progress?: unknown };
+    const parsed = JSON.parse(raw) as { version?: unknown; progress?: unknown; downloaded?: unknown; total?: unknown };
     if (typeof parsed.version !== "string" || !parsed.version.trim()) return null;
     const progress = typeof parsed.progress === "number" && Number.isFinite(parsed.progress) ? clamp(parsed.progress, 0, 100) : null;
-    return { version: parsed.version, progress };
+    const downloaded = typeof parsed.downloaded === "number" && Number.isFinite(parsed.downloaded) ? Math.max(0, parsed.downloaded) : null;
+    const total = typeof parsed.total === "number" && Number.isFinite(parsed.total) && parsed.total > 0 ? parsed.total : null;
+    return { version: parsed.version, progress, size: downloaded === null ? null : { downloaded, total } };
   } catch {
     return null;
   }
@@ -160,6 +169,7 @@ export default function App() {
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [updateReminderVisible, setUpdateReminderVisible] = useState(false);
   const [updateDownloadProgress, setUpdateDownloadProgress] = useState<number | null>(null);
+  const [updateDownloadSize, setUpdateDownloadSize] = useState<UpdateDownloadSize | null>(null);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => shouldShowWelcome());
   const [welcomeStateLoaded, setWelcomeStateLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -210,6 +220,7 @@ export default function App() {
     void (async () => {
       setUpdateStatus("checking");
       setUpdateDownloadProgress(pendingInstallation.progress ?? null);
+      setUpdateDownloadSize(pendingInstallation.size);
       try {
         const update = await check({ timeout: 20000 });
         if (disposed) return;
@@ -231,7 +242,7 @@ export default function App() {
         });
         setIsUpdateDialogOpen(false);
         setUpdateReminderVisible(false);
-        await performUpdateInstall(update, pendingInstallation.progress ?? 0);
+        await performUpdateInstall(update, pendingInstallation.progress ?? 0, pendingInstallation.size);
       } catch (error) {
         if (disposed) return;
         setUpdateStatus("available");
@@ -471,16 +482,17 @@ export default function App() {
       update = updateRef.current;
       if (!update) return;
     }
-    await performUpdateInstall(update, 0);
+    await performUpdateInstall(update, 0, null);
   }
 
-  async function performUpdateInstall(update: Update, initialProgress: number | null) {
+  async function performUpdateInstall(update: Update, initialProgress: number | null, initialSize: UpdateDownloadSize | null) {
     const installingVersion = update.version;
     setUpdateStatus("installing");
     setUpdateDownloadProgress(initialProgress);
+    setUpdateDownloadSize(initialSize);
     setIsUpdateDialogOpen(false);
     setUpdateReminderVisible(false);
-    rememberUpdateInstallation(installingVersion, initialProgress);
+    rememberUpdateInstallation(installingVersion, initialProgress, initialSize);
     try {
       let downloaded = 0;
       let contentLength = 0;
@@ -489,20 +501,28 @@ export default function App() {
           downloaded = 0;
           contentLength = event.data.contentLength ?? 0;
           const progress = contentLength > 0 ? 0 : null;
+          const size = contentLength > 0 ? { downloaded, total: contentLength } : null;
           setUpdateDownloadProgress(progress);
-          rememberUpdateInstallation(installingVersion, progress);
+          setUpdateDownloadSize(size);
+          rememberUpdateInstallation(installingVersion, progress, size);
         }
         if (event.event === "Progress") {
           downloaded += event.data.chunkLength;
+          const size = { downloaded, total: contentLength > 0 ? contentLength : null };
+          setUpdateDownloadSize(size);
           if (contentLength > 0) {
             const progress = Math.min(100, Math.round((downloaded / contentLength) * 100));
             setUpdateDownloadProgress(progress);
-            rememberUpdateInstallation(installingVersion, progress);
+            rememberUpdateInstallation(installingVersion, progress, size);
+          } else {
+            rememberUpdateInstallation(installingVersion, null, size);
           }
         }
         if (event.event === "Finished") {
+          const size = contentLength > 0 ? { downloaded: contentLength, total: contentLength } : downloaded > 0 ? { downloaded, total: null } : null;
           setUpdateDownloadProgress(100);
-          rememberUpdateInstallation(installingVersion, 100);
+          setUpdateDownloadSize(size);
+          rememberUpdateInstallation(installingVersion, 100, size);
         }
       });
       await relaunch();
@@ -510,6 +530,7 @@ export default function App() {
       clearPendingUpdateInstallation();
       setUpdateStatus("available");
       setUpdateDownloadProgress(null);
+      setUpdateDownloadSize(null);
       showNotice("error", updateCheckErrorMessage(language, error));
     }
   }
@@ -956,6 +977,7 @@ export default function App() {
         updateInfo={updateInfo}
         updateStatus={updateStatus}
         updateDownloadProgress={updateDownloadProgress}
+        updateDownloadSize={updateDownloadSize}
         onClose={() => setIsSettingsOpen(false)}
         onLanguage={setLanguage}
         onPerformanceMode={setPerformanceMode}
@@ -975,6 +997,7 @@ export default function App() {
         updateInfo={updateInfo}
         updateStatus={updateStatus}
         updateDownloadProgress={updateDownloadProgress}
+        updateDownloadSize={updateDownloadSize}
         onInstall={() => void installAvailableUpdate()}
         onCancel={cancelUpdateDialog}
       />
@@ -984,6 +1007,7 @@ export default function App() {
         language={language}
         updateInfo={updateInfo}
         progress={updateDownloadProgress}
+        size={updateDownloadSize}
       />
 
       <UpdateReminder
@@ -1294,6 +1318,7 @@ function UpdateDialog(props: {
   updateInfo: AppUpdateInfo | null;
   updateStatus: UpdateStatus;
   updateDownloadProgress: number | null;
+  updateDownloadSize: UpdateDownloadSize | null;
   onInstall(): void;
   onCancel(): void;
 }) {
@@ -1317,7 +1342,7 @@ function UpdateDialog(props: {
           <strong>{t(props.language, "update.releaseNotes")}</strong>
           {releaseNotes ? <ReleaseNotes body={releaseNotes} /> : <p>{t(props.language, "update.noReleaseNotes")}</p>}
         </section>
-        {installing && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} />}
+        {installing && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} size={props.updateDownloadSize} />}
         <a className="release-link" href={releasePageUrl(props.updateInfo.version)} target="_blank" rel="noreferrer">
           {t(props.language, "update.openRelease")}
         </a>
@@ -1339,6 +1364,7 @@ function UpdateInstallDialog(props: {
   language: LanguageCode;
   updateInfo: AppUpdateInfo | null;
   progress: number | null;
+  size: UpdateDownloadSize | null;
 }) {
   if (!props.isVisible) return null;
   const version = props.updateInfo?.version ?? "";
@@ -1349,7 +1375,7 @@ function UpdateInstallDialog(props: {
         <span className="label">{t(props.language, "update.label")}</span>
         <h2 id="update-install-title">{t(props.language, "update.installingTitle", { version })}</h2>
         <p>{t(props.language, "update.installingBody")}</p>
-        <UpdateProgress language={props.language} progress={props.progress} />
+        <UpdateProgress language={props.language} progress={props.progress} size={props.size} />
       </section>
     </div>
   );
@@ -1436,16 +1462,30 @@ function UpdateReminder(props: {
   );
 }
 
-function UpdateProgress(props: { language: LanguageCode; progress: number | null }) {
+function UpdateProgress(props: { language: LanguageCode; progress: number | null; size?: UpdateDownloadSize | null }) {
   const label = props.progress === null ? t(props.language, "update.installing") : t(props.language, "update.progress", { progress: props.progress });
+  const sizeLabel = props.size ? updateDownloadSizeLabel(props.size) : null;
   return (
     <div className={`update-progress ${props.progress === null ? "is-indeterminate" : ""}`}>
-      <span>{label}</span>
+      <div className="update-progress-header">
+        <span>{label}</span>
+        {sizeLabel && <strong>{sizeLabel}</strong>}
+      </div>
       <div className="progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={props.progress ?? undefined}>
         <div className="progress-bar" style={props.progress === null ? undefined : { width: `${props.progress}%` }} />
       </div>
     </div>
   );
+}
+
+function updateDownloadSizeLabel(size: UpdateDownloadSize) {
+  const downloaded = formatMegabytes(size.downloaded);
+  return size.total ? `${downloaded} / ${formatMegabytes(size.total)}` : downloaded;
+}
+
+function formatMegabytes(bytes: number) {
+  const value = bytes / (1024 * 1024);
+  return `${Math.max(0, Math.round(value))} Mo`;
 }
 
 function ImportToast(props: { language: LanguageCode; feedback: ImportFeedback }) {
@@ -1486,6 +1526,7 @@ function SettingsPanel(props: {
   updateInfo: AppUpdateInfo | null;
   updateStatus: UpdateStatus;
   updateDownloadProgress: number | null;
+  updateDownloadSize: UpdateDownloadSize | null;
   onClose(): void;
   onLanguage(language: LanguageCode): void;
   onPerformanceMode(mode: PerformanceMode): void;
@@ -1680,7 +1721,7 @@ function SettingsPanel(props: {
               ) : (
                 <p>{props.updateStatus === "notAvailable" ? t(props.language, "update.none") : t(props.language, "update.unknown")}</p>
               )}
-              {props.updateStatus === "installing" && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} />}
+              {props.updateStatus === "installing" && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} size={props.updateDownloadSize} />}
               <div className="settings-actions">
                 {props.updateInfo ? (
                   <button className="primary-button" type="button" disabled={props.updateStatus === "installing"} onClick={props.onInstallUpdate}>

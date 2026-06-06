@@ -3070,10 +3070,23 @@ button:disabled {
   background: rgba(255, 253, 247, 0.7);
 }
 
-.update-progress span {
+.update-progress-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.update-progress span,
+.update-progress strong {
   color: var(--ink);
   font-size: 12px;
   font-weight: 800;
+}
+
+.update-progress strong {
+  color: var(--accent-strong);
+  white-space: nowrap;
 }
 
 .update-progress.is-indeterminate .progress-bar {
