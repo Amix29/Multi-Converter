@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
 import { relaunch } from "@tauri-apps/plugin-process";
@@ -82,7 +82,9 @@ const statusLabelKeys: Record<Status, Parameters<typeof t>[1]> = {
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
 const welcomeStorageKey = "multi-converter-welcome-seen";
 const notificationsStorageKey = "multi-converter-notifications-enabled";
-const releaseUrl = "https://github.com/Amix29/Multi-Converter/releases/latest";
+const releaseBaseUrl = "https://github.com/Amix29/Multi-Converter/releases";
+const latestReleaseUrl = `${releaseBaseUrl}/latest`;
+const releaseApiBaseUrl = "https://api.github.com/repos/Amix29/Multi-Converter/releases/tags";
 
 function stepLabels(language: LanguageCode): Array<{ id: Step; label: string; title: string }> {
   return [
@@ -90,6 +92,30 @@ function stepLabels(language: LanguageCode): Array<{ id: Step; label: string; ti
     { id: 2, label: "02", title: t(language, "step.format") },
     { id: 3, label: "03", title: t(language, "step.output") },
   ];
+}
+
+function releaseTag(version: string) {
+  const normalized = version.trim();
+  return normalized.toLowerCase().startsWith("v") ? normalized : `v${normalized}`;
+}
+
+function releasePageUrl(version: string) {
+  return `${releaseBaseUrl}/tag/${encodeURIComponent(releaseTag(version))}`;
+}
+
+async function fetchReleaseBodyForVersion(version: string, fallback: string | null) {
+  try {
+    const response = await fetch(`${releaseApiBaseUrl}/${encodeURIComponent(releaseTag(version))}`, {
+      cache: "no-store",
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!response.ok) return fallback;
+    const data = (await response.json()) as { body?: unknown };
+    const body = typeof data.body === "string" ? data.body.trim() : "";
+    return body || fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export default function App() {
@@ -334,11 +360,12 @@ export default function App() {
         if (manual) showNotice("success", t(language, "update.none"));
         return;
       }
+      const releaseBody = await fetchReleaseBodyForVersion(update.version, update.body ?? null);
       setUpdateInfo({
         version: update.version,
         currentVersion: update.currentVersion || currentVersion,
         date: update.date ?? null,
-        body: update.body ?? null,
+        body: releaseBody,
       });
       setUpdateStatus("available");
       setUpdateReminderVisible(false);
@@ -362,7 +389,7 @@ export default function App() {
 
   async function installAvailableUpdate() {
     if (!isTauriRuntime) {
-      window.open(releaseUrl, "_blank", "noreferrer");
+      window.open(latestReleaseUrl, "_blank", "noreferrer");
       return;
     }
     if (updateStatus === "installing") return;
@@ -1179,6 +1206,7 @@ function UpdateDialog(props: {
 }) {
   if (!props.isOpen || !props.updateInfo) return null;
   const installing = props.updateStatus === "installing";
+  const releaseNotes = props.updateInfo.body?.trim();
 
   return (
     <div className="update-overlay" role="presentation" onMouseDown={installing ? undefined : props.onCancel}>
@@ -1194,10 +1222,10 @@ function UpdateDialog(props: {
         <p>{t(props.language, "update.dialogBody", { current: props.updateInfo.currentVersion, latest: props.updateInfo.version })}</p>
         <section className="update-release-notes" aria-label={t(props.language, "update.releaseNotes")}>
           <strong>{t(props.language, "update.releaseNotes")}</strong>
-          <p>{props.updateInfo.body?.trim() || t(props.language, "update.noReleaseNotes")}</p>
+          {releaseNotes ? <ReleaseNotes body={releaseNotes} /> : <p>{t(props.language, "update.noReleaseNotes")}</p>}
         </section>
         {installing && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} />}
-        <a className="release-link" href={releaseUrl} target="_blank" rel="noreferrer">
+        <a className="release-link" href={releasePageUrl(props.updateInfo.version)} target="_blank" rel="noreferrer">
           {t(props.language, "update.openRelease")}
         </a>
         <div className="update-actions">
@@ -1211,6 +1239,62 @@ function UpdateDialog(props: {
       </section>
     </div>
   );
+}
+
+function ReleaseNotes(props: { body: string }) {
+  const lines = props.body
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trim());
+  const blocks: ReactNode[] = [];
+  let pendingList: string[] = [];
+
+  const flushList = () => {
+    if (!pendingList.length) return;
+    const items = pendingList;
+    pendingList = [];
+    blocks.push(
+      <ul key={`list-${blocks.length}`}>
+        {items.map((item, index) => (
+          <li key={`${index}-${item}`}>{renderReleaseNoteInline(item)}</li>
+        ))}
+      </ul>,
+    );
+  };
+
+  for (const line of lines) {
+    if (!line || line.startsWith("# Multi-Converter ")) {
+      flushList();
+      continue;
+    }
+
+    if (line.startsWith("## ")) {
+      flushList();
+      blocks.push(<h3 key={`heading-${blocks.length}`}>{line.slice(3)}</h3>);
+      continue;
+    }
+
+    if (line.startsWith("- ")) {
+      pendingList.push(line.slice(2));
+      continue;
+    }
+
+    flushList();
+    blocks.push(<p key={`paragraph-${blocks.length}`}>{renderReleaseNoteInline(line.replace(/^#\s+/, ""))}</p>);
+  }
+
+  flushList();
+
+  return <div className="release-note-content">{blocks}</div>;
+}
+
+function renderReleaseNoteInline(text: string): ReactNode[] {
+  return text.split(/(`[^`]+`)/g).map((part, index) => {
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return <code key={index}>{part.slice(1, -1)}</code>;
+    }
+    return part;
+  });
 }
 
 function UpdateReminder(props: {
