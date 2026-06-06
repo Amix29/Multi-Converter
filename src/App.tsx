@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { check, type Update } from "@tauri-apps/plugin-updater";
 import {
   api,
   type ConversionResult,
@@ -32,6 +35,7 @@ type Status = "pending" | "ready" | "queued" | "working" | "canceling" | "cancel
 type NoticeTone = "info" | "success" | "error";
 type ExportKind = "downloads" | "folder";
 type EngineOperationKind = "install" | "uninstall" | null;
+type UpdateStatus = "idle" | "checking" | "available" | "notAvailable" | "installing" | "error";
 type ImportFeedback =
   | { state: "analyzing"; count: number | null; visible: boolean }
   | { state: "done"; count: number; visible: boolean }
@@ -56,6 +60,13 @@ interface ConversionIntent {
   priority: number;
 }
 
+interface AppUpdateInfo {
+  version: string;
+  currentVersion: string;
+  date: string | null;
+  body: string | null;
+}
+
 const statusLabelKeys: Record<Status, Parameters<typeof t>[1]> = {
   pending: "status.pending",
   ready: "status.ready",
@@ -70,6 +81,8 @@ const statusLabelKeys: Record<Status, Parameters<typeof t>[1]> = {
 
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
 const welcomeStorageKey = "multi-converter-welcome-seen";
+const notificationsStorageKey = "multi-converter-notifications-enabled";
+const releaseUrl = "https://github.com/Amix29/Multi-Converter/releases/latest";
 
 function stepLabels(language: LanguageCode): Array<{ id: Step; label: string; title: string }> {
   return [
@@ -85,7 +98,15 @@ export default function App() {
   const bootStarted = useRef(false);
 
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>(() => readStoredPerformanceMode());
+  const [notificationsEnabled, setNotificationsEnabled] = useState(() => readStoredNotificationsEnabled());
+  const [currentVersion, setCurrentVersion] = useState("1.0.0");
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>("idle");
+  const [updateInfo, setUpdateInfo] = useState<AppUpdateInfo | null>(null);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [updateReminderVisible, setUpdateReminderVisible] = useState(false);
+  const [updateDownloadProgress, setUpdateDownloadProgress] = useState<number | null>(null);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => shouldShowWelcome());
+  const [welcomeStateLoaded, setWelcomeStateLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [engineStatuses, setEngineStatuses] = useState<EngineStatus[]>([]);
   const [engineProgress, setEngineProgress] = useState<EngineInstallProgress | null>(null);
@@ -105,10 +126,25 @@ export default function App() {
   const wasConverting = useRef(false);
   const cancellationRequested = useRef(false);
   const pendingQualityRefresh = useRef(false);
+  const updateRef = useRef<Update | null>(null);
 
   useEffect(() => {
     localStorage.setItem("multi-converter-performance-mode", performanceMode);
   }, [performanceMode]);
+
+  useEffect(() => {
+    localStorage.setItem(notificationsStorageKey, notificationsEnabled ? "true" : "false");
+  }, [notificationsEnabled]);
+
+  useEffect(() => {
+    if (!isTauriRuntime) return;
+    getVersion().then(setCurrentVersion).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (!isTauriRuntime || !welcomeStateLoaded || isWelcomeOpen || updateStatus !== "idle") return;
+    void checkForAppUpdate(false);
+  }, [currentVersion, isWelcomeOpen, updateStatus, welcomeStateLoaded]);
 
   useEffect(() => {
     if (!notice) return;
@@ -133,7 +169,8 @@ export default function App() {
 
     api.welcomeState()
       .then((state) => setIsWelcomeOpen(state.show))
-      .catch(() => setIsWelcomeOpen(shouldShowWelcome()));
+      .catch(() => setIsWelcomeOpen(shouldShowWelcome()))
+      .finally(() => setWelcomeStateLoaded(true));
 
     api.bootstrapDependencies()
       .then(setBootInfo)
@@ -258,8 +295,8 @@ export default function App() {
     }
 
     const failed = selectedFiles.some((file) => file.status === "error");
-    void notifyConversionFinished(language, failed);
-  }, [files, isConverting, language]);
+    void notifyConversionFinished(language, failed, notificationsEnabled);
+  }, [files, isConverting, language, notificationsEnabled]);
 
   useEffect(() => {
     if (!isConverting) return;
@@ -285,10 +322,97 @@ export default function App() {
     setNotice({ id: Date.now(), tone, message });
   }
 
+  async function checkForAppUpdate(manual: boolean) {
+    if (!isTauriRuntime || updateStatus === "installing") return;
+    setUpdateStatus("checking");
+    try {
+      const update = await check({ timeout: 20000 });
+      updateRef.current = update;
+      if (!update) {
+        setUpdateInfo(null);
+        setUpdateStatus("notAvailable");
+        if (manual) showNotice("success", t(language, "update.none"));
+        return;
+      }
+      setUpdateInfo({
+        version: update.version,
+        currentVersion: update.currentVersion || currentVersion,
+        date: update.date ?? null,
+        body: update.body ?? null,
+      });
+      setUpdateStatus("available");
+      setUpdateReminderVisible(false);
+      if (manual || !isWelcomeOpen) {
+        setIsUpdateDialogOpen(true);
+      } else {
+        setUpdateReminderVisible(true);
+      }
+    } catch (error) {
+      if (isMissingUpdateReleaseError(error)) {
+        updateRef.current = null;
+        setUpdateInfo(null);
+        setUpdateStatus("notAvailable");
+        if (manual) showNotice("success", t(language, "update.remoteUnavailable"));
+        return;
+      }
+      setUpdateStatus("error");
+      if (manual) showNotice("error", updateCheckErrorMessage(language, error));
+    }
+  }
+
+  async function installAvailableUpdate() {
+    if (!isTauriRuntime) {
+      window.open(releaseUrl, "_blank", "noreferrer");
+      return;
+    }
+    if (updateStatus === "installing") return;
+    let update = updateRef.current;
+    if (!update) {
+      await checkForAppUpdate(true);
+      update = updateRef.current;
+      if (!update) return;
+    }
+    setUpdateStatus("installing");
+    setUpdateDownloadProgress(0);
+    try {
+      let downloaded = 0;
+      let contentLength = 0;
+      await update.downloadAndInstall((event) => {
+        if (event.event === "Started") {
+          downloaded = 0;
+          contentLength = event.data.contentLength ?? 0;
+          setUpdateDownloadProgress(contentLength > 0 ? 0 : null);
+        }
+        if (event.event === "Progress") {
+          downloaded += event.data.chunkLength;
+          if (contentLength > 0) {
+            setUpdateDownloadProgress(Math.min(100, Math.round((downloaded / contentLength) * 100)));
+          }
+        }
+        if (event.event === "Finished") {
+          setUpdateDownloadProgress(100);
+        }
+      });
+      await relaunch();
+    } catch (error) {
+      setUpdateStatus("available");
+      setUpdateDownloadProgress(null);
+      showNotice("error", updateCheckErrorMessage(language, error));
+    }
+  }
+
+  function cancelUpdateDialog() {
+    setIsUpdateDialogOpen(false);
+    setUpdateReminderVisible(Boolean(updateInfo));
+  }
+
   function closeWelcome() {
     localStorage.setItem(welcomeStorageKey, "true");
     void api.markWelcomeSeen().catch(() => undefined);
     setIsWelcomeOpen(false);
+    if (updateInfo && updateStatus === "available") {
+      setUpdateReminderVisible(true);
+    }
   }
 
   function addFiles(incomingFiles: FileDescription[]) {
@@ -714,14 +838,41 @@ export default function App() {
         bootInfo={bootInfo}
         engineStatuses={engineStatuses}
         performanceMode={performanceMode}
+        notificationsEnabled={notificationsEnabled}
+        currentVersion={currentVersion}
+        updateInfo={updateInfo}
+        updateStatus={updateStatus}
+        updateDownloadProgress={updateDownloadProgress}
         onClose={() => setIsSettingsOpen(false)}
         onLanguage={setLanguage}
         onPerformanceMode={setPerformanceMode}
+        onNotificationsEnabled={setNotificationsEnabled}
+        onCheckForUpdate={() => void checkForAppUpdate(true)}
+        onInstallUpdate={() => void installAvailableUpdate()}
         onInstallQualityMax={installQualityMaxExtension}
         onUninstallQualityMax={uninstallQualityMaxExtension}
         engineProgress={engineProgress}
         engineOperationBusy={isEngineOperationRunning}
         engineOperationKind={engineOperationKind}
+      />
+
+      <UpdateDialog
+        isOpen={isUpdateDialogOpen}
+        language={language}
+        updateInfo={updateInfo}
+        updateStatus={updateStatus}
+        updateDownloadProgress={updateDownloadProgress}
+        onInstall={() => void installAvailableUpdate()}
+        onCancel={cancelUpdateDialog}
+      />
+
+      <UpdateReminder
+        isVisible={updateReminderVisible && Boolean(updateInfo) && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen}
+        language={language}
+        updateInfo={updateInfo}
+        updateStatus={updateStatus}
+        onInstall={() => void installAvailableUpdate()}
+        onOpenDetails={() => setIsUpdateDialogOpen(true)}
       />
 
       <PageNotice language={language} notice={notice} onDismiss={() => setNotice(null)} />
@@ -1017,6 +1168,88 @@ function PageNotice(props: { language: LanguageCode; notice: { tone: NoticeTone;
   );
 }
 
+function UpdateDialog(props: {
+  isOpen: boolean;
+  language: LanguageCode;
+  updateInfo: AppUpdateInfo | null;
+  updateStatus: UpdateStatus;
+  updateDownloadProgress: number | null;
+  onInstall(): void;
+  onCancel(): void;
+}) {
+  if (!props.isOpen || !props.updateInfo) return null;
+  const installing = props.updateStatus === "installing";
+
+  return (
+    <div className="update-overlay" role="presentation" onMouseDown={installing ? undefined : props.onCancel}>
+      <section className="update-dialog" role="dialog" aria-modal="true" aria-labelledby="update-dialog-title" onMouseDown={(event) => event.stopPropagation()}>
+        <header>
+          <span className="label">{t(props.language, "update.label")}</span>
+          <h2 id="update-dialog-title">{t(props.language, "update.dialogTitle", { version: props.updateInfo.version })}</h2>
+        </header>
+        <div className="update-version-hero" aria-label={t(props.language, "update.latestVersion", { version: props.updateInfo.version })}>
+          <span>{t(props.language, "update.availableBadge")}</span>
+          <strong>{props.updateInfo.version}</strong>
+        </div>
+        <p>{t(props.language, "update.dialogBody", { current: props.updateInfo.currentVersion, latest: props.updateInfo.version })}</p>
+        <section className="update-release-notes" aria-label={t(props.language, "update.releaseNotes")}>
+          <strong>{t(props.language, "update.releaseNotes")}</strong>
+          <p>{props.updateInfo.body?.trim() || t(props.language, "update.noReleaseNotes")}</p>
+        </section>
+        {installing && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} />}
+        <a className="release-link" href={releaseUrl} target="_blank" rel="noreferrer">
+          {t(props.language, "update.openRelease")}
+        </a>
+        <div className="update-actions">
+          <button className="secondary-button" type="button" disabled={installing} onClick={props.onCancel}>
+            {t(props.language, "update.cancel")}
+          </button>
+          <button className="primary-button" type="button" disabled={installing} onClick={props.onInstall}>
+            {installing ? t(props.language, "update.installing") : t(props.language, "update.install")}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function UpdateReminder(props: {
+  isVisible: boolean;
+  language: LanguageCode;
+  updateInfo: AppUpdateInfo | null;
+  updateStatus: UpdateStatus;
+  onInstall(): void;
+  onOpenDetails(): void;
+}) {
+  if (!props.isVisible || !props.updateInfo) return null;
+  const installing = props.updateStatus === "installing";
+
+  return (
+    <aside className="update-reminder" role="status" aria-live="polite">
+      <div>
+        <span>{t(props.language, "update.availableBadge")}</span>
+        <strong>{t(props.language, "update.reminderTitle", { version: props.updateInfo.version })}</strong>
+        <button type="button" onClick={props.onOpenDetails}>{t(props.language, "update.details")}</button>
+      </div>
+      <button className="primary-button" type="button" disabled={installing} onClick={props.onInstall}>
+        {installing ? t(props.language, "update.installing") : t(props.language, "update.install")}
+      </button>
+    </aside>
+  );
+}
+
+function UpdateProgress(props: { language: LanguageCode; progress: number | null }) {
+  const label = props.progress === null ? t(props.language, "update.installing") : t(props.language, "update.progress", { progress: props.progress });
+  return (
+    <div className={`update-progress ${props.progress === null ? "is-indeterminate" : ""}`}>
+      <span>{label}</span>
+      <div className="progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={props.progress ?? undefined}>
+        <div className="progress-bar" style={props.progress === null ? undefined : { width: `${props.progress}%` }} />
+      </div>
+    </div>
+  );
+}
+
 function ImportToast(props: { language: LanguageCode; feedback: ImportFeedback }) {
   if (!props.feedback?.visible) return null;
   const label =
@@ -1050,9 +1283,17 @@ function SettingsPanel(props: {
   engineOperationBusy: boolean;
   engineOperationKind: EngineOperationKind;
   performanceMode: PerformanceMode;
+  notificationsEnabled: boolean;
+  currentVersion: string;
+  updateInfo: AppUpdateInfo | null;
+  updateStatus: UpdateStatus;
+  updateDownloadProgress: number | null;
   onClose(): void;
   onLanguage(language: LanguageCode): void;
   onPerformanceMode(mode: PerformanceMode): void;
+  onNotificationsEnabled(enabled: boolean): void;
+  onCheckForUpdate(): void;
+  onInstallUpdate(): void;
   onInstallQualityMax(): void;
   onUninstallQualityMax(): void;
 }) {
@@ -1171,40 +1412,89 @@ function SettingsPanel(props: {
                 ))}
               </div>
             </section>
+
+            <section className="setting-toggle" aria-labelledby="notifications-setting-title">
+              <div>
+                <span className="label" id="notifications-setting-title">{t(props.language, "settings.notifications")}</span>
+                <p>{t(props.language, "settings.notificationsDetail")}</p>
+              </div>
+              <label className="switch-control">
+                <input
+                  type="checkbox"
+                  checked={props.notificationsEnabled}
+                  onChange={(event) => props.onNotificationsEnabled(event.currentTarget.checked)}
+                />
+                <span aria-hidden="true" />
+              </label>
+            </section>
+
           </section>
 
-          <section className="extension-card quality-extension-card" aria-labelledby="quality-extension-title">
-            <div className="extension-heading">
-              <span className="label">{t(props.language, "quality.label")}</span>
-              <strong id="quality-extension-title">{t(props.language, "quality.title")}</strong>
-              <b className={qualityInstalled ? "extension-state is-installed" : "extension-state"}>
-                {qualityInstalled ? t(props.language, "quality.installed") : t(props.language, "quality.notInstalled")}
-              </b>
-            </div>
-            <p>{t(props.language, "quality.description")}</p>
-            <em>{t(props.language, "quality.estimatedSize", { size: extensionSize })}</em>
-            {qualityProgress && (
-              <div className={`engine-progress ${qualityProgress.indeterminate ? "is-indeterminate" : ""}`}>
-                <span>{qualityProgress.label}</span>
-                {!qualityProgress.indeterminate && <strong>{qualityProgress.percent}%</strong>}
-                <div className="progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={qualityProgress.indeterminate ? undefined : qualityProgress.percent}>
-                  <div className="progress-bar" style={qualityProgress.indeterminate ? undefined : { width: `${qualityProgress.percent}%` }} />
-                </div>
-                {qualityProgress.meta && <small>{qualityProgress.meta}</small>}
+          <section className="settings-side">
+            <section className="extension-card quality-extension-card" aria-labelledby="quality-extension-title">
+              <div className="extension-heading">
+                <span className="label">{t(props.language, "quality.label")}</span>
+                <strong id="quality-extension-title">{t(props.language, "quality.title")}</strong>
+                <b className={qualityInstalled ? "extension-state is-installed" : "extension-state"}>
+                  {qualityInstalled ? t(props.language, "quality.installed") : t(props.language, "quality.notInstalled")}
+                </b>
               </div>
-            )}
-            <div className="settings-actions">
-              {qualityInstalled ? (
-                <button className="secondary-button danger-button" type="button" disabled={extensionBusy} onClick={() => setIsUninstallConfirmOpen(true)}>
-                  {props.engineOperationKind === "uninstall" ? t(props.language, "quality.uninstalling") : t(props.language, "quality.uninstall")}
-                </button>
-              ) : (
-                <button className="primary-button" type="button" disabled={!internetAvailable || extensionBusy} onClick={props.onInstallQualityMax}>
-                  {props.engineOperationKind === "install" ? t(props.language, "quality.installing") : t(props.language, "quality.install")}
-                </button>
+              <p>{t(props.language, "quality.description")}</p>
+              <em>{t(props.language, "quality.estimatedSize", { size: extensionSize })}</em>
+              {qualityProgress && (
+                <div className={`engine-progress ${qualityProgress.indeterminate ? "is-indeterminate" : ""}`}>
+                  <span>{qualityProgress.label}</span>
+                  {!qualityProgress.indeterminate && <strong>{qualityProgress.percent}%</strong>}
+                  <div className="progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={qualityProgress.indeterminate ? undefined : qualityProgress.percent}>
+                    <div className="progress-bar" style={qualityProgress.indeterminate ? undefined : { width: `${qualityProgress.percent}%` }} />
+                  </div>
+                  {qualityProgress.meta && <small>{qualityProgress.meta}</small>}
+                </div>
               )}
-            </div>
-            {!internetAvailable && !qualityInstalled && <small>{t(props.language, "quality.internetRequired")}</small>}
+              <div className="settings-actions">
+                {qualityInstalled ? (
+                  <button className="secondary-button danger-button" type="button" disabled={extensionBusy} onClick={() => setIsUninstallConfirmOpen(true)}>
+                    {props.engineOperationKind === "uninstall" ? t(props.language, "quality.uninstalling") : t(props.language, "quality.uninstall")}
+                  </button>
+                ) : (
+                  <button className="primary-button" type="button" disabled={!internetAvailable || extensionBusy} onClick={props.onInstallQualityMax}>
+                    {props.engineOperationKind === "install" ? t(props.language, "quality.installing") : t(props.language, "quality.install")}
+                  </button>
+                )}
+              </div>
+              {!internetAvailable && !qualityInstalled && <small>{t(props.language, "quality.internetRequired")}</small>}
+            </section>
+
+            <section className="update-settings-card" aria-labelledby="update-settings-title">
+              <div className="update-settings-heading">
+                <div>
+                  <span className="label">{t(props.language, "update.label")}</span>
+                  <strong id="update-settings-title">{t(props.language, "update.settingsTitle")}</strong>
+                </div>
+                {props.updateStatus === "available" && <b>{t(props.language, "update.availableBadge")}</b>}
+              </div>
+              <p>{t(props.language, "update.currentVersion", { version: props.currentVersion })}</p>
+              {props.updateInfo ? (
+                <div className="update-version-inline">
+                  <span>{t(props.language, "update.latestVersion", { version: props.updateInfo.version })}</span>
+                  <strong>{props.updateInfo.version}</strong>
+                </div>
+              ) : (
+                <p>{props.updateStatus === "notAvailable" ? t(props.language, "update.none") : t(props.language, "update.unknown")}</p>
+              )}
+              {props.updateStatus === "installing" && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} />}
+              <div className="settings-actions">
+                {props.updateInfo ? (
+                  <button className="primary-button" type="button" disabled={props.updateStatus === "installing"} onClick={props.onInstallUpdate}>
+                    {props.updateStatus === "installing" ? t(props.language, "update.installing") : t(props.language, "update.install")}
+                  </button>
+                ) : (
+                  <button className="secondary-button" type="button" disabled={props.updateStatus === "checking"} onClick={props.onCheckForUpdate}>
+                    {props.updateStatus === "checking" ? t(props.language, "update.checking") : t(props.language, "update.check")}
+                  </button>
+                )}
+              </div>
+            </section>
           </section>
         </div>
 
@@ -2020,8 +2310,8 @@ function getConvertedOutputPaths(files: FileItem[]) {
   return files.filter((file) => file.status === "done" && file.result?.outputPath).map((file) => file.result!.outputPath);
 }
 
-async function notifyConversionFinished(language: LanguageCode, failed: boolean) {
-  if (!isTauriRuntime) return;
+async function notifyConversionFinished(language: LanguageCode, failed: boolean, enabled: boolean) {
+  if (!isTauriRuntime || !enabled) return;
 
   try {
     let permissionGranted = await isPermissionGranted();
@@ -2037,6 +2327,20 @@ async function notifyConversionFinished(language: LanguageCode, failed: boolean)
   } catch (error) {
     console.warn("System notification failed", error);
   }
+}
+
+function updateCheckErrorMessage(language: LanguageCode, error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  if (isMissingUpdateReleaseError(error)) {
+    return t(language, "update.remoteUnavailable");
+  }
+  return translateBackendMessage(language, message);
+}
+
+function isMissingUpdateReleaseError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  const normalized = message.toLowerCase();
+  return normalized.includes("valid release json") || normalized.includes("latest.json");
 }
 
 function exportNoticeMessage(language: LanguageCode, kind: ExportKind, result: ExportResult) {
@@ -2101,6 +2405,10 @@ function clamp(value: number, min: number, max: number) {
 function readStoredPerformanceMode(): PerformanceMode {
   const value = localStorage.getItem("multi-converter-performance-mode");
   return value === "energySaver" || value === "balanced" || value === "highPerformance" ? value : defaultPerformanceMode;
+}
+
+function readStoredNotificationsEnabled() {
+  return localStorage.getItem(notificationsStorageKey) !== "false";
 }
 
 function shouldShowWelcome() {

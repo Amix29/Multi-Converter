@@ -5,6 +5,7 @@ node_modules/
 dist/
 out/
 release/
+release-artifacts/
 
 # Tauri/Rust build output
 src-tauri/target/
@@ -35,6 +36,7 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+AGENTS.md
 
 # Editor and OS noise
 .DS_Store

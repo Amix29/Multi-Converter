@@ -1,6 +1,6 @@
 {
   "name": "multi-converter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Local desktop file converter for documents, images, audio and video.",
   "homepage": "https://github.com/Amix29/Multi-Converter#readme",
   "bugs": {
@@ -67,6 +67,8 @@
   "dependencies": {
     "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-notification": "^2.3.3",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-updater": "^2.10.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

@@ -2277,7 +2277,10 @@ button:disabled {
 
 .setting-select,
 .performance-setting,
+.setting-toggle,
+.update-settings-card,
 .settings-column,
+.settings-side,
 .option-stack {
   display: grid;
 }
@@ -2291,6 +2294,11 @@ button:disabled {
 
 .settings-column {
   gap: 18px;
+}
+
+.settings-side {
+  gap: 18px;
+  align-content: start;
 }
 
 .setting-select {
@@ -2420,6 +2428,115 @@ button:disabled {
   font-size: 12px;
   font-style: normal;
   line-height: 1.35;
+}
+
+.setting-toggle,
+.update-settings-card {
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.setting-toggle {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.setting-toggle p,
+.update-settings-card p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.switch-control {
+  display: inline-grid;
+  cursor: pointer;
+}
+
+.switch-control input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch-control span {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.switch-control span::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--muted);
+  content: "";
+  transition: transform 150ms ease, background 150ms ease;
+}
+
+.switch-control input:checked + span {
+  border-color: rgba(63, 118, 100, 0.34);
+  background: var(--green-soft);
+}
+
+.switch-control input:checked + span::after {
+  transform: translateX(20px);
+  background: var(--green-strong);
+}
+
+.update-settings-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.update-settings-heading strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px;
+}
+
+.update-settings-heading b {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border: 1px solid rgba(63, 118, 100, 0.26);
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-strong);
+  font-size: 11px;
+}
+
+.update-version-inline {
+  display: grid;
+  gap: 5px;
+  padding: 11px;
+  border: 1px solid rgba(200, 106, 52, 0.3);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+
+.update-version-inline span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 820;
+}
+
+.update-version-inline strong {
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1;
 }
 
 .extension-card {
@@ -2656,6 +2773,172 @@ button:disabled {
   width: 15px;
   height: 15px;
   fill: currentColor;
+}
+
+.update-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(23, 32, 35, 0.38);
+  backdrop-filter: blur(12px);
+  animation: screenIn 160ms ease both;
+}
+
+.update-dialog {
+  display: grid;
+  gap: 16px;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid rgba(198, 192, 180, 0.82);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: 0 34px 90px rgba(23, 32, 35, 0.24), 0 0 0 1px rgba(255, 255, 255, 0.58) inset;
+}
+
+.update-dialog h2 {
+  margin: 4px 0 0;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.update-dialog > p,
+.update-release-notes p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.update-version-hero {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid rgba(200, 106, 52, 0.32);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--accent-soft), #fff7ed);
+  box-shadow: 0 16px 34px rgba(200, 106, 52, 0.13);
+}
+
+.update-version-hero span {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.update-version-hero strong {
+  color: var(--ink);
+  font-size: 44px;
+  font-weight: 880;
+  line-height: 0.95;
+}
+
+.update-release-notes {
+  display: grid;
+  gap: 8px;
+  max-height: 180px;
+  overflow: auto;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.update-release-notes strong {
+  font-size: 13px;
+}
+
+.release-link {
+  width: fit-content;
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 780;
+}
+
+.update-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.update-reminder {
+  position: fixed;
+  right: 24px;
+  bottom: 22px;
+  z-index: 29;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: min(410px, calc(100vw - 32px));
+  padding: 13px;
+  border: 1px solid rgba(200, 106, 52, 0.32);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  animation: noticeIn 180ms ease both;
+}
+
+.update-reminder strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.update-reminder span {
+  display: inline-block;
+  margin-bottom: 5px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.update-reminder button:not(.primary-button) {
+  padding: 0;
+  background: transparent;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+.update-reminder .primary-button {
+  min-height: 36px;
+  padding: 7px 11px;
+  font-size: 12px;
+}
+
+.update-progress {
+  display: grid;
+  gap: 7px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 253, 247, 0.7);
+}
+
+.update-progress span {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.update-progress.is-indeterminate .progress-bar {
+  width: 45%;
+  animation: importProgress 1s ease-in-out infinite;
 }
 
 .import-toast {

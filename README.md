@@ -84,8 +84,8 @@
 
 | Category | Recognized formats |
 | --- | --- |
-| 📄 Documents & text | PDF, DOCX, TXT/LOG, HTML/HTM, CSV, JSON, ODT, RTF, Markdown/MD, EPUB, XML |
-| 🖼️ Images | PNG, JPEG/JPG, SVG, WebP, TIFF/TIF, BMP, ICO |
+| 📄 Documents & text | PDF, DOCX, DOC, TXT/LOG, HTML/HTM, CSV, JSON, ODT, RTF, Markdown/MD, EPUB, XML |
+| 🖼️ Images | PNG, JPEG/JPG, GIF, SVG, WebP, TIFF/TIF, BMP, ICO |
 | 🎵 Audio | MP3, AAC/M4A, FLAC, WAV, OGG/OGA, WMA, OPUS, AIFF/AIF, ALAC, AC3, MP2, AMR, AU/SND, CAF |
 | 🎬 Video | MP4/M4V, MKV, WebM, MOV, AVI, WMV, 3GP/3G2, MTS/M2TS, MPEG-2/MPG/MPEG, OGV |
 

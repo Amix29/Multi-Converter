@@ -54,6 +54,12 @@ const CATEGORIES: &[Category] = &[
                 &["docx"],
                 "Traitement de texte professionnel",
             ),
+            (
+                "doc",
+                "DOC",
+                &["doc"],
+                "Ancien document Word, conversion via Qualité maximale",
+            ),
             ("txt", "TXT", &["txt", "log"], "Texte brut, tout support"),
             ("html", "HTML", &["html", "htm"], "Pages web"),
             ("csv", "CSV", &["csv"], "Données tabulaires"),
@@ -76,6 +82,7 @@ const CATEGORIES: &[Category] = &[
         formats: &[
             ("png", "PNG", &["png"], "Web, logos, transparence"),
             ("jpg", "JPEG", &["jpg", "jpeg"], "Photos, web"),
+            ("gif", "GIF", &["gif"], "Image ou animation courte"),
             ("svg", "SVG", &["svg"], "Source vectorielle rasterisable"),
             ("webp", "WebP", &["webp"], "Web moderne"),
             ("tiff", "TIFF", &["tif", "tiff"], "Impression, archivage"),
@@ -193,11 +200,22 @@ pub fn get_targets_for_extension(extension: &str) -> Vec<TargetFormat> {
         .clone()
         .into_iter()
         .filter(|target| {
-            if target.id == source.id {
+            if target.id == source.id || target.id == "doc" {
                 return false;
             }
             if source.id == "pdf" {
-                return PDF_TEXT_TARGETS.contains(&target.id);
+                return PDF_TEXT_TARGETS.contains(&target.id)
+                    || matches!(target.id, "docx" | "odt" | "rtf");
+            }
+            if source.id == "doc" {
+                return matches!(
+                    target.id,
+                    "docx" | "odt" | "rtf" | "pdf" | "html" | "txt" | "epub"
+                );
+            }
+            if source.id == "gif" {
+                return (target.category_id == "images" || target.category_id == "video")
+                    && get_engine(&source, target) != "external";
             }
             if source.category_id == "video" && target.category_id == "audio" {
                 return get_engine(&source, target) != "external";
@@ -271,6 +289,13 @@ pub fn get_engine(source: &Format, target: &Format) -> &'static str {
         "mp4", "mkv", "webm", "mov", "avi", "wmv", "3gp", "mts", "mpeg2", "ogv",
     ];
 
+    if source.id == "gif" && target.category_id == "video" {
+        return if ffmpeg_video.contains(&target.id) {
+            "ffmpeg"
+        } else {
+            "external"
+        };
+    }
     if source.id == "pdf" && target.category_id == "images" && matches!(target.id, "png" | "jpg") {
         return "pdfium";
     }
@@ -296,8 +321,8 @@ pub fn get_engine(source: &Format, target: &Format) -> &'static str {
         };
     }
     if source.category_id == "images" && target.category_id == "images" {
-        let image_sources = ["png", "jpg", "svg", "webp", "tiff", "bmp", "ico"];
-        let image_targets = ["png", "jpg", "webp", "tiff", "bmp", "ico"];
+        let image_sources = ["png", "jpg", "gif", "svg", "webp", "tiff", "bmp", "ico"];
+        let image_targets = ["png", "jpg", "gif", "webp", "tiff", "bmp", "ico"];
         return if image_sources.contains(&source.id) && image_targets.contains(&target.id) {
             "image"
         } else {
@@ -305,8 +330,16 @@ pub fn get_engine(source: &Format, target: &Format) -> &'static str {
         };
     }
     if source.category_id == "documents" && target.category_id == "documents" {
+        if target.id == "doc" {
+            return "external";
+        }
+        if source.id == "doc" {
+            return "external";
+        }
         if source.id == "pdf" {
-            return if PDF_TEXT_TARGETS.contains(&target.id) {
+            return if matches!(target.id, "docx" | "odt" | "rtf")
+                || PDF_TEXT_TARGETS.contains(&target.id)
+            {
                 "text"
             } else {
                 "external"
@@ -354,17 +387,19 @@ mod tests {
     }
 
     #[test]
-    fn pdf_text_conversions_are_limited_to_plain_text_targets() {
+    fn pdf_text_conversions_include_supported_text_document_targets() {
         let targets = get_targets_for_extension("pdf")
             .into_iter()
             .filter(|target| target.engine == "text")
             .map(|target| target.format)
             .collect::<Vec<_>>();
 
-        assert_eq!(targets.len(), 6);
+        assert_eq!(targets.len(), 9);
         assert!(targets.contains(&"txt".to_string()));
         assert!(targets.contains(&"html".to_string()));
-        assert!(!targets.contains(&"docx".to_string()));
+        assert!(targets.contains(&"docx".to_string()));
+        assert!(targets.contains(&"odt".to_string()));
+        assert!(targets.contains(&"rtf".to_string()));
         assert!(!targets.contains(&"epub".to_string()));
         assert!(!targets.contains(&"tex".to_string()));
         assert!(!targets.contains(&"ps".to_string()));
@@ -373,7 +408,21 @@ mod tests {
     #[test]
     fn registry_exposes_quality_targets_as_engine_backed_options() {
         let pdf_targets = get_targets_for_extension("pdf");
-        assert!(!pdf_targets.iter().any(|target| target.format == "docx"));
+        assert!(
+            pdf_targets
+                .iter()
+                .any(|target| target.format == "docx" && target.engine == "text")
+        );
+        assert!(
+            pdf_targets
+                .iter()
+                .any(|target| target.format == "odt" && target.engine == "text")
+        );
+        assert!(
+            pdf_targets
+                .iter()
+                .any(|target| target.format == "rtf" && target.engine == "text")
+        );
         assert!(pdf_targets.iter().any(|target| target.format == "png"
             && target.engine == "pdfium"
             && target.extension == "zip"));
@@ -397,7 +446,7 @@ mod tests {
 
     #[test]
     fn public_image_formats_all_have_targets() {
-        for extension in ["png", "jpg", "svg", "webp", "tiff", "bmp", "ico"] {
+        for extension in ["png", "jpg", "gif", "svg", "webp", "tiff", "bmp", "ico"] {
             let targets = get_targets_for_extension(extension);
             assert!(
                 !targets.is_empty(),
@@ -422,14 +471,32 @@ mod tests {
     #[test]
     fn v1_does_not_expose_retired_formats() {
         for id in [
-            "doc", "mobi", "ps", "tex", "pages", "wps", "flv", "vob", "avchd", "divx", "xvid",
-            "mxf", "dts", "ape",
+            "mobi", "ps", "tex", "pages", "wps", "flv", "vob", "avchd", "divx", "xvid", "mxf",
+            "dts", "ape",
         ] {
             assert!(
                 get_format_by_id(id).is_none(),
                 "{id} should be roadmap-only"
             );
         }
+    }
+
+    #[test]
+    fn doc_is_source_only_and_targets_modern_formats() {
+        assert!(get_format_by_id("doc").is_some());
+        let targets = get_targets_for_extension("doc")
+            .into_iter()
+            .map(|target| target.format)
+            .collect::<Vec<_>>();
+
+        assert!(targets.contains(&"docx".to_string()));
+        assert!(targets.contains(&"odt".to_string()));
+        assert!(targets.contains(&"rtf".to_string()));
+        assert!(targets.contains(&"pdf".to_string()));
+        assert!(targets.contains(&"html".to_string()));
+        assert!(targets.contains(&"txt".to_string()));
+        assert!(targets.contains(&"epub".to_string()));
+        assert!(!targets.contains(&"doc".to_string()));
     }
 
     #[test]

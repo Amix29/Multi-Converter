@@ -761,12 +761,8 @@ fn engine_candidates(
         return vec!["rust-image"];
     }
     if source.category_id == "documents" && target_category_id == "documents" {
-        if source.id == "pdf" && is_rich_document_target(target_id) {
-            return if quality_enabled {
-                vec!["libreoffice", "rust-text"]
-            } else {
-                vec!["rust-text"]
-            };
+        if source.id == "doc" {
+            return vec!["libreoffice"];
         }
         if source.id == "pdf" {
             return vec!["pdf-extract", "rust-text"];
@@ -1185,7 +1181,7 @@ fn is_rich_document_target(target_id: &str) -> bool {
     matches!(target_id, "docx" | "odt" | "rtf")
 }
 fn office_like(format_id: &str) -> bool {
-    matches!(format_id, "docx" | "odt" | "rtf")
+    matches!(format_id, "doc" | "docx" | "odt" | "rtf")
 }
 
 fn prefers_libreoffice(source_id: &str, target_id: &str) -> bool {
@@ -1195,7 +1191,7 @@ fn prefers_libreoffice(source_id: &str, target_id: &str) -> bool {
 }
 
 fn prefers_pandoc(source_id: &str, target_id: &str) -> bool {
-    matches!(source_id, "md" | "html" | "epub")
+    matches!(source_id, "md" | "html" | "epub" | "docx")
         && matches!(target_id, "md" | "html" | "epub" | "docx")
 }
 
@@ -1264,6 +1260,28 @@ mod tests {
         assert_eq!(plan.id, "rust-text");
         assert!(plan.available);
         assert!(!plan.plan.contains(&"Pandoc".to_string()));
+    }
+
+    #[test]
+    fn pdf_to_rich_document_uses_integrated_text_pipeline() {
+        let pdf = get_format_by_id("pdf").unwrap();
+        let docx = get_format_by_id("docx").unwrap();
+        let plan = select_engine(None, &pdf, docx.id, docx.category_id, "text");
+
+        assert_eq!(plan.id, "pdf-extract");
+        assert_eq!(plan.required_engine_ids, vec!["pdf-extract"]);
+        assert!(plan.available);
+    }
+
+    #[test]
+    fn legacy_doc_source_requires_libreoffice() {
+        let doc = get_format_by_id("doc").unwrap();
+        let docx = get_format_by_id("docx").unwrap();
+        let plan = select_engine(None, &doc, docx.id, docx.category_id, "external");
+
+        assert_eq!(plan.id, "libreoffice");
+        assert_eq!(plan.required_engine_ids, vec!["libreoffice"]);
+        assert!(!plan.available);
     }
 
     #[test]

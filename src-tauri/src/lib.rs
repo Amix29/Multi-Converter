@@ -662,6 +662,8 @@ pub fn run() {
     runtime_log::install_panic_hook();
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|_| {
             runtime_log::write("startup", "Multi-Converter starting");
             cleanup_stale_temp_output_folders();

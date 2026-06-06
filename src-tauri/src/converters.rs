@@ -167,6 +167,27 @@ pub fn describe_file_with_app(
         .and_then(system_time_to_iso)
         .unwrap_or_else(|| "1970-01-01T00:00:00Z".to_string());
 
+    let animated_gif = source_format
+        .as_ref()
+        .is_some_and(|format| format.id == "gif")
+        && gif_is_animated(file_path).unwrap_or(false);
+    let display_category = if animated_gif {
+        "Vidéo".to_string()
+    } else {
+        source_format
+            .as_ref()
+            .map(|item| item.category.to_string())
+            .unwrap_or_else(|| "Inconnu".to_string())
+    };
+    let display_category_id = if animated_gif {
+        "video".to_string()
+    } else {
+        source_format
+            .as_ref()
+            .map(|item| item.category_id.to_string())
+            .unwrap_or_else(|| "unknown".to_string())
+    };
+
     Ok(FileDescription {
         path: file_path.to_string_lossy().to_string(),
         name: file_path
@@ -180,14 +201,8 @@ pub fn describe_file_with_app(
             .unwrap_or("fichier")
             .to_string(),
         extension: extension.clone(),
-        category: source_format
-            .as_ref()
-            .map(|item| item.category.to_string())
-            .unwrap_or_else(|| "Inconnu".to_string()),
-        category_id: source_format
-            .as_ref()
-            .map(|item| item.category_id.to_string())
-            .unwrap_or_else(|| "unknown".to_string()),
+        category: display_category,
+        category_id: display_category_id,
         source_format: source_format.as_ref().map(|item| item.id.to_string()),
         directory: file_path
             .parent()
@@ -204,6 +219,14 @@ pub fn describe_file_with_app(
             .map(|source| {
                 get_targets_for_extension(&extension)
                     .into_iter()
+                    .filter(|target| {
+                        source.id != "gif"
+                            || if animated_gif {
+                                target.category_id == "video"
+                            } else {
+                                target.category_id == "images"
+                            }
+                    })
                     .map(|target| engines::decorate_target(app, source, target))
                     .collect()
             })
@@ -231,6 +254,87 @@ fn file_warnings(size: u64, category_id: Option<&str>) -> Vec<FileWarning> {
     warnings
 }
 
+fn gif_is_animated(path: &Path) -> Result<bool> {
+    let mut reader = BufReader::new(File::open(path)?);
+    let mut header = [0u8; 13];
+    if reader.read_exact(&mut header).is_err() {
+        return Ok(false);
+    }
+    if !header.starts_with(b"GIF87a") && !header.starts_with(b"GIF89a") {
+        return Ok(false);
+    }
+    let packed = header[10];
+    let global_color_table = packed & 0b1000_0000 != 0;
+    if global_color_table {
+        let size = 3usize * (1usize << (((packed & 0b0000_0111) as usize) + 1));
+        if skip_bytes(&mut reader, size).is_err() {
+            return Ok(false);
+        }
+    }
+
+    let mut image_count = 0usize;
+    let mut marker = [0u8; 1];
+    while reader.read_exact(&mut marker).is_ok() {
+        match marker[0] {
+            0x2C => {
+                image_count += 1;
+                if image_count > 1 {
+                    return Ok(true);
+                }
+
+                let mut descriptor = [0u8; 9];
+                if reader.read_exact(&mut descriptor).is_err() {
+                    return Ok(false);
+                }
+                let image_packed = descriptor[8];
+                if image_packed & 0b1000_0000 != 0 {
+                    let size = 3usize * (1usize << (((image_packed & 0b0000_0111) as usize) + 1));
+                    if skip_bytes(&mut reader, size).is_err() {
+                        return Ok(false);
+                    }
+                }
+
+                if skip_bytes(&mut reader, 1).is_err() || skip_gif_sub_blocks(&mut reader).is_err()
+                {
+                    return Ok(false);
+                }
+            }
+            0x21 => {
+                if skip_bytes(&mut reader, 1).is_err() || skip_gif_sub_blocks(&mut reader).is_err()
+                {
+                    return Ok(false);
+                }
+            }
+            0x3B => return Ok(false),
+            _ => return Ok(false),
+        }
+    }
+    Ok(false)
+}
+
+fn skip_gif_sub_blocks(reader: &mut impl Read) -> std::io::Result<()> {
+    let mut size = [0u8; 1];
+    loop {
+        reader.read_exact(&mut size)?;
+        let size = size[0] as usize;
+        if size == 0 {
+            break;
+        }
+        skip_bytes(reader, size)?;
+    }
+    Ok(())
+}
+
+fn skip_bytes(reader: &mut impl Read, mut remaining: usize) -> std::io::Result<()> {
+    let mut buffer = [0u8; 4096];
+    while remaining > 0 {
+        let count = remaining.min(buffer.len());
+        reader.read_exact(&mut buffer[..count])?;
+        remaining -= count;
+    }
+    Ok(())
+}
+
 pub fn convert(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult> {
     let result = convert_impl(app, job.clone());
     if let Err(error) = &result {
@@ -253,6 +357,7 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
     check_cancelled(&job.id)?;
 
     let input_path = PathBuf::from(&job.input_path);
+    ensure_source_file_available(&input_path)?;
     let target_format = job.target_format.to_ascii_lowercase();
     let extension = input_path
         .extension()
@@ -263,6 +368,26 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
         .ok_or_else(|| ConvertError::Message(format!("Format .{} non reconnu.", extension)))?;
     let target = get_format_by_id(&target_format)
         .ok_or_else(|| ConvertError::Message(format!("Format {} non reconnu.", target_format)))?;
+    if target.id == "doc" {
+        return Err(ConvertError::Message(
+            "La sortie DOC historique est désactivée. Choisissez DOCX pour générer le format moderne."
+                .to_string(),
+        ));
+    }
+    if source_format.id == "gif" {
+        let animated = gif_is_animated(&input_path).unwrap_or(false);
+        if animated && target.category_id == "images" {
+            return Err(ConvertError::Message(
+                "Ce GIF est animé. Choisissez un format vidéo pour conserver l'animation."
+                    .to_string(),
+            ));
+        }
+        if !animated && target.category_id == "video" {
+            return Err(ConvertError::Message(
+                "Ce GIF est statique. Choisissez un format image.".to_string(),
+            ));
+        }
+    }
     let output_root = job
         .output_dir
         .as_deref()
@@ -316,7 +441,7 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
                 )?;
             }
         }
-        "rust-image" | "image" => {
+        engine_id if uses_integrated_image_pipeline(engine_id) => {
             convert_image(app, &job.id, &input_path, &output_path, target.id)?
         }
         "rust-text" | "pdf-extract" | "text" => convert_text_document(
@@ -349,6 +474,16 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
     Ok(ConversionResult {
         output_path: output_path.to_string_lossy().to_string(),
     })
+}
+
+fn ensure_source_file_available(input_path: &Path) -> Result<()> {
+    if input_path.is_file() {
+        return Ok(());
+    }
+    Err(ConvertError::Message(
+        "Le fichier source est introuvable. Réimportez ce fichier, puis relancez la conversion."
+            .to_string(),
+    ))
 }
 
 fn validate_conversion_output(
@@ -1026,29 +1161,47 @@ fn convert_image(
 ) -> Result<()> {
     ensure_integrated_memory_budget(input_path, "image")?;
     emit_progress(app, job_id, 18, "Lecture de l'image");
-    let image = if input_path
+    let image = read_integrated_image(input_path)?;
+
+    emit_progress(app, job_id, 52, "Encodage de l'image");
+    write_integrated_image(output_path, image, target_format)?;
+    emit_progress(app, job_id, 88, "Finalisation");
+    Ok(())
+}
+
+fn uses_integrated_image_pipeline(engine_id: &str) -> bool {
+    matches!(engine_id, "rust-image" | "resvg" | "image")
+}
+
+fn read_integrated_image(input_path: &Path) -> Result<image::DynamicImage> {
+    if input_path
         .extension()
         .and_then(OsStr::to_str)
         .is_some_and(|extension| extension.eq_ignore_ascii_case("svg"))
     {
-        read_svg_image(input_path)?
+        read_svg_image(input_path)
     } else {
         let reader = image::ImageReader::open(input_path)?.with_guessed_format()?;
         let (width, height) = reader.into_dimensions()?;
         ensure_image_dimensions(width, height, "image")?;
-        image::ImageReader::open(input_path)?
+        let image = image::ImageReader::open(input_path)?
             .with_guessed_format()?
-            .decode()?
-    };
+            .decode()?;
+        Ok(image)
+    }
+}
 
-    emit_progress(app, job_id, 52, "Encodage de l'image");
+fn write_integrated_image(
+    output_path: &Path,
+    image: image::DynamicImage,
+    target_format: &str,
+) -> Result<()> {
     if target_format == "ico" {
         write_windows_ico(output_path, image)?;
     } else {
         let format = image_format_for_target(target_format)?;
         image.write_to(&mut File::create(output_path)?, format)?;
     }
-    emit_progress(app, job_id, 88, "Finalisation");
     Ok(())
 }
 
@@ -1056,6 +1209,7 @@ fn image_format_for_target(target_format: &str) -> Result<ImageFormat> {
     match target_format {
         "png" => Ok(ImageFormat::Png),
         "jpg" => Ok(ImageFormat::Jpeg),
+        "gif" => Ok(ImageFormat::Gif),
         "webp" => Ok(ImageFormat::WebP),
         "tiff" => Ok(ImageFormat::Tiff),
         "bmp" => Ok(ImageFormat::Bmp),
@@ -1208,7 +1362,17 @@ fn write_text_content(
         return convert_text_to_pdf_content(app, job_id, input_path, output_path, content);
     }
     emit_progress(app, job_id, 45, "Conversion texte");
+    write_text_content_file(output_path, source_format, target_format, content)?;
+    emit_progress(app, job_id, 88, "Finalisation");
+    Ok(())
+}
 
+fn write_text_content_file(
+    output_path: &Path,
+    source_format: &str,
+    target_format: &str,
+    content: &str,
+) -> Result<()> {
     match target_format {
         "txt" => fs::write(output_path, to_plain_text(content, source_format))?,
         "md" => fs::write(output_path, to_markdown(content, source_format))?,
@@ -1227,7 +1391,6 @@ fn write_text_content(
             )));
         }
     }
-    emit_progress(app, job_id, 88, "Finalisation");
     Ok(())
 }
 
@@ -2439,6 +2602,7 @@ mod tests {
     fn extension_for_test_source(source_format: &str) -> &'static str {
         match source_format {
             "jpg" => "jpg",
+            "gif" => "gif",
             "svg" => "svg",
             "webp" => "webp",
             "tiff" => "tiff",
@@ -2483,6 +2647,10 @@ mod tests {
     }
 
     fn write_image_fixture(path: &Path, source_format: &str) {
+        if source_format == "gif" {
+            fs::write(path, one_frame_gif()).unwrap();
+            return;
+        }
         if source_format == "svg" {
             fs::write(
                 path,
@@ -2622,7 +2790,7 @@ mod tests {
     #[test]
     #[ignore = "full conversion matrix is run by npm run test:conversions"]
     fn conversion_matrix_all_integrated_image_targets_decode() {
-        let source_formats = ["png", "jpg", "svg", "webp", "tiff", "bmp", "ico"];
+        let source_formats = ["png", "jpg", "gif", "svg", "webp", "tiff", "bmp", "ico"];
 
         for source_format in source_formats {
             let dir = tempfile::tempdir().unwrap();
@@ -2631,41 +2799,48 @@ mod tests {
                 extension_for_test_source(source_format)
             ));
             write_image_fixture(&input, source_format);
-            let image = read_test_image(&input, source_format);
+            let source = crate::registry::get_format_by_extension(source_format)
+                .unwrap_or_else(|| panic!("{source_format} should exist in registry"));
 
             for target in crate::registry::get_targets_for_extension(source_format)
                 .into_iter()
                 .filter(|target| target.category_id == "images")
             {
+                let selected = crate::engines::select_engine_for_quality_state(
+                    None,
+                    &source,
+                    &target.format,
+                    &target.category_id,
+                    &target.engine,
+                    false,
+                );
+                assert!(
+                    selected.available,
+                    "{} -> {} selected unavailable engine {}: {}",
+                    source_format, target.format, selected.id, selected.reason
+                );
+                assert!(
+                    uses_integrated_image_pipeline(&selected.id),
+                    "{} -> {} selected engine {} but the converter does not route it to the integrated image pipeline",
+                    source_format,
+                    target.format,
+                    selected.id
+                );
                 let output = dir.path().join(format!(
                     "{}-to-{}.{}",
                     source_format, target.format, target.extension
                 ));
-                let output_image = if target.format == "ico" {
-                    fit_ico_image(image.clone())
-                } else {
-                    image.clone()
-                };
-                if target.format == "ico" {
-                    write_windows_ico(&output, image.clone()).unwrap_or_else(|error| {
-                        panic!(
-                            "{} -> {} failed to encode: {}",
-                            source_format, target.format, error
-                        )
-                    });
-                } else {
-                    output_image
-                        .write_to(
-                            &mut File::create(&output).unwrap(),
-                            image_format_for_target(&target.format).unwrap(),
-                        )
-                        .unwrap_or_else(|error| {
-                            panic!(
-                                "{} -> {} failed to encode: {}",
-                                source_format, target.format, error
-                            )
-                        });
-                }
+                let image = read_integrated_image(&input).unwrap_or_else(|error| {
+                    panic!(
+                        "{source_format} input failed to decode through app image reader: {error}"
+                    )
+                });
+                write_integrated_image(&output, image, &target.format).unwrap_or_else(|error| {
+                    panic!(
+                        "{} -> {} failed through app image writer: {}",
+                        source_format, target.format, error
+                    )
+                });
 
                 let decoded = image::ImageReader::open(&output)
                     .unwrap()
@@ -2934,9 +3109,7 @@ mod tests {
         for target in ["flv", "vob", "avchd", "divx", "xvid", "mxf"] {
             assert!(cpu_video_args(target, PerformanceMode::Balanced).is_err());
         }
-        for target in ["avif", "gif"] {
-            assert!(image_format_for_target(target).is_err());
-        }
+        assert!(image_format_for_target("avif").is_err());
     }
 
     #[test]
@@ -3023,7 +3196,7 @@ mod tests {
 
     #[test]
     fn all_image_sources_to_ico_are_windows_compatible() {
-        for source_format in ["png", "jpg", "svg", "webp", "tiff", "bmp", "ico"] {
+        for source_format in ["png", "jpg", "gif", "svg", "webp", "tiff", "bmp", "ico"] {
             let dir = tempfile::tempdir().unwrap();
             let input = dir.path().join(format!(
                 "source.{}",
@@ -3035,6 +3208,182 @@ mod tests {
             write_windows_ico(&output, read_test_image(&input, source_format)).unwrap();
             assert_windows_accepts_icon(&output);
         }
+    }
+
+    #[test]
+    fn static_gif_converts_to_decodable_png_and_windows_ico() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("static.gif");
+        fs::write(&input, one_frame_gif()).unwrap();
+
+        for target_format in ["png", "ico"] {
+            let output = dir.path().join(format!("static.{target_format}"));
+            let image = read_integrated_image(&input)
+                .unwrap_or_else(|error| panic!("GIF fixture should decode: {error}"));
+            write_integrated_image(&output, image, target_format)
+                .unwrap_or_else(|error| panic!("GIF -> {target_format} should encode: {error}"));
+
+            let decoded = image::ImageReader::open(&output)
+                .unwrap()
+                .with_guessed_format()
+                .unwrap()
+                .decode()
+                .unwrap_or_else(|error| {
+                    panic!("GIF -> {target_format} output should decode: {error}")
+                });
+            assert!(decoded.width() > 0);
+            assert!(decoded.height() > 0);
+            if target_format == "ico" {
+                assert_windows_accepts_icon(&output);
+            }
+        }
+    }
+
+    #[test]
+    fn svg_selected_engine_converts_to_decodable_gif() {
+        let svg = crate::registry::get_format_by_id("svg").unwrap();
+        let gif = crate::registry::get_format_by_id("gif").unwrap();
+        let selected = crate::engines::select_engine(None, &svg, gif.id, gif.category_id, "image");
+        assert_eq!(selected.id, "resvg");
+
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("source.svg");
+        let output = dir.path().join("source.gif");
+        write_image_fixture(&input, "svg");
+
+        let image = read_integrated_image(&input)
+            .unwrap_or_else(|error| panic!("SVG fixture should render: {error}"));
+        write_integrated_image(&output, image, "gif")
+            .unwrap_or_else(|error| panic!("SVG -> GIF should encode: {error}"));
+
+        let decoded = image::ImageReader::open(&output)
+            .unwrap()
+            .with_guessed_format()
+            .unwrap()
+            .decode()
+            .unwrap_or_else(|error| panic!("SVG -> GIF output should decode: {error}"));
+        assert!(decoded.width() > 0);
+        assert!(decoded.height() > 0);
+    }
+
+    #[test]
+    fn pdf_text_can_write_rich_document_targets_without_libreoffice() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("source.pdf");
+        let marker = "PDF vers document riche sans LibreOffice 2026.";
+        fs::write(&input, simple_pdf("source.pdf", marker)).unwrap();
+        let content = read_document_text(&input, "pdf").unwrap();
+
+        for target_format in ["docx", "odt", "rtf"] {
+            let output = dir.path().join(format!("source.{target_format}"));
+            write_text_content_file(&output, "pdf", target_format, &content)
+                .unwrap_or_else(|error| panic!("PDF -> {target_format} should write: {error}"));
+            let readable = read_document_target(&output, target_format);
+            assert!(
+                readable.contains("PDF vers document riche"),
+                "PDF -> {target_format} lost extracted text: {readable:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn pdf_registry_text_targets_are_writeable_and_readable() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("source.pdf");
+        let marker = "PDF registre vers sortie texte complète 2026.";
+        fs::write(&input, simple_pdf("source.pdf", marker)).unwrap();
+        let content = read_document_text(&input, "pdf").unwrap();
+
+        for target in crate::registry::get_targets_for_extension("pdf")
+            .into_iter()
+            .filter(|target| target.engine == "text")
+        {
+            let output = dir
+                .path()
+                .join(format!("source-to-{}.{}", target.format, target.extension));
+            write_text_content_file(&output, "pdf", &target.format, &content).unwrap_or_else(
+                |error| {
+                    panic!(
+                        "PDF registry target {} should write: {error}",
+                        target.format
+                    )
+                },
+            );
+            assert!(
+                output.exists() && output.metadata().unwrap().len() > 0,
+                "PDF registry target {} produced no file",
+                target.format
+            );
+            let readable = read_document_target(&output, &target.format);
+            assert!(
+                readable.contains("PDF registre vers sortie texte"),
+                "PDF registry target {} lost extracted text: {readable:?}",
+                target.format
+            );
+        }
+    }
+
+    #[test]
+    fn missing_source_file_returns_actionable_conversion_error() {
+        let dir = tempfile::tempdir().unwrap();
+        let missing = dir.path().join("missing.gif");
+        let error = ensure_source_file_available(&missing)
+            .unwrap_err()
+            .to_string();
+
+        assert!(error.contains("fichier source est introuvable"));
+        assert!(error.contains("Réimportez"));
+        assert!(!error.contains("os error 2"));
+    }
+
+    #[test]
+    fn gif_animation_detection_counts_image_frames() {
+        let dir = tempfile::tempdir().unwrap();
+        let static_gif = dir.path().join("static.gif");
+        let animated_gif = dir.path().join("animated.gif");
+        fs::write(&static_gif, one_frame_gif()).unwrap();
+        fs::write(&animated_gif, two_frame_gif()).unwrap();
+
+        assert!(!gif_is_animated(&static_gif).unwrap());
+        assert!(gif_is_animated(&animated_gif).unwrap());
+    }
+
+    #[test]
+    fn static_gif_is_described_as_image_targets() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("static.gif");
+        fs::write(&input, one_frame_gif()).unwrap();
+
+        let description = describe_file_with_app(None, &input).unwrap();
+        let targets = description
+            .targets
+            .into_iter()
+            .map(|target| target.format)
+            .collect::<Vec<_>>();
+
+        assert_eq!(description.category_id, "images");
+        assert!(targets.contains(&"png".to_string()));
+        assert!(targets.contains(&"webp".to_string()));
+        assert!(!targets.contains(&"mp4".to_string()));
+    }
+
+    #[test]
+    fn animated_gif_is_described_as_video_targets() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("animated.gif");
+        fs::write(&input, two_frame_gif()).unwrap();
+
+        let description = describe_file_with_app(None, &input).unwrap();
+        let targets = description
+            .targets
+            .into_iter()
+            .map(|target| target.format)
+            .collect::<Vec<_>>();
+
+        assert_eq!(description.category_id, "video");
+        assert!(targets.contains(&"mp4".to_string()));
+        assert!(targets.contains(&"webm".to_string()));
+        assert!(!targets.contains(&"png".to_string()));
     }
 
     #[cfg(target_os = "windows")]
@@ -3093,6 +3442,35 @@ mod tests {
         assert!(log.contains("sortie tronquée"));
         assert!(log.contains("line-09999"));
         assert!(!log.contains("line-00000"));
+    }
+
+    fn one_frame_gif() -> Vec<u8> {
+        let mut bytes = gif_header();
+        bytes.extend_from_slice(&gif_frame());
+        bytes.push(0x3B);
+        bytes
+    }
+
+    fn two_frame_gif() -> Vec<u8> {
+        let mut bytes = gif_header();
+        bytes.extend_from_slice(&gif_frame());
+        bytes.extend_from_slice(&gif_frame());
+        bytes.push(0x3B);
+        bytes
+    }
+
+    fn gif_header() -> Vec<u8> {
+        vec![
+            b'G', b'I', b'F', b'8', b'9', b'a', 0x01, 0x00, 0x01, 0x00, 0x80, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0xff, 0xff, 0xff,
+        ]
+    }
+
+    fn gif_frame() -> Vec<u8> {
+        vec![
+            0x2C, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x4C, 0x01,
+            0x00,
+        ]
     }
 
     #[test]
