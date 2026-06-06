@@ -63,7 +63,7 @@ jobs:
           releaseDraft: true
           prerelease: false
           generateReleaseNotes: true
-          uploadUpdaterJson: true
+          includeUpdaterJson: true
           updaterJsonPreferNsis: true
           tauriScript: npm run tauri --
 
