@@ -82,6 +82,7 @@ const statusLabelKeys: Record<Status, Parameters<typeof t>[1]> = {
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
 const welcomeStorageKey = "multi-converter-welcome-seen";
 const notificationsStorageKey = "multi-converter-notifications-enabled";
+const updateInstallStorageKey = "multi-converter-update-installation";
 const releaseBaseUrl = "https://github.com/Amix29/Multi-Converter/releases";
 const latestReleaseUrl = `${releaseBaseUrl}/latest`;
 const releaseApiBaseUrl = "https://api.github.com/repos/Amix29/Multi-Converter/releases/tags";
@@ -116,6 +117,34 @@ async function fetchReleaseBodyForVersion(version: string, fallback: string | nu
   } catch {
     return fallback;
   }
+}
+
+function rememberUpdateInstallation(version: string, progress: number | null) {
+  localStorage.setItem(
+    updateInstallStorageKey,
+    JSON.stringify({
+      version,
+      progress,
+      updatedAt: Date.now(),
+    }),
+  );
+}
+
+function readPendingUpdateInstallation(): { version: string; progress: number | null } | null {
+  try {
+    const raw = localStorage.getItem(updateInstallStorageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { version?: unknown; progress?: unknown };
+    if (typeof parsed.version !== "string" || !parsed.version.trim()) return null;
+    const progress = typeof parsed.progress === "number" && Number.isFinite(parsed.progress) ? clamp(parsed.progress, 0, 100) : null;
+    return { version: parsed.version, progress };
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingUpdateInstallation() {
+  localStorage.removeItem(updateInstallStorageKey);
 }
 
 export default function App() {
@@ -168,9 +197,52 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isTauriRuntime || !welcomeStateLoaded || isWelcomeOpen || updateStatus !== "idle") return;
+    if (!isTauriRuntime || !welcomeStateLoaded || readPendingUpdateInstallation() || isWelcomeOpen || updateStatus !== "idle") return;
     void checkForAppUpdate(false);
   }, [currentVersion, isWelcomeOpen, updateStatus, welcomeStateLoaded]);
+
+  useEffect(() => {
+    if (!isTauriRuntime || !welcomeStateLoaded || updateStatus !== "idle") return;
+    const pendingInstallation = readPendingUpdateInstallation();
+    if (!pendingInstallation) return;
+
+    let disposed = false;
+    void (async () => {
+      setUpdateStatus("checking");
+      setUpdateDownloadProgress(pendingInstallation.progress ?? null);
+      try {
+        const update = await check({ timeout: 20000 });
+        if (disposed) return;
+        updateRef.current = update;
+        if (!update) {
+          clearPendingUpdateInstallation();
+          setUpdateInfo(null);
+          setUpdateDownloadProgress(null);
+          setUpdateStatus("notAvailable");
+          return;
+        }
+        const releaseBody = await fetchReleaseBodyForVersion(update.version, update.body ?? null);
+        if (disposed) return;
+        setUpdateInfo({
+          version: update.version,
+          currentVersion: update.currentVersion || currentVersion,
+          date: update.date ?? null,
+          body: releaseBody,
+        });
+        setIsUpdateDialogOpen(false);
+        setUpdateReminderVisible(false);
+        await performUpdateInstall(update, pendingInstallation.progress ?? 0);
+      } catch (error) {
+        if (disposed) return;
+        setUpdateStatus("available");
+        showNotice("error", updateCheckErrorMessage(language, error));
+      }
+    })();
+
+    return () => {
+      disposed = true;
+    };
+  }, [currentVersion, language, updateStatus, welcomeStateLoaded]);
 
   useEffect(() => {
     if (!notice) return;
@@ -399,8 +471,16 @@ export default function App() {
       update = updateRef.current;
       if (!update) return;
     }
+    await performUpdateInstall(update, 0);
+  }
+
+  async function performUpdateInstall(update: Update, initialProgress: number | null) {
+    const installingVersion = update.version;
     setUpdateStatus("installing");
-    setUpdateDownloadProgress(0);
+    setUpdateDownloadProgress(initialProgress);
+    setIsUpdateDialogOpen(false);
+    setUpdateReminderVisible(false);
+    rememberUpdateInstallation(installingVersion, initialProgress);
     try {
       let downloaded = 0;
       let contentLength = 0;
@@ -408,20 +488,26 @@ export default function App() {
         if (event.event === "Started") {
           downloaded = 0;
           contentLength = event.data.contentLength ?? 0;
-          setUpdateDownloadProgress(contentLength > 0 ? 0 : null);
+          const progress = contentLength > 0 ? 0 : null;
+          setUpdateDownloadProgress(progress);
+          rememberUpdateInstallation(installingVersion, progress);
         }
         if (event.event === "Progress") {
           downloaded += event.data.chunkLength;
           if (contentLength > 0) {
-            setUpdateDownloadProgress(Math.min(100, Math.round((downloaded / contentLength) * 100)));
+            const progress = Math.min(100, Math.round((downloaded / contentLength) * 100));
+            setUpdateDownloadProgress(progress);
+            rememberUpdateInstallation(installingVersion, progress);
           }
         }
         if (event.event === "Finished") {
           setUpdateDownloadProgress(100);
+          rememberUpdateInstallation(installingVersion, 100);
         }
       });
       await relaunch();
     } catch (error) {
+      clearPendingUpdateInstallation();
       setUpdateStatus("available");
       setUpdateDownloadProgress(null);
       showNotice("error", updateCheckErrorMessage(language, error));
@@ -893,6 +979,13 @@ export default function App() {
         onCancel={cancelUpdateDialog}
       />
 
+      <UpdateInstallDialog
+        isVisible={updateStatus === "installing"}
+        language={language}
+        updateInfo={updateInfo}
+        progress={updateDownloadProgress}
+      />
+
       <UpdateReminder
         isVisible={updateReminderVisible && Boolean(updateInfo) && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen}
         language={language}
@@ -1236,6 +1329,27 @@ function UpdateDialog(props: {
             {installing ? t(props.language, "update.installing") : t(props.language, "update.install")}
           </button>
         </div>
+      </section>
+    </div>
+  );
+}
+
+function UpdateInstallDialog(props: {
+  isVisible: boolean;
+  language: LanguageCode;
+  updateInfo: AppUpdateInfo | null;
+  progress: number | null;
+}) {
+  if (!props.isVisible) return null;
+  const version = props.updateInfo?.version ?? "";
+
+  return (
+    <div className="update-install-overlay" role="presentation">
+      <section className="update-install-dialog" role="alertdialog" aria-modal="true" aria-labelledby="update-install-title">
+        <span className="label">{t(props.language, "update.label")}</span>
+        <h2 id="update-install-title">{t(props.language, "update.installingTitle", { version })}</h2>
+        <p>{t(props.language, "update.installingBody")}</p>
+        <UpdateProgress language={props.language} progress={props.progress} />
       </section>
     </div>
   );

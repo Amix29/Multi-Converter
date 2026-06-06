@@ -51,6 +51,8 @@
   "update.checking": "Buscando...",
   "update.install": "Actualizar",
   "update.installing": "Instalando...",
+  "update.installingTitle": "Instalando Multi-Converter {version}",
+  "update.installingBody": "La actualización está en curso. Mantén esta ventana abierta para evitar conflictos con las conversiones.",
   "update.cancel": "Cancelar",
   "update.dialogTitle": "Multi-Converter {version} está disponible",
   "update.dialogBody": "Estás usando la versión {current}. La última versión disponible es {latest}.",
