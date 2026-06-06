@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f5f3ec"/>
+  <path d="M0 80h1200M0 160h1200M0 240h1200M0 320h1200M0 400h1200M0 480h1200M0 560h1200M80 0v630M160 0v630M240 0v630M320 0v630M400 0v630M480 0v630M560 0v630M640 0v630M720 0v630M800 0v630M880 0v630M960 0v630M1040 0v630M1120 0v630" stroke="#1d241f" stroke-opacity=".06"/>
+  <rect x="76" y="80" width="1048" height="470" rx="28" fill="#fffdf7" stroke="#ded9cc"/>
+  <rect x="126" y="130" width="96" height="96" rx="20" fill="#fffdf7" stroke="#1d241f" stroke-width="7"/>
+  <path d="M152 178h44M174 156v44" stroke="#34423b" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="197" cy="201" r="10" fill="#3f7664"/>
+  <text x="126" y="300" fill="#1d241f" font-family="Segoe UI, Arial, sans-serif" font-size="76" font-weight="800">Multi-Converter</text>
+  <text x="126" y="372" fill="#34423b" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="600">Local file converter for Windows</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">
+    <rect x="126" y="430" width="180" height="52" rx="10" fill="#1d241f"/>
+    <text x="154" y="464" fill="#fffdf7">Free</text>
+    <rect x="326" y="430" width="230" height="52" rx="10" fill="#e5f0eb" stroke="#3f7664"/>
+    <text x="356" y="464" fill="#2f604f">Local conversion</text>
+    <rect x="576" y="430" width="190" height="52" rx="10" fill="#fffdf7" stroke="#c6c0b4"/>
+    <text x="606" y="464" fill="#34423b">Open source</text>
+  </g>
+  <rect x="820" y="146" width="230" height="300" rx="20" fill="#e5f0eb" stroke="#3f7664"/>
+  <text x="858" y="214" fill="#2f604f" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="800">PDF</text>
+  <text x="858" y="286" fill="#2f604f" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="800">CSV</text>
+  <text x="858" y="358" fill="#2f604f" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="800">PNG</text>
+  <path d="M974 212l42 42-42 42M974 330l42 42-42 42" fill="none" stroke="#1d241f" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

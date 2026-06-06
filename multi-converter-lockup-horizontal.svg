@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-label="Multi-Converter logo lockup">
+  <g transform="translate(95 86)">
+    <g transform="rotate(-1.5 94 94)">
+      <rect x="14" y="14" width="188" height="188" rx="38" fill="#23201c" opacity="0.10"/>
+      <rect x="0" y="0" width="188" height="188" rx="38" fill="#fffdf8" stroke="#23201c" stroke-width="8"/>
+      <rect x="48" y="90" width="92" height="11" rx="5.5" fill="#23201c"/>
+      <rect x="90" y="48" width="11" height="92" rx="5.5" fill="#23201c"/>
+      <circle cx="134" cy="137" r="19" fill="#c86a34"/>
+    </g>
+  </g>
+  <text x="350" y="210" fill="#23201c" font-family="Segoe UI, system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="92" font-weight="850" letter-spacing="0">Multi-Converter</text>
+</svg>

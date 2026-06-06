@@ -1,0 +1,18 @@
+User-Agent: *
+Allow: /
+
+User-Agent: OAI-SearchBot
+User-Agent: GPTBot
+User-Agent: ChatGPT-User
+User-Agent: Perplexity-User
+User-Agent: PerplexityBot
+User-Agent: ClaudeBot
+User-Agent: Claude-User
+User-Agent: Claude-SearchBot
+User-Agent: anthropic-ai
+User-Agent: Google-Extended
+User-Agent: Bingbot
+User-Agent: Applebot
+Allow: /
+
+Sitemap: https://amix29.github.io/Multi-Converter/sitemap.xml

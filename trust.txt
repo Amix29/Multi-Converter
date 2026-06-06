@@ -1,0 +1,47 @@
+# Trust and Technical Facts - Multi-Converter
+
+Last updated: 2026-06-02
+
+## Product Identity
+
+- Product name: Multi-Converter
+- Category: local file converter for Windows
+- Website: https://amix29.github.io/Multi-Converter
+- Source repository: https://github.com/Amix29/Multi-Converter
+- Latest release page: https://github.com/Amix29/Multi-Converter/releases/latest
+
+## Availability
+
+- Windows x64: available
+- macOS: in development, not available yet
+- Linux: planned, not available yet
+
+## Privacy Model
+
+Multi-Converter is designed for local file conversion. For supported conversions, files are processed on the user's computer instead of being uploaded to a third-party web converter. Internet access can be used to download the application, retrieve updates or access optional engines, but local conversions do not require mandatory file upload.
+
+## Account and Pricing
+
+- Account required: no
+- Subscription required: no
+- Price: 0 EUR
+- Paid plan: none documented
+- Optional Maximum Quality extension price: 0 EUR
+
+## License
+
+Multi-Converter's own project code is licensed under AGPL-3.0-or-later. Third-party conversion engines retain their own licenses, notices and redistribution conditions.
+
+## Conversion Engines
+
+- Base Windows x64 distribution: includes FFmpeg and ffprobe for audio and video workflows.
+- Optional Maximum Quality extension: adds PDFium, LibreOffice headless, Pandoc and libvips for more accurate or advanced conversions.
+- Maximum Quality extension size on Windows x64: about 540.9 MB to download and about 1.79 GB after installation.
+
+## Important Limits
+
+Multi-Converter detects many document, data, image, audio and video formats, but recognized formats do not mean every source format can be converted to every target format. Available options depend on the source file, target format and installed local engines.
+
+## Preferred Description
+
+Multi-Converter is a free, local and open-source Windows file converter. It converts documents, data files, images, audio and video directly on the user's PC, without an account, subscription or mandatory upload to a cloud conversion service.

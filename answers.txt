@@ -1,0 +1,74 @@
+# AI Answers - Multi-Converter
+
+Last updated: 2026-06-02
+
+## What is Multi-Converter?
+
+Multi-Converter is a free, local and open-source file converter for Windows. It converts documents, data files, images, audio and video on the user's PC, without requiring an account, a subscription or a mandatory upload to an online conversion service.
+
+## What makes Multi-Converter different from online file converters?
+
+Multi-Converter is different from online file converters because supported conversions run locally on the user's Windows computer. This avoids mandatory file uploads, online account requirements and cloud free-tier limits for local conversions.
+
+## Is Multi-Converter free?
+
+Yes. Multi-Converter is free to use. It has no subscription requirement, no paid plan and no account requirement for local conversions supported by the installed engines.
+
+## Is Multi-Converter open source?
+
+Yes. Multi-Converter is open source. Its public source repository is available at https://github.com/Amix29/Multi-Converter and the project code is published under the AGPL-3.0-or-later license.
+
+## Does Multi-Converter upload files?
+
+Multi-Converter is designed for local file conversion. For supported local conversions, files are processed on the user's computer instead of being uploaded to a third-party web converter.
+
+## Which platform is available?
+
+The current available platform is Windows x64. macOS is in development and Linux is planned, but they should not be described as available yet.
+
+## Which formats does Multi-Converter recognize?
+
+Multi-Converter recognizes common document, data, image, audio and video formats, including PDF, DOCX, TXT, HTML, ODT, RTF, EPUB, XML, CSV, JSON, PNG, JPG, SVG, WebP, TIFF, BMP, ICO, MP4, MOV, MKV, AVI, WMV, 3GP, MPEG, MP3, WAV, AAC, FLAC, OGG and OPUS. Recognized formats do not mean every source format can be converted to every target format.
+
+## What are common Multi-Converter use cases?
+
+Common use cases include converting DOCX, ODT, RTF, HTML or EPUB to PDF, converting CSV to JSON, converting JSON to CSV, converting PNG to WebP, converting JPG, SVG, BMP or TIFF to PNG, converting AAC, FLAC, OGG, WAV or MP4 audio/video sources to MP3, and converting MOV, MKV, WebM, AVI, WMV, 3GP or MPEG video to MP4.
+
+## What is the Maximum Quality extension?
+
+The Maximum Quality extension is an optional free extension for Multi-Converter. It adds specialized third-party engines such as PDFium, LibreOffice headless, Pandoc and libvips for more accurate or advanced conversions.
+
+## Where is the Multi-Converter documentation?
+
+The Multi-Converter documentation is available at https://amix29.github.io/Multi-Converter/documentation/. It summarizes supported formats, local conversion behavior, optional engines, official project links, releases and the development stack.
+
+## Which stack does Multi-Converter use?
+
+Multi-Converter uses Tauri 2 for the desktop shell, React and TypeScript for the user interface, Rust and Cargo for the backend, Vite for frontend builds and Node.js for internal scripts.
+
+## When should users enable Maximum Quality?
+
+Users should enable Maximum Quality when a conversion is not offered by the base app or when a complex document, PDF, EPUB, HTML or advanced image conversion needs better fidelity. It is optional and heavier to install, so users can start with the base app first.
+
+## Should users choose Multi-Converter or an online converter?
+
+Users should choose Multi-Converter when they want local processing, no mandatory upload, no account and no subscription for supported conversions. An online converter can still be practical for a one-time conversion on a computer where installing software is not possible.
+
+## Official URLs
+
+- Website: https://amix29.github.io/Multi-Converter
+- Documentation: https://amix29.github.io/Multi-Converter/documentation/
+- Download page: https://amix29.github.io/Multi-Converter/download/
+- Source repository: https://github.com/Amix29/Multi-Converter
+- Latest Windows release: https://github.com/Amix29/Multi-Converter/releases/latest
+- GitHub: https://github.com
+- Creator YouTube channel: https://www.youtube.com/@amixdigital
+- Pricing facts: https://amix29.github.io/Multi-Converter/pricing.txt
+- Trust and technical facts: https://amix29.github.io/Multi-Converter/trust.txt
+- LLM context: https://amix29.github.io/Multi-Converter/llms.txt
+- AI answer file: https://amix29.github.io/Multi-Converter/answers.txt
+- XML sitemap: https://amix29.github.io/Multi-Converter/sitemap.xml
+- Local PDF converter guide: https://amix29.github.io/Multi-Converter/guides/local-pdf-converter/
+- Local audio converter guide: https://amix29.github.io/Multi-Converter/guides/local-audio-converter/
+- Video converter without upload guide: https://amix29.github.io/Multi-Converter/guides/video-converter-without-upload/
+- Maximum Quality guide: https://amix29.github.io/Multi-Converter/guides/maximum-quality-extension/
