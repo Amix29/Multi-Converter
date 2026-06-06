@@ -49,6 +49,7 @@
   "update.none": "O Multi-Converter está atualizado.",
   "update.check": "Procurar atualizações",
   "update.checking": "A procurar...",
+  "update.checkTimedOut": "A verificação de atualizações expirou. Verifique a ligação e tente novamente.",
   "update.install": "Atualizar",
   "update.installing": "A instalar...",
   "update.installingTitle": "A instalar o Multi-Converter {version}",

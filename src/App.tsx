@@ -91,6 +91,8 @@ const updateInstallStorageKey = "multi-converter-update-installation";
 const releaseBaseUrl = "https://github.com/Amix29/Multi-Converter/releases";
 const latestReleaseUrl = `${releaseBaseUrl}/latest`;
 const releaseApiBaseUrl = "https://api.github.com/repos/Amix29/Multi-Converter/releases/tags";
+const updateCheckTimeoutMs = 20000;
+const releaseNotesTimeoutMs = 8000;
 
 function stepLabels(language: LanguageCode): Array<{ id: Step; label: string; title: string }> {
   return [
@@ -110,10 +112,13 @@ function releasePageUrl(version: string) {
 }
 
 async function fetchReleaseBodyForVersion(version: string, fallback: string | null) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), releaseNotesTimeoutMs);
   try {
     const response = await fetch(`${releaseApiBaseUrl}/${encodeURIComponent(releaseTag(version))}`, {
       cache: "no-store",
       headers: { Accept: "application/vnd.github+json" },
+      signal: controller.signal,
     });
     if (!response.ok) return fallback;
     const data = (await response.json()) as { body?: unknown };
@@ -121,7 +126,22 @@ async function fetchReleaseBodyForVersion(version: string, fallback: string | nu
     return body || fallback;
   } catch {
     return fallback;
+  } finally {
+    window.clearTimeout(timeout);
   }
+}
+
+async function checkForUpdateWithTimeout() {
+  return withTimeout(check({ timeout: updateCheckTimeoutMs }), updateCheckTimeoutMs + 2500, "update-check-timeout");
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+    promise
+      .then(resolve, reject)
+      .finally(() => window.clearTimeout(timeout));
+  });
 }
 
 function rememberUpdateInstallation(version: string, progress: number | null, size: UpdateDownloadSize | null) {
@@ -222,7 +242,7 @@ export default function App() {
       setUpdateDownloadProgress(pendingInstallation.progress ?? null);
       setUpdateDownloadSize(pendingInstallation.size);
       try {
-        const update = await check({ timeout: 20000 });
+        const update = await checkForUpdateWithTimeout();
         if (disposed) return;
         updateRef.current = update;
         if (!update) {
@@ -245,7 +265,12 @@ export default function App() {
         await performUpdateInstall(update, pendingInstallation.progress ?? 0, pendingInstallation.size);
       } catch (error) {
         if (disposed) return;
+        if (error instanceof Error && error.message === "update-check-timeout") {
+          clearPendingUpdateInstallation();
+        }
         setUpdateStatus("available");
+        setUpdateDownloadProgress(null);
+        setUpdateDownloadSize(null);
         showNotice("error", updateCheckErrorMessage(language, error));
       }
     })();
@@ -435,7 +460,7 @@ export default function App() {
     if (!isTauriRuntime || updateStatus === "installing") return;
     setUpdateStatus("checking");
     try {
-      const update = await check({ timeout: 20000 });
+      const update = await checkForUpdateWithTimeout();
       updateRef.current = update;
       if (!update) {
         setUpdateInfo(null);
@@ -466,6 +491,8 @@ export default function App() {
         return;
       }
       setUpdateStatus("error");
+      setUpdateDownloadProgress(null);
+      setUpdateDownloadSize(null);
       if (manual) showNotice("error", updateCheckErrorMessage(language, error));
     }
   }
@@ -2570,6 +2597,9 @@ async function notifyConversionFinished(language: LanguageCode, failed: boolean,
 
 function updateCheckErrorMessage(language: LanguageCode, error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
+  if (message === "update-check-timeout") {
+    return t(language, "update.checkTimedOut");
+  }
   if (isMissingUpdateReleaseError(error)) {
     return t(language, "update.remoteUnavailable");
   }

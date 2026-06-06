@@ -51,6 +51,7 @@
   "update.none": "Multi-Converter is up to date.",
   "update.check": "Check for updates",
   "update.checking": "Checking...",
+  "update.checkTimedOut": "The update check timed out. Check your connection and try again.",
   "update.install": "Update",
   "update.installing": "Installing...",
   "update.installingTitle": "Installing Multi-Converter {version}",
