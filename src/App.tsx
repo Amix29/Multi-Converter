@@ -214,6 +214,17 @@ export default function App() {
   const pendingQualityRefresh = useRef(false);
   const updateRef = useRef<Update | null>(null);
   const updateCheckSequence = useRef(0);
+  const updateStatusRef = useRef<UpdateStatus>("idle");
+  const autoUpdateCheckStarted = useRef(false);
+
+  useEffect(() => {
+    updateStatusRef.current = updateStatus;
+  }, [updateStatus]);
+
+  function setAppUpdateStatus(status: UpdateStatus) {
+    updateStatusRef.current = status;
+    setUpdateStatus(status);
+  }
 
   useEffect(() => {
     localStorage.setItem("multi-converter-performance-mode", performanceMode);
@@ -229,16 +240,25 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isTauriRuntime || !welcomeStateLoaded || readPendingUpdateInstallation() || isWelcomeOpen || updateStatus !== "idle") return;
-    void checkForAppUpdate(false);
-  }, [currentVersion, isWelcomeOpen, updateStatus, welcomeStateLoaded]);
+    if (!isTauriRuntime || autoUpdateCheckStarted.current) return;
+    autoUpdateCheckStarted.current = true;
+    const timeout = window.setTimeout(() => {
+      if (updateStatusRef.current !== "idle" || readPendingUpdateInstallation()) return;
+      void checkForAppUpdate(false);
+    }, 900);
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
-    if (updateStatus !== "checking" || updateCheckStartedAt === null) return;
+    if (updateStatus !== "checking") return;
+    if (updateCheckStartedAt === null) {
+      setUpdateCheckStartedAt(Date.now());
+      return;
+    }
     const timeout = window.setTimeout(() => {
       updateCheckSequence.current += 1;
       updateRef.current = null;
-      setUpdateStatus("error");
+      setAppUpdateStatus("error");
       setUpdateCheckStartedAt(null);
       setUpdateDownloadProgress(null);
       setUpdateDownloadSize(null);
@@ -248,28 +268,33 @@ export default function App() {
   }, [language, updateCheckStartedAt, updateStatus]);
 
   useEffect(() => {
-    if (!isTauriRuntime || !welcomeStateLoaded || updateStatus !== "idle") return;
+    if (!isTauriRuntime || updateStatus !== "idle") return;
     const pendingInstallation = readPendingUpdateInstallation();
     if (!pendingInstallation) return;
 
     let disposed = false;
+    autoUpdateCheckStarted.current = true;
+    const checkId = updateCheckSequence.current + 1;
+    updateCheckSequence.current = checkId;
     void (async () => {
-      setUpdateStatus("checking");
+      setAppUpdateStatus("checking");
+      setUpdateCheckStartedAt(Date.now());
       setUpdateDownloadProgress(pendingInstallation.progress ?? null);
       setUpdateDownloadSize(pendingInstallation.size);
       try {
         const update = await checkForUpdateWithTimeout();
-        if (disposed) return;
+        if (disposed || checkId !== updateCheckSequence.current) return;
         updateRef.current = update;
         if (!update) {
           clearPendingUpdateInstallation();
           setUpdateInfo(null);
+          setUpdateCheckStartedAt(null);
           setUpdateDownloadProgress(null);
-          setUpdateStatus("notAvailable");
+          setAppUpdateStatus("notAvailable");
           return;
         }
         const releaseBody = await fetchReleaseBodyForVersion(update.version, update.body ?? null);
-        if (disposed) return;
+        if (disposed || checkId !== updateCheckSequence.current) return;
         setUpdateInfo({
           version: update.version,
           currentVersion: update.currentVersion || currentVersion,
@@ -280,11 +305,12 @@ export default function App() {
         setUpdateReminderVisible(false);
         await performUpdateInstall(update, pendingInstallation.progress ?? 0, pendingInstallation.size);
       } catch (error) {
-        if (disposed) return;
+        if (disposed || checkId !== updateCheckSequence.current) return;
         if (error instanceof Error && error.message === "update-check-timeout") {
           clearPendingUpdateInstallation();
         }
-        setUpdateStatus("available");
+        setAppUpdateStatus("error");
+        setUpdateCheckStartedAt(null);
         setUpdateDownloadProgress(null);
         setUpdateDownloadSize(null);
         showNotice("error", updateCheckErrorMessage(language, error));
@@ -473,10 +499,10 @@ export default function App() {
   }
 
   async function checkForAppUpdate(manual: boolean) {
-    if (!isTauriRuntime || updateStatus === "installing") return;
+    if (!isTauriRuntime || updateStatusRef.current === "checking" || updateStatusRef.current === "installing") return;
     const checkId = updateCheckSequence.current + 1;
     updateCheckSequence.current = checkId;
-    setUpdateStatus("checking");
+    setAppUpdateStatus("checking");
     setUpdateCheckStartedAt(Date.now());
     try {
       const update = await checkForUpdateWithTimeout();
@@ -484,7 +510,7 @@ export default function App() {
       updateRef.current = update;
       if (!update) {
         setUpdateInfo(null);
-        setUpdateStatus("notAvailable");
+        setAppUpdateStatus("notAvailable");
         setUpdateCheckStartedAt(null);
         if (manual) showNotice("success", t(language, "update.none"));
         return;
@@ -497,7 +523,7 @@ export default function App() {
         date: update.date ?? null,
         body: releaseBody,
       });
-      setUpdateStatus("available");
+      setAppUpdateStatus("available");
       setUpdateCheckStartedAt(null);
       setUpdateReminderVisible(false);
       if (manual || !isWelcomeOpen) {
@@ -509,13 +535,13 @@ export default function App() {
       if (isMissingUpdateReleaseError(error)) {
         updateRef.current = null;
         setUpdateInfo(null);
-        setUpdateStatus("notAvailable");
+        setAppUpdateStatus("notAvailable");
         setUpdateCheckStartedAt(null);
         if (manual) showNotice("success", t(language, "update.remoteUnavailable"));
         return;
       }
       if (checkId !== updateCheckSequence.current) return;
-      setUpdateStatus("error");
+      setAppUpdateStatus("error");
       setUpdateCheckStartedAt(null);
       setUpdateDownloadProgress(null);
       setUpdateDownloadSize(null);
@@ -540,7 +566,7 @@ export default function App() {
 
   async function performUpdateInstall(update: Update, initialProgress: number | null, initialSize: UpdateDownloadSize | null) {
     const installingVersion = update.version;
-    setUpdateStatus("installing");
+    setAppUpdateStatus("installing");
     setUpdateDownloadProgress(initialProgress);
     setUpdateDownloadSize(initialSize);
     setIsUpdateDialogOpen(false);
@@ -581,7 +607,7 @@ export default function App() {
       await relaunch();
     } catch (error) {
       clearPendingUpdateInstallation();
-      setUpdateStatus("available");
+      setAppUpdateStatus("available");
       setUpdateDownloadProgress(null);
       setUpdateDownloadSize(null);
       showNotice("error", updateCheckErrorMessage(language, error));
