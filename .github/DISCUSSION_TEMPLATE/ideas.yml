@@ -1,0 +1,19 @@
+title: "[Idea]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this category for early ideas, experiments, or broader suggestions that are not ready to become a precise feature request.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea
+      description: What is your idea?
+      placeholder: Share the idea in a few sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Optional. Why do you think this would help Multi-Converter users?
