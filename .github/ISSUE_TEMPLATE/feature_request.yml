@@ -1,0 +1,50 @@
+name: Feature
+description: Suggest a new feature, improvement, or product idea.
+title: "[Feature]: "
+labels: ["Feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Multi-Converter. Please do not include private files, local paths, keys, or sensitive screenshots.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Idea
+      description: What would you like Multi-Converter to add or improve?
+      placeholder: Describe the feature or improvement.
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Why this would be useful
+      description: What problem would this solve for you?
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example use case
+      description: Optional. Describe a real situation where this would help.
+  - type: input
+    id: app-version
+    attributes:
+      label: Multi-Converter version
+      description: This is prefilled when the request is opened from the app.
+      placeholder: "Example: 1.0.2"
+    validations:
+      required: true
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system
+      description: This is prefilled when the request is opened from the app.
+      placeholder: "Example: Windows"
+    validations:
+      required: true
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Screenshots or files
+      description: Optional. Attach or link only files that are safe to publish publicly.
