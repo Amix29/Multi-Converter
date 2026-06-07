@@ -14,19 +14,14 @@ import {
   type TargetFormat,
 } from "./lib/api";
 import {
-  defaultPerformanceMode,
   languageLabel,
   languageOptions,
-  performanceDetailKey,
-  performanceLabelKey,
-  performanceModes,
   pluralKey,
   t,
   translateBackendMessage,
   translateCategory,
   useI18n,
   type LanguageCode,
-  type PerformanceMode,
 } from "./i18n";
 import brandLogoUrl from "./assets/multi-converter-icon-brand-orange.svg";
 
@@ -36,6 +31,7 @@ type NoticeTone = "info" | "success" | "error";
 type ExportKind = "downloads" | "folder";
 type EngineOperationKind = "install" | "uninstall" | null;
 type UpdateStatus = "idle" | "checking" | "available" | "notAvailable" | "installing" | "error";
+type FeedbackKind = "bug" | "feature" | "other";
 type ImportFeedback =
   | { state: "analyzing"; count: number | null; visible: boolean }
   | { state: "done"; count: number; visible: boolean }
@@ -88,11 +84,32 @@ const isTauriRuntime = "__TAURI_INTERNALS__" in window;
 const welcomeStorageKey = "multi-converter-welcome-seen";
 const notificationsStorageKey = "multi-converter-notifications-enabled";
 const updateInstallStorageKey = "multi-converter-update-installation";
-const releaseBaseUrl = "https://github.com/Amix29/Multi-Converter/releases";
+const feedbackPrivacyStorageKey = "multi-converter-feedback-public-warning-seen";
+const repositoryUrl = "https://github.com/Amix29/Multi-Converter";
+const issueNewUrl = `${repositoryUrl}/issues/new`;
+const releaseBaseUrl = `${repositoryUrl}/releases`;
 const latestReleaseUrl = `${releaseBaseUrl}/latest`;
 const releaseApiBaseUrl = "https://api.github.com/repos/Amix29/Multi-Converter/releases/tags";
 const updateCheckTimeoutMs = 20000;
 const releaseNotesTimeoutMs = 8000;
+const minimumReportVersion = "1.0.2";
+
+const feedbackKinds: FeedbackKind[] = ["bug", "feature", "other"];
+const feedbackLabels: Record<FeedbackKind, string> = {
+  bug: "Bug",
+  feature: "Feature",
+  other: "Other",
+};
+const feedbackTemplates: Record<FeedbackKind, string> = {
+  bug: "bug_report.yml",
+  feature: "feature_request.yml",
+  other: "other.md",
+};
+const feedbackTitlePrefixes: Record<FeedbackKind, string> = {
+  bug: "[Bug]: ",
+  feature: "[Feature]: ",
+  other: "",
+};
 
 function stepLabels(language: LanguageCode): Array<{ id: Step; label: string; title: string }> {
   return [
@@ -181,9 +198,8 @@ export default function App() {
   const [bootInfo, setBootInfo] = useState<DependencyBootstrap | null>(null);
   const bootStarted = useRef(false);
 
-  const [performanceMode, setPerformanceMode] = useState<PerformanceMode>(() => readStoredPerformanceMode());
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => readStoredNotificationsEnabled());
-  const [currentVersion, setCurrentVersion] = useState("1.0.0");
+  const [currentVersion, setCurrentVersion] = useState(minimumReportVersion);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>("idle");
   const [updateInfo, setUpdateInfo] = useState<AppUpdateInfo | null>(null);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
@@ -196,6 +212,9 @@ export default function App() {
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => shouldShowWelcome());
   const [welcomeStateLoaded, setWelcomeStateLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [isFeedbackPrivacyOpen, setIsFeedbackPrivacyOpen] = useState(false);
+  const [feedbackPrivacyAccepted, setFeedbackPrivacyAccepted] = useState(() => readStoredFeedbackPrivacyAccepted());
   const [engineStatuses, setEngineStatuses] = useState<EngineStatus[]>([]);
   const [engineProgress, setEngineProgress] = useState<EngineInstallProgress | null>(null);
   const [isEngineOperationRunning, setIsEngineOperationRunning] = useState(false);
@@ -233,9 +252,20 @@ export default function App() {
     setUpdateStatus(status);
   }
 
-  useEffect(() => {
-    localStorage.setItem("multi-converter-performance-mode", performanceMode);
-  }, [performanceMode]);
+  function openFeedback() {
+    if (feedbackPrivacyAccepted) {
+      setIsFeedbackOpen(true);
+      return;
+    }
+    setIsFeedbackPrivacyOpen(true);
+  }
+
+  function acceptFeedbackPrivacy() {
+    localStorage.setItem(feedbackPrivacyStorageKey, "true");
+    setFeedbackPrivacyAccepted(true);
+    setIsFeedbackPrivacyOpen(false);
+    setIsFeedbackOpen(true);
+  }
 
   useEffect(() => {
     localStorage.setItem(notificationsStorageKey, notificationsEnabled ? "true" : "false");
@@ -894,7 +924,7 @@ export default function App() {
     cancellationRequested.current = false;
     setStep(3);
 
-    const concurrency = conversionConcurrency(performanceMode, jobs);
+    const concurrency = conversionConcurrency(jobs);
     const qualityMaxEnabledForBatch = Boolean(bootInfo?.qualityMaxInstalled);
     const jobIds = new Map(jobs.map((job) => [job.id, crypto.randomUUID()]));
     setFiles((items) =>
@@ -932,7 +962,6 @@ export default function App() {
             inputPath: file.path,
             targetFormat: file.selectedFormat as string,
             outputDir: targetOutputDir,
-            performanceMode,
             batchConcurrency: concurrency,
             qualityMaxEnabled: qualityMaxEnabledForBatch,
           });
@@ -1093,7 +1122,6 @@ export default function App() {
         language={language}
         bootInfo={bootInfo}
         engineStatuses={engineStatuses}
-        performanceMode={performanceMode}
         notificationsEnabled={notificationsEnabled}
         internetAvailable={internetAvailable}
         currentVersion={currentVersion}
@@ -1103,7 +1131,6 @@ export default function App() {
         updateDownloadSize={updateDownloadSize}
         onClose={() => setIsSettingsOpen(false)}
         onLanguage={setLanguage}
-        onPerformanceMode={setPerformanceMode}
         onNotificationsEnabled={setNotificationsEnabled}
         onCheckForUpdate={() => void checkForAppUpdate(true)}
         onInstallUpdate={() => void installAvailableUpdate()}
@@ -1140,6 +1167,27 @@ export default function App() {
         updateStatus={updateStatus}
         onInstall={() => void installAvailableUpdate()}
         onOpenDetails={() => setIsUpdateDialogOpen(true)}
+      />
+
+      <FeedbackButton
+        isVisible={!isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen && updateStatus !== "installing" && !isFeedbackOpen && !isFeedbackPrivacyOpen}
+        language={language}
+        onOpen={openFeedback}
+      />
+
+      <FeedbackPrivacyDialog
+        isOpen={isFeedbackPrivacyOpen}
+        language={language}
+        repositoryUrl={repositoryUrl}
+        onAccept={acceptFeedbackPrivacy}
+        onClose={() => setIsFeedbackPrivacyOpen(false)}
+      />
+
+      <FeedbackDialog
+        isOpen={isFeedbackOpen}
+        language={language}
+        currentVersion={currentVersion}
+        onClose={() => setIsFeedbackOpen(false)}
       />
 
       <PageNotice language={language} notice={notice} onDismiss={() => setNotice(null)} />
@@ -1635,6 +1683,201 @@ function ImportToast(props: { language: LanguageCode; feedback: ImportFeedback }
   );
 }
 
+function FeedbackButton(props: { isVisible: boolean; language: LanguageCode; onOpen(): void }) {
+  if (!props.isVisible) return null;
+  return (
+    <button className="feedback-launcher" type="button" onClick={props.onOpen} aria-label={t(props.language, "feedback.open")}>
+      <span aria-hidden="true">!</span>
+      <strong>{t(props.language, "feedback.launcher")}</strong>
+    </button>
+  );
+}
+
+function FeedbackPrivacyDialog(props: {
+  isOpen: boolean;
+  language: LanguageCode;
+  repositoryUrl: string;
+  onAccept(): void;
+  onClose(): void;
+}) {
+  const [remainingSeconds, setRemainingSeconds] = useState(5);
+  const canClose = remainingSeconds <= 0;
+
+  useEffect(() => {
+    if (!props.isOpen) return;
+    setRemainingSeconds(5);
+    const startedAt = Date.now();
+    const interval = window.setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+      setRemainingSeconds(Math.max(0, 5 - elapsed));
+    }, 250);
+    return () => window.clearInterval(interval);
+  }, [props.isOpen]);
+
+  if (!props.isOpen) return null;
+
+  return (
+    <div className="feedback-overlay" role="presentation">
+      <section className="feedback-warning-panel" role="alertdialog" aria-modal="true" aria-labelledby="feedback-warning-title">
+        <header className="feedback-dialog-header">
+          <div>
+            <span className="label">{t(props.language, "feedback.publicLabel")}</span>
+            <h2 id="feedback-warning-title">{t(props.language, "feedback.warningTitle")}</h2>
+          </div>
+          <button className="icon-button" type="button" aria-label={t(props.language, "app.close")} disabled={!canClose} onClick={props.onClose}>
+            <CloseIcon />
+          </button>
+        </header>
+
+        <div className="feedback-warning-copy">
+          <p>
+            {t(props.language, "feedback.warningBodyBefore")}{" "}
+            <button className="inline-link-button" type="button" onClick={() => void openExternalUrl(props.repositoryUrl)}>
+              Multi-Converter
+            </button>
+            {t(props.language, "feedback.warningBodyAfter")}
+          </p>
+          <p>{t(props.language, "feedback.warningPrivacy")}</p>
+        </div>
+
+        <footer className="feedback-actions">
+          <button className="ghost-button" type="button" disabled={!canClose} onClick={props.onClose}>
+            {canClose ? t(props.language, "feedback.close") : t(props.language, "feedback.wait", { seconds: remainingSeconds })}
+          </button>
+          <button className="primary-button" type="button" disabled={!canClose} onClick={props.onAccept}>
+            {canClose ? t(props.language, "feedback.accept") : t(props.language, "feedback.wait", { seconds: remainingSeconds })}
+          </button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+function FeedbackDialog(props: { isOpen: boolean; language: LanguageCode; currentVersion: string; onClose(): void }) {
+  const reportVersion = effectiveAppVersion(props.currentVersion);
+
+  useEffect(() => {
+    if (!props.isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") props.onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [props.isOpen, props.onClose]);
+
+  if (!props.isOpen) return null;
+
+  async function openIssue(kind: FeedbackKind) {
+    const params = new URLSearchParams({
+      template: feedbackTemplates[kind],
+      labels: feedbackLabels[kind],
+    });
+    if (feedbackTitlePrefixes[kind]) params.set("title", feedbackTitlePrefixes[kind]);
+    if (kind !== "other") {
+      params.set("app-version", reportVersion);
+      params.set("operating-system", detectedOperatingSystem());
+    }
+    await openExternalUrl(`${issueNewUrl}?${params.toString()}`);
+  }
+
+  return (
+    <div className="feedback-overlay" role="presentation" onMouseDown={props.onClose}>
+      <section
+        className="feedback-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="feedback-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <header className="feedback-dialog-header">
+          <div>
+            <span className="label">{t(props.language, "feedback.publicLabel")}</span>
+            <h2 id="feedback-title">{t(props.language, "feedback.title")}</h2>
+          </div>
+          <button className="icon-button" type="button" aria-label={t(props.language, "app.close")} onClick={props.onClose}>
+            <CloseIcon />
+          </button>
+        </header>
+
+        <p className="feedback-choice-intro">{t(props.language, "feedback.chooseKindHelp")}</p>
+
+        <div className="feedback-kind-grid" aria-label={t(props.language, "feedback.kindLabel")}>
+          {feedbackKinds.map((item) => (
+            <button
+              key={item}
+              type="button"
+              className="feedback-kind"
+              onClick={() => void openIssue(item)}
+            >
+              <strong>{t(props.language, feedbackKindLabelKey(item))}</strong>
+              <span>{t(props.language, feedbackKindDescriptionKey(item))}</span>
+            </button>
+          ))}
+        </div>
+
+        <p className="feedback-github-note">{t(props.language, "feedback.githubLoginNote")}</p>
+
+        <footer className="feedback-actions">
+          <button className="ghost-button" type="button" onClick={props.onClose}>{t(props.language, "feedback.cancel")}</button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+function feedbackKindLabelKey(kind: FeedbackKind): Parameters<typeof t>[1] {
+  if (kind === "bug") return "feedback.kindBug";
+  if (kind === "feature") return "feedback.kindFeature";
+  return "feedback.kindOther";
+}
+
+function feedbackKindDescriptionKey(kind: FeedbackKind): Parameters<typeof t>[1] {
+  if (kind === "bug") return "feedback.kindBugDescription";
+  if (kind === "feature") return "feedback.kindFeatureDescription";
+  return "feedback.kindOtherDescription";
+}
+
+function effectiveAppVersion(version: string) {
+  return compareVersions(version, minimumReportVersion) >= 0 ? version : minimumReportVersion;
+}
+
+function compareVersions(left: string, right: string) {
+  const leftParts = versionParts(left);
+  const rightParts = versionParts(right);
+  for (let index = 0; index < Math.max(leftParts.length, rightParts.length); index += 1) {
+    const delta = (leftParts[index] ?? 0) - (rightParts[index] ?? 0);
+    if (delta !== 0) return delta;
+  }
+  return 0;
+}
+
+function versionParts(version: string) {
+  return version
+    .replace(/^v/i, "")
+    .split(/[.-]/)
+    .map((part) => Number.parseInt(part, 10))
+    .map((part) => (Number.isFinite(part) ? part : 0));
+}
+
+function detectedOperatingSystem() {
+  const userAgentData = navigator as Navigator & { userAgentData?: { platform?: string } };
+  const platform = userAgentData.userAgentData?.platform || navigator.platform || "";
+  const agent = navigator.userAgent || "";
+  const value = `${platform} ${agent}`.toLowerCase();
+  if (value.includes("windows") || value.includes("win32") || value.includes("win64")) return "Windows";
+  if (value.includes("mac")) return "macOS";
+  if (value.includes("linux")) return "Linux";
+  return platform || "Inconnu";
+}
+
+async function openExternalUrl(url: string) {
+  try {
+    await api.openExternalUrl(url);
+  } catch {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+}
+
 function SettingsPanel(props: {
   isOpen: boolean;
   language: LanguageCode;
@@ -1643,7 +1886,6 @@ function SettingsPanel(props: {
   engineProgress: EngineInstallProgress | null;
   engineOperationBusy: boolean;
   engineOperationKind: EngineOperationKind;
-  performanceMode: PerformanceMode;
   notificationsEnabled: boolean;
   internetAvailable: boolean;
   currentVersion: string;
@@ -1653,7 +1895,6 @@ function SettingsPanel(props: {
   updateDownloadSize: UpdateDownloadSize | null;
   onClose(): void;
   onLanguage(language: LanguageCode): void;
-  onPerformanceMode(mode: PerformanceMode): void;
   onNotificationsEnabled(enabled: boolean): void;
   onCheckForUpdate(): void;
   onInstallUpdate(): void;
@@ -1743,35 +1984,6 @@ function SettingsPanel(props: {
                   >
                     {languageLabel(props.language, languageOption)}
                   </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="performance-setting" aria-labelledby="performance-title">
-              <div className="setting-heading">
-                <span className="label" id="performance-title">
-                  {t(props.language, "settings.performance")}
-                </span>
-              </div>
-
-              <div className="option-stack">
-                {performanceModes.map((mode) => (
-                  <label className={`option-card ${props.performanceMode === mode ? "is-selected" : ""}`} key={mode}>
-                    <input
-                      type="radio"
-                      name="performance-mode"
-                      value={mode}
-                      checked={props.performanceMode === mode}
-                      onChange={() => props.onPerformanceMode(mode)}
-                    />
-                    <b className="option-icon" aria-hidden="true">
-                      {performanceIcon(mode)}
-                    </b>
-                    <span>
-                      <strong>{t(props.language, performanceLabelKey(mode))}</strong>
-                      <em>{t(props.language, performanceDetailKey(mode))}</em>
-                    </span>
-                  </label>
                 ))}
               </div>
             </section>
@@ -2005,7 +2217,7 @@ function advanceWelcomeStep(
   });
 }
 
-type WelcomePreviewKind = "hello" | "language" | "performance" | "extension" | "convert";
+type WelcomePreviewKind = "hello" | "language" | "extension" | "convert";
 
 function welcomeSlides(): Array<{
   id: WelcomePreviewKind;
@@ -2017,7 +2229,6 @@ function welcomeSlides(): Array<{
   return [
     { id: "hello", eyebrowKey: "welcome.eyebrow", titleKey: "welcome.helloTitle", bodyKey: "welcome.helloBody", preview: "hello" },
     { id: "language", eyebrowKey: "welcome.stepSettings", titleKey: "welcome.languageTitle", bodyKey: "welcome.languageText", preview: "language" },
-    { id: "performance", eyebrowKey: "welcome.stepSettings", titleKey: "welcome.performanceTitle", bodyKey: "welcome.performanceText", preview: "performance" },
     { id: "extension", eyebrowKey: "welcome.stepExtension", titleKey: "welcome.extensionTitle", bodyKey: "welcome.extensionText", preview: "extension" },
     { id: "convert", eyebrowKey: "welcome.stepStart", titleKey: "welcome.convertTitle", bodyKey: "welcome.convertText", preview: "convert" },
   ];
@@ -2040,16 +2251,6 @@ function WelcomePreview(props: { kind: WelcomePreviewKind; language: LanguageCod
       <div className="welcome-preview welcome-preview-settings is-language" aria-label={t(props.language, "welcome.previewLabel")}>
         <div className="mini-capture-frame mini-settings-capture">
           <MiniSettingsPanel language={props.language} focus="language" />
-        </div>
-      </div>
-    );
-  }
-
-  if (props.kind === "performance") {
-    return (
-      <div className="welcome-preview welcome-preview-settings is-performance" aria-label={t(props.language, "welcome.previewLabel")}>
-        <div className="mini-capture-frame mini-settings-capture">
-          <MiniSettingsPanel language={props.language} focus="performance" />
         </div>
       </div>
     );
@@ -2120,7 +2321,7 @@ function MiniUploadArea(props: { language: LanguageCode }) {
   );
 }
 
-function MiniSettingsPanel(props: { language: LanguageCode; focus: "language" | "performance" | "extension" }) {
+function MiniSettingsPanel(props: { language: LanguageCode; focus: "language" | "extension" }) {
   return (
     <section className={`settings-panel mini-settings-panel is-${props.focus}`} aria-hidden="true">
       <header className="settings-header">
@@ -2145,28 +2346,6 @@ function MiniSettingsPanel(props: { language: LanguageCode; focus: "language" | 
             </select>
           </label>
 
-          <section className={`performance-setting ${props.focus === "performance" ? "mini-focus" : ""}`} aria-labelledby="mini-performance-title">
-            <div className="setting-heading">
-              <span className="label" id="mini-performance-title">
-                {t(props.language, "settings.performance")}
-              </span>
-            </div>
-
-            <div className="option-stack">
-              {performanceModes.map((mode) => (
-                <label className={`option-card ${mode === "balanced" ? "is-selected" : ""}`} key={mode}>
-                  <input type="radio" name="mini-performance-mode" value={mode} checked={mode === "balanced"} readOnly disabled />
-                  <b className="option-icon" aria-hidden="true">
-                    {performanceIcon(mode)}
-                  </b>
-                  <span>
-                    <strong>{t(props.language, performanceLabelKey(mode))}</strong>
-                    <em>{t(props.language, performanceDetailKey(mode))}</em>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </section>
         </section>
 
         <section className={`extension-card quality-extension-card ${props.focus === "extension" ? "mini-focus" : ""}`} aria-labelledby="mini-quality-extension-title">
@@ -2750,12 +2929,6 @@ function fileWarningText(code: string, language: LanguageCode) {
   return t(language, "file.warningGeneric");
 }
 
-function performanceIcon(mode: PerformanceMode) {
-  if (mode === "energySaver") return "🔋";
-  if (mode === "highPerformance") return "⚡";
-  return "⚖️";
-}
-
 function formatBytes(bytes: number, language: LanguageCode) {
   if (!Number.isFinite(bytes) || bytes <= 0) return `0 ${t(language, "common.bytes")}`;
   const units = [
@@ -2773,13 +2946,12 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, Number(value) || 0));
 }
 
-function readStoredPerformanceMode(): PerformanceMode {
-  const value = localStorage.getItem("multi-converter-performance-mode");
-  return value === "energySaver" || value === "balanced" || value === "highPerformance" ? value : defaultPerformanceMode;
-}
-
 function readStoredNotificationsEnabled() {
   return localStorage.getItem(notificationsStorageKey) !== "false";
+}
+
+function readStoredFeedbackPrivacyAccepted() {
+  return localStorage.getItem(feedbackPrivacyStorageKey) === "true";
 }
 
 function shouldShowWelcome() {
@@ -2787,15 +2959,18 @@ function shouldShowWelcome() {
   return false;
 }
 
-function conversionConcurrency(mode: PerformanceMode, jobs: FileItem[]) {
+function conversionConcurrency(jobs: FileItem[]) {
   const total = jobs.length;
+  if (total <= 1) return total;
+  const cores = Math.max(1, Math.floor(navigator.hardwareConcurrency || 2));
   const totalBytes = jobs.reduce((sum, file) => sum + Math.max(0, file.size || 0), 0);
   const largestBytes = jobs.reduce((max, file) => Math.max(max, file.size || 0), 0);
+  const videoJobs = jobs.filter((file) => file.categoryId === "video").length;
   const heavyBatch = totalBytes > 1.4 * 1024 * 1024 * 1024 || largestBytes > 850 * 1024 * 1024;
-  if (mode === "energySaver") return 1;
-  if (mode === "balanced") return Math.max(1, Math.min(heavyBatch ? 1 : 2, total));
-  if (heavyBatch) return Math.max(1, Math.min(2, total));
-  return Math.max(1, Math.min(total > 8 ? 4 : 3, total));
+  const coreLimit = cores <= 2 ? 1 : cores <= 4 ? 2 : cores <= 8 ? 3 : 4;
+  const videoLimit = videoJobs > 0 ? Math.max(1, Math.min(coreLimit, Math.floor(cores / 3) || 1)) : coreLimit;
+  const heavyLimit = heavyBatch ? Math.min(videoJobs > 0 ? 1 : 2, videoLimit) : videoLimit;
+  return Math.max(1, Math.min(total, heavyLimit));
 }
 
 async function runWithConcurrency<T>(items: T[], limit: number, worker: (item: T) => Promise<void>) {

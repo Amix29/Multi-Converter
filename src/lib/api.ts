@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
-import type { PerformanceMode } from "../i18n";
 
 export type Engine = string;
 
@@ -45,7 +44,6 @@ export interface ConversionJob {
   inputPath: string;
   targetFormat: string;
   outputDir: string;
-  performanceMode: PerformanceMode;
   batchConcurrency?: number;
   qualityMaxEnabled?: boolean;
 }
@@ -127,6 +125,7 @@ export interface MultiConverterApi {
   convert(job: ConversionJob): Promise<ConversionResult>;
   cancelConversion(jobId: string): Promise<boolean>;
   revealFile(filePath: string): Promise<boolean>;
+  openExternalUrl(url: string): Promise<boolean>;
   engineStatuses(): Promise<EngineStatus[]>;
   onProgress(callback: (payload: ProgressPayload) => void): Promise<UnlistenFn>;
   onEngineInstallProgress(callback: (payload: EngineInstallProgress) => void): Promise<UnlistenFn>;
@@ -194,6 +193,7 @@ function createTauriApi(): MultiConverterApi {
     convert: (job) => invoke<ConversionResult>("start_conversion", { job }),
     cancelConversion: (jobId) => invoke<boolean>("cancel_conversion", { jobId }),
     revealFile: (filePath) => invoke<boolean>("reveal_file", { filePath }),
+    openExternalUrl: (url) => invoke<boolean>("open_external_url", { url }),
     engineStatuses: () => invoke<EngineStatus[]>("engine_statuses"),
     onProgress: async (callback) => listen<ProgressPayload>("convert-progress", (event) => callback(event.payload)),
     onEngineInstallProgress: async (callback) => listen<EngineInstallProgress>("engine-install-progress", (event) => callback(event.payload)),
@@ -305,7 +305,6 @@ function createPreviewApi(): MultiConverterApi {
       });
     },
     async convert(job) {
-      const speedFactor = job.performanceMode === "highPerformance" ? 0.58 : job.performanceMode === "energySaver" ? 1.35 : 1;
       const steps: Array<[number, string]> = [
         [8, "Analyse"],
         [28, "Préparation"],
@@ -314,7 +313,7 @@ function createPreviewApi(): MultiConverterApi {
         [100, "Terminé"],
       ];
       for (const [progress, phase] of steps) {
-        await new Promise((resolve) => window.setTimeout(resolve, (180 + Math.random() * 260) * speedFactor));
+        await new Promise((resolve) => window.setTimeout(resolve, 180 + Math.random() * 260));
         listeners.forEach((listener) => listener({ jobId: job.id, progress, phase }));
       }
       return {
@@ -325,6 +324,10 @@ function createPreviewApi(): MultiConverterApi {
       return true;
     },
     async revealFile() {
+      return true;
+    },
+    async openExternalUrl(url) {
+      window.open(url, "_blank", "noopener,noreferrer");
       return true;
     },
     async engineStatuses() {

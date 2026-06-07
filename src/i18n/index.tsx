@@ -7,16 +7,13 @@ import it from "./it.json";
 import pt from "./pt.json";
 
 export type LanguageCode = "fr" | "en" | "es" | "de" | "pt" | "it";
-export type PerformanceMode = "energySaver" | "balanced" | "highPerformance";
 export type TranslationKey = keyof typeof fr;
 type TranslationParams = Record<string, string | number>;
 type TranslationDictionary = Record<TranslationKey, string>;
 
 export const defaultLanguage: LanguageCode = "fr";
-export const defaultPerformanceMode: PerformanceMode = "balanced";
 
 export const languageOptions: LanguageCode[] = ["fr", "en", "es", "de", "pt", "it"];
-export const performanceModes: PerformanceMode[] = ["energySaver", "balanced", "highPerformance"];
 
 export const dictionaries: Record<LanguageCode, TranslationDictionary> = { fr, en, es, de, pt, it };
 
@@ -187,14 +184,6 @@ export function translateBackendMessage(language: LanguageCode, message: string)
   if (failedTool) return t(language, "error.toolFailed", { tool: failedTool[1] });
 
   return translatePhase(language, value);
-}
-
-export function performanceLabelKey(mode: PerformanceMode): TranslationKey {
-  return `performance.${mode}.label` as TranslationKey;
-}
-
-export function performanceDetailKey(mode: PerformanceMode): TranslationKey {
-  return `performance.${mode}.detail` as TranslationKey;
 }
 
 function readStoredLanguage(): LanguageCode {

@@ -81,7 +81,6 @@ pub struct ConversionJob {
     pub input_path: String,
     pub target_format: String,
     pub output_dir: Option<String>,
-    pub performance_mode: Option<String>,
     pub batch_concurrency: Option<usize>,
     pub quality_max_enabled: Option<bool>,
 }
@@ -98,13 +97,6 @@ pub struct ProgressPayload {
     pub job_id: String,
     pub progress: u8,
     pub phase: String,
-}
-
-#[derive(Clone, Copy, Debug)]
-enum PerformanceMode {
-    EnergySaver,
-    Balanced,
-    HighPerformance,
 }
 
 static CANCELLED_JOBS: OnceLock<Mutex<HashSet<String>>> = OnceLock::new();
@@ -145,7 +137,6 @@ fn check_cancelled(job_id: &str) -> Result<()> {
 #[derive(Clone, Copy)]
 struct FfmpegRunOptions<'a> {
     phase_label: &'a str,
-    performance_mode: PerformanceMode,
     batch_concurrency: usize,
 }
 
@@ -405,7 +396,6 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
         job.quality_max_enabled
             .unwrap_or_else(engines::quality_marker_installed),
     );
-    let performance_mode = parse_performance_mode(job.performance_mode.as_deref());
     let batch_concurrency = job.batch_concurrency.unwrap_or(1).max(1);
     let output_extension = get_targets_for_extension(&extension)
         .into_iter()
@@ -426,7 +416,6 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
                     &input_path,
                     &output_path,
                     target.id,
-                    performance_mode,
                     batch_concurrency,
                 )?;
             } else {
@@ -436,7 +425,6 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
                     &input_path,
                     &output_path,
                     target.id,
-                    performance_mode,
                     batch_concurrency,
                 )?;
             }
@@ -654,34 +642,19 @@ fn ffmpeg_path(app: &AppHandle) -> Result<PathBuf> {
     })
 }
 
-fn parse_performance_mode(value: Option<&str>) -> PerformanceMode {
-    match value {
-        Some("energySaver") => PerformanceMode::EnergySaver,
-        Some("highPerformance") => PerformanceMode::HighPerformance,
-        _ => PerformanceMode::Balanced,
-    }
-}
-
-fn ffmpeg_threads(mode: PerformanceMode, batch_concurrency: usize) -> String {
+fn ffmpeg_threads(batch_concurrency: usize) -> String {
     let cores = std::thread::available_parallelism()
         .map(|value| value.get())
         .unwrap_or(2);
-    match mode {
-        PerformanceMode::EnergySaver => "1".to_string(),
-        PerformanceMode::Balanced => {
-            std::cmp::max(1, std::cmp::min(cores, cores.div_ceil(2))).to_string()
-        }
-        PerformanceMode::HighPerformance if batch_concurrency <= 1 => "0".to_string(),
-        PerformanceMode::HighPerformance => std::cmp::max(1, cores / batch_concurrency).to_string(),
+    if batch_concurrency <= 1 {
+        "0".to_string()
+    } else {
+        std::cmp::max(1, cores / batch_concurrency).to_string()
     }
 }
 
-fn x264_preset(mode: PerformanceMode) -> &'static str {
-    match mode {
-        PerformanceMode::EnergySaver => "ultrafast",
-        PerformanceMode::Balanced => "medium",
-        PerformanceMode::HighPerformance => "veryfast",
-    }
+fn x264_preset() -> &'static str {
+    "veryfast"
 }
 
 fn convert_audio(
@@ -690,7 +663,6 @@ fn convert_audio(
     input_path: &Path,
     output_path: &Path,
     target_format: &str,
-    performance_mode: PerformanceMode,
     batch_concurrency: usize,
 ) -> Result<()> {
     let args = audio_args(target_format)?;
@@ -702,7 +674,6 @@ fn convert_audio(
         &args,
         FfmpegRunOptions {
             phase_label: "Conversion audio",
-            performance_mode,
             batch_concurrency,
         },
     )
@@ -743,43 +714,39 @@ fn convert_video(
     input_path: &Path,
     output_path: &Path,
     target_format: &str,
-    performance_mode: PerformanceMode,
     batch_concurrency: usize,
 ) -> Result<()> {
-    if matches!(performance_mode, PerformanceMode::HighPerformance) {
-        let mut gpu_attempted = false;
-        for args in gpu_video_args(app, target_format) {
-            gpu_attempted = true;
-            check_cancelled(job_id)?;
-            if run_ffmpeg(
-                app,
-                job_id,
-                input_path,
-                output_path,
-                &args,
-                FfmpegRunOptions {
-                    phase_label: "Conversion vidéo",
-                    performance_mode,
-                    batch_concurrency,
-                },
-            )
-            .is_ok()
-            {
-                return Ok(());
-            }
-            let _ = fs::remove_file(output_path);
+    let mut gpu_attempted = false;
+    for args in gpu_video_args(app, target_format) {
+        gpu_attempted = true;
+        check_cancelled(job_id)?;
+        if run_ffmpeg(
+            app,
+            job_id,
+            input_path,
+            output_path,
+            &args,
+            FfmpegRunOptions {
+                phase_label: "Conversion vidéo",
+                batch_concurrency,
+            },
+        )
+        .is_ok()
+        {
+            return Ok(());
         }
-        if gpu_attempted {
-            emit_progress(
-                app,
-                job_id,
-                18,
-                "Accélération GPU indisponible, fallback CPU",
-            );
-        }
+        let _ = fs::remove_file(output_path);
+    }
+    if gpu_attempted {
+        emit_progress(
+            app,
+            job_id,
+            18,
+            "Accélération GPU indisponible, fallback CPU",
+        );
     }
 
-    let args = cpu_video_args(target_format, performance_mode)?;
+    let args = cpu_video_args(target_format)?;
     run_ffmpeg(
         app,
         job_id,
@@ -788,19 +755,18 @@ fn convert_video(
         &args,
         FfmpegRunOptions {
             phase_label: "Conversion vidéo",
-            performance_mode,
             batch_concurrency,
         },
     )
 }
 
-fn cpu_video_args(target_format: &str, performance_mode: PerformanceMode) -> Result<Vec<String>> {
+fn cpu_video_args(target_format: &str) -> Result<Vec<String>> {
     Ok(match target_format {
         "mp4" => owned_args(&[
             "-codec:v",
             "libx264",
             "-preset",
-            x264_preset(performance_mode),
+            x264_preset(),
             "-crf",
             "23",
             "-codec:a",
@@ -812,7 +778,7 @@ fn cpu_video_args(target_format: &str, performance_mode: PerformanceMode) -> Res
             "-codec:v",
             "libx264",
             "-preset",
-            x264_preset(performance_mode),
+            x264_preset(),
             "-crf",
             "23",
             "-codec:a",
@@ -836,7 +802,7 @@ fn cpu_video_args(target_format: &str, performance_mode: PerformanceMode) -> Res
             "-codec:v",
             "libx264",
             "-preset",
-            x264_preset(performance_mode),
+            x264_preset(),
             "-crf",
             "23",
             "-codec:a",
@@ -855,7 +821,7 @@ fn cpu_video_args(target_format: &str, performance_mode: PerformanceMode) -> Res
             "-codec:v",
             "libx264",
             "-preset",
-            x264_preset(performance_mode),
+            x264_preset(),
             "-crf",
             "23",
             "-codec:a",
@@ -951,10 +917,7 @@ fn run_ffmpeg<T: AsRef<str>>(
     ];
     args.extend(codec_args.iter().map(|item| item.as_ref().to_string()));
     args.push("-threads".to_string());
-    args.push(ffmpeg_threads(
-        options.performance_mode,
-        options.batch_concurrency,
-    ));
+    args.push(ffmpeg_threads(options.batch_concurrency));
     args.extend([
         "-progress".to_string(),
         "pipe:2".to_string(),
@@ -2950,13 +2913,12 @@ mod tests {
                     });
                     run_ffmpeg_conversion(&input, &output, args);
                 } else {
-                    let args = cpu_video_args(&target.format, PerformanceMode::Balanced)
-                        .unwrap_or_else(|error| {
-                            panic!(
-                                "{} -> {} is exposed but has no FFmpeg video args: {}",
-                                source_format, target.format, error
-                            )
-                        });
+                    let args = cpu_video_args(&target.format).unwrap_or_else(|error| {
+                        panic!(
+                            "{} -> {} is exposed but has no FFmpeg video args: {}",
+                            source_format, target.format, error
+                        )
+                    });
                     run_ffmpeg_conversion(&input, &output, args);
                 }
 
@@ -3006,7 +2968,7 @@ mod tests {
             "sine=frequency=440:duration=0.18".to_string(),
             "-shortest".to_string(),
         ];
-        args.extend(cpu_video_args(source_format, PerformanceMode::Balanced).unwrap());
+        args.extend(cpu_video_args(source_format).unwrap());
         args.push("-threads".to_string());
         args.push("1".to_string());
         args.push(path.to_string_lossy().to_string());
@@ -3107,7 +3069,7 @@ mod tests {
     fn hidden_backend_targets_are_not_supported_directly() {
         assert!(audio_args("dts").is_err());
         for target in ["flv", "vob", "avchd", "divx", "xvid", "mxf"] {
-            assert!(cpu_video_args(target, PerformanceMode::Balanced).is_err());
+            assert!(cpu_video_args(target).is_err());
         }
         assert!(image_format_for_target("avif").is_err());
     }

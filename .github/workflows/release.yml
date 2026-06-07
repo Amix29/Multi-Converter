@@ -84,3 +84,23 @@ jobs:
           $stableAsset = Join-Path $env:RUNNER_TEMP "Multi-Converter_windows-x64_setup.exe"
           Copy-Item -LiteralPath $installer.FullName -Destination $stableAsset -Force
           gh release upload $tag $stableAsset --clobber
+
+      - name: Upload versioned Windows installer checksum
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $tag = "${{ steps.version.outputs.tag }}"
+          $installerName = "Multi-Converter_${version}_x64-setup.exe"
+          $installer = Get-ChildItem -Path . -Recurse -Filter $installerName |
+            Where-Object { $_.FullName -match "\\bundle\\nsis\\" } |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          if (-not $installer) {
+            throw "Windows NSIS installer for version $version was not found."
+          }
+          $hash = (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToUpperInvariant()
+          $checksumAsset = Join-Path $env:RUNNER_TEMP "$installerName.sha256"
+          Set-Content -LiteralPath $checksumAsset -Value "$hash  $installerName" -NoNewline -Encoding ascii
+          gh release upload $tag $checksumAsset --clobber

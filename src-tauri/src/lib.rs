@@ -364,6 +364,42 @@ fn reveal_file(file_path: String) -> CommandResult<bool> {
 }
 
 #[tauri::command]
+fn open_external_url(url: String) -> CommandResult<bool> {
+    let trimmed = url.trim();
+    let allowed = trimmed == "https://github.com/Amix29/Multi-Converter/"
+        || trimmed == "https://github.com/Amix29/Multi-Converter"
+        || trimmed.starts_with("https://github.com/Amix29/Multi-Converter/issues/new?");
+    if !allowed {
+        return Err("Lien externe non autorisé.".to_string());
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("rundll32.exe")
+            .arg("url.dll,FileProtocolHandler")
+            .arg(trimmed)
+            .spawn()
+            .map_err(|error| error.to_string())?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("open")
+            .arg(trimmed)
+            .spawn()
+            .map_err(|error| error.to_string())?;
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        Command::new("xdg-open")
+            .arg(trimmed)
+            .spawn()
+            .map_err(|error| error.to_string())?;
+    }
+
+    Ok(true)
+}
+
+#[tauri::command]
 fn export_to_downloads(
     file_paths: Vec<String>,
     output_dir: Option<String>,
@@ -687,6 +723,7 @@ pub fn run() {
             start_conversion,
             cancel_conversion,
             reveal_file,
+            open_external_url,
             export_to_downloads,
             export_to_folder,
         ])
