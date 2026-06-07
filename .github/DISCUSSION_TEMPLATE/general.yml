@@ -1,0 +1,14 @@
+title: ""
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this category for general Multi-Converter discussion, questions, feedback, and community conversation.
+  - type: textarea
+    id: topic
+    attributes:
+      label: Topic
+      description: What would you like to discuss?
+      placeholder: Start the conversation here.
+    validations:
+      required: true
