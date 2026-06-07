@@ -188,6 +188,7 @@ export default function App() {
   const [updateInfo, setUpdateInfo] = useState<AppUpdateInfo | null>(null);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [updateReminderVisible, setUpdateReminderVisible] = useState(false);
+  const [updateCheckStartedAt, setUpdateCheckStartedAt] = useState<number | null>(null);
   const [updateDownloadProgress, setUpdateDownloadProgress] = useState<number | null>(null);
   const [updateDownloadSize, setUpdateDownloadSize] = useState<UpdateDownloadSize | null>(null);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => shouldShowWelcome());
@@ -212,6 +213,7 @@ export default function App() {
   const cancellationRequested = useRef(false);
   const pendingQualityRefresh = useRef(false);
   const updateRef = useRef<Update | null>(null);
+  const updateCheckSequence = useRef(0);
 
   useEffect(() => {
     localStorage.setItem("multi-converter-performance-mode", performanceMode);
@@ -230,6 +232,20 @@ export default function App() {
     if (!isTauriRuntime || !welcomeStateLoaded || readPendingUpdateInstallation() || isWelcomeOpen || updateStatus !== "idle") return;
     void checkForAppUpdate(false);
   }, [currentVersion, isWelcomeOpen, updateStatus, welcomeStateLoaded]);
+
+  useEffect(() => {
+    if (updateStatus !== "checking" || updateCheckStartedAt === null) return;
+    const timeout = window.setTimeout(() => {
+      updateCheckSequence.current += 1;
+      updateRef.current = null;
+      setUpdateStatus("error");
+      setUpdateCheckStartedAt(null);
+      setUpdateDownloadProgress(null);
+      setUpdateDownloadSize(null);
+      showNotice("error", t(language, "update.checkTimedOut"));
+    }, updateCheckTimeoutMs + 2500);
+    return () => window.clearTimeout(timeout);
+  }, [language, updateCheckStartedAt, updateStatus]);
 
   useEffect(() => {
     if (!isTauriRuntime || !welcomeStateLoaded || updateStatus !== "idle") return;
@@ -458,17 +474,23 @@ export default function App() {
 
   async function checkForAppUpdate(manual: boolean) {
     if (!isTauriRuntime || updateStatus === "installing") return;
+    const checkId = updateCheckSequence.current + 1;
+    updateCheckSequence.current = checkId;
     setUpdateStatus("checking");
+    setUpdateCheckStartedAt(Date.now());
     try {
       const update = await checkForUpdateWithTimeout();
+      if (checkId !== updateCheckSequence.current) return;
       updateRef.current = update;
       if (!update) {
         setUpdateInfo(null);
         setUpdateStatus("notAvailable");
+        setUpdateCheckStartedAt(null);
         if (manual) showNotice("success", t(language, "update.none"));
         return;
       }
       const releaseBody = await fetchReleaseBodyForVersion(update.version, update.body ?? null);
+      if (checkId !== updateCheckSequence.current) return;
       setUpdateInfo({
         version: update.version,
         currentVersion: update.currentVersion || currentVersion,
@@ -476,6 +498,7 @@ export default function App() {
         body: releaseBody,
       });
       setUpdateStatus("available");
+      setUpdateCheckStartedAt(null);
       setUpdateReminderVisible(false);
       if (manual || !isWelcomeOpen) {
         setIsUpdateDialogOpen(true);
@@ -487,10 +510,13 @@ export default function App() {
         updateRef.current = null;
         setUpdateInfo(null);
         setUpdateStatus("notAvailable");
+        setUpdateCheckStartedAt(null);
         if (manual) showNotice("success", t(language, "update.remoteUnavailable"));
         return;
       }
+      if (checkId !== updateCheckSequence.current) return;
       setUpdateStatus("error");
+      setUpdateCheckStartedAt(null);
       setUpdateDownloadProgress(null);
       setUpdateDownloadSize(null);
       if (manual) showNotice("error", updateCheckErrorMessage(language, error));
