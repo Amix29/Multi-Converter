@@ -191,6 +191,8 @@ export default function App() {
   const [updateCheckStartedAt, setUpdateCheckStartedAt] = useState<number | null>(null);
   const [updateDownloadProgress, setUpdateDownloadProgress] = useState<number | null>(null);
   const [updateDownloadSize, setUpdateDownloadSize] = useState<UpdateDownloadSize | null>(null);
+  const [internetAvailable, setInternetAvailable] = useState(() => navigator.onLine);
+  const [bootInfoLoaded, setBootInfoLoaded] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => shouldShowWelcome());
   const [welcomeStateLoaded, setWelcomeStateLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -215,11 +217,16 @@ export default function App() {
   const updateRef = useRef<Update | null>(null);
   const updateCheckSequence = useRef(0);
   const updateStatusRef = useRef<UpdateStatus>("idle");
+  const internetAvailableRef = useRef(internetAvailable);
   const autoUpdateCheckStarted = useRef(false);
 
   useEffect(() => {
     updateStatusRef.current = updateStatus;
   }, [updateStatus]);
+
+  useEffect(() => {
+    internetAvailableRef.current = internetAvailable;
+  }, [internetAvailable]);
 
   function setAppUpdateStatus(status: UpdateStatus) {
     updateStatusRef.current = status;
@@ -240,14 +247,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isTauriRuntime || autoUpdateCheckStarted.current) return;
+    if (!isTauriRuntime || !bootInfoLoaded || autoUpdateCheckStarted.current) return;
     autoUpdateCheckStarted.current = true;
+    if (!internetAvailable) return;
     const timeout = window.setTimeout(() => {
-      if (updateStatusRef.current !== "idle" || readPendingUpdateInstallation()) return;
+      if (updateStatusRef.current !== "idle" || !internetAvailableRef.current || readPendingUpdateInstallation()) return;
       void checkForAppUpdate(false);
     }, 900);
     return () => window.clearTimeout(timeout);
-  }, []);
+  }, [bootInfoLoaded, internetAvailable]);
 
   useEffect(() => {
     if (updateStatus !== "checking") return;
@@ -258,14 +266,26 @@ export default function App() {
     const timeout = window.setTimeout(() => {
       updateCheckSequence.current += 1;
       updateRef.current = null;
-      setAppUpdateStatus("error");
+      setUpdateInfo(null);
+      setAppUpdateStatus("notAvailable");
       setUpdateCheckStartedAt(null);
       setUpdateDownloadProgress(null);
       setUpdateDownloadSize(null);
-      showNotice("error", t(language, "update.checkTimedOut"));
     }, updateCheckTimeoutMs + 2500);
     return () => window.clearTimeout(timeout);
   }, [language, updateCheckStartedAt, updateStatus]);
+
+  useEffect(() => {
+    const refreshBrowserNetwork = () => {
+      setInternetAvailable(navigator.onLine);
+    };
+    window.addEventListener("online", refreshBrowserNetwork);
+    window.addEventListener("offline", refreshBrowserNetwork);
+    return () => {
+      window.removeEventListener("online", refreshBrowserNetwork);
+      window.removeEventListener("offline", refreshBrowserNetwork);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isTauriRuntime || updateStatus !== "idle") return;
@@ -349,8 +369,15 @@ export default function App() {
       .finally(() => setWelcomeStateLoaded(true));
 
     api.bootstrapDependencies()
-      .then(setBootInfo)
-      .catch(() => setBootInfo(null));
+      .then((dependencies) => {
+        setBootInfo(dependencies);
+        setInternetAvailable(dependencies.internetAvailable);
+      })
+      .catch(() => {
+        setBootInfo(null);
+        setInternetAvailable(navigator.onLine);
+      })
+      .finally(() => setBootInfoLoaded(true));
   }, [language]);
 
   async function installQualityMaxExtension() {
@@ -361,6 +388,7 @@ export default function App() {
     try {
       const dependencies = await api.installQualityMaxExtension();
       setBootInfo(dependencies);
+      setInternetAvailable(dependencies.internetAvailable);
       setEngineStatuses(await api.engineStatuses());
       if (isConverting) {
         pendingQualityRefresh.current = true;
@@ -386,6 +414,7 @@ export default function App() {
       await api.uninstallQualityMaxExtension();
       const dependencies = await api.refreshEngineDiagnostics();
       setBootInfo(dependencies);
+      setInternetAvailable(dependencies.internetAvailable);
       setEngineStatuses(await api.engineStatuses());
       if (isConverting) {
         pendingQualityRefresh.current = true;
@@ -500,6 +529,10 @@ export default function App() {
 
   async function checkForAppUpdate(manual: boolean) {
     if (!isTauriRuntime || updateStatusRef.current === "checking" || updateStatusRef.current === "installing") return;
+    if (!internetAvailableRef.current) {
+      if (manual) showNotice("error", t(language, "update.internetRequired"));
+      return;
+    }
     const checkId = updateCheckSequence.current + 1;
     updateCheckSequence.current = checkId;
     setAppUpdateStatus("checking");
@@ -541,6 +574,16 @@ export default function App() {
         return;
       }
       if (checkId !== updateCheckSequence.current) return;
+      if (isUpdateCheckTimeout(error)) {
+        updateRef.current = null;
+        setUpdateInfo(null);
+        setAppUpdateStatus("notAvailable");
+        setUpdateCheckStartedAt(null);
+        setUpdateDownloadProgress(null);
+        setUpdateDownloadSize(null);
+        if (manual) showNotice("success", t(language, "update.none"));
+        return;
+      }
       setAppUpdateStatus("error");
       setUpdateCheckStartedAt(null);
       setUpdateDownloadProgress(null);
@@ -1052,6 +1095,7 @@ export default function App() {
         engineStatuses={engineStatuses}
         performanceMode={performanceMode}
         notificationsEnabled={notificationsEnabled}
+        internetAvailable={internetAvailable}
         currentVersion={currentVersion}
         updateInfo={updateInfo}
         updateStatus={updateStatus}
@@ -1601,6 +1645,7 @@ function SettingsPanel(props: {
   engineOperationKind: EngineOperationKind;
   performanceMode: PerformanceMode;
   notificationsEnabled: boolean;
+  internetAvailable: boolean;
   currentVersion: string;
   updateInfo: AppUpdateInfo | null;
   updateStatus: UpdateStatus;
@@ -1647,7 +1692,7 @@ function SettingsPanel(props: {
 
   if (!props.isOpen) return null;
   const qualityInstalled = Boolean(props.bootInfo?.qualityMaxInstalled);
-  const internetAvailable = props.bootInfo?.internetAvailable ?? navigator.onLine;
+  const internetAvailable = props.internetAvailable;
   const extensionSize = qualitySizeText(props.language, props.engineStatuses);
   const qualityProgress = extensionProgressSummary(
     props.engineStatuses,
@@ -1807,11 +1852,12 @@ function SettingsPanel(props: {
                     {props.updateStatus === "installing" ? t(props.language, "update.installing") : t(props.language, "update.install")}
                   </button>
                 ) : (
-                  <button className="secondary-button" type="button" disabled={props.updateStatus === "checking"} onClick={props.onCheckForUpdate}>
+                  <button className="secondary-button" type="button" disabled={props.updateStatus === "checking" || !internetAvailable} onClick={props.onCheckForUpdate}>
                     {props.updateStatus === "checking" ? t(props.language, "update.checking") : t(props.language, "update.check")}
                   </button>
                 )}
               </div>
+              {!internetAvailable && <small>{t(props.language, "update.internetRequired")}</small>}
             </section>
           </section>
         </div>
@@ -2649,13 +2695,17 @@ async function notifyConversionFinished(language: LanguageCode, failed: boolean,
 
 function updateCheckErrorMessage(language: LanguageCode, error: unknown) {
   const message = error instanceof Error ? error.message : String(error || "");
-  if (message === "update-check-timeout") {
-    return t(language, "update.checkTimedOut");
+  if (isUpdateCheckTimeout(error)) {
+    return t(language, "update.none");
   }
   if (isMissingUpdateReleaseError(error)) {
     return t(language, "update.remoteUnavailable");
   }
   return translateBackendMessage(language, message);
+}
+
+function isUpdateCheckTimeout(error: unknown) {
+  return error instanceof Error && error.message === "update-check-timeout";
 }
 
 function isMissingUpdateReleaseError(error: unknown) {

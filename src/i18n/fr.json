@@ -53,6 +53,7 @@
   "update.check": "Rechercher une mise à jour",
   "update.checking": "Recherche...",
   "update.checkTimedOut": "La vérification de mise à jour a expiré. Vérifiez votre connexion puis réessayez.",
+  "update.internetRequired": "Connexion Internet requise pour rechercher une mise à jour.",
   "update.install": "Mettre à jour",
   "update.installing": "Installation...",
   "update.installingTitle": "Installation de Multi-Converter {version}",

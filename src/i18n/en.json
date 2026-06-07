@@ -52,6 +52,7 @@
   "update.check": "Check for updates",
   "update.checking": "Checking...",
   "update.checkTimedOut": "The update check timed out. Check your connection and try again.",
+  "update.internetRequired": "An internet connection is required to check for updates.",
   "update.install": "Update",
   "update.installing": "Installing...",
   "update.installingTitle": "Installing Multi-Converter {version}",

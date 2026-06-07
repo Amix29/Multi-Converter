@@ -50,6 +50,7 @@
   "update.check": "Nach Updates suchen",
   "update.checking": "Suche...",
   "update.checkTimedOut": "Die Update-Suche ist abgelaufen. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+  "update.internetRequired": "Zum Suchen nach Updates ist eine Internetverbindung erforderlich.",
   "update.install": "Aktualisieren",
   "update.installing": "Installation...",
   "update.installingTitle": "Multi-Converter {version} wird installiert",
