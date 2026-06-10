@@ -256,8 +256,8 @@ fn bootstrap_dependencies(app: AppHandle) -> CommandResult<DependencyBootstrap> 
             runtime_log::write(
                 "engines",
                 &format!(
-                    "bootstrap ok={} mode={} qualityMaxInstalled={} env={}",
-                    info.ok, info.mode, info.quality_max_installed, info.env_dir
+                    "bootstrap ok={} mode={} env={}",
+                    info.ok, info.mode, info.env_dir
                 ),
             );
             for check in &info.checks {
@@ -276,24 +276,6 @@ fn bootstrap_dependencies(app: AppHandle) -> CommandResult<DependencyBootstrap> 
         Err(error) => runtime_log::write("engines", &format!("bootstrap failed: {error}")),
     }
     result
-}
-
-#[tauri::command]
-async fn install_quality_max_extension(app: AppHandle) -> CommandResult<DependencyBootstrap> {
-    tauri::async_runtime::spawn_blocking(move || {
-        if let Err(error) = engine_distribution::install_quality_max_extension(&app) {
-            runtime_log::write("engines", &format!("quality max install failed: {error}"));
-            return Err(error);
-        }
-        engines::bootstrap_dependencies(&app)
-    })
-    .await
-    .map_err(|error| error.to_string())?
-}
-
-#[tauri::command]
-fn uninstall_quality_max_extension() -> CommandResult<bool> {
-    engines::uninstall_quality_max_extension()
 }
 
 #[tauri::command]
@@ -366,10 +348,7 @@ fn reveal_file(file_path: String) -> CommandResult<bool> {
 #[tauri::command]
 fn open_external_url(url: String) -> CommandResult<bool> {
     let trimmed = url.trim();
-    let allowed = trimmed == "https://github.com/Amix29/Multi-Converter/"
-        || trimmed == "https://github.com/Amix29/Multi-Converter"
-        || trimmed.starts_with("https://github.com/Amix29/Multi-Converter/issues/new?");
-    if !allowed {
+    if !is_allowed_external_url(trimmed) {
         return Err("Lien externe non autorisé.".to_string());
     }
 
@@ -397,6 +376,12 @@ fn open_external_url(url: String) -> CommandResult<bool> {
     }
 
     Ok(true)
+}
+
+fn is_allowed_external_url(url: &str) -> bool {
+    url == "https://github.com/Amix29/Multi-Converter/"
+        || url == "https://github.com/Amix29/Multi-Converter"
+        || url.starts_with("https://github.com/Amix29/Multi-Converter/issues/new?")
 }
 
 #[tauri::command]
@@ -717,8 +702,6 @@ pub fn run() {
             create_temp_output_folder,
             cleanup_temp_output_folder,
             bootstrap_dependencies,
-            install_quality_max_extension,
-            uninstall_quality_max_extension,
             engine_statuses,
             start_conversion,
             cancel_conversion,
@@ -954,6 +937,18 @@ mod tests {
         assert!(ensure_exportable_conversion_file(dir.path()).is_err());
         assert!(ensure_exportable_conversion_file(&file).is_err());
         assert!(ensure_exportable_conversion_file(Path::new("")).is_err());
+    }
+
+    #[test]
+    fn external_url_allowlist_rejects_google_translate_pages() {
+        assert!(is_allowed_external_url(
+            "https://github.com/Amix29/Multi-Converter/issues/new?title=Bug"
+        ));
+        assert!(!is_allowed_external_url(
+            "https://translate.googleapis.com/translate_a/single"
+        ));
+        assert!(!is_allowed_external_url("https://translate.google.com/"));
+        assert!(!is_allowed_external_url("https://www.google.com/"));
     }
 
     #[test]

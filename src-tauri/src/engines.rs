@@ -15,7 +15,7 @@ use tauri::{AppHandle, Manager};
 #[serde(rename_all = "camelCase")]
 pub enum EngineMode {
     Base,
-    QualityMax,
+    Advanced,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
@@ -70,6 +70,7 @@ pub struct EngineSelection {
     pub label: String,
     pub available: bool,
     pub plan: Vec<String>,
+    #[cfg(test)]
     pub required_engine_ids: Vec<String>,
     pub reason: String,
 }
@@ -98,10 +99,7 @@ pub struct DependencyBootstrap {
     pub env_dir: String,
     pub ok: bool,
     pub mode: &'static str,
-    pub quality_max_installed: bool,
     pub internet_available: bool,
-    pub quality_max_added_size: &'static str,
-    pub quality_max_description: &'static str,
     pub checks: Vec<DependencyCheck>,
 }
 
@@ -139,8 +137,6 @@ pub struct DependencyCheck {
 const FFMPEG_REQUIRED_VERSION: &str = "8.1.1";
 const COMPATIBLE_VERSION: &str = "compatible";
 const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
-pub const QUALITY_MAX_DESCRIPTION: &str = "L'extension Qualité maximale ajoute des moteurs plus lourds pour améliorer la fidélité des documents, le rendu PDF haute qualité avec PDFium, les formats avancés et les conversions professionnelles. Elle permet de meilleures conversions Office/PDF, plus de formats image et davantage de personnalisation, mais augmente fortement la taille de l'application.";
-pub const QUALITY_MAX_SIZE: &str = "environ 600 Mo à 1,9 Go selon les builds";
 
 const TOOLS: &[ToolDef] = &[
     ToolDef {
@@ -250,16 +246,16 @@ const TOOLS: &[ToolDef] = &[
         label: "PDFium",
         role: "Rendu PDF haute qualité",
         description: "Rendu de pages PDF vers images.",
-        mode: EngineMode::QualityMax,
+        mode: EngineMode::Advanced,
         commands: &["pdfium-render"],
         engine_kind: "portable",
         managed: true,
         expected_version: COMPATIBLE_VERSION,
-        estimated_size: "Inclus dans Qualité maximale",
+        estimated_size: "Embarqué avec l'application",
         categories: &["documents", "images"],
         conversions: &["pdf->image"],
         capabilities: &["pdf-render"],
-        action_label: "Installer",
+        action_label: "Intégré",
         dependencies: &[],
     },
     ToolDef {
@@ -267,16 +263,16 @@ const TOOLS: &[ToolDef] = &[
         label: "LibreOffice headless",
         role: "Documents fidèles",
         description: "Conversions Office/PDF plus fidèles en mode headless.",
-        mode: EngineMode::QualityMax,
+        mode: EngineMode::Advanced,
         commands: &["soffice"],
         engine_kind: "portable",
         managed: true,
         expected_version: COMPATIBLE_VERSION,
-        estimated_size: "Inclus dans Qualité maximale",
+        estimated_size: "Embarqué avec l'application",
         categories: &["documents"],
         conversions: &["docx", "odt", "rtf", "html", "pdf"],
         capabilities: &["office"],
-        action_label: "Installer",
+        action_label: "Intégré",
         dependencies: &[],
     },
     ToolDef {
@@ -284,16 +280,16 @@ const TOOLS: &[ToolDef] = &[
         label: "Pandoc",
         role: "Documents Markdown/HTML/ePub",
         description: "Conversions structurées entre Markdown, HTML, ePub et DOCX.",
-        mode: EngineMode::QualityMax,
+        mode: EngineMode::Advanced,
         commands: &["pandoc"],
         engine_kind: "portable",
         managed: true,
         expected_version: COMPATIBLE_VERSION,
-        estimated_size: "Inclus dans Qualité maximale",
+        estimated_size: "Embarqué avec l'application",
         categories: &["documents"],
         conversions: &["markdown", "html", "epub", "docx"],
         capabilities: &["document-structure"],
-        action_label: "Installer",
+        action_label: "Intégré",
         dependencies: &[],
     },
     ToolDef {
@@ -301,16 +297,16 @@ const TOOLS: &[ToolDef] = &[
         label: "libvips",
         role: "Images avancées",
         description: "Conversions raster avancées via moteur portable.",
-        mode: EngineMode::QualityMax,
+        mode: EngineMode::Advanced,
         commands: &["vips"],
         engine_kind: "portable",
         managed: true,
         expected_version: COMPATIBLE_VERSION,
-        estimated_size: "Inclus dans Qualité maximale",
+        estimated_size: "Embarqué avec l'application",
         categories: &["images"],
         conversions: &["png", "jpg", "webp", "tiff"],
         capabilities: &["advanced-images"],
-        action_label: "Installer",
+        action_label: "Intégré",
         dependencies: &[],
     },
 ];
@@ -327,12 +323,12 @@ pub fn tool_statuses(app: Option<&AppHandle>) -> Vec<ToolStatus> {
                 });
             let installed_size_bytes = manifest_engine
                 .as_ref()
-                .map(|engine| {
-                    engine_distribution::installed_size(
-                        &tool_env_root_unchecked(),
-                        tool.id,
-                        &engine.version,
-                    )
+                .and_then(|engine| {
+                    let root = bundled_engines_root(app);
+                    root.map(|root| (engine, root))
+                })
+                .map(|(engine, root)| {
+                    engine_distribution::installed_size(&root, tool.id, &engine.version)
                 })
                 .unwrap_or(0);
             let download_size_bytes = manifest_engine
@@ -394,27 +390,15 @@ pub fn decorate_target(
         &target.category_id,
         &target.engine,
     );
-    let requires_quality_extension = selection_requires_quality_extension(&selection);
     target.engine = selection.id;
     target.engine_label = selection.label;
     target.engine_available = selection.available;
     target.availability = if selection.available {
         "available".to_string()
-    } else if requires_quality_extension {
-        "requires_extension".to_string()
     } else {
         "unavailable".to_string()
     };
     target
-}
-
-fn selection_requires_quality_extension(selection: &EngineSelection) -> bool {
-    !quality_marker_installed()
-        && selection.required_engine_ids.iter().any(|id| {
-            TOOLS
-                .iter()
-                .any(|tool| tool.id == id && tool.mode == EngineMode::QualityMax)
-        })
 }
 
 pub fn select_engine(
@@ -424,24 +408,6 @@ pub fn select_engine(
     target_category_id: &str,
     builtin_engine: &str,
 ) -> EngineSelection {
-    select_engine_for_quality_state(
-        app,
-        source,
-        target_id,
-        target_category_id,
-        builtin_engine,
-        quality_marker_installed(),
-    )
-}
-
-pub fn select_engine_for_quality_state(
-    app: Option<&AppHandle>,
-    source: &Format,
-    target_id: &str,
-    target_category_id: &str,
-    builtin_engine: &str,
-    quality_enabled: bool,
-) -> EngineSelection {
     if builtin_engine == "ffmpeg" {
         let ready = is_available(app, "ffmpeg") && is_available(app, "ffprobe");
         return EngineSelection {
@@ -449,6 +415,7 @@ pub fn select_engine_for_quality_state(
             label: "FFmpeg".to_string(),
             available: ready,
             plan: vec!["FFmpeg".to_string(), "ffprobe".to_string()],
+            #[cfg(test)]
             required_engine_ids: vec!["ffmpeg".to_string(), "ffprobe".to_string()],
             reason: if ready {
                 fidelity_reason(source, target_id, target_category_id)
@@ -457,24 +424,19 @@ pub fn select_engine_for_quality_state(
             },
         };
     }
-    let candidates = engine_candidates(
-        source,
-        target_id,
-        target_category_id,
-        builtin_engine,
-        quality_enabled,
-    );
+    let candidates = engine_candidates(source, target_id, target_category_id, builtin_engine);
     let labels = candidates
         .iter()
         .map(|id| tool_label(id).to_string())
         .collect::<Vec<_>>();
     for candidate in &candidates {
-        if is_available_for_quality_state(app, candidate, quality_enabled) {
+        if is_candidate_available(app, candidate) {
             return EngineSelection {
                 id: (*candidate).to_string(),
                 label: tool_label(candidate).to_string(),
                 available: true,
                 plan: labels,
+                #[cfg(test)]
                 required_engine_ids: vec![(*candidate).to_string()],
                 reason: fidelity_reason(source, target_id, target_category_id),
             };
@@ -489,6 +451,7 @@ pub fn select_engine_for_quality_state(
             .unwrap_or_else(|| "Conversion non intégrée".to_string()),
         available: false,
         plan: labels,
+        #[cfg(test)]
         required_engine_ids: candidates.iter().map(|id| (*id).to_string()).collect(),
         reason: unavailable_reason(app, &candidates, source, target_id, target_category_id),
     }
@@ -498,34 +461,26 @@ pub fn bootstrap_dependencies(app: &AppHandle) -> Result<DependencyBootstrap, St
     let env_dir = tool_env_root()?;
     fs::create_dir_all(&env_dir).map_err(|error| error.to_string())?;
     let _ = engine_distribution::cleanup_stale_installing_dirs();
-    let quality = quality_max_ready();
     let internet = internet_available();
     let checks = TOOLS
         .iter()
-        .filter(|tool| tool.mode == EngineMode::Base || tool.mode == EngineMode::QualityMax)
         .map(|tool| evaluate_tool(Some(app), tool, false))
         .collect::<Vec<_>>();
+    let ok = checks
+        .iter()
+        .filter(|check| required_tool(check.id))
+        .all(|check| check.available);
     Ok(DependencyBootstrap {
         env_dir: env_dir.to_string_lossy().to_string(),
-        ok: checks
-            .iter()
-            .filter(|check| check.mode == EngineMode::Base && base_required(check.id))
-            .all(|check| check.available),
-        mode: if quality {
-            "Qualité maximale"
+        ok,
+        mode: if ok {
+            "Complet"
         } else {
-            "Base légère"
+            "Moteurs à vérifier"
         },
-        quality_max_installed: quality,
         internet_available: internet,
-        quality_max_added_size: QUALITY_MAX_SIZE,
-        quality_max_description: QUALITY_MAX_DESCRIPTION,
         checks,
     })
-}
-
-pub fn uninstall_quality_max_extension() -> Result<bool, String> {
-    engine_distribution::uninstall_quality_max_extension()
 }
 
 pub fn resolve_tool(app: Option<&AppHandle>, id: &str) -> Option<PathBuf> {
@@ -544,16 +499,13 @@ pub fn resolve_tool(app: Option<&AppHandle>, id: &str) -> Option<PathBuf> {
         }
         return None;
     }
-    manifest_binary(id)
+    bundled_engine_binary(app, id)
 }
 
 pub fn is_available(app: Option<&AppHandle>, id: &str) -> bool {
     let Some(tool) = TOOLS.iter().find(|tool| tool.id == id) else {
         return false;
     };
-    if tool.mode == EngineMode::QualityMax && !quality_marker_installed() {
-        return false;
-    }
     evaluate_tool(app, tool, false).available
 }
 
@@ -569,20 +521,11 @@ pub fn tool_label(id: &str) -> &'static str {
 }
 
 fn evaluate_tool(app: Option<&AppHandle>, tool: &ToolDef, run_smoke: bool) -> DependencyCheck {
-    if tool.mode == EngineMode::QualityMax && !quality_marker_installed() {
-        return check(
-            tool,
-            None,
-            None,
-            "disabled",
-            "Extension Qualité maximale non installée.",
-            Some("Extension Qualité maximale non installée.".to_string()),
-        );
-    }
     if tool.commands.is_empty() {
         let smoke_ok = !run_smoke || smoke_test_integrated(tool.id).is_ok();
         return if smoke_ok {
             check(
+                app,
                 tool,
                 Some(APP_VERSION.to_string()),
                 None,
@@ -592,6 +535,7 @@ fn evaluate_tool(app: Option<&AppHandle>, tool: &ToolDef, run_smoke: bool) -> De
             )
         } else {
             check(
+                app,
                 tool,
                 Some(APP_VERSION.to_string()),
                 None,
@@ -603,25 +547,14 @@ fn evaluate_tool(app: Option<&AppHandle>, tool: &ToolDef, run_smoke: bool) -> De
     }
     let path = resolve_tool(app, tool.id);
     let Some(path) = path else {
-        if tool.mode == EngineMode::QualityMax
-            && !engine_distribution::engine_download_is_configured(tool.id)
-        {
-            return check(
-                tool,
-                None,
-                None,
-                "missing",
-                "Source de téléchargement non configurée. Ce moteur ne peut pas être installé automatiquement pour le moment.",
-                Some("Source de téléchargement non configurée.".to_string()),
-            );
-        }
         return check(
+            app,
             tool,
             None,
             None,
             "missing",
-            "Binaire absent. Les conversions dépendantes sont désactivées.",
-            Some("Moteur absent.".to_string()),
+            "Binaire embarqué absent. Les conversions dépendantes sont désactivées.",
+            Some("Moteur embarqué absent.".to_string()),
         );
     };
     let version = if tool.expected_version == COMPATIBLE_VERSION {
@@ -631,19 +564,8 @@ fn evaluate_tool(app: Option<&AppHandle>, tool: &ToolDef, run_smoke: bool) -> De
     };
     let version_ok = expected_version_matches(tool.expected_version, version.as_deref());
     if !version_ok {
-        if tool.mode == EngineMode::QualityMax
-            && !engine_distribution::engine_download_is_configured(tool.id)
-        {
-            return check(
-                tool,
-                version,
-                Some(path),
-                "bad_version",
-                "Version différente de la version attendue, mais la source de téléchargement n'est pas configurée.",
-                Some("Source de téléchargement non configurée.".to_string()),
-            );
-        }
         return check(
+            app,
             tool,
             version,
             Some(path),
@@ -654,6 +576,7 @@ fn evaluate_tool(app: Option<&AppHandle>, tool: &ToolDef, run_smoke: bool) -> De
     }
     if run_smoke && smoke_test_external_path(app, tool.id, &path).is_err() {
         return check(
+            app,
             tool,
             version,
             Some(path),
@@ -663,6 +586,7 @@ fn evaluate_tool(app: Option<&AppHandle>, tool: &ToolDef, run_smoke: bool) -> De
         );
     }
     check(
+        app,
         tool,
         version,
         Some(path),
@@ -673,6 +597,7 @@ fn evaluate_tool(app: Option<&AppHandle>, tool: &ToolDef, run_smoke: bool) -> De
 }
 
 fn check(
+    app: Option<&AppHandle>,
     tool: &ToolDef,
     detected_version: Option<String>,
     path: Option<PathBuf>,
@@ -703,12 +628,12 @@ fn check(
         installed_size_bytes: engine_distribution::load_manifest()
             .ok()
             .and_then(|manifest| engine_distribution::manifest_for_platform(&manifest, tool.id))
-            .map(|engine| {
-                engine_distribution::installed_size(
-                    &tool_env_root_unchecked(),
-                    tool.id,
-                    &engine.version,
-                )
+            .and_then(|engine| {
+                let root = bundled_engines_root(app);
+                root.map(|root| (engine, root))
+            })
+            .map(|(engine, root)| {
+                engine_distribution::installed_size(&root, tool.id, &engine.version)
             })
             .unwrap_or(0),
         estimated_installed_size_bytes: engine_distribution::load_manifest()
@@ -737,7 +662,6 @@ fn engine_candidates(
     target_id: &str,
     target_category_id: &str,
     builtin_engine: &str,
-    quality_enabled: bool,
 ) -> Vec<&'static str> {
     if builtin_engine == "ffmpeg" {
         return vec!["ffmpeg", "ffprobe"];
@@ -752,8 +676,7 @@ fn engine_candidates(
         if source.id == "svg" {
             return vec!["resvg", "rust-image"];
         }
-        if quality_enabled
-            && matches!(source.id, "png" | "jpg" | "webp" | "tiff")
+        if matches!(source.id, "png" | "jpg" | "webp" | "tiff")
             && matches!(target_id, "png" | "jpg" | "webp" | "tiff")
         {
             return vec!["libvips", "rust-image"];
@@ -768,18 +691,10 @@ fn engine_candidates(
             return vec!["pdf-extract", "rust-text"];
         }
         if prefers_pandoc(source.id, target_id) {
-            return if quality_enabled {
-                vec!["pandoc", "rust-text"]
-            } else {
-                vec!["rust-text"]
-            };
+            return vec!["pandoc", "rust-text"];
         }
         if prefers_libreoffice(source.id, target_id) {
-            return if quality_enabled {
-                vec!["libreoffice", "rust-text"]
-            } else {
-                vec!["rust-text"]
-            };
+            return vec!["libreoffice", "rust-text"];
         }
         if target_id == "pdf" {
             return vec!["rust-text"];
@@ -793,17 +708,10 @@ fn engine_candidates(
     }
 }
 
-fn is_available_for_quality_state(
-    app: Option<&AppHandle>,
-    id: &str,
-    quality_enabled: bool,
-) -> bool {
+fn is_candidate_available(app: Option<&AppHandle>, id: &str) -> bool {
     let Some(tool) = TOOLS.iter().find(|tool| tool.id == id) else {
         return false;
     };
-    if tool.mode == EngineMode::QualityMax && !quality_enabled {
-        return false;
-    }
     evaluate_tool(app, tool, false).available
 }
 
@@ -819,9 +727,6 @@ fn unavailable_reason(
     }
     for id in candidates {
         if let Some(tool) = TOOLS.iter().find(|tool| tool.id == *id) {
-            if tool.mode == EngineMode::QualityMax && !quality_marker_installed() {
-                return "Extension Qualité maximale non installée.".to_string();
-            }
             let check = evaluate_tool(app, tool, false);
             if !check.available {
                 return check
@@ -1060,47 +965,29 @@ pub(crate) fn tool_env_root() -> Result<PathBuf, String> {
         .ok_or_else(|| "Dossier local de l'application introuvable.".to_string())
 }
 
-fn tool_env_root_unchecked() -> PathBuf {
-    tool_env_root().unwrap_or_else(|_| PathBuf::from("."))
-}
-
-pub(crate) fn quality_marker_path() -> Result<PathBuf, String> {
-    Ok(tool_env_root()?.join("quality-max").join("installed.flag"))
-}
-
-pub(crate) fn quality_marker_installed() -> bool {
-    #[cfg(test)]
-    {
-        false
-    }
-    #[cfg(not(test))]
-    quality_marker_path().is_ok_and(|path| path.exists())
-}
-
-pub(crate) fn quality_max_ready() -> bool {
-    if !quality_marker_installed() {
-        return false;
-    }
-    let Ok(engines) = engine_distribution::quality_manifest_engines() else {
-        return false;
-    };
-    !engines.is_empty() && engines.iter().all(engine_distribution::engine_is_installed)
-}
-
 pub(crate) fn internet_available() -> bool {
     engine_distribution::https_url_available("https://github.com/")
         || engine_distribution::https_url_available("https://www.microsoft.com/")
 }
 
-fn manifest_binary(id: &str) -> Option<PathBuf> {
+fn bundled_engine_binary(app: Option<&AppHandle>, id: &str) -> Option<PathBuf> {
     let manifest = engine_distribution::load_manifest().ok()?;
     let engine = engine_distribution::manifest_for_platform(&manifest, id)?;
-    engine_distribution::installed_binary(
-        &tool_env_root().ok()?,
-        id,
-        &engine.version,
-        &engine.binary_paths,
-    )
+    let root = bundled_engines_root(app)?;
+    engine_distribution::installed_binary(&root, id, &engine.version, &engine.binary_paths)
+}
+
+fn bundled_engines_root(app: Option<&AppHandle>) -> Option<PathBuf> {
+    if let Some(app) = app
+        && let Ok(resource_dir) = app.path().resource_dir()
+    {
+        let candidate = resource_dir.join("engines");
+        if candidate.exists() {
+            return Some(candidate);
+        }
+    }
+    let candidate = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("bundled-engines");
+    candidate.exists().then_some(candidate)
 }
 
 fn bundled_binary(app: Option<&AppHandle>, stem: &str) -> Option<PathBuf> {
@@ -1148,10 +1035,19 @@ fn binary_name(stem: &str) -> String {
     }
 }
 
-fn base_required(id: &str) -> bool {
+fn required_tool(id: &str) -> bool {
     matches!(
         id,
-        "ffmpeg" | "ffprobe" | "rust-image" | "resvg" | "rust-text" | "pdf-extract"
+        "ffmpeg"
+            | "ffprobe"
+            | "rust-image"
+            | "resvg"
+            | "rust-text"
+            | "pdf-extract"
+            | "pdfium"
+            | "libreoffice"
+            | "pandoc"
+            | "libvips"
     )
 }
 
@@ -1187,7 +1083,7 @@ fn office_like(format_id: &str) -> bool {
 fn prefers_libreoffice(source_id: &str, target_id: &str) -> bool {
     office_like(source_id)
         || office_like(target_id)
-        || (target_id == "pdf" && !matches!(source_id, "txt" | "csv" | "json" | "xml"))
+        || (target_id == "pdf" && !matches!(source_id, "txt" | "csv" | "json" | "xml" | "md"))
 }
 
 fn prefers_pandoc(source_id: &str, target_id: &str) -> bool {
@@ -1252,7 +1148,7 @@ mod tests {
     }
 
     #[test]
-    fn pandoc_is_not_selected_for_pdf_output_without_pdf_toolchain() {
+    fn markdown_to_pdf_uses_integrated_text_pipeline() {
         let md = get_format_by_id("md").unwrap();
         let pdf = get_format_by_id("pdf").unwrap();
         let plan = select_engine(None, &md, pdf.id, pdf.category_id, "text");
@@ -1260,6 +1156,7 @@ mod tests {
         assert_eq!(plan.id, "rust-text");
         assert!(plan.available);
         assert!(!plan.plan.contains(&"Pandoc".to_string()));
+        assert!(!plan.plan.contains(&"LibreOffice".to_string()));
     }
 
     #[test]
@@ -1274,21 +1171,21 @@ mod tests {
     }
 
     #[test]
-    fn legacy_doc_source_requires_libreoffice() {
+    fn legacy_doc_source_uses_bundled_libreoffice() {
         let doc = get_format_by_id("doc").unwrap();
         let docx = get_format_by_id("docx").unwrap();
         let plan = select_engine(None, &doc, docx.id, docx.category_id, "external");
 
         assert_eq!(plan.id, "libreoffice");
         assert_eq!(plan.required_engine_ids, vec!["libreoffice"]);
-        assert!(!plan.available);
+        assert_eq!(plan.plan, vec!["LibreOffice headless"]);
     }
 
     #[test]
-    fn quality_catalog_is_reported_for_optional_extension() {
+    fn advanced_catalog_is_reported_as_bundled_engines() {
         let ids = TOOLS
             .iter()
-            .filter(|tool| tool.mode == EngineMode::QualityMax)
+            .filter(|tool| tool.mode == EngineMode::Advanced)
             .map(|tool| tool.id)
             .collect::<Vec<_>>();
         assert_eq!(ids, vec!["pdfium", "libreoffice", "pandoc", "libvips"]);
@@ -1305,10 +1202,10 @@ mod tests {
     }
 
     #[test]
-    fn quality_image_engine_keeps_ico_on_rust_image() {
+    fn advanced_image_engine_keeps_ico_on_rust_image() {
         let png = get_format_by_id("png").unwrap();
         let ico = get_format_by_id("ico").unwrap();
-        let candidates = engine_candidates(&png, ico.id, ico.category_id, "image", true);
+        let candidates = engine_candidates(&png, ico.id, ico.category_id, "image");
 
         assert_eq!(candidates, vec!["rust-image"]);
     }

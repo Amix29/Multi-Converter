@@ -36,7 +36,7 @@
 - [Overview](#overview)
 - [Supported Formats](#supported-formats)
 - [Privacy](#privacy)
-- [Maximum Quality Extension](#maximum-quality-extension)
+- [Bundled Conversion Engines](#bundled-conversion-engines)
 - [Licenses](#licenses)
 - [Legal Notice](#legal-notice)
 - [Development](#development)
@@ -54,7 +54,7 @@
 | 🆓 **Free and open source** | Use **Multi-Converter** freely and browse its source code. |
 | 🔒 **Local and private** | Your files stay on your computer throughout the conversion. |
 | 🔄 **Multi-format** | Documents, images, audio and video — all handled in a single app. |
-| ⚡ **Optional advanced mode** | The **Maximum Quality** extension adds specialized engines for complex conversions. |
+| ⚡ **Ready after install** | Specialized document, PDF and image engines are bundled with the Windows x64 app. |
 
 ---
 
@@ -96,13 +96,13 @@
 
 ## Privacy
 
-Conversions run on **your machine**. An internet connection may be required to download the app, install an update, or retrieve the optional **Maximum Quality** extension, but **Multi-Converter** never sends your files to the cloud.
+Conversions run on **your machine**. An internet connection may be required to download the app or install an update, but **Multi-Converter** never sends your files to the cloud.
 
 ---
 
-## Maximum Quality Extension
+## Bundled Conversion Engines
 
-The **Maximum Quality** extension downloads third-party engines to improve **Office**, **PDF**, **Markdown/HTML/EPUB** and **advanced image** conversions.
+The Windows x64 installer bundles third-party engines for **Office**, **PDF**, **Markdown/HTML/EPUB** and **advanced image** conversions, so users do not need a separate download after setup.
 
 *Full Windows x64 installation as declared in the manifest, sizes rounded:*
 
@@ -112,10 +112,7 @@ The **Maximum Quality** extension downloads third-party engines to improve **Off
 | LibreOffice headless | Accurate Office and PDF conversions | 483.8 MB | 1.51 GB | MPL-2.0 |
 | Pandoc | Markdown, HTML, EPUB, DOCX | 40.7 MB | 231.1 MB | GPL-2.0-or-later |
 | libvips | Advanced images | 10.8 MB | 28.5 MB | LGPL-2.1-or-later |
-| **Total** | Full extension | **540.9 MB** | **1.79 GB** | Multiple licenses |
-
-> **Note**
-> You can keep only the base conversions if you don't need these advanced engines.
+| **Total** | Bundled advanced engines | **540.9 MB** | **1.79 GB** | Multiple licenses |
 
 ---
 
@@ -130,7 +127,7 @@ Key points:
 - **Multi-Converter** itself is licensed under **AGPL-3.0-or-later**.
 - Third-party engines remain separate software with their own licenses.
 - The **Windows x64 V1** release bundles **FFmpeg** and **ffprobe** `8.1.1-essentials_build-www.gyan.dev`, built with `--enable-gpl`: the bundled executables are treated as third-party software covered by the GPL in this distribution.
-- The **Maximum Quality** extension may install **PDFium**, **LibreOffice**, **Pandoc** and **libvips**, each under their own license.
+- The Windows x64 installer bundles **PDFium**, **LibreOffice**, **Pandoc** and **libvips**, each under their own license.
 
 See [NOTICE](NOTICE) and [docs/THIRD_PARTY_ENGINES.md](docs/THIRD_PARTY_ENGINES.md) for details.
 
@@ -193,7 +190,7 @@ npm run test:rust
 npm run test:pdfium-wrapper
 ```
 
-`npm run check` covers installer asset generation, base engine validation, embedded manifest validation, i18n validation, TypeScript typechecking and engine packaging validation.
+`npm run check` covers installer asset generation, bundled engine validation, embedded manifest validation, i18n validation, TypeScript typechecking and engine packaging validation.
 
 Targeted commands useful during development:
 
@@ -201,7 +198,7 @@ Targeted commands useful during development:
 npm run typecheck
 npm run validate:i18n
 npm run validate:embedded-manifest
-npm run validate:bundled-base-engines
+npm run validate:bundled-engines
 npm run validate:engines
 ```
 
@@ -246,20 +243,20 @@ Generated folders (`dist`, `node_modules`, build caches, local engine sources, e
 
 ### Conversion Engines
 
-**Multi-Converter** works with two engine tiers:
+**Multi-Converter** works with bundled engine groups:
 
-| Tier | Role | Distribution |
+| Group | Role | Distribution |
 | --- | --- | --- |
 | Base | Common conversions available with the app | Integrated engines or bundled sidecars |
-| Maximum Quality | More accurate or more advanced conversions | Optional archives distributed separately |
+| Advanced | More accurate or more advanced conversions | Bundled Tauri resources prepared from verified engine ZIPs |
 
-The Windows x64 base engines `ffmpeg` and `ffprobe` are bundled in `src-tauri/binaries` and validated before each build.
+The Windows x64 base engines `ffmpeg` and `ffprobe` are bundled in `src-tauri/binaries`. Advanced engines are prepared into `src-tauri/bundled-engines` and bundled as Tauri resources. Both groups are validated before each build.
 
-Restore and validate the base engines:
+Restore and validate the bundled engines:
 
 ```bash
-npm run prepare:bundled-base-engines
-npm run validate:bundled-base-engines
+npm run prepare:bundled-engines
+npm run validate:bundled-engines
 ```
 
 To work locally on engine scripts, place temporary sources under:

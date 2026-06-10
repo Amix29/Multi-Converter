@@ -5,23 +5,24 @@ Multi-Converter is licensed under the GNU Affero General Public License
 version 3.0 or later (AGPL-3.0-or-later).
 See the LICENSE file for the full license text.
 
-Multi-Converter can use, download, install, update, repair, or uninstall
-third-party conversion engines. Those engines are separate third-party
-software packages and retain their own licenses, notices, and redistribution
-conditions.
+Multi-Converter can use bundled third-party conversion engines. Those engines
+are separate third-party software packages and retain their own licenses,
+notices, and redistribution conditions.
 
 The Windows x64 V1 application bundles FFmpeg and ffprobe
-8.1.1-essentials_build-www.gyan.dev as base sidecar executables. That build
-is configured with --enable-gpl, so the bundled FFmpeg/ffprobe executables are
-treated as GPL-covered third-party software in this distribution. Multi-Converter
-uses those executables as separate sidecar processes; the AGPL-3.0-or-later
-license for Multi-Converter does not replace the FFmpeg/ffprobe licenses.
+8.1.1-essentials_build-www.gyan.dev as base sidecar executables, and bundles
+advanced engines such as PDFium, LibreOffice, Pandoc, and libvips as app
+resources. The FFmpeg build is configured with --enable-gpl, so the bundled
+FFmpeg/ffprobe executables are treated as GPL-covered third-party software in
+this distribution. Multi-Converter uses these engines as separate local
+processes or libraries; the AGPL-3.0-or-later license for Multi-Converter does
+not replace their licenses.
 
 Each engine archive must include the applicable license files and, when
 required or configured, third-party notices for the engine and its bundled
 components. The AGPL-3.0-or-later license for Multi-Converter does not automatically
 apply to FFmpeg, ffprobe, PDFium, LibreOffice, Pandoc, libvips, 7-Zip,
-or any other third-party engine distributed separately.
+or any other third-party engine bundled or distributed for Multi-Converter.
 
 See docs/THIRD_PARTY_ENGINES.md for the V1 engine notice checklist and
 redistribution warnings.

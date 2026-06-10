@@ -49,7 +49,7 @@ await fs.writeFile(
     `Release: ${release.name ?? release.tag_name}`,
     "",
     "Pandoc is distributed under GPL-2.0-or-later.",
-    "This package is only used by the optional Multi-Converter Qualite maximale extension.",
+    "This package is bundled with Multi-Converter for advanced local document conversions.",
     "Pandoc is not used for PDF generation unless a complete PDF toolchain is explicitly added later.",
     "",
   ].join("\n"),

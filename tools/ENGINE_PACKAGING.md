@@ -67,32 +67,25 @@ npm run prepare:base-engines
 npm run package:base-engines
 ```
 
-Cette commande prépare FFmpeg/ffprobe depuis gyan.dev, génère `dist-engines-base/`, puis met à jour `src-tauri/engines-manifest.json` avec des URLs `file:///...` locales. C'est le chemin le plus rapide pour tester l'installation automatique sans publier de release distante.
+Cette commande prépare FFmpeg/ffprobe depuis gyan.dev et génère `dist-engines-base/` pour les mainteneurs qui doivent publier les archives de base.
 
 ## Activation dans l'application
 
-Le runtime embarque `src-tauri/engines-manifest.json`. Après un packaging publiable :
+Le runtime embarque `src-tauri/engines-manifest.json` et résout les moteurs avancés depuis les ressources Tauri `engines/`. Avant un build applicatif, restaurez les sidecars et moteurs embarqués :
 
 ```powershell
-$env:ENGINE_RELEASE_BASE_URL="https://<host>/<path>/"
-npm run package:engines
-Copy-Item dist-engines\engines-manifest.json src-tauri\engines-manifest.json -Force
+npm run prepare:bundled-engines
+npm run validate:bundled-engines
 ```
 
-En développement, il est aussi possible de tester un manifeste sans le copier dans le bundle :
+`prepare:bundled-engines` restaure FFmpeg/ffprobe dans `src-tauri/binaries` et extrait les moteurs avancés déclarés dans `src-tauri/engines-manifest.json` vers `src-tauri/bundled-engines`. Ce dossier est ignoré par Git et packagé comme ressource Tauri dans l'installateur.
 
-```powershell
-$env:MULTI_CONVERTER_ENGINE_MANIFEST="$PWD\dist-engines\engines-manifest.json"
-npm run tauri:dev
-```
-
-Tant que les URLs valent `REPLACE_WITH_RELEASE_BASE_URL` ou que les SHA-256 valent les placeholders, l'application considère les sources comme non configurées et ne télécharge pas.
+Tant que les URLs valent `REPLACE_WITH_RELEASE_BASE_URL` ou que les SHA-256 valent les placeholders, la préparation des moteurs embarqués échoue.
 
 ## Découpage recommandé
 
-- Base légère : FFmpeg/ffprobe et moteurs Rust intégrés.
-- PDF avancé : PDFium uniquement dans l'extension Qualité maximale.
-- Qualité maximale : PDFium, LibreOffice, Pandoc et libvips.
+- Base : FFmpeg/ffprobe et moteurs Rust intégrés.
+- Avancé embarqué : PDFium, LibreOffice, Pandoc et libvips.
 
 ## Contrôles stricts
 
@@ -108,7 +101,7 @@ Le packaging échoue si :
 
 Chaque ZIP contient un `engine.json` généré, les binaires déclarés, les licences et les notices configurées.
 
-## PDFium qualityMax
+## PDFium advanced
 
 PDFium est préparé séparément de la Base légère :
 
@@ -140,9 +133,9 @@ pdfium-render --render-all input.pdf output-dir --format jpg --dpi 200 --quality
 
 Dans l'application, PDF -> PNG/JPEG produit une archive ZIP contenant une image par page. Cela garde un résultat unique même pour les PDF multi-pages.
 
-## Pandoc qualityMax
+## Pandoc advanced
 
-Pandoc est un moteur `qualityMax` optionnel pour les conversions documentaires structurées : Markdown, HTML, EPUB et DOCX textuel. Il n'est pas utilisé pour produire du PDF tant qu'une chaîne PDF complète n'est pas configurée.
+Pandoc est un moteur `advanced` embarqué pour les conversions documentaires structurées : Markdown, HTML, EPUB et DOCX textuel. Il n'est pas utilisé pour produire du PDF tant qu'une chaîne PDF complète n'est pas configurée.
 
 ```powershell
 npm run prepare:pandoc-engine
@@ -160,9 +153,9 @@ Structure attendue du paquet :
 
 Le test santé convertit un mini Markdown vers HTML et vérifie que le texte attendu est présent.
 
-## libvips qualityMax
+## libvips advanced
 
-libvips est un moteur `qualityMax` optionnel pour les conversions images avancées. Il ne remplace pas le moteur Rust image en Base légère et n'active que les formats validés dans le registre : PNG, JPEG, WebP et TIFF.
+libvips est un moteur `advanced` embarqué pour les conversions images avancées. Il ne remplace pas le moteur Rust image et n'active que les formats validés dans le registre : PNG, JPEG, WebP et TIFF.
 
 ```powershell
 npm run prepare:libvips-engine
@@ -189,7 +182,7 @@ Ne publiez pas HEIC/HEIF/AVIF/RAW/PSD/JP2 tant que le build packagé n'a pas pro
 
 - FFmpeg/ffprobe : V1 Windows x64 utilise le build Gyan `8.1.1` avec `--enable-gpl`; inclure/licencier comme GPL, conserver les notices et fournir l'accès au source/build correspondant.
 - LibreOffice : MPL 2.0 principalement.
-- Pandoc : GPL 2.0 ou ultérieure. Il est inclus uniquement dans l'extension optionnelle Qualité maximale.
+- Pandoc : GPL 2.0 ou ultérieure. Il est inclus dans le groupe de moteurs avancés embarqués.
 - PDFium : BSD-3-Clause. La préparation utilise la release Windows x64 de `bblanchon/pdfium-binaries`, qui redistribue les builds Chromium PDFium avec leurs notices tierces. Le paquet Multi-Converter contient `bin/pdfium.dll` et le wrapper interne `bin/pdfium-render-x86_64-pc-windows-msvc.exe`, construit avec le crate Rust `pdfium-render`, pour effectuer les tests santé et les rendus.
 - MuPDF et Poppler ne sont pas retenus pour les packs actifs à cause de leurs contraintes de licence. PDFBox n'est pas retenu car il implique Java/JVM.
 - libvips : LGPL 2.1 ou ultérieure. Le script utilise les builds Windows officiels `libvips/build-win64-mxe`; les DLL/dépendances incluses peuvent avoir leurs propres licences et doivent rester documentées dans `licenses/THIRD_PARTY_NOTICES.txt`.

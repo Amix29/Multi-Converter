@@ -11,22 +11,25 @@ for (const engine of manifest.engines ?? []) {
   const url = String(engine.downloadUrl ?? "");
   const sha = String(engine.sha256 ?? "");
   const configured = !url.includes("REPLACE_WITH_RELEASE_BASE_URL") && !/^0{64}$/.test(sha);
-  const explicitlyUnpublished = engine.published === false;
 
   if (/file:\/\//i.test(url) || /[A-Z]:\/Users\//i.test(url) || /[A-Z]:\\Users\\/i.test(url)) {
     errors.push(`${engine.id}: manifest embarqué contient un chemin local (${url})`);
   }
 
-  if (!configured && !explicitlyUnpublished) {
-    errors.push(`${engine.id}: placeholder/hash zero sans published:false`);
+  if (!configured) {
+    errors.push(`${engine.id}: archive publiée ou hash SHA-256 non configuré`);
   }
 
-  if (explicitlyUnpublished && engine.mode !== "qualityMax") {
-    errors.push(`${engine.id}: seuls les moteurs qualityMax optionnels peuvent être unpublished`);
+  if (engine.published === false) {
+    errors.push(`${engine.id}: un moteur embarqué ne doit pas être marked published:false`);
   }
 
-  if (engine.mode !== "qualityMax") {
-    errors.push(`${engine.id}: le manifeste runtime ne doit contenir que les moteurs qualityMax téléchargeables`);
+  if (engine.mode !== "advanced") {
+    errors.push(`${engine.id}: le manifeste embarqué ne doit contenir que les moteurs avancés packagés`);
+  }
+
+  if (engine.required !== true) {
+    errors.push(`${engine.id}: les moteurs avancés embarqués doivent être required:true`);
   }
 }
 

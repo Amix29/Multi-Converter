@@ -13,6 +13,7 @@ target/
 
 # Engine packaging inputs and generated archives
 engine-sources/
+src-tauri/bundled-engines/
 dist-engines/
 dist-engines-*/
 

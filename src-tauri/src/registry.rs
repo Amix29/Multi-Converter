@@ -58,7 +58,7 @@ const CATEGORIES: &[Category] = &[
                 "doc",
                 "DOC",
                 &["doc"],
-                "Ancien document Word, conversion via Qualité maximale",
+                "Ancien document Word, conversion avec LibreOffice embarqué",
             ),
             ("txt", "TXT", &["txt", "log"], "Texte brut, tout support"),
             ("html", "HTML", &["html", "htm"], "Pages web"),

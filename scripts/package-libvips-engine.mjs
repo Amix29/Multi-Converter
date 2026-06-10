@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 const root = process.cwd();
 const fullConfigPath = path.join(root, "tools", "engine-packages.config.json");
 const libvipsConfigPath = path.join(root, "engine-sources", ".libvips-engine-packages.config.json");
-const outputDir = path.join(root, "dist-engines-quality");
+const outputDir = path.join(root, "dist-engines-advanced");
 const embeddedManifestPath = path.join(root, "src-tauri", "engines-manifest.json");
 const releaseBaseUrl = process.env.ENGINE_RELEASE_BASE_URL ?? fileBaseUrl(outputDir);
 
@@ -47,18 +47,18 @@ const generatedById = new Map(generated.engines.map((engine) => [engine.id, engi
 embedded.generatedAt = generated.generatedAt;
 embedded.engines = embedded.engines.map((engine) => generatedById.get(engine.id) ?? engine);
 await fs.writeFile(embeddedManifestPath, `${JSON.stringify(embedded, null, 2)}\n`, "utf8");
-await writeMergedQualityManifest(generatedManifestPath, embedded);
+await writeMergedAdvancedManifest(generatedManifestPath, embedded);
 console.log(`Embedded manifest updated with libvips from ${path.relative(root, generatedManifestPath)}`);
 
 function fileBaseUrl(dir) {
   return `${pathToFileURL(path.resolve(dir)).href}/`;
 }
 
-async function writeMergedQualityManifest(target, embedded) {
-  const qualityEngines = embedded.engines.filter((engine) => engine.mode === "qualityMax");
+async function writeMergedAdvancedManifest(target, embedded) {
+  const advancedEngines = embedded.engines.filter((engine) => engine.mode === "advanced");
   await fs.writeFile(
     target,
-    `${JSON.stringify({ manifestVersion: embedded.manifestVersion, generatedAt: embedded.generatedAt, engines: qualityEngines }, null, 2)}\n`,
+    `${JSON.stringify({ manifestVersion: embedded.manifestVersion, generatedAt: embedded.generatedAt, engines: advancedEngines }, null, 2)}\n`,
     "utf8",
   );
 }

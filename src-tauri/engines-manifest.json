@@ -5,7 +5,7 @@
     {
       "id": "pdfium",
       "displayName": "PDFium",
-      "mode": "qualityMax",
+      "mode": "advanced",
       "version": "compatible",
       "platform": "windows-x64",
       "archiveType": "zip",
@@ -23,13 +23,13 @@
       "noticeFiles": [
         "licenses/THIRD_PARTY_NOTICES.txt"
       ],
-      "required": false,
+      "required": true,
       "dependencies": []
     },
     {
       "id": "libreoffice",
       "displayName": "LibreOffice headless",
-      "mode": "qualityMax",
+      "mode": "advanced",
       "version": "compatible",
       "platform": "windows-x64",
       "archiveType": "zip",
@@ -46,13 +46,13 @@
       "noticeFiles": [
         "licenses/THIRD_PARTY_NOTICES.txt"
       ],
-      "required": false,
+      "required": true,
       "dependencies": []
     },
     {
       "id": "pandoc",
       "displayName": "Pandoc",
-      "mode": "qualityMax",
+      "mode": "advanced",
       "version": "compatible",
       "platform": "windows-x64",
       "archiveType": "zip",
@@ -69,13 +69,13 @@
       "noticeFiles": [
         "licenses/THIRD_PARTY_NOTICES.txt"
       ],
-      "required": false,
+      "required": true,
       "dependencies": []
     },
     {
       "id": "libvips",
       "displayName": "libvips",
-      "mode": "qualityMax",
+      "mode": "advanced",
       "version": "compatible",
       "platform": "windows-x64",
       "archiveType": "zip",
@@ -92,7 +92,7 @@
       "noticeFiles": [
         "licenses/THIRD_PARTY_NOTICES.txt"
       ],
-      "required": false,
+      "required": true,
       "dependencies": []
     }
   ]

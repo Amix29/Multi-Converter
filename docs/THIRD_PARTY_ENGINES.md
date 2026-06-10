@@ -24,17 +24,17 @@ For bundled FFmpeg/ffprobe binaries, the same rule applies even though they are 
 | --- | --- | --- | --- |
 | FFmpeg | Base bundled | V1 Windows x64 uses `8.1.1-essentials_build-www.gyan.dev`, configured with `--enable-gpl`. Treat the bundled executable as GPL-covered third-party software. | Document the exact Gyan build, preserve FFmpeg license/notices, and provide access to corresponding FFmpeg source/build information for the released binary. |
 | ffprobe | Base bundled | Same Gyan `8.1.1` build family and GPL treatment as FFmpeg. | Keep notices aligned with the FFmpeg build it came from. |
-| PDFium | Quality Max | BSD-3-Clause for PDFium builds, with Chromium/PDFium third-party notices. | Include PDFium license, Chromium/PDFium third-party notices, and wrapper notices. |
-| LibreOffice | Quality Max | MPL-2.0/LGPL family with many bundled third-party components. | Include LibreOffice license files and third-party notices matching the packaged runtime. |
-| Pandoc | Quality Max | GPL-2.0-or-later for Pandoc binaries. | Keep Pandoc optional and separate; include copyright/license text and dependency notices. |
-| libvips | Quality Max | LGPL-2.1-or-later, with many image codec dependencies that may carry separate terms. | Include libvips license and notices for all bundled DLLs/codecs. |
-| 7-Zip | Quality Max or future archive engine | LGPL with additional unRAR restriction if RAR support is included. | Document 7-Zip usage, link to source, and avoid implying RAR creation support unless explicitly verified. |
+| PDFium | Advanced bundled | BSD-3-Clause for PDFium builds, with Chromium/PDFium third-party notices. | Include PDFium license, Chromium/PDFium third-party notices, and wrapper notices. |
+| LibreOffice | Advanced bundled | MPL-2.0/LGPL family with many bundled third-party components. | Include LibreOffice license files and third-party notices matching the packaged runtime. |
+| Pandoc | Advanced bundled | GPL-2.0-or-later for Pandoc binaries. | Include copyright/license text and dependency notices. |
+| libvips | Advanced bundled | LGPL-2.1-or-later, with many image codec dependencies that may carry separate terms. | Include libvips license and notices for all bundled DLLs/codecs. |
+| 7-Zip | Future archive engine | LGPL with additional unRAR restriction if RAR support is included. | Document 7-Zip usage, link to source, and avoid implying RAR creation support unless explicitly verified. |
 
 ## User-facing warning
 
 Recommended release wording:
 
-> Multi-Converter can install optional third-party conversion engines for better format support. These engines are separate software packages with their own licenses and notices. Installing the Quality Max extension may add GPL, LGPL, MPL, BSD, Apache, or similarly licensed components depending on the selected engines.
+> Multi-Converter bundles third-party conversion engines for better format support in the Windows x64 installer. These engines are separate software packages with their own licenses and notices. The bundled engine set may add GPL, LGPL, MPL, BSD, Apache, or similarly licensed components depending on the selected engines.
 
 ## Packaging checks
 

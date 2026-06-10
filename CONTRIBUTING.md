@@ -33,7 +33,7 @@ Run the checks that match the files you changed. For most code changes:
 npm run typecheck
 npm run validate:i18n
 npm run validate:embedded-manifest
-npm run validate:bundled-base-engines
+npm run validate:bundled-engines
 npm run test:rust
 npm run test:pdfium-wrapper
 ```
@@ -48,6 +48,6 @@ npm run clippy:pdfium-wrapper
 
 ## Third-Party Engines
 
-Do not commit generated engine archives, local engine sources, or build caches. The base Windows x64 FFmpeg/ffprobe sidecars are intentionally bundled and must keep their license notices accurate. Quality Max engines are distributed as separate ZIP archives through releases.
+Do not commit generated engine archives, extracted bundled engines, local engine sources, or build caches. The Windows x64 FFmpeg/ffprobe sidecars and advanced conversion engines are intentionally bundled and must keep their license notices accurate. Advanced engine ZIPs may still be published through releases as verified build inputs.
 
 Do not change engine versions, public engine URLs, generated manifests, release checksums, or release archive contents unless a maintainer explicitly asks for that work.

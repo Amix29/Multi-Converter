@@ -6,13 +6,11 @@ import { check, type Update } from "@tauri-apps/plugin-updater";
 import {
   api,
   type ConversionResult,
-  type DependencyBootstrap,
-  type EngineInstallProgress,
-  type EngineStatus,
   type ExportResult,
   type FileDescription,
   type TargetFormat,
 } from "./lib/api";
+import { releaseNotesForLanguage, translateReleaseNotesForLanguage } from "./lib/releaseNotes";
 import {
   languageLabel,
   languageOptions,
@@ -29,7 +27,6 @@ type Step = 1 | 2 | 3;
 type Status = "pending" | "ready" | "queued" | "working" | "canceling" | "canceled" | "done" | "error" | "unsupported";
 type NoticeTone = "info" | "success" | "error";
 type ExportKind = "downloads" | "folder";
-type EngineOperationKind = "install" | "uninstall" | null;
 type UpdateStatus = "idle" | "checking" | "available" | "notAvailable" | "installing" | "error";
 type FeedbackKind = "bug" | "feature" | "other";
 type ImportFeedback =
@@ -92,7 +89,7 @@ const latestReleaseUrl = `${releaseBaseUrl}/latest`;
 const releaseApiBaseUrl = "https://api.github.com/repos/Amix29/Multi-Converter/releases/tags";
 const updateCheckTimeoutMs = 20000;
 const releaseNotesTimeoutMs = 8000;
-const minimumReportVersion = "1.0.2";
+const minimumReportVersion = "1.0.3";
 
 const feedbackKinds: FeedbackKind[] = ["bug", "feature", "other"];
 const feedbackLabels: Record<FeedbackKind, string> = {
@@ -195,7 +192,6 @@ function clearPendingUpdateInstallation() {
 
 export default function App() {
   const { language, setLanguage } = useI18n();
-  const [bootInfo, setBootInfo] = useState<DependencyBootstrap | null>(null);
   const bootStarted = useRef(false);
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => readStoredNotificationsEnabled());
@@ -215,10 +211,6 @@ export default function App() {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFeedbackPrivacyOpen, setIsFeedbackPrivacyOpen] = useState(false);
   const [feedbackPrivacyAccepted, setFeedbackPrivacyAccepted] = useState(() => readStoredFeedbackPrivacyAccepted());
-  const [engineStatuses, setEngineStatuses] = useState<EngineStatus[]>([]);
-  const [engineProgress, setEngineProgress] = useState<EngineInstallProgress | null>(null);
-  const [isEngineOperationRunning, setIsEngineOperationRunning] = useState(false);
-  const [engineOperationKind, setEngineOperationKind] = useState<EngineOperationKind>(null);
   const [step, setStep] = useState<Step>(1);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [outputDir, setOutputDir] = useState<string | null>(null);
@@ -232,7 +224,6 @@ export default function App() {
   const [isDragOver, setIsDragOver] = useState(false);
   const wasConverting = useRef(false);
   const cancellationRequested = useRef(false);
-  const pendingQualityRefresh = useRef(false);
   const updateRef = useRef<Update | null>(null);
   const updateCheckSequence = useRef(0);
   const updateStatusRef = useRef<UpdateStatus>("idle");
@@ -385,11 +376,6 @@ export default function App() {
   }, [importFeedback]);
 
   useEffect(() => {
-    if (!isSettingsOpen) return;
-    api.engineStatuses().then(setEngineStatuses).catch(() => setEngineStatuses([]));
-  }, [isSettingsOpen]);
-
-  useEffect(() => {
     if (bootStarted.current) return;
     bootStarted.current = true;
 
@@ -400,69 +386,16 @@ export default function App() {
 
     api.bootstrapDependencies()
       .then((dependencies) => {
-        setBootInfo(dependencies);
         setInternetAvailable(dependencies.internetAvailable);
       })
       .catch(() => {
-        setBootInfo(null);
         setInternetAvailable(navigator.onLine);
       })
       .finally(() => setBootInfoLoaded(true));
   }, [language]);
 
-  async function installQualityMaxExtension() {
-    if (isEngineOperationRunning) return;
-    setIsEngineOperationRunning(true);
-    setEngineOperationKind("install");
-    setEngineProgress(null);
-    try {
-      const dependencies = await api.installQualityMaxExtension();
-      setBootInfo(dependencies);
-      setInternetAvailable(dependencies.internetAvailable);
-      setEngineStatuses(await api.engineStatuses());
-      if (isConverting) {
-        pendingQualityRefresh.current = true;
-      } else {
-        await refreshImportedFilesForCurrentEngines();
-      }
-      showNotice("success", t(language, "notice.qualityInstalled"));
-    } catch (error) {
-      showNotice("error", translateBackendMessage(language, error instanceof Error ? error.message : String(error || "")));
-    } finally {
-      setIsEngineOperationRunning(false);
-      setEngineOperationKind(null);
-      setEngineProgress(null);
-    }
-  }
-
-  async function uninstallQualityMaxExtension() {
-    if (isEngineOperationRunning) return;
-    setIsEngineOperationRunning(true);
-    setEngineOperationKind("uninstall");
-    setEngineProgress(null);
-    try {
-      await api.uninstallQualityMaxExtension();
-      const dependencies = await api.refreshEngineDiagnostics();
-      setBootInfo(dependencies);
-      setInternetAvailable(dependencies.internetAvailable);
-      setEngineStatuses(await api.engineStatuses());
-      if (isConverting) {
-        pendingQualityRefresh.current = true;
-      } else {
-        await refreshImportedFilesForCurrentEngines();
-      }
-      showNotice("success", t(language, "notice.qualityUninstalled"));
-    } catch (error) {
-      showNotice("error", translateBackendMessage(language, error instanceof Error ? error.message : String(error || "")));
-    } finally {
-      setIsEngineOperationRunning(false);
-      setEngineOperationKind(null);
-    }
-  }
-
   useEffect(() => {
     let progressUnlisten: (() => void) | undefined;
-    let engineProgressUnlisten: (() => void) | undefined;
     let dropUnlisten: (() => void) | undefined;
     let disposed = false;
 
@@ -482,16 +415,6 @@ export default function App() {
       progressUnlisten = unlisten;
     });
 
-    api.onEngineInstallProgress((payload) => {
-      setEngineProgress(payload);
-    }).then((unlisten) => {
-      if (disposed) {
-        unlisten();
-        return;
-      }
-      engineProgressUnlisten = unlisten;
-    });
-
     api.onFileDrop(async (paths) => {
       if (!paths.length) return;
       await addFilePaths(paths);
@@ -506,7 +429,6 @@ export default function App() {
     return () => {
       disposed = true;
       progressUnlisten?.();
-      engineProgressUnlisten?.();
       dropUnlisten?.();
     };
   }, [language]);
@@ -523,11 +445,6 @@ export default function App() {
     const selectedFiles = files.filter((file) => file.selectedFormat);
     const allFinished = selectedFiles.length > 0 && selectedFiles.every((file) => file.status === "done" || file.status === "error" || file.status === "canceled");
     if (!allFinished) return;
-
-    if (pendingQualityRefresh.current) {
-      pendingQualityRefresh.current = false;
-      void refreshImportedFilesForCurrentEngines();
-    }
 
     const failed = selectedFiles.some((file) => file.status === "error");
     void notifyConversionFinished(language, failed, notificationsEnabled);
@@ -925,7 +842,6 @@ export default function App() {
     setStep(3);
 
     const concurrency = conversionConcurrency(jobs);
-    const qualityMaxEnabledForBatch = Boolean(bootInfo?.qualityMaxInstalled);
     const jobIds = new Map(jobs.map((job) => [job.id, crypto.randomUUID()]));
     setFiles((items) =>
       items.map((file) => {
@@ -963,7 +879,6 @@ export default function App() {
             targetFormat: file.selectedFormat as string,
             outputDir: targetOutputDir,
             batchConcurrency: concurrency,
-            qualityMaxEnabled: qualityMaxEnabledForBatch,
           });
           setFiles((items) =>
             items.map((item) =>
@@ -1120,8 +1035,6 @@ export default function App() {
       <SettingsPanel
         isOpen={isSettingsOpen}
         language={language}
-        bootInfo={bootInfo}
-        engineStatuses={engineStatuses}
         notificationsEnabled={notificationsEnabled}
         internetAvailable={internetAvailable}
         currentVersion={currentVersion}
@@ -1134,11 +1047,6 @@ export default function App() {
         onNotificationsEnabled={setNotificationsEnabled}
         onCheckForUpdate={() => void checkForAppUpdate(true)}
         onInstallUpdate={() => void installAvailableUpdate()}
-        onInstallQualityMax={installQualityMaxExtension}
-        onUninstallQualityMax={uninstallQualityMaxExtension}
-        engineProgress={engineProgress}
-        engineOperationBusy={isEngineOperationRunning}
-        engineOperationKind={engineOperationKind}
       />
 
       <UpdateDialog
@@ -1170,7 +1078,7 @@ export default function App() {
       />
 
       <FeedbackButton
-        isVisible={!isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen && updateStatus !== "installing" && !isFeedbackOpen && !isFeedbackPrivacyOpen}
+        isVisible={step === 1 && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen && updateStatus !== "installing" && !isFeedbackOpen && !isFeedbackPrivacyOpen}
         language={language}
         onOpen={openFeedback}
       />
@@ -1493,9 +1401,29 @@ function UpdateDialog(props: {
   onInstall(): void;
   onCancel(): void;
 }) {
+  const rawReleaseNotes = props.updateInfo?.body?.trim() ?? "";
+  const [localizedReleaseNotes, setLocalizedReleaseNotes] = useState("");
+
+  useEffect(() => {
+    if (!props.isOpen || !rawReleaseNotes) {
+      setLocalizedReleaseNotes("");
+      return;
+    }
+
+    let disposed = false;
+    setLocalizedReleaseNotes(releaseNotesForLanguage(rawReleaseNotes, props.language));
+    translateReleaseNotesForLanguage(rawReleaseNotes, props.language).then((translated) => {
+      if (!disposed) setLocalizedReleaseNotes(translated);
+    });
+
+    return () => {
+      disposed = true;
+    };
+  }, [props.isOpen, props.language, rawReleaseNotes]);
+
   if (!props.isOpen || !props.updateInfo) return null;
   const installing = props.updateStatus === "installing";
-  const releaseNotes = props.updateInfo.body?.trim();
+  const releaseNotes = localizedReleaseNotes.trim();
 
   return (
     <div className="update-overlay" role="presentation" onMouseDown={installing ? undefined : props.onCancel}>
@@ -1511,7 +1439,7 @@ function UpdateDialog(props: {
         <p>{t(props.language, "update.dialogBody", { current: props.updateInfo.currentVersion, latest: props.updateInfo.version })}</p>
         <section className="update-release-notes" aria-label={t(props.language, "update.releaseNotes")}>
           <strong>{t(props.language, "update.releaseNotes")}</strong>
-          {releaseNotes ? <ReleaseNotes body={releaseNotes} /> : <p>{t(props.language, "update.noReleaseNotes")}</p>}
+          {releaseNotes ? <ReleaseNotes body={releaseNotes} language={props.language} /> : <p>{t(props.language, "update.noReleaseNotes")}</p>}
         </section>
         {installing && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} size={props.updateDownloadSize} />}
         <a className="release-link" href={releasePageUrl(props.updateInfo.version)} target="_blank" rel="noreferrer">
@@ -1552,8 +1480,8 @@ function UpdateInstallDialog(props: {
   );
 }
 
-function ReleaseNotes(props: { body: string }) {
-  const lines = props.body
+function ReleaseNotes(props: { body: string; language: LanguageCode }) {
+  const lines = releaseNotesForLanguage(props.body, props.language)
     .replace(/\r\n/g, "\n")
     .split("\n")
     .map((line) => line.trim());
@@ -1881,11 +1809,6 @@ async function openExternalUrl(url: string) {
 function SettingsPanel(props: {
   isOpen: boolean;
   language: LanguageCode;
-  bootInfo: DependencyBootstrap | null;
-  engineStatuses: EngineStatus[];
-  engineProgress: EngineInstallProgress | null;
-  engineOperationBusy: boolean;
-  engineOperationKind: EngineOperationKind;
   notificationsEnabled: boolean;
   internetAvailable: boolean;
   currentVersion: string;
@@ -1898,12 +1821,8 @@ function SettingsPanel(props: {
   onNotificationsEnabled(enabled: boolean): void;
   onCheckForUpdate(): void;
   onInstallUpdate(): void;
-  onInstallQualityMax(): void;
-  onUninstallQualityMax(): void;
 }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const [isUninstallConfirmOpen, setIsUninstallConfirmOpen] = useState(false);
-  const [uninstallVisualProgress, setUninstallVisualProgress] = useState(0);
 
   useEffect(() => {
     if (!props.isOpen) return;
@@ -1919,31 +1838,8 @@ function SettingsPanel(props: {
     };
   }, [props.isOpen, props.onClose]);
 
-  useEffect(() => {
-    if (!props.engineOperationBusy || props.engineOperationKind !== "uninstall") {
-      setUninstallVisualProgress(0);
-      return;
-    }
-    setUninstallVisualProgress(8);
-    const interval = window.setInterval(() => {
-      setUninstallVisualProgress((value) => Math.min(92, value + (value < 52 ? 9 : 4)));
-    }, 260);
-    return () => window.clearInterval(interval);
-  }, [props.engineOperationBusy, props.engineOperationKind]);
-
   if (!props.isOpen) return null;
-  const qualityInstalled = Boolean(props.bootInfo?.qualityMaxInstalled);
   const internetAvailable = props.internetAvailable;
-  const extensionSize = qualitySizeText(props.language, props.engineStatuses);
-  const qualityProgress = extensionProgressSummary(
-    props.engineStatuses,
-    props.engineProgress,
-    props.engineOperationKind,
-    props.engineOperationBusy,
-    uninstallVisualProgress,
-    props.language,
-  );
-  const extensionBusy = props.engineOperationBusy && (props.engineOperationKind === "install" || props.engineOperationKind === "uninstall");
   const handleLanguageSelection = (value: string) => {
     if (languageOptions.includes(value as LanguageCode)) {
       props.onLanguage(value as LanguageCode);
@@ -2006,40 +1902,6 @@ function SettingsPanel(props: {
           </section>
 
           <section className="settings-side">
-            <section className="extension-card quality-extension-card" aria-labelledby="quality-extension-title">
-              <div className="extension-heading">
-                <span className="label">{t(props.language, "quality.label")}</span>
-                <strong id="quality-extension-title">{t(props.language, "quality.title")}</strong>
-                <b className={qualityInstalled ? "extension-state is-installed" : "extension-state"}>
-                  {qualityInstalled ? t(props.language, "quality.installed") : t(props.language, "quality.notInstalled")}
-                </b>
-              </div>
-              <p>{t(props.language, "quality.description")}</p>
-              <em>{t(props.language, "quality.estimatedSize", { size: extensionSize })}</em>
-              {qualityProgress && (
-                <div className={`engine-progress ${qualityProgress.indeterminate ? "is-indeterminate" : ""}`}>
-                  <span>{qualityProgress.label}</span>
-                  {!qualityProgress.indeterminate && <strong>{qualityProgress.percent}%</strong>}
-                  <div className="progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={qualityProgress.indeterminate ? undefined : qualityProgress.percent}>
-                    <div className="progress-bar" style={qualityProgress.indeterminate ? undefined : { width: `${qualityProgress.percent}%` }} />
-                  </div>
-                  {qualityProgress.meta && <small>{qualityProgress.meta}</small>}
-                </div>
-              )}
-              <div className="settings-actions">
-                {qualityInstalled ? (
-                  <button className="secondary-button danger-button" type="button" disabled={extensionBusy} onClick={() => setIsUninstallConfirmOpen(true)}>
-                    {props.engineOperationKind === "uninstall" ? t(props.language, "quality.uninstalling") : t(props.language, "quality.uninstall")}
-                  </button>
-                ) : (
-                  <button className="primary-button" type="button" disabled={!internetAvailable || extensionBusy} onClick={props.onInstallQualityMax}>
-                    {props.engineOperationKind === "install" ? t(props.language, "quality.installing") : t(props.language, "quality.install")}
-                  </button>
-                )}
-              </div>
-              {!internetAvailable && !qualityInstalled && <small>{t(props.language, "quality.internetRequired")}</small>}
-            </section>
-
             <section className="update-settings-card" aria-labelledby="update-settings-title">
               <div className="update-settings-heading">
                 <div>
@@ -2073,30 +1935,6 @@ function SettingsPanel(props: {
             </section>
           </section>
         </div>
-
-        {isUninstallConfirmOpen && (
-          <div className="confirm-layer" role="presentation" onMouseDown={() => setIsUninstallConfirmOpen(false)}>
-            <section className="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="uninstall-title" onMouseDown={(event) => event.stopPropagation()}>
-              <h3 id="uninstall-title">{t(props.language, "quality.uninstallTitle")}</h3>
-              <p>{t(props.language, "quality.uninstallBody")}</p>
-              <div className="confirm-actions">
-                <button className="secondary-button" type="button" onClick={() => setIsUninstallConfirmOpen(false)}>
-                  {t(props.language, "quality.cancel")}
-                </button>
-                <button
-                  className="primary-button danger-button"
-                  type="button"
-                  onClick={() => {
-                    setIsUninstallConfirmOpen(false);
-                    props.onUninstallQualityMax();
-                  }}
-                >
-                  {t(props.language, "quality.confirmUninstall")}
-                </button>
-              </div>
-            </section>
-          </div>
-        )}
       </section>
     </div>
   );
@@ -2217,7 +2055,7 @@ function advanceWelcomeStep(
   });
 }
 
-type WelcomePreviewKind = "hello" | "language" | "extension" | "convert";
+type WelcomePreviewKind = "hello" | "language" | "convert";
 
 function welcomeSlides(): Array<{
   id: WelcomePreviewKind;
@@ -2229,7 +2067,6 @@ function welcomeSlides(): Array<{
   return [
     { id: "hello", eyebrowKey: "welcome.eyebrow", titleKey: "welcome.helloTitle", bodyKey: "welcome.helloBody", preview: "hello" },
     { id: "language", eyebrowKey: "welcome.stepSettings", titleKey: "welcome.languageTitle", bodyKey: "welcome.languageText", preview: "language" },
-    { id: "extension", eyebrowKey: "welcome.stepExtension", titleKey: "welcome.extensionTitle", bodyKey: "welcome.extensionText", preview: "extension" },
     { id: "convert", eyebrowKey: "welcome.stepStart", titleKey: "welcome.convertTitle", bodyKey: "welcome.convertText", preview: "convert" },
   ];
 }
@@ -2251,16 +2088,6 @@ function WelcomePreview(props: { kind: WelcomePreviewKind; language: LanguageCod
       <div className="welcome-preview welcome-preview-settings is-language" aria-label={t(props.language, "welcome.previewLabel")}>
         <div className="mini-capture-frame mini-settings-capture">
           <MiniSettingsPanel language={props.language} focus="language" />
-        </div>
-      </div>
-    );
-  }
-
-  if (props.kind === "extension") {
-    return (
-      <div className="welcome-preview welcome-preview-settings is-extension" aria-label={t(props.language, "welcome.previewLabel")}>
-        <div className="mini-capture-frame mini-settings-capture">
-          <MiniSettingsPanel language={props.language} focus="extension" />
         </div>
       </div>
     );
@@ -2321,7 +2148,7 @@ function MiniUploadArea(props: { language: LanguageCode }) {
   );
 }
 
-function MiniSettingsPanel(props: { language: LanguageCode; focus: "language" | "extension" }) {
+function MiniSettingsPanel(props: { language: LanguageCode; focus: "language" }) {
   return (
     <section className={`settings-panel mini-settings-panel is-${props.focus}`} aria-hidden="true">
       <header className="settings-header">
@@ -2335,112 +2162,50 @@ function MiniSettingsPanel(props: { language: LanguageCode; focus: "language" | 
 
       <div className="settings-grid">
         <section className="settings-column">
-          <label className={`setting-select ${props.focus === "language" ? "mini-focus" : ""}`} htmlFor="mini-language-select">
+          <section className={`setting-select language-setting ${props.focus === "language" ? "mini-focus" : ""}`}>
             <span className="label">{t(props.language, "settings.language")}</span>
-            <select id="mini-language-select" value={props.language} disabled>
+            <div className="language-choice-grid">
               {languageOptions.map((languageOption) => (
-                <option key={languageOption} value={languageOption}>
+                <button key={languageOption} type="button" className={`language-choice ${props.language === languageOption ? "is-selected" : ""}`} disabled>
                   {languageLabel(props.language, languageOption)}
-                </option>
+                </button>
               ))}
-            </select>
-          </label>
+            </div>
+          </section>
+
+          <section className="setting-toggle">
+            <div>
+              <span className="label">{t(props.language, "settings.notifications")}</span>
+              <p>{t(props.language, "settings.notificationsDetail")}</p>
+            </div>
+            <label className="switch-control">
+              <input type="checkbox" checked readOnly />
+              <span aria-hidden="true" />
+            </label>
+          </section>
 
         </section>
 
-        <section className={`extension-card quality-extension-card ${props.focus === "extension" ? "mini-focus" : ""}`} aria-labelledby="mini-quality-extension-title">
-          <div className="extension-heading">
-            <span className="label">{t(props.language, "quality.label")}</span>
-            <strong id="mini-quality-extension-title">{t(props.language, "quality.title")}</strong>
-            <b className="extension-state">{t(props.language, "quality.notInstalled")}</b>
-          </div>
-          <p>{t(props.language, "quality.description")}</p>
-          <em>{t(props.language, "quality.estimatedSize", { size: t(props.language, "quality.sizeFallback") })}</em>
-          <div className="settings-actions">
-            <button className="primary-button" type="button" disabled>
-              {t(props.language, "quality.install")}
-            </button>
-          </div>
+        <section className="settings-side">
+          <section className="update-settings-card">
+            <div className="update-settings-heading">
+              <div>
+                <span className="label">{t(props.language, "update.label")}</span>
+                <strong>{t(props.language, "update.settingsTitle")}</strong>
+              </div>
+            </div>
+            <p>{t(props.language, "update.currentVersion", { version: "1.0.3" })}</p>
+            <p>{t(props.language, "update.unknown")}</p>
+            <div className="settings-actions">
+              <button className="secondary-button" type="button" disabled>
+                {t(props.language, "update.checking")}
+              </button>
+            </div>
+          </section>
         </section>
       </div>
     </section>
   );
-}
-
-function extensionProgressSummary(
-  engineStatuses: EngineStatus[],
-  engineProgress: EngineInstallProgress | null,
-  operationKind: EngineOperationKind,
-  operationBusy: boolean,
-  uninstallProgress: number,
-  language: LanguageCode,
-) {
-  if (!operationBusy) return null;
-  if (operationKind === "uninstall") {
-    return {
-      label: t(language, "quality.uninstallInProgress"),
-      percent: uninstallProgress,
-      meta: uninstallProgress > 0 ? `${uninstallProgress}%` : "",
-      indeterminate: false,
-    };
-  }
-  if (operationKind !== "install") return null;
-
-  const qualityEngines = engineStatuses.filter((engine) => engine.mode === "qualityMax" && (engine.downloadSizeBytes ?? 0) > 0);
-  const totalBytes = qualityEngines.reduce((sum, engine) => sum + (engine.downloadSizeBytes ?? 0), 0);
-  if (!engineProgress || totalBytes <= 0) {
-    return { label: t(language, "quality.installInProgress"), percent: 0, meta: "", indeterminate: true };
-  }
-
-  const currentIndex = qualityEngines.findIndex((engine) => engine.id === engineProgress.engineId);
-  const safeCurrentIndex = Math.max(0, currentIndex);
-  const completedBefore = safeCurrentIndex > 0 ? qualityEngines.slice(0, safeCurrentIndex).reduce((sum, engine) => sum + (engine.downloadSizeBytes ?? 0), 0) : 0;
-  const currentTotal = qualityEngines[currentIndex]?.downloadSizeBytes ?? engineProgress.totalBytes ?? 0;
-  const currentEquivalentBytes = currentTotal * installStageProgress(engineProgress);
-  const processedBytes = Math.min(totalBytes, completedBefore + currentEquivalentBytes);
-  const downloadedBytes = Math.min(totalBytes, completedBefore + Math.min(engineProgress.downloadedBytes || 0, currentTotal));
-  const percent = Math.min(99, Math.max(0, Math.round((processedBytes / totalBytes) * 100)));
-  const stageLabel = installStageLabel(language, engineProgress.stage);
-
-  return {
-    label: t(language, "quality.installingEngine", { engine: engineProgress.engineName, stage: stageLabel }),
-    percent,
-    meta: `${formatBytes(downloadedBytes, language)} / ${formatBytes(totalBytes, language)}`,
-    indeterminate: false,
-  };
-}
-
-function installStageProgress(progress: EngineInstallProgress) {
-  const normalized = progress.stage.trim().toLowerCase();
-  const downloadedRatio = progress.totalBytes > 0 ? clamp(progress.downloadedBytes / progress.totalBytes, 0, 1) : clamp(progress.percent / 100, 0, 1);
-  if (normalized === "téléchargement") return downloadedRatio * 0.72;
-  if (normalized === "vérification") return 0.78;
-  if (normalized === "extraction") return 0.9;
-  if (normalized === "test santé") return 0.97;
-  if (normalized === "terminé") return 1;
-  return downloadedRatio;
-}
-
-function qualitySizeText(language: LanguageCode, engineStatuses: EngineStatus[]) {
-  const qualityEngines = engineStatuses.filter((engine) => engine.mode === "qualityMax");
-  const downloadBytes = qualityEngines.reduce((sum, engine) => sum + (engine.downloadSizeBytes ?? 0), 0);
-  const installedBytes = qualityEngines.reduce((sum, engine) => sum + (engine.estimatedInstalledSizeBytes ?? engine.installedSizeBytes ?? 0), 0);
-  if (downloadBytes <= 0) return t(language, "quality.sizeFallback");
-  if (installedBytes <= 0) return t(language, "quality.sizeDownloadDetail", { download: formatBytes(downloadBytes, language) });
-  return t(language, "quality.sizeDetail", {
-    download: formatBytes(downloadBytes, language),
-    installed: formatBytes(installedBytes, language),
-  });
-}
-
-function installStageLabel(language: LanguageCode, stage: string) {
-  const normalized = stage.trim().toLowerCase();
-  if (normalized === "téléchargement") return t(language, "quality.downloading");
-  if (normalized === "vérification") return t(language, "quality.verifying");
-  if (normalized === "extraction") return t(language, "quality.extracting");
-  if (normalized === "test santé") return t(language, "quality.testing");
-  if (normalized === "terminé") return t(language, "quality.finalizing");
-  return t(language, "quality.installInProgress");
 }
 
 function SettingsIcon() {

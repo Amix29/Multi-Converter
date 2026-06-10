@@ -15,7 +15,7 @@ export interface TargetFormat {
   engine: Engine;
   engineLabel: string;
   engineAvailable: boolean;
-  availability: "available" | "unavailable" | "requires_extension" | "hidden";
+  availability: "available" | "unavailable" | "hidden";
 }
 
 export interface FileDescription {
@@ -45,7 +45,6 @@ export interface ConversionJob {
   targetFormat: string;
   outputDir: string;
   batchConcurrency?: number;
-  qualityMaxEnabled?: boolean;
 }
 
 export interface ConversionResult {
@@ -68,10 +67,7 @@ export interface DependencyBootstrap {
   envDir: string;
   ok: boolean;
   mode: string;
-  qualityMaxInstalled: boolean;
   internetAvailable: boolean;
-  qualityMaxAddedSize: string;
-  qualityMaxDescription: string;
   checks: DependencyCheck[];
 }
 
@@ -80,7 +76,7 @@ export interface DependencyCheck {
   label: string;
   role: string;
   description: string;
-  mode: "base" | "qualityMax";
+  mode: "base" | "advanced";
   requiredVersion: string;
   detectedVersion?: string | null;
   path?: string | null;
@@ -113,8 +109,6 @@ export interface MultiConverterApi {
   markWelcomeSeen(): Promise<boolean>;
   bootstrapDependencies(): Promise<DependencyBootstrap>;
   refreshEngineDiagnostics(): Promise<DependencyBootstrap>;
-  installQualityMaxExtension(): Promise<DependencyBootstrap>;
-  uninstallQualityMaxExtension(): Promise<boolean>;
   pickFilePaths(): Promise<string[]>;
   pickOutputFolder(): Promise<string | null>;
   createTempOutputFolder(): Promise<string>;
@@ -128,18 +122,7 @@ export interface MultiConverterApi {
   openExternalUrl(url: string): Promise<boolean>;
   engineStatuses(): Promise<EngineStatus[]>;
   onProgress(callback: (payload: ProgressPayload) => void): Promise<UnlistenFn>;
-  onEngineInstallProgress(callback: (payload: EngineInstallProgress) => void): Promise<UnlistenFn>;
   onFileDrop(callback: (paths: string[]) => void): Promise<UnlistenFn>;
-}
-
-export interface EngineInstallProgress {
-  engineId: string;
-  engineName: string;
-  stage: string;
-  downloadedBytes: number;
-  totalBytes: number;
-  percent: number;
-  message: string;
 }
 
 export interface EngineStatus {
@@ -147,7 +130,7 @@ export interface EngineStatus {
   label: string;
   role?: string;
   description?: string;
-  mode?: "base" | "qualityMax";
+  mode?: "base" | "advanced";
   available?: boolean;
   path?: string | null;
   engineKind?: string;
@@ -181,8 +164,6 @@ function createTauriApi(): MultiConverterApi {
     markWelcomeSeen: () => invoke<boolean>("mark_welcome_seen"),
     bootstrapDependencies: () => invoke<DependencyBootstrap>("bootstrap_dependencies"),
     refreshEngineDiagnostics: () => invoke<DependencyBootstrap>("bootstrap_dependencies"),
-    installQualityMaxExtension: () => invoke<DependencyBootstrap>("install_quality_max_extension"),
-    uninstallQualityMaxExtension: () => invoke<boolean>("uninstall_quality_max_extension"),
     pickFilePaths: () => invoke<string[]>("pick_file_paths"),
     pickOutputFolder: () => invoke<string | null>("pick_output_folder"),
     createTempOutputFolder: () => invoke<string>("create_temp_output_folder"),
@@ -196,7 +177,6 @@ function createTauriApi(): MultiConverterApi {
     openExternalUrl: (url) => invoke<boolean>("open_external_url", { url }),
     engineStatuses: () => invoke<EngineStatus[]>("engine_statuses"),
     onProgress: async (callback) => listen<ProgressPayload>("convert-progress", (event) => callback(event.payload)),
-    onEngineInstallProgress: async (callback) => listen<EngineInstallProgress>("engine-install-progress", (event) => callback(event.payload)),
     onFileDrop: async (callback) =>
       listen<{ paths?: string[] }>("tauri://drag-drop", (event) => {
         const paths = event.payload?.paths ?? [];
@@ -248,29 +228,23 @@ function createPreviewApi(): MultiConverterApi {
       return {
         envDir: `${previewRoot}\\AppData\\Local\\Multi-Converter\\tool-env`,
         ok: true,
-        mode: "Base légère",
-        qualityMaxInstalled: false,
+        mode: "Complet",
         internetAvailable: navigator.onLine,
-        qualityMaxAddedSize: "environ 600 Mo à 1,9 Go selon les builds",
-        qualityMaxDescription:
-          "L'extension Qualité maximale ajoute des moteurs plus lourds pour améliorer la fidélité des documents, le rendu PDF haute qualité avec PDFium, les formats avancés et les conversions professionnelles. Elle permet de meilleures conversions Office/PDF, plus de formats image et davantage de personnalisation, mais augmente fortement la taille de l'application.",
         checks: [],
       };
     },
     async refreshEngineDiagnostics() {
       return this.bootstrapDependencies();
     },
-    async installQualityMaxExtension() {
-      throw new Error("error.previewInstallUnavailable");
-    },
-    async uninstallQualityMaxExtension() {
-      return false;
-    },
     async pickFilePaths() {
       return [
-        `${previewRoot}\\Videos\\presentation.mp4`,
-        `${previewRoot}\\Pictures\\logo-client.png`,
-        `${previewRoot}\\Documents\\notes-projet.txt`,
+        `${previewRoot}\\Documents\\test.md`,
+        `${previewRoot}\\Pictures\\Grand Theft Auto V Screenshot 2026.01.05 - 18.43.12.84.png`,
+        `${previewRoot}\\Pictures\\Red Dead Redemption 2 Screenshot 2026.01.07 - 21.18.44.02.png`,
+        `${previewRoot}\\Videos\\Enregistrement de l'écran 2025-10-13 184512.mp4`,
+        `${previewRoot}\\Videos\\Enregistrement de l'écran 2025-11-19 190508.mov`,
+        `${previewRoot}\\Videos\\Enregistrement de l'écran 2025-11-19 190508 version très longue pour vérifier le découpage.mp4`,
+        `${previewRoot}\\Audio\\Capture audio réunion client avec un nom beaucoup trop long.wav`,
       ];
     },
     async pickOutputFolder() {
@@ -336,18 +310,15 @@ function createPreviewApi(): MultiConverterApi {
         { id: "rust-image", label: "Moteur images intégré", mode: "base", available: true, status: "ready" },
         { id: "ffmpeg", label: "FFmpeg", mode: "base", available: true, status: "ready" },
         { id: "ffprobe", label: "ffprobe", mode: "base", available: true, status: "ready" },
-        { id: "pdfium", label: "PDFium", mode: "qualityMax", available: false, status: "disabled", downloadSizeBytes: 10_000_000, estimatedInstalledSizeBytes: 24_000_000 },
-        { id: "libreoffice", label: "LibreOffice", mode: "qualityMax", available: false, status: "disabled", downloadSizeBytes: 345_000_000, estimatedInstalledSizeBytes: 1_100_000_000 },
-        { id: "pandoc", label: "Pandoc", mode: "qualityMax", available: false, status: "disabled", downloadSizeBytes: 33_000_000, estimatedInstalledSizeBytes: 160_000_000 },
-        { id: "libvips", label: "libvips", mode: "qualityMax", available: false, status: "disabled", downloadSizeBytes: 36_000_000, estimatedInstalledSizeBytes: 160_000_000 },
+        { id: "pdfium", label: "PDFium", mode: "advanced", available: true, status: "ready" },
+        { id: "libreoffice", label: "LibreOffice", mode: "advanced", available: true, status: "ready" },
+        { id: "pandoc", label: "Pandoc", mode: "advanced", available: true, status: "ready" },
+        { id: "libvips", label: "libvips", mode: "advanced", available: true, status: "ready" },
       ];
     },
     async onProgress(callback) {
       listeners.add(callback);
       return () => listeners.delete(callback);
-    },
-    async onEngineInstallProgress() {
-      return () => undefined;
     },
     async onFileDrop() {
       return () => undefined;

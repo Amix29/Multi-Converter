@@ -41,7 +41,7 @@
     {
       "engineId": "pdfium",
       "displayName": "PDFium",
-      "mode": "qualityMax",
+      "mode": "advanced",
       "version": "compatible",
       "platform": "windows-x64",
       "sourceDir": "engine-sources/windows-x64/pdfium",
@@ -55,13 +55,13 @@
       "licenseUrl": "https://github.com/bblanchon/pdfium-binaries",
       "licenseFiles": ["licenses/LICENSE.txt"],
       "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
-      "required": false,
+      "required": true,
       "dependencies": []
     },
     {
       "engineId": "libreoffice",
       "displayName": "LibreOffice headless",
-      "mode": "qualityMax",
+      "mode": "advanced",
       "version": "compatible",
       "platform": "windows-x64",
       "sourceDir": "engine-sources/windows-x64/libreoffice",
@@ -72,13 +72,13 @@
       "licenseUrl": "https://www.libreoffice.org/about-us/licenses/",
       "licenseFiles": ["licenses/LICENSE.txt"],
       "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
-      "required": false,
+      "required": true,
       "dependencies": []
     },
     {
       "engineId": "pandoc",
       "displayName": "Pandoc",
-      "mode": "qualityMax",
+      "mode": "advanced",
       "version": "compatible",
       "platform": "windows-x64",
       "sourceDir": "engine-sources/windows-x64/pandoc",
@@ -89,13 +89,13 @@
       "licenseUrl": "https://github.com/jgm/pandoc/blob/main/COPYRIGHT",
       "licenseFiles": ["licenses/LICENSE.txt"],
       "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
-      "required": false,
+      "required": true,
       "dependencies": []
     },
     {
       "engineId": "libvips",
       "displayName": "libvips",
-      "mode": "qualityMax",
+      "mode": "advanced",
       "version": "compatible",
       "platform": "windows-x64",
       "sourceDir": "engine-sources/windows-x64/libvips",
@@ -106,7 +106,7 @@
       "licenseUrl": "https://github.com/libvips/libvips/blob/master/LICENSE",
       "licenseFiles": ["licenses/LICENSE.txt"],
       "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
-      "required": false,
+      "required": true,
       "dependencies": []
     }
   ]

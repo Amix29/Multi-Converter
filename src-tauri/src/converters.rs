@@ -82,7 +82,6 @@ pub struct ConversionJob {
     pub target_format: String,
     pub output_dir: Option<String>,
     pub batch_concurrency: Option<usize>,
-    pub quality_max_enabled: Option<bool>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -387,14 +386,12 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
     let output_dir = output_root.join(safe_path_component(&job.id));
     fs::create_dir_all(&output_dir)?;
     let builtin_engine = get_engine(&source_format, &target);
-    let engine = engines::select_engine_for_quality_state(
+    let engine = engines::select_engine(
         Some(app),
         &source_format,
         target.id,
         target.category_id,
         builtin_engine,
-        job.quality_max_enabled
-            .unwrap_or_else(engines::quality_marker_installed),
     );
     let batch_concurrency = job.batch_concurrency.unwrap_or(1).max(1);
     let output_extension = get_targets_for_extension(&extension)
@@ -1549,7 +1546,7 @@ fn convert_with_libvips(
 fn engine_path(app: &AppHandle, id: &str) -> Result<PathBuf> {
     engines::resolve_tool(Some(app), id).ok_or_else(|| {
         ConvertError::Message(format!(
-            "Moteur {} introuvable. Installez ou réparez l'extension Qualité maximale.",
+            "Moteur {} introuvable. Réinstallez Multi-Converter ou restaurez les moteurs embarqués.",
             engines::tool_label(id)
         ))
     })
@@ -2762,33 +2759,10 @@ mod tests {
                 extension_for_test_source(source_format)
             ));
             write_image_fixture(&input, source_format);
-            let source = crate::registry::get_format_by_extension(source_format)
-                .unwrap_or_else(|| panic!("{source_format} should exist in registry"));
-
             for target in crate::registry::get_targets_for_extension(source_format)
                 .into_iter()
                 .filter(|target| target.category_id == "images")
             {
-                let selected = crate::engines::select_engine_for_quality_state(
-                    None,
-                    &source,
-                    &target.format,
-                    &target.category_id,
-                    &target.engine,
-                    false,
-                );
-                assert!(
-                    selected.available,
-                    "{} -> {} selected unavailable engine {}: {}",
-                    source_format, target.format, selected.id, selected.reason
-                );
-                assert!(
-                    uses_integrated_image_pipeline(&selected.id),
-                    "{} -> {} selected engine {} but the converter does not route it to the integrated image pipeline",
-                    source_format,
-                    target.format,
-                    selected.id
-                );
                 let output = dir.path().join(format!(
                     "{}-to-{}.{}",
                     source_format, target.format, target.extension

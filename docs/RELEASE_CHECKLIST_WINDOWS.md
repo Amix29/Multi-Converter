@@ -6,7 +6,7 @@
 npm ci
 npm run typecheck
 npm run validate:i18n
-npm run validate:bundled-base-engines
+npm run validate:bundled-engines
 npm run validate:embedded-manifest
 npm run validate:engines
 npm run fmt:rust:check
@@ -22,7 +22,7 @@ npm run tauri:build
 - Confirm `ffmpeg -version` and `ffprobe -version` show `8.1.1-essentials_build-www.gyan.dev`.
 - Confirm their configuration includes `--enable-gpl`.
 - Keep FFmpeg/ffprobe license and source/build links in release notes.
-- Confirm Quality Max ZIP URLs in `src-tauri/engines-manifest.json` return HTTP 200.
+- Confirm advanced engine ZIP URLs in `src-tauri/engines-manifest.json` return HTTP 200.
 - Confirm each manifest SHA-256 matches the uploaded ZIP.
 - Confirm each engine ZIP contains `engine.json`, licenses, notices, and declared binaries.
 

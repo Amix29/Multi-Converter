@@ -277,7 +277,7 @@ async function runValidation() {
       {
         engineId: "pandoc",
         displayName: "Pandoc",
-        mode: "qualityMax",
+        mode: "advanced",
         version: "compatible",
         platform: "windows-x64",
         sourceDir: path.relative(repoRoot, pandocSource),
@@ -329,7 +329,7 @@ async function runValidation() {
       {
         engineId: "libvips",
         displayName: "libvips",
-        mode: "qualityMax",
+        mode: "advanced",
         version: "compatible",
         platform: "windows-x64",
         sourceDir: path.relative(repoRoot, libvipsSource),
@@ -383,7 +383,7 @@ function validateEngineConfig(engine) {
   for (const field of ["engineId", "displayName", "mode", "version", "sourceDir", "outputArchiveName", "healthCheck", "licenseName"]) {
     if (typeof engine[field] !== "string" || !engine[field]) throw new Error(`${engine.engineId ?? "engine"}: ${field} est requis`);
   }
-  if (!["base", "qualityMax"].includes(engine.mode)) throw new Error(`${engine.engineId}: mode invalide`);
+  if (!["base", "advanced"].includes(engine.mode)) throw new Error(`${engine.engineId}: mode invalide`);
   if (!Array.isArray(engine.binaryPaths) || engine.binaryPaths.length === 0) throw new Error(`${engine.engineId}: binaryPaths[] est requis`);
   if (!Array.isArray(engine.licenseFiles) || engine.licenseFiles.length === 0) throw new Error(`${engine.engineId}: licenseFiles[] est requis`);
   if (engine.noticeFiles !== undefined && !Array.isArray(engine.noticeFiles)) throw new Error(`${engine.engineId}: noticeFiles doit etre un tableau si configure`);
