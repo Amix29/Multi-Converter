@@ -10,7 +10,7 @@ const bundleDir = path.resolve(
   args.bundleDir ?? path.join(os.tmpdir(), "mc-cargo-target-tauri-dev", "release", "bundle", "nsis"),
 );
 const outDir = path.resolve(args.dir ?? path.join(os.tmpdir(), "mc-release-assets", tag));
-const notesPath = path.resolve(args.notes ?? path.join("docs", `RELEASE_NOTES_v${version}.md`));
+const notes = readReleaseNotes(args).trim();
 
 if (!version.match(/^\d+\.\d+\.\d+$/)) fail(`Invalid version "${version}". Expected X.Y.Z.`);
 if (tag !== `v${version}`) fail(`Tag "${tag}" does not match version "${version}". Expected v${version}.`);
@@ -22,7 +22,7 @@ const signaturePath = path.join(bundleDir, `${versionedInstaller}.sig`);
 
 if (!fs.existsSync(installerPath)) fail(`Missing NSIS installer: ${installerPath}`);
 if (!fs.existsSync(signaturePath)) fail(`Missing updater signature: ${signaturePath}`);
-if (!fs.existsSync(notesPath)) fail(`Missing release notes: ${notesPath}`);
+if (notes.length < 200) fail("Release notes are missing or unexpectedly short.");
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
@@ -35,7 +35,6 @@ const hash = sha256File(installerPath);
 fs.writeFileSync(path.join(outDir, `${versionedInstaller}.sha256`), `${hash}  ${versionedInstaller}`, "ascii");
 
 const signature = fs.readFileSync(signaturePath, "utf8").trim();
-const notes = fs.readFileSync(notesPath, "utf8").trim();
 const downloadUrl = `https://github.com/Amix29/Multi-Converter/releases/download/${tag}/${versionedInstaller}`;
 const latest = {
   version,
@@ -67,9 +66,26 @@ function parseArgs(rawArgs) {
     else if (arg === "--dir") parsed.dir = rawArgs[++index];
     else if (arg === "--bundle-dir") parsed.bundleDir = rawArgs[++index];
     else if (arg === "--notes") parsed.notes = rawArgs[++index];
+    else if (arg === "--notes-env") parsed.notesEnv = rawArgs[++index];
     else fail(`Unknown argument: ${arg}`);
   }
   return parsed;
+}
+
+function readReleaseNotes(parsedArgs) {
+  if (parsedArgs.notesEnv) {
+    const value = process.env[parsedArgs.notesEnv];
+    if (!value) fail(`Release notes environment variable is empty or missing: ${parsedArgs.notesEnv}`);
+    return value;
+  }
+
+  if (parsedArgs.notes) {
+    const notesPath = path.resolve(parsedArgs.notes);
+    if (!fs.existsSync(notesPath)) fail(`Missing release notes: ${notesPath}`);
+    return fs.readFileSync(notesPath, "utf8");
+  }
+
+  fail("Missing release notes. Pass --notes-env RELEASE_NOTES_BODY or --notes <path>.");
 }
 
 function readPackageVersion() {

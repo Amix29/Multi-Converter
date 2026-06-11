@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-const requiredLanguages = ["en", "fr", "es", "de", "pt", "it"];
+const disallowedLanguages = ["fr", "es", "de", "pt", "it"];
 const requiredSections = ["Highlights", "Download And Installation", "Validation"];
 
 const args = parseArgs(process.argv.slice(2));
@@ -66,13 +66,16 @@ for (const platform of expectedPlatforms) {
   if (entry.signature !== signature) fail(`latest.json ${platform} signature does not match ${signatureFile}.`);
 }
 
-for (const language of requiredLanguages) {
-  const block = releaseNotesBlock(latest.notes, language);
-  if (!block) fail(`Missing localized release-note block for ${language}.`);
-  if (!block.includes(`# Multi-Converter v${version}`)) fail(`Release-note block ${language} has the wrong title.`);
-  for (const section of requiredSections) {
-    if (!block.includes(`## ${section}`)) fail(`Release-note block ${language} is missing "## ${section}".`);
+for (const language of disallowedLanguages) {
+  if (releaseNotesBlock(latest.notes, language)) {
+    fail(`Release notes must be published in English only; found disallowed ${language} block.`);
   }
+}
+
+const notesBody = releaseNotesBlock(latest.notes, "en") ?? latest.notes.trim();
+if (!notesBody.includes(`# Multi-Converter v${version}`)) fail("Release notes have the wrong title.");
+for (const section of requiredSections) {
+  if (!notesBody.includes(`## ${section}`)) fail(`Release notes are missing "## ${section}".`);
 }
 
 console.log(`Release assets validated for Multi-Converter v${version}: ${dir}`);

@@ -46,6 +46,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-registry-release-
 
+      - uses: actions/cache@v4
+        with:
+          path: src-tauri/bundled-engines
+          key: ${{ runner.os }}-bundled-engines-${{ hashFiles('src-tauri/engines-manifest.json') }}
+          restore-keys: |
+            ${{ runner.os }}-bundled-engines-
+
       - run: npm ci
       - run: npm audit --omit=dev
       - run: cargo install cargo-audit --locked
@@ -57,7 +64,7 @@ jobs:
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=v$version" >> $env:GITHUB_OUTPUT
 
-      - name: Validate release tag and notes
+      - name: Validate release tag
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.version }}"
@@ -65,11 +72,35 @@ jobs:
           if ("${{ github.ref_type }}" -eq "tag" -and "${{ github.ref_name }}" -ne $tag) {
             throw "Git tag ${{ github.ref_name }} does not match package version $version."
           }
-          $notes = "docs/RELEASE_NOTES_v$version.md"
-          if (-not (Test-Path -LiteralPath $notes)) {
-            throw "Missing release notes file: $notes"
-          }
 
+      - name: Read GitHub release notes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $tag = "${{ steps.version.outputs.tag }}"
+          $body = gh release view $tag --repo $env:GITHUB_REPOSITORY --json body --jq ".body"
+          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($body)) {
+            throw "Missing GitHub release notes for $tag. Create or edit the release notes directly on GitHub in English, then rerun this workflow."
+          }
+          if (-not $body.StartsWith("# Multi-Converter $tag")) {
+            throw "GitHub release notes must start with '# Multi-Converter $tag'."
+          }
+          foreach ($section in @("## Highlights", "## Download And Installation", "## Validation")) {
+            if (-not $body.Contains($section)) {
+              throw "GitHub release notes are missing required section '$section'."
+            }
+          }
+          if ($body -match "mc-release-notes:(fr|es|de|pt|it)") {
+            throw "GitHub release notes must be published in English only."
+          }
+          $delimiter = "MC_RELEASE_NOTES_$([guid]::NewGuid().ToString("N"))"
+          Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_NOTES_BODY<<$delimiter"
+          Add-Content -Path $env:GITHUB_ENV -Value $body
+          Add-Content -Path $env:GITHUB_ENV -Value $delimiter
+
+      - run: npm run prepare:bundled-engines
       - run: npm run check
       - run: npm run fmt:rust:check
       - run: npm run clippy:rust
@@ -87,7 +118,7 @@ jobs:
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
           $assetDir = Join-Path $env:RUNNER_TEMP "mc-release-assets\$tag"
-          npm run prepare:release-assets -- --version $version --dir $assetDir
+          npm run prepare:release-assets -- --version $version --dir $assetDir --notes-env RELEASE_NOTES_BODY
           npm run validate:release-assets -- --version $version --dir $assetDir
           "dir=$assetDir" >> $env:GITHUB_OUTPUT
 
@@ -108,13 +139,7 @@ jobs:
             "Multi-Converter_windows-x64_setup.exe"
           )
 
-          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
-          $releaseExists = $LASTEXITCODE -eq 0
-          if ($releaseExists) {
-            gh release edit $tag --repo $env:GITHUB_REPOSITORY --title "Multi-Converter $tag" --notes-file "docs/RELEASE_NOTES_v$version.md" --latest
-          } else {
-            gh release create $tag --repo $env:GITHUB_REPOSITORY --verify-tag --title "Multi-Converter $tag" --notes-file "docs/RELEASE_NOTES_v$version.md" --latest
-          }
+          gh release edit $tag --repo $env:GITHUB_REPOSITORY --title "Multi-Converter $tag" --latest
 
           $existingAssets = gh release view $tag --repo $env:GITHUB_REPOSITORY --json assets --jq ".assets[].name"
           foreach ($asset in $existingAssets) {

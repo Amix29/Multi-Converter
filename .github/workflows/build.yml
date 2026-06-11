@@ -43,9 +43,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-registry-v2-
 
+      - uses: actions/cache@v4
+        with:
+          path: src-tauri/bundled-engines
+          key: ${{ runner.os }}-bundled-engines-${{ hashFiles('src-tauri/engines-manifest.json') }}
+          restore-keys: |
+            ${{ runner.os }}-bundled-engines-
+
       - run: npm ci
       - run: npm audit --omit=dev
       - run: cargo install cargo-audit --locked
+      - run: npm run prepare:bundled-engines
       - run: npm run check
       - run: npm run fmt:rust:check
       - run: npm run clippy:rust
