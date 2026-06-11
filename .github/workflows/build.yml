@@ -44,6 +44,7 @@ jobs:
             ${{ runner.os }}-cargo-registry-v2-
 
       - run: npm ci
+      - run: npm audit --omit=dev
       - run: cargo install cargo-audit --locked
       - run: npm run check
       - run: npm run fmt:rust:check

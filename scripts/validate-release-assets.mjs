@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 const requiredLanguages = ["en", "fr", "es", "de", "pt", "it"];
@@ -8,7 +9,7 @@ const requiredSections = ["Highlights", "Download And Installation", "Validation
 const args = parseArgs(process.argv.slice(2));
 const version = args.version ?? readPackageVersion();
 const tag = `v${version}`;
-const dir = args.dir ? path.resolve(args.dir) : path.join(process.env.LOCALAPPDATA ?? "", "Temp", "mc-release-assets", tag);
+const dir = args.dir ? path.resolve(args.dir) : path.join(os.tmpdir(), "mc-release-assets", tag);
 
 if (!version.match(/^\d+\.\d+\.\d+$/)) {
   fail(`Invalid version "${version}". Expected X.Y.Z.`);

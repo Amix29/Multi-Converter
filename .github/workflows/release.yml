@@ -16,7 +16,7 @@ concurrency:
 jobs:
   windows:
     runs-on: windows-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
@@ -34,6 +34,8 @@ jobs:
           cache: npm
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
 
       - uses: actions/cache@v4
         with:
@@ -45,6 +47,8 @@ jobs:
             ${{ runner.os }}-cargo-registry-release-
 
       - run: npm ci
+      - run: npm audit --omit=dev
+      - run: cargo install cargo-audit --locked
 
       - id: version
         shell: pwsh
@@ -53,54 +57,91 @@ jobs:
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=v$version" >> $env:GITHUB_OUTPUT
 
-      - uses: tauri-apps/tauri-action@v0.6.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ steps.version.outputs.tag }}
-          releaseName: Multi-Converter ${{ steps.version.outputs.tag }}
-          releaseBody: "See the assets below to download this version and install."
-          releaseDraft: true
-          prerelease: false
-          generateReleaseNotes: true
-          includeUpdaterJson: true
-          updaterJsonPreferNsis: true
-          tauriScript: npm run tauri --
-
-      - name: Upload stable Windows download asset
+      - name: Validate release tag and notes
         shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
-          $installer = Get-ChildItem -Path . -Recurse -Filter "Multi-Converter_${version}_x64-setup.exe" |
-            Where-Object { $_.FullName -match "\\bundle\\nsis\\" } |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
-          if (-not $installer) {
-            throw "Windows NSIS installer for version $version was not found."
+          if ("${{ github.ref_type }}" -eq "tag" -and "${{ github.ref_name }}" -ne $tag) {
+            throw "Git tag ${{ github.ref_name }} does not match package version $version."
           }
-          $stableAsset = Join-Path $env:RUNNER_TEMP "Multi-Converter_windows-x64_setup.exe"
-          Copy-Item -LiteralPath $installer.FullName -Destination $stableAsset -Force
-          gh release upload $tag $stableAsset --clobber
+          $notes = "docs/RELEASE_NOTES_v$version.md"
+          if (-not (Test-Path -LiteralPath $notes)) {
+            throw "Missing release notes file: $notes"
+          }
 
-      - name: Upload versioned Windows installer checksum
+      - run: npm run check
+      - run: npm run fmt:rust:check
+      - run: npm run clippy:rust
+      - run: npm run audit:rust
+      - run: npm run test:rust
+      - run: npm run test:conversions
+      - run: npm run test:pdfium-wrapper
+      - run: npm run clippy:pdfium-wrapper
+      - run: npm run tauri:build
+
+      - name: Prepare and validate clean release assets
+        id: assets
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $tag = "${{ steps.version.outputs.tag }}"
+          $assetDir = Join-Path $env:RUNNER_TEMP "mc-release-assets\$tag"
+          npm run prepare:release-assets -- --version $version --dir $assetDir
+          npm run validate:release-assets -- --version $version --dir $assetDir
+          "dir=$assetDir" >> $env:GITHUB_OUTPUT
+
+      - name: Publish GitHub release with exact assets
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
+          $assetDir = "${{ steps.assets.outputs.dir }}"
           $installerName = "Multi-Converter_${version}_x64-setup.exe"
-          $installer = Get-ChildItem -Path . -Recurse -Filter $installerName |
-            Where-Object { $_.FullName -match "\\bundle\\nsis\\" } |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
-          if (-not $installer) {
-            throw "Windows NSIS installer for version $version was not found."
+          $expectedAssets = @(
+            "latest.json",
+            $installerName,
+            "$installerName.sig",
+            "$installerName.sha256",
+            "Multi-Converter_windows-x64_setup.exe"
+          )
+
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          $releaseExists = $LASTEXITCODE -eq 0
+          if ($releaseExists) {
+            gh release edit $tag --repo $env:GITHUB_REPOSITORY --title "Multi-Converter $tag" --notes-file "docs/RELEASE_NOTES_v$version.md" --latest
+          } else {
+            gh release create $tag --repo $env:GITHUB_REPOSITORY --verify-tag --title "Multi-Converter $tag" --notes-file "docs/RELEASE_NOTES_v$version.md" --latest
           }
-          $hash = (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToUpperInvariant()
-          $checksumAsset = Join-Path $env:RUNNER_TEMP "$installerName.sha256"
-          Set-Content -LiteralPath $checksumAsset -Value "$hash  $installerName" -NoNewline -Encoding ascii
-          gh release upload $tag $checksumAsset --clobber
+
+          $existingAssets = gh release view $tag --repo $env:GITHUB_REPOSITORY --json assets --jq ".assets[].name"
+          foreach ($asset in $existingAssets) {
+            if ($asset -and $asset -notin $expectedAssets) {
+              gh release delete-asset $tag $asset --repo $env:GITHUB_REPOSITORY -y
+            }
+          }
+
+          foreach ($asset in $expectedAssets) {
+            gh release upload $tag (Join-Path $assetDir $asset) --repo $env:GITHUB_REPOSITORY --clobber
+          }
+
+      - name: Verify published release asset list
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $tag = "${{ steps.version.outputs.tag }}"
+          $expectedAssets = @(
+            "latest.json",
+            "Multi-Converter_${version}_x64-setup.exe",
+            "Multi-Converter_${version}_x64-setup.exe.sig",
+            "Multi-Converter_${version}_x64-setup.exe.sha256",
+            "Multi-Converter_windows-x64_setup.exe"
+          ) | Sort-Object
+          $actualAssets = @(gh release view $tag --repo $env:GITHUB_REPOSITORY --json assets --jq ".assets[].name" | Sort-Object)
+          if (Compare-Object -ReferenceObject $expectedAssets -DifferenceObject $actualAssets) {
+            throw "Published release assets do not exactly match the required asset list."
+          }

@@ -28,6 +28,7 @@
     "tauri:dev": "node scripts/run-tauri.mjs dev",
     "tauri:build": "node scripts/run-tauri.mjs build",
     "package:engines": "node scripts/package-engines.mjs",
+    "prepare:release-assets": "node scripts/prepare-release-assets.mjs",
     "prepare:base-engines": "node scripts/prepare-base-engines.mjs",
     "prepare:bundled-engines": "node scripts/prepare-bundled-engines.mjs",
     "prepare:installer-assets": "node scripts/generate-installer-assets.mjs",
