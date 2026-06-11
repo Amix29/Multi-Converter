@@ -1,8 +1,5 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { getVersion } from "@tauri-apps/api/app";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
-import { relaunch } from "@tauri-apps/plugin-process";
-import { check, type Update } from "@tauri-apps/plugin-updater";
 import {
   api,
   type ConversionResult,
@@ -10,7 +7,8 @@ import {
   type FileDescription,
   type TargetFormat,
 } from "./lib/api";
-import { releaseNotesForLanguage, translateReleaseNotesForLanguage } from "./lib/releaseNotes";
+import { UpdateDialog, UpdateInstallDialog, UpdateProgress, UpdateReminder } from "./components/UpdateFlow";
+import { useAppUpdater } from "./hooks/useAppUpdater";
 import {
   languageLabel,
   languageOptions,
@@ -21,13 +19,13 @@ import {
   useI18n,
   type LanguageCode,
 } from "./i18n";
+import { minimumReportVersion, repositoryUrl, type AppUpdateInfo, type UpdateDownloadSize, type UpdateStatus } from "./lib/updateService";
 import brandLogoUrl from "./assets/multi-converter-icon-brand-orange.svg";
 
 type Step = 1 | 2 | 3;
 type Status = "pending" | "ready" | "queued" | "working" | "canceling" | "canceled" | "done" | "error" | "unsupported";
 type NoticeTone = "info" | "success" | "error";
 type ExportKind = "downloads" | "folder";
-type UpdateStatus = "idle" | "checking" | "available" | "notAvailable" | "installing" | "error";
 type FeedbackKind = "bug" | "feature" | "other";
 type ImportFeedback =
   | { state: "analyzing"; count: number | null; visible: boolean }
@@ -53,18 +51,6 @@ interface ConversionIntent {
   priority: number;
 }
 
-interface AppUpdateInfo {
-  version: string;
-  currentVersion: string;
-  date: string | null;
-  body: string | null;
-}
-
-interface UpdateDownloadSize {
-  downloaded: number;
-  total: number | null;
-}
-
 const statusLabelKeys: Record<Status, Parameters<typeof t>[1]> = {
   pending: "status.pending",
   ready: "status.ready",
@@ -80,16 +66,8 @@ const statusLabelKeys: Record<Status, Parameters<typeof t>[1]> = {
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
 const welcomeStorageKey = "multi-converter-welcome-seen";
 const notificationsStorageKey = "multi-converter-notifications-enabled";
-const updateInstallStorageKey = "multi-converter-update-installation";
 const feedbackPrivacyStorageKey = "multi-converter-feedback-public-warning-seen";
-const repositoryUrl = "https://github.com/Amix29/Multi-Converter";
 const issueNewUrl = `${repositoryUrl}/issues/new`;
-const releaseBaseUrl = `${repositoryUrl}/releases`;
-const latestReleaseUrl = `${releaseBaseUrl}/latest`;
-const releaseApiBaseUrl = "https://api.github.com/repos/Amix29/Multi-Converter/releases/tags";
-const updateCheckTimeoutMs = 20000;
-const releaseNotesTimeoutMs = 8000;
-const minimumReportVersion = "1.0.3";
 
 const feedbackKinds: FeedbackKind[] = ["bug", "feature", "other"];
 const feedbackLabels: Record<FeedbackKind, string> = {
@@ -116,97 +94,13 @@ function stepLabels(language: LanguageCode): Array<{ id: Step; label: string; ti
   ];
 }
 
-function releaseTag(version: string) {
-  const normalized = version.trim();
-  return normalized.toLowerCase().startsWith("v") ? normalized : `v${normalized}`;
-}
-
-function releasePageUrl(version: string) {
-  return `${releaseBaseUrl}/tag/${encodeURIComponent(releaseTag(version))}`;
-}
-
-async function fetchReleaseBodyForVersion(version: string, fallback: string | null) {
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), releaseNotesTimeoutMs);
-  try {
-    const response = await fetch(`${releaseApiBaseUrl}/${encodeURIComponent(releaseTag(version))}`, {
-      cache: "no-store",
-      headers: { Accept: "application/vnd.github+json" },
-      signal: controller.signal,
-    });
-    if (!response.ok) return fallback;
-    const data = (await response.json()) as { body?: unknown };
-    const body = typeof data.body === "string" ? data.body.trim() : "";
-    return body || fallback;
-  } catch {
-    return fallback;
-  } finally {
-    window.clearTimeout(timeout);
-  }
-}
-
-async function checkForUpdateWithTimeout() {
-  return withTimeout(check({ timeout: updateCheckTimeoutMs }), updateCheckTimeoutMs + 2500, "update-check-timeout");
-}
-
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {
-  return new Promise<T>((resolve, reject) => {
-    const timeout = window.setTimeout(() => reject(new Error(message)), timeoutMs);
-    promise
-      .then(resolve, reject)
-      .finally(() => window.clearTimeout(timeout));
-  });
-}
-
-function rememberUpdateInstallation(version: string, progress: number | null, size: UpdateDownloadSize | null) {
-  localStorage.setItem(
-    updateInstallStorageKey,
-    JSON.stringify({
-      version,
-      progress,
-      downloaded: size?.downloaded ?? null,
-      total: size?.total ?? null,
-      updatedAt: Date.now(),
-    }),
-  );
-}
-
-function readPendingUpdateInstallation(): { version: string; progress: number | null; size: UpdateDownloadSize | null } | null {
-  try {
-    const raw = localStorage.getItem(updateInstallStorageKey);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as { version?: unknown; progress?: unknown; downloaded?: unknown; total?: unknown };
-    if (typeof parsed.version !== "string" || !parsed.version.trim()) return null;
-    const progress = typeof parsed.progress === "number" && Number.isFinite(parsed.progress) ? clamp(parsed.progress, 0, 100) : null;
-    const downloaded = typeof parsed.downloaded === "number" && Number.isFinite(parsed.downloaded) ? Math.max(0, parsed.downloaded) : null;
-    const total = typeof parsed.total === "number" && Number.isFinite(parsed.total) && parsed.total > 0 ? parsed.total : null;
-    return { version: parsed.version, progress, size: downloaded === null ? null : { downloaded, total } };
-  } catch {
-    return null;
-  }
-}
-
-function clearPendingUpdateInstallation() {
-  localStorage.removeItem(updateInstallStorageKey);
-}
-
 export default function App() {
   const { language, setLanguage } = useI18n();
   const bootStarted = useRef(false);
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => readStoredNotificationsEnabled());
-  const [currentVersion, setCurrentVersion] = useState(minimumReportVersion);
-  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>("idle");
-  const [updateInfo, setUpdateInfo] = useState<AppUpdateInfo | null>(null);
-  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
-  const [updateReminderVisible, setUpdateReminderVisible] = useState(false);
-  const [updateCheckStartedAt, setUpdateCheckStartedAt] = useState<number | null>(null);
-  const [updateDownloadProgress, setUpdateDownloadProgress] = useState<number | null>(null);
-  const [updateDownloadSize, setUpdateDownloadSize] = useState<UpdateDownloadSize | null>(null);
-  const [internetAvailable, setInternetAvailable] = useState(() => navigator.onLine);
   const [bootInfoLoaded, setBootInfoLoaded] = useState(false);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => shouldShowWelcome());
-  const [welcomeStateLoaded, setWelcomeStateLoaded] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFeedbackPrivacyOpen, setIsFeedbackPrivacyOpen] = useState(false);
@@ -224,24 +118,29 @@ export default function App() {
   const [isDragOver, setIsDragOver] = useState(false);
   const wasConverting = useRef(false);
   const cancellationRequested = useRef(false);
-  const updateRef = useRef<Update | null>(null);
-  const updateCheckSequence = useRef(0);
-  const updateStatusRef = useRef<UpdateStatus>("idle");
-  const internetAvailableRef = useRef(internetAvailable);
-  const autoUpdateCheckStarted = useRef(false);
 
-  useEffect(() => {
-    updateStatusRef.current = updateStatus;
-  }, [updateStatus]);
-
-  useEffect(() => {
-    internetAvailableRef.current = internetAvailable;
-  }, [internetAvailable]);
-
-  function setAppUpdateStatus(status: UpdateStatus) {
-    updateStatusRef.current = status;
-    setUpdateStatus(status);
-  }
+  const {
+    cancelUpdateDialog,
+    checkForAppUpdate,
+    currentVersion,
+    installAvailableUpdate,
+    internetAvailable,
+    isUpdateDialogOpen,
+    setInternetAvailable,
+    setIsUpdateDialogOpen,
+    showAvailableUpdateReminder,
+    updateDownloadProgress,
+    updateDownloadSize,
+    updateInfo,
+    updateReminderVisible,
+    updateStatus,
+  } = useAppUpdater({
+    bootInfoLoaded,
+    isTauriRuntime,
+    isWelcomeOpen,
+    language,
+    showNotice,
+  });
 
   function openFeedback() {
     if (feedbackPrivacyAccepted) {
@@ -263,107 +162,6 @@ export default function App() {
   }, [notificationsEnabled]);
 
   useEffect(() => {
-    if (!isTauriRuntime) return;
-    getVersion().then(setCurrentVersion).catch(() => undefined);
-  }, []);
-
-  useEffect(() => {
-    if (!isTauriRuntime || !bootInfoLoaded || autoUpdateCheckStarted.current) return;
-    autoUpdateCheckStarted.current = true;
-    if (!internetAvailable) return;
-    const timeout = window.setTimeout(() => {
-      if (updateStatusRef.current !== "idle" || !internetAvailableRef.current || readPendingUpdateInstallation()) return;
-      void checkForAppUpdate(false);
-    }, 900);
-    return () => window.clearTimeout(timeout);
-  }, [bootInfoLoaded, internetAvailable]);
-
-  useEffect(() => {
-    if (updateStatus !== "checking") return;
-    if (updateCheckStartedAt === null) {
-      setUpdateCheckStartedAt(Date.now());
-      return;
-    }
-    const timeout = window.setTimeout(() => {
-      updateCheckSequence.current += 1;
-      updateRef.current = null;
-      setUpdateInfo(null);
-      setAppUpdateStatus("notAvailable");
-      setUpdateCheckStartedAt(null);
-      setUpdateDownloadProgress(null);
-      setUpdateDownloadSize(null);
-    }, updateCheckTimeoutMs + 2500);
-    return () => window.clearTimeout(timeout);
-  }, [language, updateCheckStartedAt, updateStatus]);
-
-  useEffect(() => {
-    const refreshBrowserNetwork = () => {
-      setInternetAvailable(navigator.onLine);
-    };
-    window.addEventListener("online", refreshBrowserNetwork);
-    window.addEventListener("offline", refreshBrowserNetwork);
-    return () => {
-      window.removeEventListener("online", refreshBrowserNetwork);
-      window.removeEventListener("offline", refreshBrowserNetwork);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isTauriRuntime || updateStatus !== "idle") return;
-    const pendingInstallation = readPendingUpdateInstallation();
-    if (!pendingInstallation) return;
-
-    let disposed = false;
-    autoUpdateCheckStarted.current = true;
-    const checkId = updateCheckSequence.current + 1;
-    updateCheckSequence.current = checkId;
-    void (async () => {
-      setAppUpdateStatus("checking");
-      setUpdateCheckStartedAt(Date.now());
-      setUpdateDownloadProgress(pendingInstallation.progress ?? null);
-      setUpdateDownloadSize(pendingInstallation.size);
-      try {
-        const update = await checkForUpdateWithTimeout();
-        if (disposed || checkId !== updateCheckSequence.current) return;
-        updateRef.current = update;
-        if (!update) {
-          clearPendingUpdateInstallation();
-          setUpdateInfo(null);
-          setUpdateCheckStartedAt(null);
-          setUpdateDownloadProgress(null);
-          setAppUpdateStatus("notAvailable");
-          return;
-        }
-        const releaseBody = await fetchReleaseBodyForVersion(update.version, update.body ?? null);
-        if (disposed || checkId !== updateCheckSequence.current) return;
-        setUpdateInfo({
-          version: update.version,
-          currentVersion: update.currentVersion || currentVersion,
-          date: update.date ?? null,
-          body: releaseBody,
-        });
-        setIsUpdateDialogOpen(false);
-        setUpdateReminderVisible(false);
-        await performUpdateInstall(update, pendingInstallation.progress ?? 0, pendingInstallation.size);
-      } catch (error) {
-        if (disposed || checkId !== updateCheckSequence.current) return;
-        if (error instanceof Error && error.message === "update-check-timeout") {
-          clearPendingUpdateInstallation();
-        }
-        setAppUpdateStatus("error");
-        setUpdateCheckStartedAt(null);
-        setUpdateDownloadProgress(null);
-        setUpdateDownloadSize(null);
-        showNotice("error", updateCheckErrorMessage(language, error));
-      }
-    })();
-
-    return () => {
-      disposed = true;
-    };
-  }, [currentVersion, language, updateStatus, welcomeStateLoaded]);
-
-  useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(null), 5200);
     return () => window.clearTimeout(timeout);
@@ -381,8 +179,7 @@ export default function App() {
 
     api.welcomeState()
       .then((state) => setIsWelcomeOpen(state.show))
-      .catch(() => setIsWelcomeOpen(shouldShowWelcome()))
-      .finally(() => setWelcomeStateLoaded(true));
+      .catch(() => setIsWelcomeOpen(shouldShowWelcome()));
 
     api.bootstrapDependencies()
       .then((dependencies) => {
@@ -474,148 +271,11 @@ export default function App() {
     setNotice({ id: Date.now(), tone, message });
   }
 
-  async function checkForAppUpdate(manual: boolean) {
-    if (!isTauriRuntime || updateStatusRef.current === "checking" || updateStatusRef.current === "installing") return;
-    if (!internetAvailableRef.current) {
-      if (manual) showNotice("error", t(language, "update.internetRequired"));
-      return;
-    }
-    const checkId = updateCheckSequence.current + 1;
-    updateCheckSequence.current = checkId;
-    setAppUpdateStatus("checking");
-    setUpdateCheckStartedAt(Date.now());
-    try {
-      const update = await checkForUpdateWithTimeout();
-      if (checkId !== updateCheckSequence.current) return;
-      updateRef.current = update;
-      if (!update) {
-        setUpdateInfo(null);
-        setAppUpdateStatus("notAvailable");
-        setUpdateCheckStartedAt(null);
-        if (manual) showNotice("success", t(language, "update.none"));
-        return;
-      }
-      const releaseBody = await fetchReleaseBodyForVersion(update.version, update.body ?? null);
-      if (checkId !== updateCheckSequence.current) return;
-      setUpdateInfo({
-        version: update.version,
-        currentVersion: update.currentVersion || currentVersion,
-        date: update.date ?? null,
-        body: releaseBody,
-      });
-      setAppUpdateStatus("available");
-      setUpdateCheckStartedAt(null);
-      setUpdateReminderVisible(false);
-      if (manual || !isWelcomeOpen) {
-        setIsUpdateDialogOpen(true);
-      } else {
-        setUpdateReminderVisible(true);
-      }
-    } catch (error) {
-      if (isMissingUpdateReleaseError(error)) {
-        updateRef.current = null;
-        setUpdateInfo(null);
-        setAppUpdateStatus("notAvailable");
-        setUpdateCheckStartedAt(null);
-        if (manual) showNotice("success", t(language, "update.remoteUnavailable"));
-        return;
-      }
-      if (checkId !== updateCheckSequence.current) return;
-      if (isUpdateCheckTimeout(error)) {
-        updateRef.current = null;
-        setUpdateInfo(null);
-        setAppUpdateStatus("notAvailable");
-        setUpdateCheckStartedAt(null);
-        setUpdateDownloadProgress(null);
-        setUpdateDownloadSize(null);
-        if (manual) showNotice("success", t(language, "update.none"));
-        return;
-      }
-      setAppUpdateStatus("error");
-      setUpdateCheckStartedAt(null);
-      setUpdateDownloadProgress(null);
-      setUpdateDownloadSize(null);
-      if (manual) showNotice("error", updateCheckErrorMessage(language, error));
-    }
-  }
-
-  async function installAvailableUpdate() {
-    if (!isTauriRuntime) {
-      window.open(latestReleaseUrl, "_blank", "noreferrer");
-      return;
-    }
-    if (updateStatus === "installing") return;
-    let update = updateRef.current;
-    if (!update) {
-      await checkForAppUpdate(true);
-      update = updateRef.current;
-      if (!update) return;
-    }
-    await performUpdateInstall(update, 0, null);
-  }
-
-  async function performUpdateInstall(update: Update, initialProgress: number | null, initialSize: UpdateDownloadSize | null) {
-    const installingVersion = update.version;
-    setAppUpdateStatus("installing");
-    setUpdateDownloadProgress(initialProgress);
-    setUpdateDownloadSize(initialSize);
-    setIsUpdateDialogOpen(false);
-    setUpdateReminderVisible(false);
-    rememberUpdateInstallation(installingVersion, initialProgress, initialSize);
-    try {
-      let downloaded = 0;
-      let contentLength = 0;
-      await update.downloadAndInstall((event) => {
-        if (event.event === "Started") {
-          downloaded = 0;
-          contentLength = event.data.contentLength ?? 0;
-          const progress = contentLength > 0 ? 0 : null;
-          const size = contentLength > 0 ? { downloaded, total: contentLength } : null;
-          setUpdateDownloadProgress(progress);
-          setUpdateDownloadSize(size);
-          rememberUpdateInstallation(installingVersion, progress, size);
-        }
-        if (event.event === "Progress") {
-          downloaded += event.data.chunkLength;
-          const size = { downloaded, total: contentLength > 0 ? contentLength : null };
-          setUpdateDownloadSize(size);
-          if (contentLength > 0) {
-            const progress = Math.min(100, Math.round((downloaded / contentLength) * 100));
-            setUpdateDownloadProgress(progress);
-            rememberUpdateInstallation(installingVersion, progress, size);
-          } else {
-            rememberUpdateInstallation(installingVersion, null, size);
-          }
-        }
-        if (event.event === "Finished") {
-          const size = contentLength > 0 ? { downloaded: contentLength, total: contentLength } : downloaded > 0 ? { downloaded, total: null } : null;
-          setUpdateDownloadProgress(100);
-          setUpdateDownloadSize(size);
-          rememberUpdateInstallation(installingVersion, 100, size);
-        }
-      });
-      await relaunch();
-    } catch (error) {
-      clearPendingUpdateInstallation();
-      setAppUpdateStatus("available");
-      setUpdateDownloadProgress(null);
-      setUpdateDownloadSize(null);
-      showNotice("error", updateCheckErrorMessage(language, error));
-    }
-  }
-
-  function cancelUpdateDialog() {
-    setIsUpdateDialogOpen(false);
-    setUpdateReminderVisible(Boolean(updateInfo));
-  }
-
   function closeWelcome() {
     localStorage.setItem(welcomeStorageKey, "true");
     void api.markWelcomeSeen().catch(() => undefined);
     setIsWelcomeOpen(false);
-    if (updateInfo && updateStatus === "available") {
-      setUpdateReminderVisible(true);
-    }
+    showAvailableUpdateReminder();
   }
 
   function addFiles(incomingFiles: FileDescription[]) {
@@ -1391,202 +1051,6 @@ function PageNotice(props: { language: LanguageCode; notice: { tone: NoticeTone;
   );
 }
 
-function UpdateDialog(props: {
-  isOpen: boolean;
-  language: LanguageCode;
-  updateInfo: AppUpdateInfo | null;
-  updateStatus: UpdateStatus;
-  updateDownloadProgress: number | null;
-  updateDownloadSize: UpdateDownloadSize | null;
-  onInstall(): void;
-  onCancel(): void;
-}) {
-  const rawReleaseNotes = props.updateInfo?.body?.trim() ?? "";
-  const [localizedReleaseNotes, setLocalizedReleaseNotes] = useState("");
-
-  useEffect(() => {
-    if (!props.isOpen || !rawReleaseNotes) {
-      setLocalizedReleaseNotes("");
-      return;
-    }
-
-    let disposed = false;
-    setLocalizedReleaseNotes(releaseNotesForLanguage(rawReleaseNotes, props.language));
-    translateReleaseNotesForLanguage(rawReleaseNotes, props.language).then((translated) => {
-      if (!disposed) setLocalizedReleaseNotes(translated);
-    });
-
-    return () => {
-      disposed = true;
-    };
-  }, [props.isOpen, props.language, rawReleaseNotes]);
-
-  if (!props.isOpen || !props.updateInfo) return null;
-  const installing = props.updateStatus === "installing";
-  const releaseNotes = localizedReleaseNotes.trim();
-
-  return (
-    <div className="update-overlay" role="presentation" onMouseDown={installing ? undefined : props.onCancel}>
-      <section className="update-dialog" role="dialog" aria-modal="true" aria-labelledby="update-dialog-title" onMouseDown={(event) => event.stopPropagation()}>
-        <header>
-          <span className="label">{t(props.language, "update.label")}</span>
-          <h2 id="update-dialog-title">{t(props.language, "update.dialogTitle", { version: props.updateInfo.version })}</h2>
-        </header>
-        <div className="update-version-hero" aria-label={t(props.language, "update.latestVersion", { version: props.updateInfo.version })}>
-          <span>{t(props.language, "update.availableBadge")}</span>
-          <strong>{props.updateInfo.version}</strong>
-        </div>
-        <p>{t(props.language, "update.dialogBody", { current: props.updateInfo.currentVersion, latest: props.updateInfo.version })}</p>
-        <section className="update-release-notes" aria-label={t(props.language, "update.releaseNotes")}>
-          <strong>{t(props.language, "update.releaseNotes")}</strong>
-          {releaseNotes ? <ReleaseNotes body={releaseNotes} language={props.language} /> : <p>{t(props.language, "update.noReleaseNotes")}</p>}
-        </section>
-        {installing && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} size={props.updateDownloadSize} />}
-        <a className="release-link" href={releasePageUrl(props.updateInfo.version)} target="_blank" rel="noreferrer">
-          {t(props.language, "update.openRelease")}
-        </a>
-        <div className="update-actions">
-          <button className="secondary-button" type="button" disabled={installing} onClick={props.onCancel}>
-            {t(props.language, "update.cancel")}
-          </button>
-          <button className="primary-button" type="button" disabled={installing} onClick={props.onInstall}>
-            {installing ? t(props.language, "update.installing") : t(props.language, "update.install")}
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function UpdateInstallDialog(props: {
-  isVisible: boolean;
-  language: LanguageCode;
-  updateInfo: AppUpdateInfo | null;
-  progress: number | null;
-  size: UpdateDownloadSize | null;
-}) {
-  if (!props.isVisible) return null;
-  const version = props.updateInfo?.version ?? "";
-
-  return (
-    <div className="update-install-overlay" role="presentation">
-      <section className="update-install-dialog" role="alertdialog" aria-modal="true" aria-labelledby="update-install-title">
-        <span className="label">{t(props.language, "update.label")}</span>
-        <h2 id="update-install-title">{t(props.language, "update.installingTitle", { version })}</h2>
-        <p>{t(props.language, "update.installingBody")}</p>
-        <UpdateProgress language={props.language} progress={props.progress} size={props.size} />
-      </section>
-    </div>
-  );
-}
-
-function ReleaseNotes(props: { body: string; language: LanguageCode }) {
-  const lines = releaseNotesForLanguage(props.body, props.language)
-    .replace(/\r\n/g, "\n")
-    .split("\n")
-    .map((line) => line.trim());
-  const blocks: ReactNode[] = [];
-  let pendingList: string[] = [];
-
-  const flushList = () => {
-    if (!pendingList.length) return;
-    const items = pendingList;
-    pendingList = [];
-    blocks.push(
-      <ul key={`list-${blocks.length}`}>
-        {items.map((item, index) => (
-          <li key={`${index}-${item}`}>{renderReleaseNoteInline(item)}</li>
-        ))}
-      </ul>,
-    );
-  };
-
-  for (const line of lines) {
-    if (!line || line.startsWith("# Multi-Converter ")) {
-      flushList();
-      continue;
-    }
-
-    if (line.startsWith("## ")) {
-      flushList();
-      blocks.push(<h3 key={`heading-${blocks.length}`}>{line.slice(3)}</h3>);
-      continue;
-    }
-
-    if (line.startsWith("- ")) {
-      pendingList.push(line.slice(2));
-      continue;
-    }
-
-    flushList();
-    blocks.push(<p key={`paragraph-${blocks.length}`}>{renderReleaseNoteInline(line.replace(/^#\s+/, ""))}</p>);
-  }
-
-  flushList();
-
-  return <div className="release-note-content">{blocks}</div>;
-}
-
-function renderReleaseNoteInline(text: string): ReactNode[] {
-  return text.split(/(`[^`]+`)/g).map((part, index) => {
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return <code key={index}>{part.slice(1, -1)}</code>;
-    }
-    return part;
-  });
-}
-
-function UpdateReminder(props: {
-  isVisible: boolean;
-  language: LanguageCode;
-  updateInfo: AppUpdateInfo | null;
-  updateStatus: UpdateStatus;
-  onInstall(): void;
-  onOpenDetails(): void;
-}) {
-  if (!props.isVisible || !props.updateInfo) return null;
-  const installing = props.updateStatus === "installing";
-
-  return (
-    <aside className="update-reminder" role="status" aria-live="polite">
-      <div>
-        <span>{t(props.language, "update.availableBadge")}</span>
-        <strong>{t(props.language, "update.reminderTitle", { version: props.updateInfo.version })}</strong>
-        <button type="button" onClick={props.onOpenDetails}>{t(props.language, "update.details")}</button>
-      </div>
-      <button className="primary-button" type="button" disabled={installing} onClick={props.onInstall}>
-        {installing ? t(props.language, "update.installing") : t(props.language, "update.install")}
-      </button>
-    </aside>
-  );
-}
-
-function UpdateProgress(props: { language: LanguageCode; progress: number | null; size?: UpdateDownloadSize | null }) {
-  const label = props.progress === null ? t(props.language, "update.installing") : t(props.language, "update.progress", { progress: props.progress });
-  const sizeLabel = props.size ? updateDownloadSizeLabel(props.size) : null;
-  return (
-    <div className={`update-progress ${props.progress === null ? "is-indeterminate" : ""}`}>
-      <div className="update-progress-header">
-        <span>{label}</span>
-        {sizeLabel && <strong>{sizeLabel}</strong>}
-      </div>
-      <div className="progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={props.progress ?? undefined}>
-        <div className="progress-bar" style={props.progress === null ? undefined : { width: `${props.progress}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function updateDownloadSizeLabel(size: UpdateDownloadSize) {
-  const downloaded = formatMegabytes(size.downloaded);
-  return size.total ? `${downloaded} / ${formatMegabytes(size.total)}` : downloaded;
-}
-
-function formatMegabytes(bytes: number) {
-  const value = bytes / (1024 * 1024);
-  return `${Math.max(0, Math.round(value))} Mo`;
-}
-
 function ImportToast(props: { language: LanguageCode; feedback: ImportFeedback }) {
   if (!props.feedback?.visible) return null;
   const label =
@@ -2194,7 +1658,7 @@ function MiniSettingsPanel(props: { language: LanguageCode; focus: "language" })
                 <strong>{t(props.language, "update.settingsTitle")}</strong>
               </div>
             </div>
-            <p>{t(props.language, "update.currentVersion", { version: "1.0.3" })}</p>
+            <p>{t(props.language, "update.currentVersion", { version: minimumReportVersion })}</p>
             <p>{t(props.language, "update.unknown")}</p>
             <div className="settings-actions">
               <button className="secondary-button" type="button" disabled>
@@ -2635,27 +2099,6 @@ async function notifyConversionFinished(language: LanguageCode, failed: boolean,
   } catch (error) {
     console.warn("System notification failed", error);
   }
-}
-
-function updateCheckErrorMessage(language: LanguageCode, error: unknown) {
-  const message = error instanceof Error ? error.message : String(error || "");
-  if (isUpdateCheckTimeout(error)) {
-    return t(language, "update.none");
-  }
-  if (isMissingUpdateReleaseError(error)) {
-    return t(language, "update.remoteUnavailable");
-  }
-  return translateBackendMessage(language, message);
-}
-
-function isUpdateCheckTimeout(error: unknown) {
-  return error instanceof Error && error.message === "update-check-timeout";
-}
-
-function isMissingUpdateReleaseError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error || "");
-  const normalized = message.toLowerCase();
-  return normalized.includes("valid release json") || normalized.includes("latest.json");
 }
 
 function exportNoticeMessage(language: LanguageCode, kind: ExportKind, result: ExportResult) {

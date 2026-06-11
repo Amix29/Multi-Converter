@@ -1,6 +1,6 @@
 {
   "name": "multi-converter",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Local desktop file converter for documents, images, audio and video.",
   "homepage": "https://github.com/Amix29/Multi-Converter#readme",
   "bugs": {
@@ -44,6 +44,7 @@
     "validate:engines": "node scripts/package-engines.mjs --validate",
     "validate:bundled-engines": "node scripts/validate-bundled-engines.mjs",
     "validate:embedded-manifest": "node scripts/validate-embedded-manifest.mjs",
+    "validate:release-assets": "node scripts/validate-release-assets.mjs",
     "fmt:rust:check": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check",
     "clippy:rust": "node scripts/cargo-test-temp.mjs clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
     "test": "npm run test:rust && npm run test:conversions",
@@ -70,6 +71,7 @@
     "@tauri-apps/plugin-notification": "^2.3.3",
     "@tauri-apps/plugin-process": "^2.3.1",
     "@tauri-apps/plugin-updater": "^2.10.1",
+    "marked": "^18.0.5",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

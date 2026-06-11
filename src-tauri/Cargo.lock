@@ -2751,7 +2751,7 @@ dependencies = [
 
 [[package]]
 name = "multi-converter"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "csv",
  "dirs",

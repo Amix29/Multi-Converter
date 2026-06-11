@@ -14,7 +14,10 @@ npm run clippy:rust
 npm run test:rust
 npm run test:pdfium-wrapper
 npm run clippy:pdfium-wrapper
+npm run test:conversions
+npm run build
 npm run tauri:build
+npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp\mc-release-assets\vX.Y.Z"
 ```
 
 ## Engine Compliance
@@ -29,5 +32,7 @@ npm run tauri:build
 ## Repository Hygiene
 
 - Ensure ignored local outputs are not staged: `dist/`, `dist-engines*/`, `engine-sources/`, `tmp/`, `test-results/`, logs, and Playwright artifacts.
+- Publish assets from a clean release asset folder, not directly from a Tauri bundle directory that may still contain older versions.
+- Confirm the clean release asset folder contains exactly `latest.json`, the versioned setup `.exe`, its `.sig`, its `.sha256`, and `Multi-Converter_windows-x64_setup.exe`.
 - Confirm `README.md`, `NOTICE`, `SECURITY.md`, and `CONTRIBUTING.md` are present.
 - Tag only after the NSIS installer has been smoke-tested on a clean Windows user profile.

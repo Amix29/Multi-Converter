@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { releaseNotesForLanguage, translateReleaseNotesForLanguage } from "../src/lib/releaseNotes.ts";
+import { safeMarkdownClassName, safeReleaseNoteHref } from "../src/lib/markdownSafety.ts";
 
 type FetchCall = {
   url: string;
@@ -114,12 +115,51 @@ async function testLongNotesAreChunkedDeterministically() {
   assert.equal(translated, chunks.map((_chunk, index) => `translated-${index + 1}`).join("\n"));
 }
 
+async function testMarkdownReleaseNotesArePreserved() {
+  const body = `
+<!-- mc-release-notes:en -->
+# Multi-Converter v1.0.4
+
+## Highlights
+
+- **Markdown** release notes keep [links](https://example.com), \`code\`, and tables.
+
+| Area | Result |
+| --- | --- |
+| Update | Better detection |
+
+\`\`\`powershell
+npm run check
+\`\`\`
+<!-- /mc-release-notes -->
+`;
+
+  const notes = releaseNotesForLanguage(body, "en");
+
+  assert.match(notes, /^# Multi-Converter v1\.0\.4/);
+  assert.ok(notes.includes("**Markdown**"));
+  assert.ok(notes.includes("[links](https://example.com)"));
+  assert.ok(notes.includes("| Area | Result |"));
+  assert.ok(notes.includes("```powershell"));
+}
+
+async function testMarkdownLinksAreSanitized() {
+  assert.equal(safeReleaseNoteHref("https://github.com/Amix29/Multi-Converter"), "https://github.com/Amix29/Multi-Converter");
+  assert.equal(safeReleaseNoteHref("#download-and-installation"), "#download-and-installation");
+  assert.equal(safeReleaseNoteHref("/Amix29/Multi-Converter/releases"), "https://github.com/Amix29/Multi-Converter/releases");
+  assert.equal(safeReleaseNoteHref("javascript:alert(1)"), null);
+  assert.equal(safeReleaseNoteHref("data:text/html,hello"), null);
+  assert.equal(safeMarkdownClassName("PowerShell + Windows"), "powershell-windows");
+}
+
 try {
   await testLocalizedBlocksWinWithoutNetwork();
   await testOnlineTranslationUsesPostEndpoint();
   await testOfflineFallbackKeepsOriginalNotes();
   await testEnglishBlockIsFallbackSourceForTranslation();
   await testLongNotesAreChunkedDeterministically();
+  await testMarkdownReleaseNotesArePreserved();
+  await testMarkdownLinksAreSanitized();
 } finally {
   restoreFetch();
 }
