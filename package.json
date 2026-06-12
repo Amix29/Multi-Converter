@@ -104,6 +104,10 @@
     "open-source",
     "desktop-app",
     "tauri-app",
+    "tauri-v2",
+    "rust",
+    "react",
+    "typescript",
     "documents",
     "images",
     "audio",
@@ -121,7 +125,10 @@
     "universal-dmg",
     "apple-silicon",
     "intel-mac",
-    "apple-intel"
+    "apple-intel",
+    "linux",
+    "linux-app",
+    "linux-desktop"
   ],
   "author": "Multi-Converter",
   "license": "AGPL-3.0-or-later",
