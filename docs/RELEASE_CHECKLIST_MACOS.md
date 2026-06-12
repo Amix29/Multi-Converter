@@ -27,7 +27,23 @@ All executable files must keep executable permissions. `npm run prepare:bundled-
 
 Current V1.0.5 preparation state: advanced bundled engines are still declared for `windows-x64` only. Do not claim PDFium, LibreOffice, Pandoc or libvips support on macOS until reviewed `macos-universal` manifest entries and engine archives exist and pass validation.
 
-`npm run prepare:macos-upstream-engines` can stage the reviewed upstream macOS candidates for PDFium, LibreOffice and Pandoc on a real Mac. It does not prepare FFmpeg/ffprobe or libvips. Those inputs still need maintainer-approved portable sources before the strict conversion matrix can pass.
+`npm run prepare:macos-upstream-engines` can stage the reviewed upstream macOS candidates for PDFium, LibreOffice and Pandoc on a real Mac. It does not prepare FFmpeg/ffprobe or libvips.
+
+For FFmpeg/ffprobe, set maintainer-approved Apple Silicon and Intel archive inputs plus SHA-256 checksums, then run:
+
+```bash
+npm run prepare:ffmpeg-engine:macos
+```
+
+The FFmpeg script intentionally refuses to choose a third-party binary provider automatically. It must create and verify `ffmpeg-universal-apple-darwin` and `ffprobe-universal-apple-darwin` before a DMG build can be considered.
+
+For libvips, prepare two portable runtime trees first, set `LIBVIPS_MACOS_AARCH64_SOURCE_DIR` and `LIBVIPS_MACOS_X86_64_SOURCE_DIR`, then run:
+
+```bash
+npm run prepare:libvips-engine:macos
+```
+
+The libvips script rejects Homebrew/MacPorts/Fink-style absolute links and any other non-system absolute dynamic dependency. Fix those install names and bundle the dependencies before packaging.
 
 `npm run prepare:bundled-engines` must prune stale `src-tauri/bundled-engines` entries that do not match the current platform before packaging. `npm run validate:bundled-engines`, `npm run test:macos:host` and `npm run verify:macos-dmg` must fail if Windows-only bundled engines would be carried into a macOS build or final DMG.
 
@@ -38,8 +54,10 @@ Before saying "all macOS conversions pass", run the manual GitHub `macOS Convers
 ```bash
 npm ci
 rustup target add aarch64-apple-darwin x86_64-apple-darwin
+npm run prepare:ffmpeg-engine:macos
 npm run test:github-workflows
 npm run prepare:macos-upstream-engines
+npm run prepare:libvips-engine:macos
 npm run prepare:bundled-engines
 npm run validate:bundled-engines
 npm run test:macos:host

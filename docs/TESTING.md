@@ -108,6 +108,8 @@ npm run test:conversions
 
 At the current V1.0.5 preparation stage this strict gate is expected to fail until real macOS sidecars and all `macos-universal` advanced engine archives are staged and declared in `src-tauri/engines-manifest.json`. That failure is intentional. It prevents release notes or status updates from saying "all macOS conversions pass" before the real conversion stack exists on macOS.
 
+Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Silicon and Intel archives plus SHA-256 checksums. Use `npm run prepare:libvips-engine:macos` only with two already-portable libvips runtime trees. These scripts are strict packaging gates; they are not CI placeholders and should fail when the inputs are missing, unpinned or still linked to machine-local package manager paths.
+
 Before building a DMG on macOS, also run:
 
 ```bash

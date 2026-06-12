@@ -49,8 +49,8 @@ Sources candidates vérifiées au 12 juin 2026 :
 - PDFium : `bblanchon/pdfium-binaries` publie `pdfium-mac-univ.tgz`, ainsi que `pdfium-mac-arm64.tgz` et `pdfium-mac-x64.tgz`. Le paquet Multi-Converter doit aussi inclure un wrapper `pdfium-render-universal-apple-darwin`.
 - Pandoc : les releases officielles `jgm/pandoc` publient des ZIP macOS séparés `arm64` et `x86_64`. Préparez un binaire `bin/pandoc-universal-apple-darwin` avec `lipo`, ou adaptez explicitement la config si un build universel officiel est validé.
 - LibreOffice : The Document Foundation publie des DMG macOS séparés Apple Silicon et Intel. Le paquet `macos-universal` doit conserver les deux app bundles sous `aarch64/` et `x86_64/`; le runtime choisit ensuite le lanceur natif.
-- libvips : la documentation officielle macOS renvoie vers Homebrew, MacPorts ou Fink, et ne fournit pas de ZIP portable équivalent au build Windows. Tant qu'un paquet portable n'est pas validé, conservez deux arbres `aarch64/` et `x86_64/` avec leurs dépendances et notices exactes.
-- FFmpeg/ffprobe : FFmpeg fournit le code source mais pas de binaires officiels. Il faut soit produire un build macOS statique maison reproductible, soit valider juridiquement et techniquement un fournisseur tiers. Ne copiez pas simplement un binaire Homebrew dans le DMG sans ses dépendances.
+- libvips : la documentation officielle macOS renvoie vers Homebrew, MacPorts ou Fink, et ne fournit pas de ZIP portable équivalent au build Windows. Tant qu'un paquet portable n'est pas validé, conservez deux arbres `aarch64/` et `x86_64/` avec leurs dépendances et notices exactes. `npm run prepare:libvips-engine:macos` peut seulement copier et vérifier deux arbres portables déjà préparés; il refuse les liens dynamiques absolus non système.
+- FFmpeg/ffprobe : FFmpeg fournit le code source mais pas de binaires officiels. Il faut soit produire un build macOS statique maison reproductible, soit valider juridiquement et techniquement un fournisseur tiers. `npm run prepare:ffmpeg-engine:macos` demande des archives mainteneur explicites et leurs SHA-256; il ne choisit pas un fournisseur automatiquement. Ne copiez pas simplement un binaire Homebrew dans le DMG sans ses dépendances.
 
 PDFium, LibreOffice et Pandoc peuvent être préparés automatiquement sur un Mac avec Xcode Command Line Tools et les targets Rust Darwin installées :
 
@@ -60,6 +60,29 @@ npm run prepare:macos-upstream-engines
 ```
 
 `prepare:macos-upstream-engines` prépare seulement les moteurs upstream dont les archives macOS sont identifiées et adaptées au packaging portable actuel : PDFium, LibreOffice et Pandoc. Il ne prépare pas FFmpeg/ffprobe ni libvips.
+
+Préparation FFmpeg/ffprobe macOS avec archives validées par le mainteneur :
+
+```bash
+export FFMPEG_MACOS_AARCH64_ARCHIVE_URL="https://<source-verifiee>/ffmpeg-arm64.zip"
+export FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256="<sha256>"
+export FFMPEG_MACOS_X86_64_ARCHIVE_URL="https://<source-verifiee>/ffmpeg-x86_64.zip"
+export FFMPEG_MACOS_X86_64_ARCHIVE_SHA256="<sha256>"
+npm run prepare:ffmpeg-engine:macos
+```
+
+Les variantes locales `FFMPEG_MACOS_AARCH64_ARCHIVE` et `FFMPEG_MACOS_X86_64_ARCHIVE` peuvent remplacer les URLs pour des builds maison déjà créés. Le script extrait `ffmpeg` et `ffprobe`, vérifie les architectures avec `lipo`, crée `ffmpeg-universal-apple-darwin` et `ffprobe-universal-apple-darwin`, puis lance `-version`.
+
+Préparation libvips macOS avec deux arbres portables déjà assemblés :
+
+```bash
+export LIBVIPS_MACOS_AARCH64_SOURCE_DIR="/path/to/libvips-arm64-runtime"
+export LIBVIPS_MACOS_X86_64_SOURCE_DIR="/path/to/libvips-x86_64-runtime"
+export LIBVIPS_MACOS_LICENSE_FILE="/path/to/LICENSE"
+npm run prepare:libvips-engine:macos
+```
+
+Le script copie les deux arbres sous `engine-sources/macos-universal/libvips/`, vérifie `bin/vips` avec `lipo`, inspecte les dépendances avec `otool -L`, refuse les liens absolus non système comme `/opt/homebrew`, `/usr/local`, `/opt/local` ou `/sw`, puis lance un test image sur l'architecture native du Mac.
 
 Structure avancée attendue :
 
