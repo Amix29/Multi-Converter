@@ -162,4 +162,6 @@ Also state that automatic updates for macOS are not enabled in this first DMG wo
 
 In `## Validation`, mention that the macOS DMG was verified on macOS, either manually or through the `macOS DMG verification` workflow job.
 
+Do not claim that all macOS conversions pass unless the same release also passed `npm run test:macos:conversions` or the manual `macOS Conversion Matrix` workflow with the final staged sidecars and engine archives. If release notes make that full-coverage claim, they must mention the `macOS Conversion Matrix`.
+
 Do not ask users to disable Gatekeeper globally. Do not present `xattr -dr com.apple.quarantine` as the normal install path.

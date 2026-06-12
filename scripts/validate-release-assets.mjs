@@ -111,6 +111,9 @@ if (includeMacos) {
     if (!/macOS\s+DMG\s+verification/i.test(notesBody) && !/verified\s+on\s+macOS/i.test(notesBody)) {
       fail("Release notes must mention that the macOS DMG was verified on macOS.");
     }
+    if (claimsFullMacosConversionCoverage(notesBody) && !/macOS\s+Conversion\s+Matrix/i.test(notesBody)) {
+      fail("Release notes must mention the macOS Conversion Matrix before claiming full macOS conversion coverage.");
+    }
   }
 }
 
@@ -142,6 +145,15 @@ function sha256File(file) {
 function releaseNotesBlock(body, language) {
   const pattern = new RegExp(`<!--\\s*mc-release-notes:${language}\\s*-->([\\s\\S]*?)<!--\\s*/mc-release-notes\\s*-->`, "i");
   return body.match(pattern)?.[1]?.trim() ?? null;
+}
+
+function claimsFullMacosConversionCoverage(body) {
+  const normalized = body.replace(/\s+/g, " ");
+  return [
+    /all\s+macOS\s+conversions\s+(?:pass|passed|work|were\s+tested)/i,
+    /all\s+conversions\s+(?:pass|passed|work|were\s+tested)\s+on\s+macOS/i,
+    /every\s+macOS\s+conversion\s+(?:pass|passed|works|was\s+tested)/i,
+  ].some((pattern) => pattern.test(normalized));
 }
 
 function assertArrayEqual(actual, expected, message) {

@@ -47,6 +47,24 @@ const notesWithoutMacosWarning = [
   "",
   "- Release asset validation, updater metadata validation and naming checks passed in this test fixture.",
 ].join("\n");
+const notesWithUnsupportedMacosConversionClaim = [
+  `# Multi-Converter v${version}`,
+  "",
+  "A focused validation release for installer asset tests.",
+  "",
+  "## Highlights",
+  "",
+  "- All macOS conversions pass.",
+  "",
+  "## Download And Installation",
+  "",
+  `- Windows uses ${versionedInstaller}.`,
+  `- macOS uses Multi-Converter_${version}_macos-universal.dmg. This macOS build is not Apple-signed and not notarized. After the first launch warning, open System Settings > Privacy & Security, choose Open Anyway, then confirm Open. macOS automatic updates are not enabled for this first DMG workflow.`,
+  "",
+  "## Validation",
+  "",
+  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed in this test fixture.",
+].join("\n");
 
 const windowsDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-windows-"));
 const allDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-"));
@@ -56,6 +74,7 @@ const allBadNotesDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-bad-
 const allDarwinUpdaterDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-darwin-updater-"));
 const allMissingDmgDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-missing-dmg-"));
 const allMissingMacosValidationDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-missing-macos-validation-"));
+const allUnsupportedMacosConversionClaimDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-unsupported-macos-conversion-claim-"));
 const preparedBundleDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-bundle-"));
 const preparedOutputDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-output-"));
 const preparedDmgDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-dmg-"));
@@ -90,6 +109,10 @@ try {
   fs.writeFileSync(path.join(allMissingMacosValidationDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");
   runValidatorFails(allMissingMacosValidationDir, "all", "verified on macOS");
 
+  writeWindowsAssets(allUnsupportedMacosConversionClaimDir, notesWithUnsupportedMacosConversionClaim);
+  fs.writeFileSync(path.join(allUnsupportedMacosConversionClaimDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");
+  runValidatorFails(allUnsupportedMacosConversionClaimDir, "all", "macOS Conversion Matrix");
+
   writeBundleFixture(preparedBundleDir);
   fs.writeFileSync(path.join(preparedDmgDir, "source.dmg"), "fake dmg\n");
   fs.writeFileSync(path.join(preparedOutputDir, "stale.log"), "stale output\n");
@@ -111,6 +134,7 @@ try {
     allDarwinUpdaterDir,
     allMissingDmgDir,
     allMissingMacosValidationDir,
+    allUnsupportedMacosConversionClaimDir,
     preparedBundleDir,
     preparedOutputDir,
     preparedDmgDir,
