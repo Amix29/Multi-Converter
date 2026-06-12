@@ -36,7 +36,7 @@ macOS support is being prepared for one universal DMG. Do not publish macOS engi
 
 For the universal DMG, release sidecars should include the `*-universal-apple-darwin` files required by Tauri's `externalBin` handling. The Apple Silicon and Intel inputs used to create those universal files must have matching license and notice coverage.
 
-The macOS packaging contract lives in `tools/engine-packages.macos.config.json`. It expects reviewed `macos-universal` sources under `engine-sources/macos-universal/`. PDFium and Pandoc have upstream macOS archive candidates and can be staged on macOS with `npm run prepare:macos-upstream-engines`. LibreOffice has official Apple Silicon and Intel DMGs, while libvips and FFmpeg/ffprobe still require a maintainer-approved portable packaging strategy before release claims can be made.
+The macOS packaging contract lives in `tools/engine-packages.macos.config.json`. It expects reviewed `macos-universal` sources under `engine-sources/macos-universal/`. PDFium, LibreOffice and Pandoc have upstream macOS archive candidates and can be staged on macOS with `npm run prepare:macos-upstream-engines`, while libvips and FFmpeg/ffprobe still require a maintainer-approved portable packaging strategy before release claims can be made.
 
 The embedded manifest currently declares advanced bundled engines for `windows-x64` only. Until reviewed `macos-universal` entries are added, macOS release notes and user-facing docs must limit macOS conversion claims to the engines that are actually bundled and tested in the final DMG.
 

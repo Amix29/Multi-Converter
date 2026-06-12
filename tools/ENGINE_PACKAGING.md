@@ -52,14 +52,14 @@ Sources candidates vérifiées au 12 juin 2026 :
 - libvips : la documentation officielle macOS renvoie vers Homebrew, MacPorts ou Fink, et ne fournit pas de ZIP portable équivalent au build Windows. Tant qu'un paquet portable n'est pas validé, conservez deux arbres `aarch64/` et `x86_64/` avec leurs dépendances et notices exactes.
 - FFmpeg/ffprobe : FFmpeg fournit le code source mais pas de binaires officiels. Il faut soit produire un build macOS statique maison reproductible, soit valider juridiquement et techniquement un fournisseur tiers. Ne copiez pas simplement un binaire Homebrew dans le DMG sans ses dépendances.
 
-PDFium et Pandoc peuvent être préparés automatiquement sur un Mac avec Xcode Command Line Tools et les targets Rust Darwin installées :
+PDFium, LibreOffice et Pandoc peuvent être préparés automatiquement sur un Mac avec Xcode Command Line Tools et les targets Rust Darwin installées :
 
 ```bash
 rustup target add aarch64-apple-darwin x86_64-apple-darwin
 npm run prepare:macos-upstream-engines
 ```
 
-`prepare:macos-upstream-engines` prépare seulement les moteurs upstream dont les archives macOS sont identifiées et adaptées au packaging portable actuel : PDFium et Pandoc. Il ne prépare pas FFmpeg/ffprobe, LibreOffice ni libvips.
+`prepare:macos-upstream-engines` prépare seulement les moteurs upstream dont les archives macOS sont identifiées et adaptées au packaging portable actuel : PDFium, LibreOffice et Pandoc. Il ne prépare pas FFmpeg/ffprobe ni libvips.
 
 Structure avancée attendue :
 
