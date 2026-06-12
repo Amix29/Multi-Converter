@@ -84,6 +84,17 @@ npm run prepare:libvips-engine:macos
 
 Pour générer ces entrées dans GitHub Actions, lancez le workflow manuel `macOS libvips Runtime` avec un `output_release_tag`. Il produit `libvips-macos-aarch64.tar.gz` sur `macos-latest` et `libvips-macos-x86_64.tar.gz` sur `macos-15-intel`. Passez ensuite ce tag comme `libvips_release_tag` au workflow `macOS Engine Staging`.
 
+Sans minutes GitHub Actions, copiez les deux archives libvips sur un vrai Mac et utilisez le staging local :
+
+```bash
+npm run prepare:macos-local-engines -- \
+  --libvips-aarch64-archive /path/to/libvips-macos-aarch64.tar.gz \
+  --libvips-x86_64-archive /path/to/libvips-macos-x86_64.tar.gz \
+  --host-check
+```
+
+Cette commande utilise les variables `FFMPEG_MACOS_*` déjà configurées, prépare PDFium/LibreOffice/Pandoc, package les ZIP `macos-universal`, copie le manifeste généré pour la validation locale et alimente `engine-sources/.bundled-engine-cache`. Ne commitez pas ces sorties générées sans approbation mainteneur.
+
 Le script copie les deux arbres sous `engine-sources/macos-universal/libvips/`, vérifie `bin/vips` avec `lipo`, inspecte les dépendances avec `otool -L`, refuse les liens absolus non système comme `/opt/homebrew`, `/usr/local`, `/opt/local` ou `/sw`, puis lance un test image sur l'architecture native du Mac.
 
 Structure avancée attendue :

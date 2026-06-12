@@ -112,6 +112,17 @@ Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Si
 
 The manual `macOS libvips Runtime` workflow builds native Homebrew-derived libvips runtime archives on Apple Silicon and Intel runners, rewrites their dynamic links to portable `@rpath` links, smoke-tests the native `vips copy` path, and can upload the two archives to a private release. Its `arch` input can retry one architecture, but complete macOS validation still requires both archives. Use that release tag as `libvips_release_tag` for the engine staging workflow after reviewing dependency licenses.
 
+When GitHub Actions minutes are unavailable, use a real Mac or self-hosted macOS runner instead. After collecting both libvips runtime archives and both FFmpeg archives/checksums, run local staging on macOS:
+
+```bash
+npm run prepare:macos-local-engines -- \
+  --libvips-aarch64-archive /path/to/libvips-macos-aarch64.tar.gz \
+  --libvips-x86_64-archive /path/to/libvips-macos-x86_64.tar.gz \
+  --host-check
+```
+
+This command prepares FFmpeg/ffprobe from the configured `FFMPEG_MACOS_*` archive variables, prepares PDFium/LibreOffice/Pandoc from upstream sources, extracts the two local libvips archives, packages `macos-universal` engine ZIPs, copies the generated manifest into `src-tauri/engines-manifest.json`, seeds `engine-sources/.bundled-engine-cache`, and runs `npm run prepare:bundled-engines`. Add `--conversions` only on a real Mac that should run the full conversion matrix. Do not commit the generated manifest, engine archives or bundled engine outputs without maintainer approval.
+
 For private GitHub Actions validation, upload real sidecars to the tag passed as `sidecar_release_tag`, and upload `engines-manifest.json` plus the referenced macOS engine ZIPs to the tag passed as `engine_release_tag`. The workflows download those assets with `gh release download`, then seed `engine-sources/.bundled-engine-cache` so private release assets can be tested without relying on public unauthenticated download URLs.
 
 The manual `macOS Engine Staging` workflow can produce that private test release. It still requires explicit FFmpeg archive URLs/checksums and a `libvips_release_tag`; it does not select FFmpeg sources automatically.

@@ -83,6 +83,17 @@ npm run tauri:build:macos
 npm run verify:macos-dmg -- --version X.Y.Z --dmg path/to/Multi-Converter_X.Y.Z_macos-universal.dmg
 ```
 
+When GitHub Actions minutes are unavailable, prefer the local staging wrapper instead of the manual engine packaging sequence:
+
+```bash
+npm run prepare:macos-local-engines -- \
+  --libvips-aarch64-archive /path/to/libvips-macos-aarch64.tar.gz \
+  --libvips-x86_64-archive /path/to/libvips-macos-x86_64.tar.gz \
+  --host-check
+```
+
+Add `--conversions` on a real Mac when it is time to prove the full conversion matrix. The wrapper still requires the `FFMPEG_MACOS_*` archive/checksum variables. It updates `src-tauri/engines-manifest.json` and `engine-sources/.bundled-engine-cache` for local validation only; do not commit those generated outputs unless a maintainer explicitly approves the exact engine set.
+
 ## GitHub Actions Conversion Matrix
 
 Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conversion behavior on macOS, not only build readiness.

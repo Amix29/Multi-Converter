@@ -16,6 +16,8 @@ const macosPdfiumPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-p
 const macosLibreOfficePrepare = fs.readFileSync(path.join(root, "scripts", "prepare-libreoffice-engine-macos.mjs"), "utf8");
 const macosPandocPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-pandoc-engine-macos.mjs"), "utf8");
 const macosLibvipsPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-engine-macos.mjs"), "utf8");
+const macosLocalEnginesPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-macos-local-engines.mjs"), "utf8");
+const macosLibvipsInputPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-macos-release-inputs.mjs"), "utf8");
 const prepareScript = fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8");
 const validateScript = fs.readFileSync(path.join(root, "scripts", "validate-bundled-engines.mjs"), "utf8");
 const packageScript = fs.readFileSync(path.join(root, "scripts", "package-engines.mjs"), "utf8");
@@ -31,6 +33,7 @@ assert.equal(packageJson.scripts["test:macos:host"], "node scripts/test-macos-ho
 assert.equal(packageJson.scripts["verify:macos-dmg"], "node scripts/verify-macos-dmg.mjs", "macOS DMG verification script must be exposed through npm");
 assert.match(packageJson.scripts["tauri:build:macos"], /--target universal-apple-darwin/, "macOS build must target universal-apple-darwin");
 assert.match(packageJson.scripts["package:macos-engines"], /engine-packages\.macos\.config\.json/, "macOS engine packaging script must use the macOS engine config");
+assert.equal(packageJson.scripts["prepare:macos-local-engines"], "node scripts/prepare-macos-local-engines.mjs", "local macOS engine staging script must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:ffmpeg-engine:macos"], "node scripts/prepare-ffmpeg-engine-macos.mjs", "macOS FFmpeg preparation script must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:pdfium-engine:macos"], "node scripts/prepare-pdfium-engine-macos.mjs", "macOS PDFium preparation script must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:libreoffice-engine:macos"], "node scripts/prepare-libreoffice-engine-macos.mjs", "macOS LibreOffice preparation script must be exposed through npm");
@@ -89,6 +92,16 @@ assert.match(macosLibvipsPrepare, /\/opt\/homebrew\//, "macOS libvips preparatio
 assert.match(macosLibvipsPrepare, /if \(value\.startsWith\("\/"\)\) return false/, "macOS libvips preparation must reject non-system absolute dynamic links");
 assert.match(macosLibvipsPrepare, /lipo.*-verify_arch/s, "macOS libvips preparation must verify the staged architecture");
 assert.match(macosLibvipsPrepare, /smokeTestNative/, "macOS libvips preparation must smoke-test the native staged tree");
+assert.match(macosLibvipsInputPrepare, /--aarch64-archive/, "macOS libvips input preparation must accept local Apple Silicon archives");
+assert.match(macosLibvipsInputPrepare, /--x86_64-archive/, "macOS libvips input preparation must accept local Intel archives");
+assert.match(macosLocalEnginesPrepare, /process\.platform !== "darwin"/, "local macOS engine staging must refuse non-macOS hosts");
+assert.match(macosLocalEnginesPrepare, /prepare:ffmpeg-engine:macos/, "local macOS engine staging must prepare real FFmpeg sidecars");
+assert.match(macosLocalEnginesPrepare, /prepare:macos-upstream-engines/, "local macOS engine staging must prepare upstream advanced engines");
+assert.match(macosLocalEnginesPrepare, /prepare-libvips-macos-release-inputs\.mjs/, "local macOS engine staging must accept local libvips runtime archives");
+assert.match(macosLocalEnginesPrepare, /package:macos-engines/, "local macOS engine staging must package macOS engine archives");
+assert.match(macosLocalEnginesPrepare, /src-tauri", "engines-manifest\.json"/, "local macOS engine staging must copy the generated manifest for local validation");
+assert.match(macosLocalEnginesPrepare, /\.bundled-engine-cache/, "local macOS engine staging must seed the bundled engine cache");
+assert.match(macosLocalEnginesPrepare, /Do not commit generated engine manifests or archives/, "local macOS engine staging must warn against committing generated engine output");
 assert.match(macosDmgVerify, /process\.platform !== "darwin"/, "macOS DMG verification must refuse non-macOS hosts");
 assert.match(macosDmgVerify, /hdiutil.*attach/s, "macOS DMG verification must mount the DMG");
 assert.match(macosDmgVerify, /CFBundleExecutable/, "macOS DMG verification must read the executable name from Info.plist");
