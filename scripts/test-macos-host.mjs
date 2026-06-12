@@ -14,7 +14,7 @@ if (process.platform !== "darwin") {
 }
 
 requireCommand("xcode-select", ["-p"], "Xcode Command Line Tools are required.");
-requireCommand("lipo", ["-version"], "lipo is required to validate universal sidecars.");
+requireCommand("xcrun", ["-find", "lipo"], "lipo is required to validate universal sidecars.");
 
 const installedTargets = commandOutput("rustup", ["target", "list", "--installed"], "rustup target list failed.");
 for (const target of requiredTargets) {

@@ -18,7 +18,7 @@ if (process.platform !== "darwin") {
 }
 
 requireCommand("xcode-select", ["-p"], "Xcode Command Line Tools are required.");
-requireCommand("lipo", ["-version"], "lipo is required to validate macOS sidecar architectures.");
+requireCommand("xcrun", ["-find", "lipo"], "lipo is required to validate macOS sidecar architectures.");
 
 const manifest = readJson(manifestPath);
 validateSidecarInputs();
