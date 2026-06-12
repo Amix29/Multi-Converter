@@ -138,6 +138,9 @@ assert.equal(packageJson.scripts["build:libvips-macos-runtime"], "node scripts/b
 assert.equal(packageJson.scripts["prepare:libvips-macos-release-inputs"], "node scripts/prepare-libvips-macos-release-inputs.mjs", "macOS libvips release input helper must be exposed through npm");
 assert.equal(packageJson.scripts["test:windows:ci"], "node scripts/test-windows-ci-gate.mjs", "Windows CI validation wrapper must be exposed through npm");
 assert.match(windowsCiGateScript, /process\.platform !== "win32"/, "Windows CI validation wrapper must refuse non-Windows hosts");
+assert.match(windowsCiGateScript, /process\.env\.npm_execpath/, "Windows CI validation wrapper must reuse npm's CLI path instead of spawning npm.cmd directly");
+assert.match(windowsCiGateScript, /process\.execPath/, "Windows CI validation wrapper must invoke npm through the current Node executable");
+assert.match(windowsCiGateScript, /result\.error/, "Windows CI validation wrapper must report command spawn failures");
 assert.match(windowsCiGateScript, /\["npm", \["audit", "--omit=dev"\]\]/, "Windows CI validation wrapper must run production npm audit");
 assert.match(windowsCiGateScript, /\["npm", \["run", "prepare:bundled-engines"\]\]/, "Windows CI validation wrapper must prepare Windows bundled engines before validation");
 assert.match(windowsCiGateScript, /\["npm", \["run", "check"\]\]/, "Windows CI validation wrapper must run static and contract checks");

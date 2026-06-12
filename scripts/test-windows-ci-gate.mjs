@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -33,12 +34,16 @@ for (const [command, args] of commands) {
   }
 
   console.log(`\n> ${display}`);
-  const result = spawnSync(commandName(command), args, {
+  const invocation = commandInvocation(command, args);
+  const result = spawnSync(invocation.command, invocation.args, {
     cwd: root,
     env: process.env,
     stdio: "inherit",
   });
 
+  if (result.error) {
+    fail(`${display} failed to start: ${result.error.message}`);
+  }
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
@@ -50,8 +55,19 @@ if (dryRun) {
   console.log("Windows CI validation passed.");
 }
 
-function commandName(command) {
-  return process.platform === "win32" && command === "npm" ? "npm.cmd" : command;
+function commandInvocation(command, args) {
+  if (command !== "npm") return { command, args };
+
+  const npmExecPath = process.env.npm_execpath;
+  if (npmExecPath && fs.existsSync(npmExecPath)) {
+    return { command: process.execPath, args: [npmExecPath, ...args] };
+  }
+
+  if (process.platform === "win32") {
+    return { command: "cmd.exe", args: ["/d", "/s", "/c", "npm", ...args] };
+  }
+
+  return { command: "npm", args };
 }
 
 function fail(message) {
