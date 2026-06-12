@@ -4,12 +4,22 @@ This document describes the V1.0.5 test split by platform. Use it to avoid false
 
 ## Windows x64
 
-Windows is the current stable public platform and keeps the full validation gate:
+Windows is the current stable public platform and keeps the full validation gate. Use the grouped command when you want the same Windows validation sequence as the GitHub `Build` workflow:
 
 ```powershell
+npm run test:windows:ci
+```
+
+That command intentionally refuses non-Windows hosts and runs:
+
+```powershell
+npm audit --omit=dev
+npm run prepare:bundled-engines
 npm run check
 npm run fmt:rust:check
 npm run clippy:rust
+npm run audit:rust
+npm run validate:engines
 npm run test:rust
 npm run test:conversions
 npm run test:pdfium-wrapper

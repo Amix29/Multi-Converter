@@ -13,6 +13,7 @@ const macosConversionsWorkflow = fs.readFileSync(path.join(root, ".github", "wor
 const macosEngineReleaseScript = fs.readFileSync(path.join(root, "scripts", "prepare-macos-engine-release-assets.mjs"), "utf8");
 const macosLibvipsRuntimeScript = fs.readFileSync(path.join(root, "scripts", "build-libvips-macos-runtime.mjs"), "utf8");
 const macosLibvipsReleaseInputsScript = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-macos-release-inputs.mjs"), "utf8");
+const windowsCiGateScript = fs.readFileSync(path.join(root, "scripts", "test-windows-ci-gate.mjs"), "utf8");
 const windowsBuildJob = workflowJob(buildWorkflow, "quality-gate");
 const macosBuildJob = workflowJob(buildWorkflow, "macos-code-check");
 const macosHostTestsJob = workflowJob(buildWorkflow, "macos-host-tests");
@@ -26,7 +27,7 @@ assert.match(windowsBuildJob, /timeout-minutes:\s+120/, "Windows quality gate mu
 assert.match(windowsBuildJob, /id:\s+cargo-audit-cache/, "Windows CI must cache the cargo-audit binary");
 assert.match(windowsBuildJob, /~\/\.cargo\/bin\/cargo-audit\.exe/, "Windows CI cargo-audit cache must target the installed binary");
 assert.match(windowsBuildJob, /cargo install cargo-audit --locked\s*\n\s+if:\s+steps\.cargo-audit-cache\.outputs\.cache-hit != 'true'/, "Windows CI must skip cargo-audit installation on cache hits");
-assert.match(windowsBuildJob, /npm run test:pdfium-wrapper/, "Windows CI must run the PDFium wrapper runtime tests with a native PDFium DLL");
+assert.match(windowsBuildJob, /npm run test:windows:ci/, "Windows CI must use the explicit Windows validation wrapper");
 assert.match(buildWorkflow, /macos-code-check:/, "build workflow must include a macOS code-check job");
 assert.match(macosBuildJob, /runs-on:\s+macos-latest/, "macOS CI must run on macOS");
 assert.match(macosBuildJob, /aarch64-apple-darwin/, "macOS CI must check Apple Silicon target compilation");
@@ -135,6 +136,20 @@ assert.match(macosConversionsJob, /npm run test:macos:conversions/, "macOS conve
 assert.equal(packageJson.scripts["prepare:macos-engine-release-assets"], "node scripts/prepare-macos-engine-release-assets.mjs", "macOS staged engine release helper must be exposed through npm");
 assert.equal(packageJson.scripts["build:libvips-macos-runtime"], "node scripts/build-libvips-macos-runtime.mjs", "macOS libvips runtime builder must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:libvips-macos-release-inputs"], "node scripts/prepare-libvips-macos-release-inputs.mjs", "macOS libvips release input helper must be exposed through npm");
+assert.equal(packageJson.scripts["test:windows:ci"], "node scripts/test-windows-ci-gate.mjs", "Windows CI validation wrapper must be exposed through npm");
+assert.match(windowsCiGateScript, /process\.platform !== "win32"/, "Windows CI validation wrapper must refuse non-Windows hosts");
+assert.match(windowsCiGateScript, /\["npm", \["audit", "--omit=dev"\]\]/, "Windows CI validation wrapper must run production npm audit");
+assert.match(windowsCiGateScript, /\["npm", \["run", "prepare:bundled-engines"\]\]/, "Windows CI validation wrapper must prepare Windows bundled engines before validation");
+assert.match(windowsCiGateScript, /\["npm", \["run", "check"\]\]/, "Windows CI validation wrapper must run static and contract checks");
+assert.match(windowsCiGateScript, /\["npm", \["run", "fmt:rust:check"\]\]/, "Windows CI validation wrapper must run Rust formatting checks");
+assert.match(windowsCiGateScript, /\["npm", \["run", "clippy:rust"\]\]/, "Windows CI validation wrapper must run Rust Clippy");
+assert.match(windowsCiGateScript, /\["npm", \["run", "audit:rust"\]\]/, "Windows CI validation wrapper must run Rust audit");
+assert.match(windowsCiGateScript, /\["npm", \["run", "test:rust"\]\]/, "Windows CI validation wrapper must run Rust unit tests");
+assert.match(windowsCiGateScript, /\["npm", \["run", "test:conversions"\]\]/, "Windows CI validation wrapper must run the full Windows conversion matrix");
+assert.match(windowsCiGateScript, /\["npm", \["run", "test:pdfium-wrapper"\]\]/, "Windows CI validation wrapper must run PDFium runtime tests with the bundled Windows DLL");
+assert.match(windowsCiGateScript, /\["npm", \["run", "clippy:pdfium-wrapper"\]\]/, "Windows CI validation wrapper must lint the PDFium wrapper");
+assert.match(windowsCiGateScript, /\["npm", \["run", "build"\]\]/, "Windows CI validation wrapper must run the frontend production build");
+assert.match(windowsCiGateScript, /\["npm", \["run", "tauri:build"\]\]/, "Windows CI validation wrapper must build the Windows Tauri installer");
 assert.match(macosEngineReleaseScript, /gh.*release.*download/s, "macOS staged engine helper must download private release assets through gh");
 assert.match(macosEngineReleaseScript, /engines-manifest\.json/, "macOS staged engine helper must download the staged engine manifest");
 assert.match(macosEngineReleaseScript, /engine-sources", "\.bundled-engine-cache"/, "macOS staged engine helper must seed the bundled-engine cache");

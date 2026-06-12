@@ -58,20 +58,9 @@ jobs:
           key: ${{ runner.os }}-cargo-audit-bin-v1
 
       - run: npm ci
-      - run: npm audit --omit=dev
       - run: cargo install cargo-audit --locked
         if: steps.cargo-audit-cache.outputs.cache-hit != 'true'
-      - run: npm run prepare:bundled-engines
-      - run: npm run check
-      - run: npm run fmt:rust:check
-      - run: npm run clippy:rust
-      - run: npm run audit:rust
-      - run: npm run validate:engines
-      - run: npm run test:rust
-      - run: npm run test:conversions
-      - run: npm run test:pdfium-wrapper
-      - run: npm run clippy:pdfium-wrapper
-      - run: npm run tauri:build
+      - run: npm run test:windows:ci
 
   macos-code-check:
     name: macOS code check (${{ matrix.rust-target }})

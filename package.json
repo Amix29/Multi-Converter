@@ -32,6 +32,7 @@
     "test:ui-layout": "node scripts/test-ui-layout.mjs",
     "test:repository-metadata": "node scripts/test-repository-metadata.mjs",
     "test:run-tauri": "node scripts/test-run-tauri.mjs",
+    "test:windows:ci": "node scripts/test-windows-ci-gate.mjs",
     "test:macos:host": "node scripts/test-macos-host.mjs",
     "test:macos:conversions": "node scripts/test-macos-conversions.mjs",
     "tauri": "tauri",
