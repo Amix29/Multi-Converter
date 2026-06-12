@@ -8,7 +8,9 @@ Security fixes are prioritized for the latest tagged release and the default bra
 
 ## Reporting a Vulnerability
 
-Please report security issues by opening a GitHub issue.
+Do not post exploit details, crafted files, secrets, crash dumps with personal data, or private engine/archive URLs in a public GitHub issue.
+
+Report vulnerabilities through GitHub's private vulnerability reporting flow if it is available on the repository's **Security** tab. If private reporting is not available, open a minimal public issue that says you need to report a security issue privately, but do not include reproduction details, payloads, logs or affected files until a private maintainer channel is available.
 
 Useful details include:
 

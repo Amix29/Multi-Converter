@@ -321,7 +321,7 @@ Maintainers may edit, hide or remove comments, close discussions, or block users
 
 ## Security
 
-To report a vulnerability or security issue, open a **GitHub issue**. See [SECURITY.md](SECURITY.md) for scope and what information to include.
+To report a vulnerability or security issue, use GitHub private vulnerability reporting when available. Do not post exploit details, crafted files or sensitive logs in a public issue. See [SECURITY.md](SECURITY.md) for scope and safe reporting instructions.
 
 ---
 

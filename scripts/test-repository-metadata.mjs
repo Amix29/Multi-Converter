@@ -5,6 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
+const securityPolicy = fs.readFileSync(path.join(root, "SECURITY.md"), "utf8");
 const githubTopics = fs.readFileSync(path.join(root, "docs", "GITHUB_TOPICS.md"), "utf8");
 const testingDocs = fs.readFileSync(path.join(root, "docs", "TESTING.md"), "utf8");
 const keywords = new Set(packageJson.keywords ?? []);
@@ -63,6 +64,11 @@ assert.match(readme, /npm run tauri:build:macos/, "README must document the macO
 assert.match(readme, /refuses this command on Windows\/Linux/, "README must explain that macOS DMG builds are refused on non-macOS hosts");
 assert.match(readme, /Advanced macOS engines must not be advertised until/, "README must not overclaim advanced macOS engines");
 assert.match(readme, /docs\/GITHUB_TOPICS\.md/, "README must link the recommended GitHub topics");
+assert.match(readme, /private vulnerability reporting/, "README security section must prefer private vulnerability reporting");
+assert.doesNotMatch(readme, /open a \*\*GitHub issue\*\*/i, "README must not tell users to post vulnerability details in a public issue");
+assert.match(securityPolicy, /Do not post exploit details/, "security policy must warn against public exploit disclosure");
+assert.match(securityPolicy, /private vulnerability reporting/, "security policy must prefer a private vulnerability reporting flow");
+assert.match(securityPolicy, /minimal public issue/, "security policy must keep public fallback issues minimal");
 
 for (const topic of [
   "file-converter",
