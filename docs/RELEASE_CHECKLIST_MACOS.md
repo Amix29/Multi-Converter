@@ -92,7 +92,7 @@ npm run prepare:macos-local-engines -- \
   --host-check
 ```
 
-Add `--conversions` on a real Mac when it is time to prove the full conversion matrix. The wrapper still requires the `FFMPEG_MACOS_*` archive/checksum variables. It stages the generated `macos-universal` manifest only while local validation runs, seeds `engine-sources/.bundled-engine-cache`, then restores the committed `src-tauri/engines-manifest.json` by default. Use `--keep-generated-manifest` only when a maintainer explicitly wants to review and commit the exact generated engine set.
+Add `--conversions` on a real Mac when it is time to prove the full conversion matrix. The wrapper still requires the `FFMPEG_MACOS_*` archive/checksum variables. It stages an embedded manifest containing only advanced `macos-universal` engines while local validation runs, seeds `engine-sources/.bundled-engine-cache` with every generated macOS engine archive, then restores the committed `src-tauri/engines-manifest.json` by default. Use `--keep-generated-manifest` only when a maintainer explicitly wants to review and commit the exact advanced engine set.
 
 ## GitHub Actions Conversion Matrix
 
@@ -119,7 +119,7 @@ Use the manual `macOS DMG Build` workflow when a Mac runner should build and ver
 
 - If the repository already contains staged macOS sidecars, run the workflow with the default empty `sidecar_release_tag`.
 - If sidecars are stored on a private test release, set `sidecar_release_tag` to the release tag that contains `ffmpeg-aarch64-apple-darwin`, `ffmpeg-x86_64-apple-darwin`, `ffprobe-aarch64-apple-darwin` and `ffprobe-x86_64-apple-darwin`.
-- If macOS engine archives are stored on a private test release, set `engine_release_tag` to the release tag that contains `engines-manifest.json` plus every ZIP referenced by that manifest.
+- If macOS engine archives are stored on a private test release, set `engine_release_tag` to the release tag that contains `engines-manifest.json` plus every ZIP referenced by that manifest. The workflow downloads and verifies every referenced macOS ZIP, but writes only advanced engines into `src-tauri/engines-manifest.json`; FFmpeg and ffprobe stay Tauri sidecars.
 - The workflow prepares `macos-universal` engines, runs `npm run test:macos:host`, builds `npm run tauri:build:macos`, renames the output to `Multi-Converter_X.Y.Z_macos-universal.dmg`, verifies it with `npm run verify:macos-dmg`, then uploads the verified DMG as a workflow artifact.
 - A failed workflow is not a release blocker by itself until the failure is reviewed. Common expected failures are missing staged sidecars, missing executable bits or a DMG that still contains Windows-only bundled engines.
 

@@ -21,13 +21,14 @@ await fs.rm(manifestAsset, { force: true });
 
 downloadReleaseAsset("engines-manifest.json");
 await assertFile(manifestAsset, "downloaded engines-manifest.json");
-await fs.copyFile(manifestAsset, manifestTarget);
 
-const manifest = JSON.parse(await fs.readFile(manifestTarget, "utf8"));
+const manifest = JSON.parse(await fs.readFile(manifestAsset, "utf8"));
 const engines = (manifest.engines ?? []).filter((engine) => engine.platform === "macos-universal");
 if (engines.length === 0) {
   fail("No macos-universal engine entries found in staged engines-manifest.json.");
 }
+
+await writeEmbeddedManifest(manifest, engines);
 
 for (const engine of engines) {
   validateEngineEntry(engine);
@@ -40,6 +41,18 @@ for (const engine of engines) {
 }
 
 console.log(`Staged ${engines.length} macOS engine archives from ${repo}@${tag}.`);
+
+async function writeEmbeddedManifest(sourceManifest, macosEngines) {
+  const embeddedEngines = macosEngines.filter((engine) => engine.mode === "advanced");
+  if (embeddedEngines.length === 0) {
+    fail("No advanced macos-universal engine entries found for the embedded manifest.");
+  }
+  const embeddedManifest = {
+    ...sourceManifest,
+    engines: embeddedEngines,
+  };
+  await fs.writeFile(manifestTarget, `${JSON.stringify(embeddedManifest, null, 2)}\n`, "utf8");
+}
 
 function validateEngineEntry(engine) {
   if (!engine.id || !engine.version) {

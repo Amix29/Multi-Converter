@@ -121,6 +121,8 @@ assert.match(macosLocalEnginesPrepare, /prepare:macos-upstream-engines/, "local 
 assert.match(macosLocalEnginesPrepare, /prepare-libvips-macos-release-inputs\.mjs/, "local macOS engine staging must accept local libvips runtime archives");
 assert.match(macosLocalEnginesPrepare, /package:macos-engines/, "local macOS engine staging must package macOS engine archives");
 assert.match(macosLocalEnginesPrepare, /src-tauri", "engines-manifest\.json"/, "local macOS engine staging must copy the generated manifest for local validation");
+assert.match(macosLocalEnginesPrepare, /engine\.mode === "advanced"/, "local macOS engine staging must write only advanced engines into the embedded manifest");
+assert.match(macosLocalEnginesPrepare, /Packaged manifest does not contain advanced macos-universal engine entries/, "local macOS engine staging must fail when no advanced macOS engines are present");
 assert.match(macosLocalEnginesPrepare, /\.bundled-engine-cache/, "local macOS engine staging must seed the bundled engine cache");
 assert.match(macosLocalEnginesPrepare, /Restored src-tauri\/engines-manifest\.json after local macOS validation/, "local macOS engine staging must restore the committed manifest by default");
 assert.match(macosLocalEnginesPrepare, /--keep-generated-manifest/, "local macOS engine staging must require an explicit flag to keep the generated manifest");

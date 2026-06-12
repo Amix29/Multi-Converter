@@ -102,14 +102,14 @@ async function configureLibvips(targetEnv) {
 async function stagePackagedEngines() {
   await assertFile(sourceManifest, "macOS packaged engines manifest");
   await fs.mkdir(cacheDir, { recursive: true });
-  await fs.copyFile(sourceManifest, targetManifest);
-  stagedManifest = true;
 
   const manifest = JSON.parse(await fs.readFile(sourceManifest, "utf8"));
   const engines = (manifest.engines ?? []).filter((engine) => engine.platform === "macos-universal");
   if (engines.length === 0) {
     fail("Packaged manifest does not contain macos-universal engine entries.");
   }
+  await writeEmbeddedManifest(manifest, engines);
+  stagedManifest = true;
 
   for (const engine of engines) {
     const archiveName = path.basename(new URL(engine.downloadUrl).pathname);
@@ -117,6 +117,18 @@ async function stagePackagedEngines() {
     await assertFile(source, `${engine.id} macOS engine archive`);
     await fs.copyFile(source, path.join(cacheDir, `${engine.id}-${engine.version}.zip`));
   }
+}
+
+async function writeEmbeddedManifest(sourceManifest, macosEngines) {
+  const embeddedEngines = macosEngines.filter((engine) => engine.mode === "advanced");
+  if (embeddedEngines.length === 0) {
+    fail("Packaged manifest does not contain advanced macos-universal engine entries.");
+  }
+  const embeddedManifest = {
+    ...sourceManifest,
+    engines: embeddedEngines,
+  };
+  await fs.writeFile(targetManifest, `${JSON.stringify(embeddedManifest, null, 2)}\n`, "utf8");
 }
 
 async function assertFile(filePath, label) {

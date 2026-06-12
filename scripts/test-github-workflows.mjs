@@ -161,6 +161,8 @@ assert.match(windowsCiGateScript, /\["npm", \["run", "tauri:build"\]\]/, "Window
 assert.match(macosEngineReleaseScript, /gh.*release.*download/s, "macOS staged engine helper must download private release assets through gh");
 assert.match(macosEngineReleaseScript, /engines-manifest\.json/, "macOS staged engine helper must download the staged engine manifest");
 assert.match(macosEngineReleaseScript, /engine-sources", "\.bundled-engine-cache"/, "macOS staged engine helper must seed the bundled-engine cache");
+assert.match(macosEngineReleaseScript, /engine\.mode === "advanced"/, "macOS staged engine helper must write only advanced engines into the embedded manifest");
+assert.match(macosEngineReleaseScript, /No advanced macos-universal engine entries found/, "macOS staged engine helper must fail when the downloaded manifest has no advanced macOS engines");
 assert.match(macosEngineReleaseScript, /verifySha256/, "macOS staged engine helper must verify downloaded engine checksums");
 assert.match(macosLibvipsRuntimeScript, /process\.platform !== "darwin"/, "macOS libvips runtime builder must refuse non-macOS hosts");
 assert.match(macosLibvipsRuntimeScript, /brew.*--prefix.*vips/s, "macOS libvips runtime builder must package the installed Homebrew libvips formula");
