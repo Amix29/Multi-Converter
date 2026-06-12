@@ -1066,12 +1066,13 @@ fn parse_ffmpeg_time_ms(value: &str) -> Option<u64> {
     Some(((hours * 3600) + (minutes * 60) + seconds) * 1000 + millis)
 }
 
+#[cfg(target_os = "windows")]
 fn hide_command_window(command: &mut Command) {
-    #[cfg(target_os = "windows")]
-    {
-        command.creation_flags(CREATE_NO_WINDOW);
-    }
+    command.creation_flags(CREATE_NO_WINDOW);
 }
+
+#[cfg(not(target_os = "windows"))]
+fn hide_command_window(_command: &mut Command) {}
 
 fn clean_ffmpeg_error(stderr: &str) -> String {
     let lines: Vec<_> = stderr

@@ -948,12 +948,13 @@ fn detect_tool_version(path: &Path) -> Option<String> {
     None
 }
 
+#[cfg(target_os = "windows")]
 fn hide_command_window(command: &mut Command) {
-    #[cfg(target_os = "windows")]
-    {
-        command.creation_flags(CREATE_NO_WINDOW);
-    }
+    command.creation_flags(CREATE_NO_WINDOW);
 }
+
+#[cfg(not(target_os = "windows"))]
+fn hide_command_window(_command: &mut Command) {}
 
 fn expected_version_matches(expected: &str, detected: Option<&str>) -> bool {
     expected == COMPATIBLE_VERSION || detected.is_some_and(|version| version.starts_with(expected))
