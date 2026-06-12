@@ -992,6 +992,7 @@ fn bundled_engines_root(app: Option<&AppHandle>) -> Option<PathBuf> {
 
 fn bundled_binary(app: Option<&AppHandle>, stem: &str) -> Option<PathBuf> {
     let binary_name = binary_name(stem);
+    let universal_binary_name = universal_binary_name(stem);
     let sidecar_name = if cfg!(target_os = "windows") {
         format!("{stem}.exe")
     } else {
@@ -1000,7 +1001,11 @@ fn bundled_binary(app: Option<&AppHandle>, stem: &str) -> Option<PathBuf> {
     if let Ok(current_exe) = env::current_exe()
         && let Some(exe_dir) = current_exe.parent()
     {
-        for candidate in [exe_dir.join(&sidecar_name), exe_dir.join(&binary_name)] {
+        for candidate in [
+            exe_dir.join(&sidecar_name),
+            exe_dir.join(&universal_binary_name),
+            exe_dir.join(&binary_name),
+        ] {
             if candidate.exists() {
                 return Some(candidate);
             }
@@ -1011,7 +1016,9 @@ fn bundled_binary(app: Option<&AppHandle>, stem: &str) -> Option<PathBuf> {
     {
         for candidate in [
             resource_dir.join(&sidecar_name),
+            resource_dir.join(&universal_binary_name),
             resource_dir.join(&binary_name),
+            resource_dir.join("binaries").join(&universal_binary_name),
             resource_dir.join("binaries").join(&binary_name),
         ] {
             if candidate.exists() {
@@ -1019,19 +1026,44 @@ fn bundled_binary(app: Option<&AppHandle>, stem: &str) -> Option<PathBuf> {
             }
         }
     }
-    let candidate = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("binaries")
-        .join(binary_name);
-    candidate.exists().then_some(candidate)
+    let manifest_binaries_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("binaries");
+    [
+        manifest_binaries_dir.join(&universal_binary_name),
+        manifest_binaries_dir.join(binary_name),
+    ]
+    .into_iter()
+    .find(|candidate| candidate.exists())
 }
 
 fn binary_name(stem: &str) -> String {
-    if cfg!(target_os = "windows") {
+    binary_name_for(stem, env::consts::OS, env::consts::ARCH)
+}
+
+fn binary_name_for(stem: &str, os: &str, arch: &str) -> String {
+    if os == "windows" {
         format!("{stem}-x86_64-pc-windows-msvc.exe")
-    } else if cfg!(target_os = "macos") {
-        format!("{stem}-x86_64-apple-darwin")
+    } else if os == "macos" {
+        if matches!(arch, "aarch64" | "arm64") {
+            format!("{stem}-aarch64-apple-darwin")
+        } else {
+            format!("{stem}-x86_64-apple-darwin")
+        }
+    } else if matches!(arch, "aarch64" | "arm64") {
+        format!("{stem}-aarch64-unknown-linux-gnu")
     } else {
         format!("{stem}-x86_64-unknown-linux-gnu")
+    }
+}
+
+fn universal_binary_name(stem: &str) -> String {
+    universal_binary_name_for(stem, env::consts::OS, env::consts::ARCH)
+}
+
+fn universal_binary_name_for(stem: &str, os: &str, arch: &str) -> String {
+    if os == "macos" {
+        format!("{stem}-universal-apple-darwin")
+    } else {
+        binary_name_for(stem, os, arch)
     }
 }
 
@@ -1219,5 +1251,33 @@ mod tests {
         assert_eq!(plan.id, "ffmpeg");
         assert_eq!(plan.required_engine_ids, vec!["ffmpeg", "ffprobe"]);
         assert_eq!(plan.plan, vec!["FFmpeg", "ffprobe"]);
+    }
+
+    #[test]
+    fn sidecar_names_are_stable_for_release_platforms() {
+        assert_eq!(
+            binary_name_for("ffmpeg", "windows", "x86_64"),
+            "ffmpeg-x86_64-pc-windows-msvc.exe"
+        );
+        assert_eq!(
+            binary_name_for("ffmpeg", "macos", "aarch64"),
+            "ffmpeg-aarch64-apple-darwin"
+        );
+        assert_eq!(
+            binary_name_for("ffmpeg", "macos", "x86_64"),
+            "ffmpeg-x86_64-apple-darwin"
+        );
+        assert_eq!(
+            universal_binary_name_for("ffmpeg", "macos", "aarch64"),
+            "ffmpeg-universal-apple-darwin"
+        );
+        assert_eq!(
+            universal_binary_name_for("ffmpeg", "macos", "x86_64"),
+            "ffmpeg-universal-apple-darwin"
+        );
+        assert_eq!(
+            universal_binary_name_for("ffprobe", "linux", "x86_64"),
+            "ffprobe-x86_64-unknown-linux-gnu"
+        );
     }
 }

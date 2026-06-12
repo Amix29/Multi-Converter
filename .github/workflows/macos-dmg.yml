@@ -1,0 +1,116 @@
+name: macOS DMG Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      sidecar_release_tag:
+        description: "Optional release tag containing macOS FFmpeg/ffprobe sidecar binary assets"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-dmg-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build verified universal DMG
+    runs-on: macos-latest
+    timeout-minutes: 120
+    env:
+      CARGO_TERM_COLOR: always
+      RUST_BACKTRACE: 1
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
+      CARGO_TARGET_DIR: ${{ runner.temp }}/mc-cargo-target-macos-dmg
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-macos-dmg-cargo-registry-v2-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-macos-dmg-cargo-registry-v2-
+            ${{ runner.os }}-cargo-registry-v2-
+
+      - run: npm ci
+
+      - name: Download staged macOS sidecars from a release
+        if: ${{ inputs.sidecar_release_tag != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p src-tauri/binaries
+          for asset in \
+            ffmpeg-aarch64-apple-darwin \
+            ffmpeg-x86_64-apple-darwin \
+            ffprobe-aarch64-apple-darwin \
+            ffprobe-x86_64-apple-darwin
+          do
+            gh release download "${{ inputs.sidecar_release_tag }}" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries
+          done
+          for asset in \
+            ffmpeg-universal-apple-darwin \
+            ffprobe-universal-apple-darwin
+          do
+            gh release download "${{ inputs.sidecar_release_tag }}" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries || true
+          done
+          chmod +x src-tauri/binaries/*-apple-darwin
+
+      - name: Validate macOS build prerequisites
+        run: |
+          npm run test:macos-packaging
+          npm run test:run-tauri
+          npm run test:macos-dmg-artifact
+
+      - name: Prepare and verify staged macOS engines
+        run: |
+          npm run prepare:bundled-engines
+          npm run test:macos:host
+
+      - name: Run macOS host tests
+        run: |
+          npm run test:rust
+          npm run test:pdfium-wrapper:compile
+          npm run clippy:pdfium-wrapper
+
+      - name: Build universal DMG
+        run: npm run tauri:build:macos
+
+      - id: version
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "dmg_name=Multi-Converter_${version}_macos-universal.dmg" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare release-named DMG artifact
+        run: npm run prepare:macos-dmg-artifact -- --version "${{ steps.version.outputs.version }}" --out-dir "$RUNNER_TEMP/mc-macos-dmg-artifact"
+
+      - name: Verify final DMG
+        run: npm run verify:macos-dmg -- --version "${{ steps.version.outputs.version }}" --dmg "$RUNNER_TEMP/mc-macos-dmg-artifact/${{ steps.version.outputs.dmg_name }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.dmg_name }}
+          path: ${{ runner.temp }}/mc-macos-dmg-artifact/${{ steps.version.outputs.dmg_name }}
+          if-no-files-found: error

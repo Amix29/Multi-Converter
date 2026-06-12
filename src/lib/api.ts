@@ -218,7 +218,7 @@ function createPreviewApi(): MultiConverterApi {
 
   return {
     async welcomeState() {
-      return { show: true };
+      return { show: new URLSearchParams(window.location.search).get("mockWelcomeSeen") !== "1" };
     },
     async markWelcomeSeen() {
       return true;

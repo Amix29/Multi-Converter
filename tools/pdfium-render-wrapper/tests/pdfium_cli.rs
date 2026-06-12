@@ -1,31 +1,29 @@
 use std::fs;
 use std::process::Command;
 
-fn pdfium_dll() -> Option<String> {
-    std::env::var("MULTI_CONVERTER_TEST_PDFIUM_DLL").ok()
+fn pdfium_library() -> String {
+    std::env::var("MULTI_CONVERTER_TEST_PDFIUM_LIBRARY")
+        .or_else(|_| std::env::var("MULTI_CONVERTER_TEST_PDFIUM_DLL"))
+        .expect("PDFium wrapper runtime tests require MULTI_CONVERTER_TEST_PDFIUM_LIBRARY")
 }
 
 fn command() -> Command {
     Command::new(env!("CARGO_BIN_EXE_pdfium-render"))
 }
 
-fn run(args: &[&str]) -> Option<std::process::Output> {
-    let dll = pdfium_dll()?;
+fn run(args: &[&str]) -> std::process::Output {
+    let library = pdfium_library();
     let mut command = command();
-    Some(
-        command
-            .env("PDFIUM_DLL_PATH", dll)
-            .args(args)
-            .output()
-            .unwrap(),
-    )
+    command
+        .env("PDFIUM_LIBRARY_PATH", library)
+        .args(args)
+        .output()
+        .unwrap()
 }
 
 #[test]
 fn check_succeeds_when_pdfium_dll_is_available() {
-    let Some(output) = run(&["--check"]) else {
-        return;
-    };
+    let output = run(&["--check"]);
     assert!(
         output.status.success(),
         "{}",
@@ -35,14 +33,12 @@ fn check_succeeds_when_pdfium_dll_is_available() {
 
 #[test]
 fn page_count_reports_mini_pdf_pages() {
-    let Some(dll) = pdfium_dll() else {
-        return;
-    };
+    let library = pdfium_library();
     let dir = tempfile::tempdir().unwrap();
     let pdf = dir.path().join("mini.pdf");
     fs::write(&pdf, mini_pdf_two_pages()).unwrap();
     let output = command()
-        .env("PDFIUM_DLL_PATH", dll)
+        .env("PDFIUM_LIBRARY_PATH", library)
         .args(["--page-count", pdf.to_str().unwrap()])
         .output()
         .unwrap();
@@ -56,15 +52,13 @@ fn page_count_reports_mini_pdf_pages() {
 
 #[test]
 fn render_page_generates_image() {
-    let Some(dll) = pdfium_dll() else {
-        return;
-    };
+    let library = pdfium_library();
     let dir = tempfile::tempdir().unwrap();
     let pdf = dir.path().join("mini.pdf");
     let png = dir.path().join("page.png");
     fs::write(&pdf, mini_pdf_two_pages()).unwrap();
     let output = command()
-        .env("PDFIUM_DLL_PATH", dll)
+        .env("PDFIUM_LIBRARY_PATH", library)
         .args([
             "--render",
             pdf.to_str().unwrap(),
@@ -88,15 +82,13 @@ fn render_page_generates_image() {
 
 #[test]
 fn render_all_generates_one_image_per_page() {
-    let Some(dll) = pdfium_dll() else {
-        return;
-    };
+    let library = pdfium_library();
     let dir = tempfile::tempdir().unwrap();
     let pdf = dir.path().join("mini.pdf");
     let output_dir = dir.path().join("pages");
     fs::write(&pdf, mini_pdf_two_pages()).unwrap();
     let output = command()
-        .env("PDFIUM_DLL_PATH", dll)
+        .env("PDFIUM_LIBRARY_PATH", library)
         .args([
             "--render-all",
             pdf.to_str().unwrap(),
@@ -121,15 +113,13 @@ fn render_all_generates_one_image_per_page() {
 
 #[test]
 fn invalid_pdf_returns_clear_error() {
-    let Some(dll) = pdfium_dll() else {
-        return;
-    };
+    let library = pdfium_library();
     let dir = tempfile::tempdir().unwrap();
     let pdf = dir.path().join("bad.pdf");
     let png = dir.path().join("bad.png");
     fs::write(&pdf, b"not a pdf").unwrap();
     let output = command()
-        .env("PDFIUM_DLL_PATH", dll)
+        .env("PDFIUM_LIBRARY_PATH", library)
         .args(["--render", pdf.to_str().unwrap(), png.to_str().unwrap()])
         .output()
         .unwrap();

@@ -31,6 +31,13 @@ copyFile(installerPath, path.join(outDir, versionedInstaller));
 copyFile(signaturePath, path.join(outDir, `${versionedInstaller}.sig`));
 copyFile(installerPath, path.join(outDir, stableInstaller));
 
+if (args.macosDmg) {
+  const macosDmgSource = path.resolve(args.macosDmg);
+  const macosDmgName = `Multi-Converter_${version}_macos-universal.dmg`;
+  if (!fs.existsSync(macosDmgSource)) fail(`Missing macOS DMG: ${macosDmgSource}`);
+  copyFile(macosDmgSource, path.join(outDir, macosDmgName));
+}
+
 const hash = sha256File(installerPath);
 fs.writeFileSync(path.join(outDir, `${versionedInstaller}.sha256`), `${hash}  ${versionedInstaller}`, "ascii");
 
@@ -56,6 +63,9 @@ fs.writeFileSync(path.join(outDir, "latest.json"), `${JSON.stringify(latest, nul
 
 console.log(`Release assets prepared for Multi-Converter v${version}: ${outDir}`);
 console.log(`SHA256 ${versionedInstaller}: ${hash}`);
+if (args.macosDmg) {
+  console.log(`macOS DMG copied as Multi-Converter_${version}_macos-universal.dmg`);
+}
 
 function parseArgs(rawArgs) {
   const parsed = {};
@@ -67,6 +77,7 @@ function parseArgs(rawArgs) {
     else if (arg === "--bundle-dir") parsed.bundleDir = rawArgs[++index];
     else if (arg === "--notes") parsed.notes = rawArgs[++index];
     else if (arg === "--notes-env") parsed.notesEnv = rawArgs[++index];
+    else if (arg === "--macos-dmg") parsed.macosDmg = rawArgs[++index];
     else fail(`Unknown argument: ${arg}`);
   }
   return parsed;

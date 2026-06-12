@@ -3016,27 +3016,50 @@ mod tests {
     }
 
     fn ffmpeg_test_path() -> PathBuf {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("binaries")
-            .join("ffmpeg-x86_64-pc-windows-msvc.exe");
-        assert!(
-            path.exists(),
-            "FFmpeg test binary is missing: {}",
-            path.display()
-        );
-        path
+        sidecar_test_path("ffmpeg", "FFmpeg")
     }
 
     fn ffprobe_test_path() -> PathBuf {
-        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("binaries")
-            .join("ffprobe-x86_64-pc-windows-msvc.exe");
-        assert!(
-            path.exists(),
-            "ffprobe test binary is missing: {}",
-            path.display()
+        sidecar_test_path("ffprobe", "ffprobe")
+    }
+
+    fn sidecar_test_path(stem: &str, label: &str) -> PathBuf {
+        let binaries_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("binaries");
+        let candidates = sidecar_test_names(stem);
+        for name in &candidates {
+            let path = binaries_dir.join(name);
+            if path.exists() {
+                return path;
+            }
+        }
+        panic!(
+            "{label} test binary is missing in {}. Tried: {}",
+            binaries_dir.display(),
+            candidates.join(", ")
         );
-        path
+    }
+
+    fn sidecar_test_names(stem: &str) -> Vec<String> {
+        if cfg!(target_os = "windows") {
+            return vec![format!("{stem}-x86_64-pc-windows-msvc.exe")];
+        }
+        if cfg!(target_os = "macos") {
+            let native = if cfg!(target_arch = "aarch64") {
+                "aarch64-apple-darwin"
+            } else {
+                "x86_64-apple-darwin"
+            };
+            return vec![
+                format!("{stem}-universal-apple-darwin"),
+                format!("{stem}-{native}"),
+            ];
+        }
+        let native = if cfg!(target_arch = "aarch64") {
+            "aarch64-unknown-linux-gnu"
+        } else {
+            "x86_64-unknown-linux-gnu"
+        };
+        vec![format!("{stem}-{native}")]
     }
 
     #[test]

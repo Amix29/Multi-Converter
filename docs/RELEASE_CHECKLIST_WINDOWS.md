@@ -1,5 +1,7 @@
 # Windows x64 Release Checklist
 
+For macOS packaging, use `docs/RELEASE_CHECKLIST_MACOS.md` instead of this Windows-only checklist.
+
 ## Required Checks
 
 ```powershell
@@ -19,6 +21,8 @@ npm run build
 npm run tauri:build
 npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp\mc-release-assets\vX.Y.Z"
 ```
+
+For a Windows-only release workflow run, do not enable the `include_macos` manual input and do not mention a macOS DMG in the GitHub release notes.
 
 ## Engine Compliance
 

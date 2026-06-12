@@ -63,8 +63,8 @@
 | System | Status | Download |
 | --- | --- | --- |
 | 🪟 Windows x64 | ✅ Available | [`.exe`](https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_windows-x64_setup.exe) |
-| 🍎 macOS | 🚧 In development | Not yet available |
-| 🐧 Linux | 📋 Planned | Not yet available |
+| 🍎 macOS | 🚧 In development for v1.0.5 | Not yet available |
+| 🐧 Linux | 🚧 In development | Not yet available |
 
 ---
 
@@ -155,7 +155,8 @@ This section is for anyone who wants to run the project locally, fix a bug, sugg
 
 ### Prerequisites
 
-- Windows x64 for developing the currently supported version.
+- Windows x64 for developing and packaging the currently supported public version.
+- macOS 11 or newer with Xcode Command Line Tools is required for future macOS packaging and validation.
 - Node.js `>=24 <25` and npm `>=11 <12`.
 - Rust and Cargo.
 - The [Tauri prerequisites for Windows](https://v2.tauri.app/start/prerequisites/).
@@ -188,6 +189,7 @@ Recommended checks before a pull request:
 npm run check
 npm run test:rust
 npm run test:pdfium-wrapper
+npm run test:pdfium-wrapper:compile
 ```
 
 `npm run check` covers installer asset generation, bundled engine validation, embedded manifest validation, i18n validation, TypeScript typechecking and engine packaging validation.
@@ -207,6 +209,11 @@ Build:
 ```bash
 npm run build
 npm run tauri:build
+
+# macOS only, from a Mac with both Darwin sidecar architectures staged.
+# prepare:bundled-engines creates the universal sidecars required by Tauri.
+# The wrapper refuses this command on Windows/Linux so a DMG is never presented as cross-built.
+npm run tauri:build:macos
 ```
 
 Rust formatting and linting:
@@ -232,7 +239,8 @@ cargo test --manifest-path src-tauri/Cargo.toml --target-dir "$env:TEMP\mc-cargo
 src/                         React UI
 src/i18n/                    UI translations
 src-tauri/                   Tauri/Rust backend
-src-tauri/binaries/          Base sidecars bundled for Windows x64
+src-tauri/tauri.macos.conf.json
+src-tauri/binaries/          Base sidecars bundled for the current release target
 src-tauri/engines-manifest.json
 docs/                        License, security and third-party engine documentation
 tools/                       Engine technical configuration
@@ -252,6 +260,8 @@ Generated folders (`dist`, `node_modules`, build caches, local engine sources, e
 
 The Windows x64 base engines `ffmpeg` and `ffprobe` are bundled in `src-tauri/binaries`. Advanced engines are prepared into `src-tauri/bundled-engines` and bundled as Tauri resources. Both groups are validated before each build.
 
+The planned macOS universal DMG must include universal FFmpeg/ffprobe sidecars. Advanced macOS engines must not be advertised until `src-tauri/engines-manifest.json` declares reviewed `macos-universal` entries with verified archives, licenses, notices and checksums.
+
 Restore and validate the bundled engines:
 
 ```bash
@@ -263,12 +273,15 @@ To work locally on engine scripts, place temporary sources under:
 
 ```text
 engine-sources/windows-x64/<engineId>/
+engine-sources/macos-universal/<engineId>/
 ```
 
 > **Important**
-> Do not commit generated archives, local engine sources, release checksums or engine version changes without explicit approval from a maintainer.
+> Do not commit generated archives, local engine sources, release checksums, DMGs or engine version changes without explicit approval from a maintainer. macOS app bundles and DMGs must be rebuilt from source/config; do not hand-edit the generated `.app` after packaging.
 
 See [tools/ENGINE_PACKAGING.md](tools/ENGINE_PACKAGING.md) and [docs/THIRD_PARTY_ENGINES.md](docs/THIRD_PARTY_ENGINES.md) for technical context.
+
+For the platform test split, see [docs/TESTING.md](docs/TESTING.md).
 
 ---
 

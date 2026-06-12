@@ -2,6 +2,12 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      include_macos:
+        description: "Include the already uploaded and manually verified macOS universal DMG asset"
+        required: false
+        default: false
+        type: boolean
   push:
     tags:
       - "v*"
@@ -14,7 +20,51 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  macos-dmg-verify:
+    name: macOS DMG verification
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.include_macos }}
+    runs-on: macos-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - id: version
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Download pre-uploaded macOS DMG
+        shell: bash
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          tag="${{ steps.version.outputs.tag }}"
+          macos_dmg_name="Multi-Converter_${version}_macos-universal.dmg"
+          macos_dmg_dir="$RUNNER_TEMP/mc-release-macos-dmg"
+          rm -rf "$macos_dmg_dir"
+          mkdir -p "$macos_dmg_dir"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$macos_dmg_name" --dir "$macos_dmg_dir"
+          test -s "$macos_dmg_dir/$macos_dmg_name"
+          echo "MACOS_DMG_PATH=$macos_dmg_dir/$macos_dmg_name" >> "$GITHUB_ENV"
+
+      - name: Verify macOS DMG on macOS
+        shell: bash
+        run: npm run verify:macos-dmg -- --version "${{ steps.version.outputs.version }}" --dmg "$MACOS_DMG_PATH"
+
   windows:
+    needs: macos-dmg-verify
+    if: ${{ always() && (needs.macos-dmg-verify.result == 'success' || needs.macos-dmg-verify.result == 'skipped') }}
     runs-on: windows-latest
     timeout-minutes: 90
     env:
@@ -77,9 +127,12 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INCLUDE_MACOS: ${{ github.event_name == 'workflow_dispatch' && inputs.include_macos }}
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
+          $includeMacos = $env:INCLUDE_MACOS -eq "true"
+          $macosDmgName = "Multi-Converter_${version}_macos-universal.dmg"
           $body = gh release view $tag --repo $env:GITHUB_REPOSITORY --json body --jq ".body"
           if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($body)) {
             throw "Missing GitHub release notes for $tag. Create or edit the release notes directly on GitHub in English, then rerun this workflow."
@@ -94,6 +147,25 @@ jobs:
           }
           if ($body -match "mc-release-notes:(fr|es|de|pt|it)") {
             throw "GitHub release notes must be published in English only."
+          }
+          if ($includeMacos) {
+            if (-not $body.Contains($macosDmgName)) {
+              throw "macOS release notes must name $macosDmgName."
+            }
+            if ($body -notmatch "not\s+Apple-signed" -or $body -notmatch "not\s+notarized") {
+              throw "macOS release notes must state that the macOS build is not Apple-signed and not notarized."
+            }
+            if (-not $body.Contains("Open Anyway") -or -not $body.Contains("Privacy & Security")) {
+              throw "macOS release notes must include the Open Anyway path through Privacy & Security."
+            }
+            if ($body -notmatch "macOS\s+automatic\s+updates\s+are\s+not\s+enabled") {
+              throw "macOS release notes must state that macOS automatic updates are not enabled."
+            }
+            if ($body -notmatch "macOS\s+DMG\s+verification" -and $body -notmatch "verified\s+on\s+macOS") {
+              throw "macOS release notes must mention that the macOS DMG was verified on macOS."
+            }
+          } elseif ($body.Contains($macosDmgName) -or $body -match "_macos-universal\.dmg") {
+            throw "Release notes mention a macOS DMG, but this workflow run was not started with include_macos=true."
           }
           $delimiter = "MC_RELEASE_NOTES_$([guid]::NewGuid().ToString("N"))"
           Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_NOTES_BODY<<$delimiter"
@@ -114,13 +186,47 @@ jobs:
       - name: Prepare and validate clean release assets
         id: assets
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INCLUDE_MACOS: ${{ github.event_name == 'workflow_dispatch' && inputs.include_macos }}
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
+          $includeMacos = $env:INCLUDE_MACOS -eq "true"
           $assetDir = Join-Path $env:RUNNER_TEMP "mc-release-assets\$tag"
-          npm run prepare:release-assets -- --version $version --dir $assetDir --notes-env RELEASE_NOTES_BODY
-          npm run validate:release-assets -- --version $version --dir $assetDir
+          $platform = "windows"
+
+          if ($includeMacos) {
+            $macosDmgName = "Multi-Converter_${version}_macos-universal.dmg"
+            $macosDmgDir = Join-Path $env:RUNNER_TEMP "mc-release-macos-dmg"
+            Remove-Item -LiteralPath $macosDmgDir -Recurse -Force -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory -Path $macosDmgDir | Out-Null
+            gh release download $tag --repo $env:GITHUB_REPOSITORY --pattern $macosDmgName --dir $macosDmgDir
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
+            $macosDmgPath = Join-Path $macosDmgDir $macosDmgName
+            if (-not (Test-Path -LiteralPath $macosDmgPath)) {
+              throw "Missing pre-uploaded macOS DMG asset on release $tag: $macosDmgName"
+            }
+            npm run prepare:release-assets -- --version $version --dir $assetDir --notes-env RELEASE_NOTES_BODY --macos-dmg $macosDmgPath
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
+            $platform = "all"
+          } else {
+            npm run prepare:release-assets -- --version $version --dir $assetDir --notes-env RELEASE_NOTES_BODY
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
+          }
+
+          npm run validate:release-assets -- --version $version --dir $assetDir --platform $platform
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
           "dir=$assetDir" >> $env:GITHUB_OUTPUT
+          "platform=$platform" >> $env:GITHUB_OUTPUT
 
       - name: Publish GitHub release with exact assets
         shell: pwsh
@@ -130,6 +236,7 @@ jobs:
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
           $assetDir = "${{ steps.assets.outputs.dir }}"
+          $platform = "${{ steps.assets.outputs.platform }}"
           $installerName = "Multi-Converter_${version}_x64-setup.exe"
           $expectedAssets = @(
             "latest.json",
@@ -138,6 +245,9 @@ jobs:
             "$installerName.sha256",
             "Multi-Converter_windows-x64_setup.exe"
           )
+          if ($platform -eq "all") {
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
+          }
 
           gh release edit $tag --repo $env:GITHUB_REPOSITORY --title "Multi-Converter $tag" --latest
 
@@ -159,13 +269,18 @@ jobs:
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
+          $platform = "${{ steps.assets.outputs.platform }}"
           $expectedAssets = @(
             "latest.json",
             "Multi-Converter_${version}_x64-setup.exe",
             "Multi-Converter_${version}_x64-setup.exe.sig",
             "Multi-Converter_${version}_x64-setup.exe.sha256",
             "Multi-Converter_windows-x64_setup.exe"
-          ) | Sort-Object
+          )
+          if ($platform -eq "all") {
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
+          }
+          $expectedAssets = $expectedAssets | Sort-Object
           $actualAssets = @(gh release view $tag --repo $env:GITHUB_REPOSITORY --json assets --jq ".assets[].name" | Sort-Object)
           if (Compare-Object -ReferenceObject $expectedAssets -DifferenceObject $actualAssets) {
             throw "Published release assets do not exactly match the required asset list."

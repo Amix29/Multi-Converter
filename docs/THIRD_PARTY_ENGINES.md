@@ -30,6 +30,14 @@ For bundled FFmpeg/ffprobe binaries, the same rule applies even though they are 
 | libvips | Advanced bundled | LGPL-2.1-or-later, with many image codec dependencies that may carry separate terms. | Include libvips license and notices for all bundled DLLs/codecs. |
 | 7-Zip | Future archive engine | LGPL with additional unRAR restriction if RAR support is included. | Document 7-Zip usage, link to source, and avoid implying RAR creation support unless explicitly verified. |
 
+## macOS engine status
+
+macOS support is being prepared for one universal DMG. Do not publish macOS engine archives or a macOS DMG until the exact FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips builds have been reviewed for origin, license files, notices, checksums and executable permissions.
+
+For the universal DMG, release sidecars should include the `*-universal-apple-darwin` files required by Tauri's `externalBin` handling. The Apple Silicon and Intel inputs used to create those universal files must have matching license and notice coverage.
+
+The embedded manifest currently declares advanced bundled engines for `windows-x64` only. Until reviewed `macos-universal` entries are added, macOS release notes and user-facing docs must limit macOS conversion claims to the engines that are actually bundled and tested in the final DMG.
+
 ## User-facing warning
 
 Recommended release wording:

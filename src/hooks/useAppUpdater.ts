@@ -242,6 +242,21 @@ export function useAppUpdater(options: UseAppUpdaterOptions) {
   }, [options.isTauriRuntime]);
 
   useEffect(() => {
+    if (!import.meta.env.DEV || options.isTauriRuntime) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mockUpdate") !== "1") return;
+    const version = params.get("mockUpdateVersion") || "9.9.9";
+    setUpdateInfo({
+      version,
+      currentVersion,
+      date: null,
+      body: `# Multi-Converter v${version}\n\n## Highlights\n\n- Preview update reminder for interface QA.\n\n## Download And Installation\n\n- Preview only.\n\n## Validation\n\n- Preview only.`,
+    });
+    setAppUpdateStatus("available");
+    setUpdateReminderVisible(true);
+  }, [currentVersion, options.isTauriRuntime, setAppUpdateStatus]);
+
+  useEffect(() => {
     if (!options.isTauriRuntime || !options.bootInfoLoaded || automaticUpdateCheckStarted.current || !internetAvailable) return;
     const timeout = window.setTimeout(() => {
       if (!canRunAutomaticUpdateCheck()) return;

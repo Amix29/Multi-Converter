@@ -9,7 +9,7 @@ La V1 Windows x64 assume des moteurs de base FFmpeg/ffprobe intégrés. Les exé
 Les vrais binaires doivent être placés manuellement dans :
 
 ```text
-engine-sources/windows-x64/<engineId>/
+engine-sources/<platform>/<engineId>/
 ```
 
 Structure attendue :
@@ -22,6 +22,21 @@ engine-sources/windows-x64/ffmpeg/
     LICENSE.txt
     THIRD_PARTY_NOTICES.txt
 ```
+
+For the planned universal macOS DMG, stage both Darwin sidecar architectures before packaging:
+
+```text
+engine-sources/macos-universal/ffmpeg/
+  bin/
+    ffmpeg-aarch64-apple-darwin
+    ffmpeg-x86_64-apple-darwin
+    ffmpeg-universal-apple-darwin
+  licenses/
+    LICENSE.txt
+    THIRD_PARTY_NOTICES.txt
+```
+
+The release build needs the `*-universal-apple-darwin` sidecars because Tauri's `universal-apple-darwin` target looks for those `externalBin` files. `prepare:bundled-engines` can create them with `lipo` on macOS from the Apple Silicon and Intel binaries. Keep the architecture-specific binaries staged too, so native macOS dev builds can still use the normal Tauri sidecar convention. All sidecars and non-Windows engine binaries must keep executable permissions before packaging.
 
 `engine-sources/` est ignoré par Git. `tools/engine-packages.config.json` et ce document restent commitables.
 
@@ -68,6 +83,12 @@ npm run package:base-engines
 ```
 
 Cette commande prépare FFmpeg/ffprobe depuis gyan.dev et génère `dist-engines-base/` pour les mainteneurs qui doivent publier les archives de base.
+
+Packaging macOS is not considered release-ready until the final DMG has been produced and tested on macOS. Do not modify the generated `.app` after the Tauri bundle step; change source files, config or staged engines, then rebuild.
+
+The current embedded manifest still declares advanced engines for `windows-x64` only. Add reviewed `macos-universal` engine entries and archives before advertising PDFium, LibreOffice, Pandoc or libvips support on macOS.
+
+`prepare:bundled-engines` prunes stale entries in `src-tauri/bundled-engines` that do not match the current platform before packaging. `validate:bundled-engines` must fail if a platform build would carry engine resources from another platform.
 
 ## Activation dans l'application
 

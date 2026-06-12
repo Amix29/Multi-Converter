@@ -1,6 +1,6 @@
 [package]
 name = "multi-converter"
-version = "1.0.4"
+version = "1.0.5"
 description = "Local desktop file converter for documents, images, audio and video."
 authors = ["Multi-Converter"]
 license = "AGPL-3.0-or-later"
@@ -30,8 +30,10 @@ tempfile = "3"
 thiserror = "2"
 time = { version = "0.3", features = ["formatting"] }
 uuid = { version = "1", features = ["v4"] }
-windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Networking_WinHttp"] }
 zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
 tauri-plugin-notification = "2.3.3"
 tauri-plugin-updater = "2.10.1"
 tauri-plugin-process = "2.3.1"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Networking_WinHttp"] }

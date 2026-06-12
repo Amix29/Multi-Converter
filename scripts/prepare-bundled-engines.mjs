@@ -7,29 +7,16 @@ import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
-const platform = "windows-x64";
+const platform = process.env.MULTI_CONVERTER_ENGINE_PLATFORM?.trim() || hostEnginePlatform();
 const manifestPath = path.join(root, "src-tauri", "engines-manifest.json");
 const binariesDir = path.join(root, "src-tauri", "binaries");
 const bundledEnginesDir = path.join(root, "src-tauri", "bundled-engines");
 const cacheDir = path.join(root, "engine-sources", ".bundled-engine-cache");
-const baseSidecars = [
-  {
-    id: "ffmpeg",
-    fileName: "ffmpeg-x86_64-pc-windows-msvc.exe",
-    localCandidates: [
-      path.join(process.env.LOCALAPPDATA ?? "", "Multi-Converter", "tool-env", "ffmpeg", "8.1.1", "bin", "ffmpeg-x86_64-pc-windows-msvc.exe"),
-      path.join(root, "engine-sources", "windows-x64", "ffmpeg", "bin", "ffmpeg-x86_64-pc-windows-msvc.exe"),
-    ],
-  },
-  {
-    id: "ffprobe",
-    fileName: "ffprobe-x86_64-pc-windows-msvc.exe",
-    localCandidates: [
-      path.join(process.env.LOCALAPPDATA ?? "", "Multi-Converter", "tool-env", "ffprobe", "8.1.1", "bin", "ffprobe-x86_64-pc-windows-msvc.exe"),
-      path.join(root, "engine-sources", "windows-x64", "ffprobe", "bin", "ffprobe-x86_64-pc-windows-msvc.exe"),
-    ],
-  },
-];
+const baseSidecars = baseSidecarsForPlatform(platform);
+
+if (platform === "unsupported") {
+  throw new Error(`Plateforme de moteurs non supportee: ${process.platform}/${process.arch}`);
+}
 
 await fs.mkdir(binariesDir, { recursive: true });
 await fs.mkdir(bundledEnginesDir, { recursive: true });
@@ -37,25 +24,33 @@ await fs.mkdir(cacheDir, { recursive: true });
 
 const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
 const byId = new Map((manifest.engines ?? []).map((engine) => [engine.id, engine]));
+const advancedEngines = bundledAdvancedEngines(manifest);
 
 for (const item of baseSidecars) {
   await prepareBaseSidecar(item);
 }
+await prepareDerivedSidecars(platform);
+await pruneBundledEngines(advancedEngines);
 
-for (const engine of bundledAdvancedEngines(manifest)) {
+for (const engine of advancedEngines) {
   await prepareBundledEngine(engine);
 }
 
-console.log("Bundled conversion engines are ready.");
+if (platform !== "windows-x64" && advancedEngines.length === 0) {
+  console.warn(`No advanced bundled engines declared for ${platform}; advanced conversions will stay unavailable on this platform.`);
+}
+
+console.log(`Bundled conversion engines are ready for ${platform}.`);
 
 async function prepareBaseSidecar(item) {
   const target = path.join(binariesDir, item.fileName);
-  if (await binaryLooksCurrent(target)) return;
+  if (await sidecarLooksCurrent(target, item)) return;
 
   const local = await firstExisting(item.localCandidates);
   if (local) {
     await fs.copyFile(local, target);
-    if (await binaryLooksCurrent(target)) return;
+    await ensureExecutable(target);
+    if (await sidecarLooksCurrent(target, item)) return;
   }
 
   const engine = byId.get(item.id) ?? embeddedBaseEngine(item.id);
@@ -68,9 +63,66 @@ async function prepareBaseSidecar(item) {
   await extractArchive(archive, extractDir);
   const source = await findFile(extractDir, item.fileName);
   await fs.copyFile(source, target);
-  if (!(await binaryLooksCurrent(target))) {
+  await ensureExecutable(target);
+  if (!(await sidecarLooksCurrent(target, item))) {
     throw new Error(`${item.id}: le binaire prepare ne repond pas avec la version attendue.`);
   }
+}
+
+async function prepareDerivedSidecars(targetPlatform) {
+  if (targetPlatform !== "macos-universal") return;
+
+  for (const stem of ["ffmpeg", "ffprobe"]) {
+    const universalTarget = path.join(binariesDir, `${stem}-universal-apple-darwin`);
+    if (await sidecarLooksCurrent(universalTarget, { id: stem, smoke: process.platform === "darwin" })) continue;
+
+    const universalSource = await firstExisting([
+      path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", stem, "8.1.1", "bin", `${stem}-universal-apple-darwin`),
+      path.join(root, "engine-sources", "macos-universal", stem, "bin", `${stem}-universal-apple-darwin`),
+    ]);
+    if (universalSource) {
+      await fs.copyFile(universalSource, universalTarget);
+      await ensureExecutable(universalTarget);
+      if (await sidecarLooksCurrent(universalTarget, { id: stem, smoke: process.platform === "darwin" })) continue;
+    }
+
+    const arm64Source = path.join(binariesDir, `${stem}-aarch64-apple-darwin`);
+    const x64Source = path.join(binariesDir, `${stem}-x86_64-apple-darwin`);
+    if (process.platform !== "darwin") {
+      const stat = await fs.stat(universalTarget).catch(() => null);
+      if (stat?.isFile() && stat.size > 0) {
+        await ensureExecutable(universalTarget);
+        continue;
+      }
+      throw new Error(`${stem}: le sidecar universel macOS doit etre cree sur macOS avec lipo ou fourni dans ${path.relative(root, universalTarget)}.`);
+    }
+
+    await createUniversalDarwinBinary(stem, arm64Source, x64Source, universalTarget);
+    if (!(await sidecarLooksCurrent(universalTarget, { id: stem, smoke: true }))) {
+      throw new Error(`${stem}: le sidecar universel macOS prepare ne repond pas avec la version attendue.`);
+    }
+  }
+}
+
+async function createUniversalDarwinBinary(stem, arm64Source, x64Source, universalTarget) {
+  const missing = [];
+  for (const filePath of [arm64Source, x64Source]) {
+    const stat = await fs.stat(filePath).catch(() => null);
+    if (!stat?.isFile()) missing.push(path.relative(root, filePath));
+  }
+  if (missing.length) {
+    throw new Error(`${stem}: impossible de creer le sidecar universel macOS, fichiers manquants: ${missing.join(", ")}`);
+  }
+
+  await fs.rm(universalTarget, { force: true });
+  const result = spawnSync("lipo", ["-create", arm64Source, x64Source, "-output", universalTarget], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (result.status !== 0) {
+    throw new Error(`${stem}: creation du sidecar universel macOS impossible: ${result.stderr || result.stdout}`);
+  }
+  await ensureExecutable(universalTarget);
 }
 
 async function prepareBundledEngine(engine) {
@@ -91,9 +143,51 @@ async function prepareBundledEngine(engine) {
   await fs.rm(targetRoot, { recursive: true, force: true });
   await fs.mkdir(path.dirname(targetRoot), { recursive: true });
   await fs.cp(extractDir, targetRoot, { recursive: true, force: true });
+  await ensureEngineExecutables(targetRoot, engine);
 
   if (!(await bundledEngineLooksCurrent(targetRoot, engine))) {
     throw new Error(`${engine.id}: le moteur embarque prepare est incomplet.`);
+  }
+}
+
+async function pruneBundledEngines(expectedEngines) {
+  const expectedRoots = new Set(expectedEngines.map((engine) => `${engine.id}/${engine.version}`));
+  const entries = await fs.readdir(bundledEnginesDir, { withFileTypes: true }).catch(() => []);
+
+  for (const entry of entries) {
+    const engineDir = path.join(bundledEnginesDir, entry.name);
+    if (!entry.isDirectory()) {
+      await removeBundledPath(engineDir);
+      continue;
+    }
+
+    const versionEntries = await fs.readdir(engineDir, { withFileTypes: true }).catch(() => []);
+    for (const versionEntry of versionEntries) {
+      const relative = `${entry.name}/${versionEntry.name}`;
+      const versionDir = path.join(engineDir, versionEntry.name);
+      if (!versionEntry.isDirectory() || !expectedRoots.has(relative)) {
+        await removeBundledPath(versionDir);
+      }
+    }
+
+    const remaining = await fs.readdir(engineDir).catch(() => []);
+    if (remaining.length === 0) {
+      await removeBundledPath(engineDir);
+    }
+  }
+}
+
+async function removeBundledPath(target) {
+  assertInsideDirectory(target, bundledEnginesDir);
+  await fs.rm(target, { recursive: true, force: true });
+}
+
+function assertInsideDirectory(candidate, parent) {
+  const resolvedCandidate = path.resolve(candidate);
+  const resolvedParent = path.resolve(parent);
+  const relative = path.relative(resolvedParent, resolvedCandidate);
+  if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error(`Refusing to remove path outside bundled engines: ${resolvedCandidate}`);
   }
 }
 
@@ -102,6 +196,7 @@ function bundledAdvancedEngines(value) {
 }
 
 function embeddedBaseEngine(id) {
+  if (platform !== "windows-x64") return null;
   const release = "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.0-alpha.0";
   const fallback = {
     ffmpeg: {
@@ -198,6 +293,14 @@ async function binaryLooksCurrent(filePath) {
   return result.status === 0 && text.includes("8.1.1");
 }
 
+async function sidecarLooksCurrent(filePath, item) {
+  if (item.smoke === false) {
+    const stat = await fs.stat(filePath).catch(() => null);
+    return Boolean(stat?.isFile() && stat.size > 0);
+  }
+  return binaryLooksCurrent(filePath);
+}
+
 async function downloadVerified(url, target, expectedSha256, label) {
   try {
     await verifySha256(target, expectedSha256);
@@ -237,8 +340,9 @@ async function sha256File(filePath) {
 async function extractArchive(archive, destination) {
   await fs.rm(destination, { recursive: true, force: true });
   await fs.mkdir(destination, { recursive: true });
-  const command = `Expand-Archive -LiteralPath '${archive.replaceAll("'", "''")}' -DestinationPath '${destination.replaceAll("'", "''")}' -Force`;
-  const result = spawnSync("powershell", ["-NoProfile", "-Command", command], { stdio: "inherit", windowsHide: true });
+  const result = process.platform === "win32"
+    ? spawnSync("powershell", ["-NoProfile", "-Command", `Expand-Archive -LiteralPath '${archive.replaceAll("'", "''")}' -DestinationPath '${destination.replaceAll("'", "''")}' -Force`], { stdio: "inherit", windowsHide: true })
+    : spawnSync("tar", ["-xf", archive, "-C", destination], { stdio: "inherit" });
   if (result.status !== 0) throw new Error(`Extraction impossible : ${archive}`);
 }
 
@@ -283,6 +387,78 @@ function isPlaceholderUrl(url) {
 
 function isPlaceholderSha(value) {
   return !/^[a-f0-9]{64}$/i.test(String(value)) || /^0{64}$/i.test(String(value));
+}
+
+function hostEnginePlatform() {
+  if (process.platform === "win32" && process.arch === "x64") return "windows-x64";
+  if (process.platform === "darwin") return "macos-universal";
+  if (process.platform === "linux" && process.arch === "x64") return "linux-x64";
+  return "unsupported";
+}
+
+function baseSidecarsForPlatform(targetPlatform) {
+  if (targetPlatform === "windows-x64") {
+    return [
+      {
+        id: "ffmpeg",
+        fileName: "ffmpeg-x86_64-pc-windows-msvc.exe",
+        localCandidates: [
+          path.join(process.env.LOCALAPPDATA ?? "", "Multi-Converter", "tool-env", "ffmpeg", "8.1.1", "bin", "ffmpeg-x86_64-pc-windows-msvc.exe"),
+          path.join(root, "engine-sources", "windows-x64", "ffmpeg", "bin", "ffmpeg-x86_64-pc-windows-msvc.exe"),
+        ],
+      },
+      {
+        id: "ffprobe",
+        fileName: "ffprobe-x86_64-pc-windows-msvc.exe",
+        localCandidates: [
+          path.join(process.env.LOCALAPPDATA ?? "", "Multi-Converter", "tool-env", "ffprobe", "8.1.1", "bin", "ffprobe-x86_64-pc-windows-msvc.exe"),
+          path.join(root, "engine-sources", "windows-x64", "ffprobe", "bin", "ffprobe-x86_64-pc-windows-msvc.exe"),
+        ],
+      },
+    ];
+  }
+
+  if (targetPlatform === "macos-universal") {
+    const nativeTriple = nativeDarwinTriple();
+    return ["aarch64-apple-darwin", "x86_64-apple-darwin"].flatMap((targetTriple) => [
+      {
+        id: "ffmpeg",
+        fileName: `ffmpeg-${targetTriple}`,
+        smoke: process.platform === "darwin" && targetTriple === nativeTriple,
+        localCandidates: [
+          path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffmpeg", "8.1.1", "bin", `ffmpeg-${targetTriple}`),
+          path.join(root, "engine-sources", "macos-universal", "ffmpeg", "bin", `ffmpeg-${targetTriple}`),
+        ],
+      },
+      {
+        id: "ffprobe",
+        fileName: `ffprobe-${targetTriple}`,
+        smoke: process.platform === "darwin" && targetTriple === nativeTriple,
+        localCandidates: [
+          path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffprobe", "8.1.1", "bin", `ffprobe-${targetTriple}`),
+          path.join(root, "engine-sources", "macos-universal", "ffprobe", "bin", `ffprobe-${targetTriple}`),
+        ],
+      },
+    ]);
+  }
+
+  return [];
+}
+
+function nativeDarwinTriple() {
+  return process.arch === "arm64" ? "aarch64-apple-darwin" : "x86_64-apple-darwin";
+}
+
+async function ensureEngineExecutables(rootDir, engine) {
+  if (platform === "windows-x64") return;
+  for (const relative of engine.binaryPaths ?? []) {
+    await ensureExecutable(path.join(rootDir, normalizeArchivePath(relative)));
+  }
+}
+
+async function ensureExecutable(filePath) {
+  if (platform === "windows-x64") return;
+  await fs.chmod(filePath, 0o755).catch(() => {});
 }
 
 function normalizeArchivePath(relative) {

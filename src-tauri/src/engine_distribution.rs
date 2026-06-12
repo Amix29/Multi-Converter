@@ -3,14 +3,18 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
 use std::io;
+#[cfg(not(target_os = "windows"))]
+use std::net::{TcpStream, ToSocketAddrs};
 use std::path::{Component, Path, PathBuf};
+#[cfg(target_os = "windows")]
 use std::ptr::{null, null_mut};
+#[cfg(not(target_os = "windows"))]
+use std::time::Duration;
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::Networking::WinHttp::{
-    INTERNET_DEFAULT_HTTPS_PORT, WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_FLAG_SECURE,
-    WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_QUERY_STATUS_CODE, WinHttpCloseHandle, WinHttpConnect,
-    WinHttpOpen, WinHttpOpenRequest, WinHttpQueryHeaders, WinHttpReceiveResponse,
-    WinHttpSendRequest,
+    WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_FLAG_SECURE, WINHTTP_QUERY_FLAG_NUMBER,
+    WINHTTP_QUERY_STATUS_CODE, WinHttpCloseHandle, WinHttpConnect, WinHttpOpen, WinHttpOpenRequest,
+    WinHttpQueryHeaders, WinHttpReceiveResponse, WinHttpSendRequest,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -52,7 +56,7 @@ pub enum ArchiveType {
     TarGz,
 }
 
-const PLATFORM: &str = "windows-x64";
+const DEFAULT_HTTPS_PORT: u16 = 443;
 const EMBEDDED_MANIFEST_JSON: &str = include_str!("../engines-manifest.json");
 
 fn default_published() -> bool {
@@ -73,10 +77,30 @@ fn parse_manifest(content: &str) -> Result<EngineManifest, String> {
 }
 
 pub fn manifest_for_platform(manifest: &EngineManifest, engine_id: &str) -> Option<ManifestEngine> {
+    manifest_for_platform_id(manifest, engine_id, current_platform_id())
+}
+
+pub fn current_platform_id() -> &'static str {
+    if cfg!(all(target_os = "windows", target_arch = "x86_64")) {
+        "windows-x64"
+    } else if cfg!(target_os = "macos") {
+        "macos-universal"
+    } else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
+        "linux-x64"
+    } else {
+        "unsupported"
+    }
+}
+
+fn manifest_for_platform_id(
+    manifest: &EngineManifest,
+    engine_id: &str,
+    platform: &str,
+) -> Option<ManifestEngine> {
     manifest
         .engines
         .iter()
-        .find(|engine| engine.id == engine_id && engine.platform == PLATFORM)
+        .find(|engine| engine.id == engine_id && engine.platform == platform)
         .cloned()
 }
 
@@ -124,8 +148,17 @@ fn https_head_status(url: &str) -> Result<u32, String> {
 }
 
 #[cfg(not(target_os = "windows"))]
-fn https_head_status(_url: &str) -> Result<u32, String> {
-    Err("HTTPS availability checks are currently implemented for Windows only.".to_string())
+fn https_head_status(url: &str) -> Result<u32, String> {
+    let parsed = parse_https_url(url)?;
+    let addresses = (parsed.host.as_str(), parsed.port)
+        .to_socket_addrs()
+        .map_err(|error| format!("HTTPS DNS lookup failed: {error}"))?;
+    for address in addresses {
+        if TcpStream::connect_timeout(&address, Duration::from_secs(4)).is_ok() {
+            return Ok(204);
+        }
+    }
+    Err("HTTPS host is unreachable.".to_string())
 }
 
 #[cfg(target_os = "windows")]
@@ -265,7 +298,12 @@ struct ParsedHttpsUrl {
     path: String,
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(not(target_os = "windows"))]
+struct ParsedHttpsUrl {
+    host: String,
+    port: u16,
+}
+
 fn parse_https_url(url: &str) -> Result<ParsedHttpsUrl, String> {
     let rest = url
         .strip_prefix("https://")
@@ -284,12 +322,19 @@ fn parse_https_url(url: &str) -> Result<ParsedHttpsUrl, String> {
                 .map_err(|_| "Invalid HTTPS engine download port.".to_string())?,
         )
     } else {
-        (host_port.to_string(), INTERNET_DEFAULT_HTTPS_PORT)
+        (host_port.to_string(), DEFAULT_HTTPS_PORT)
     };
     if host.is_empty() {
         return Err("Invalid HTTPS engine download host.".to_string());
     }
-    Ok(ParsedHttpsUrl { host, port, path })
+    #[cfg(not(target_os = "windows"))]
+    let _ = path;
+    Ok(ParsedHttpsUrl {
+        host,
+        port,
+        #[cfg(target_os = "windows")]
+        path,
+    })
 }
 
 #[cfg(target_os = "windows")]
@@ -380,7 +425,7 @@ mod tests {
                 .iter()
                 .all(|engine| engine.mode == EngineMode::Advanced)
         );
-        let pdfium = manifest_for_platform(&manifest, "pdfium").unwrap();
+        let pdfium = manifest_for_platform_id(&manifest, "pdfium", "windows-x64").unwrap();
         assert_eq!(pdfium.platform, "windows-x64");
         assert_eq!(pdfium.archive_type, ArchiveType::Zip);
     }
@@ -441,11 +486,13 @@ mod tests {
     #[test]
     fn manifest_uses_pdfium_instead_of_poppler_or_mupdf() {
         let manifest = load_manifest().unwrap();
-        assert!(manifest_for_platform(&manifest, "pdfium").is_some());
-        assert!(manifest_for_platform(&manifest, "poppler").is_none());
-        assert!(manifest_for_platform(&manifest, "mupdf").is_none());
+        assert!(manifest_for_platform_id(&manifest, "pdfium", "windows-x64").is_some());
+        assert!(manifest_for_platform_id(&manifest, "poppler", "windows-x64").is_none());
+        assert!(manifest_for_platform_id(&manifest, "mupdf", "windows-x64").is_none());
         assert_eq!(
-            manifest_for_platform(&manifest, "pdfium").unwrap().mode,
+            manifest_for_platform_id(&manifest, "pdfium", "windows-x64")
+                .unwrap()
+                .mode,
             EngineMode::Advanced
         );
     }

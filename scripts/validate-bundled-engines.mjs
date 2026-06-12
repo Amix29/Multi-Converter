@@ -5,17 +5,21 @@ import process from "node:process";
 
 const root = process.cwd();
 const manifestPath = path.join(root, "src-tauri", "engines-manifest.json");
+const bundledEnginesDir = path.join(root, "src-tauri", "bundled-engines");
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const expectedVersion = "8.1.1";
-const baseBinaries = [
-  ["ffmpeg", path.join(root, "src-tauri", "binaries", "ffmpeg-x86_64-pc-windows-msvc.exe"), ["-version"], expectedVersion],
-  ["ffprobe", path.join(root, "src-tauri", "binaries", "ffprobe-x86_64-pc-windows-msvc.exe"), ["-version"], expectedVersion],
-];
+const platform = process.env.MULTI_CONVERTER_ENGINE_PLATFORM?.trim() || hostEnginePlatform();
+const baseBinaries = baseBinariesForPlatform(platform);
 
 const errors = [];
 
-for (const [id, filePath, args, expectedText] of baseBinaries) {
-  validateExecutable(id, filePath, args, expectedText);
+if (platform === "unsupported") {
+  errors.push(`Plateforme de moteurs non supportee: ${process.platform}/${process.arch}`);
+}
+
+for (const item of baseBinaries) {
+  if (item.smoke === false) validateFile(item.id, item.filePath);
+  else validateExecutable(item.id, item.filePath, item.args, item.expectedText);
 }
 
 for (const engine of bundledAdvancedEngines(manifest)) {
@@ -27,17 +31,47 @@ for (const engine of bundledAdvancedEngines(manifest)) {
   validateEngineSmoke(engineRoot, engine);
 }
 
+validateNoStaleBundledEngines(manifest);
+
 if (errors.length) {
   console.error("Bundled engine validation failed:");
   for (const error of errors) console.error(`- ${error}`);
-  console.error("Run `npm run prepare:bundled-engines` to restore the Windows x64 bundled engines.");
+  console.error(`Run \`npm run prepare:bundled-engines\` to restore the bundled engines for ${platform}.`);
   process.exit(1);
 }
 
-console.log("Bundled engine validation OK");
+if (platform !== "windows-x64" && bundledAdvancedEngines(manifest).length === 0) {
+  console.warn(`No advanced bundled engines declared for ${platform}; advanced conversions are not validated on this platform.`);
+}
+
+console.log(`Bundled engine validation OK for ${platform}`);
 
 function bundledAdvancedEngines(value) {
-  return (value.engines ?? []).filter((engine) => engine.platform === "windows-x64" && engine.mode === "advanced");
+  return (value.engines ?? []).filter((engine) => engine.platform === platform && engine.mode === "advanced");
+}
+
+function validateNoStaleBundledEngines(value) {
+  if (!fs.existsSync(bundledEnginesDir)) return;
+  const expectedRoots = new Set(bundledAdvancedEngines(value).map((engine) => `${engine.id}/${engine.version}`));
+  for (const engineEntry of fs.readdirSync(bundledEnginesDir, { withFileTypes: true })) {
+    const enginePath = path.join(bundledEnginesDir, engineEntry.name);
+    if (!engineEntry.isDirectory()) {
+      errors.push(`ressource moteur inattendue pour ${platform} (${path.relative(root, enginePath)})`);
+      continue;
+    }
+    const versionEntries = fs.readdirSync(enginePath, { withFileTypes: true });
+    if (versionEntries.length === 0) {
+      errors.push(`dossier moteur vide ou hors plateforme pour ${platform} (${path.relative(root, enginePath)})`);
+      continue;
+    }
+    for (const versionEntry of versionEntries) {
+      const relative = `${engineEntry.name}/${versionEntry.name}`;
+      const versionPath = path.join(enginePath, versionEntry.name);
+      if (!versionEntry.isDirectory() || !expectedRoots.has(relative)) {
+        errors.push(`moteur embarque hors plateforme pour ${platform} (${path.relative(root, versionPath)})`);
+      }
+    }
+  }
 }
 
 function validateEngineMetadata(engineRoot, engine) {
@@ -106,6 +140,7 @@ function primaryExecutable(engineRoot, engine) {
 
 function executableScore(filePath) {
   const extension = path.extname(filePath).toLowerCase();
+  if (process.platform !== "win32" && extension === "") return 2;
   if (extension === ".exe") return 2;
   if (extension === ".com") return 1;
   return 0;
@@ -142,6 +177,10 @@ function validateFile(id, filePath) {
     errors.push(`${id}: fichier vide ou invalide (${path.relative(root, filePath)})`);
     return false;
   }
+  if (platform !== "windows-x64" && (stat.mode & 0o111) === 0) {
+    errors.push(`${id}: fichier non executable (${path.relative(root, filePath)})`);
+    return false;
+  }
   return true;
 }
 
@@ -155,4 +194,52 @@ function normalizeArchivePath(relative) {
     throw new Error(`Chemin ambigu dans l'archive : ${relative}`);
   }
   return normalized;
+}
+
+function hostEnginePlatform() {
+  if (process.platform === "win32" && process.arch === "x64") return "windows-x64";
+  if (process.platform === "darwin") return "macos-universal";
+  if (process.platform === "linux" && process.arch === "x64") return "linux-x64";
+  return "unsupported";
+}
+
+function baseBinariesForPlatform(targetPlatform) {
+  if (targetPlatform === "windows-x64") {
+    return [
+      {
+        id: "ffmpeg",
+        filePath: path.join(root, "src-tauri", "binaries", "ffmpeg-x86_64-pc-windows-msvc.exe"),
+        args: ["-version"],
+        expectedText: expectedVersion,
+      },
+      {
+        id: "ffprobe",
+        filePath: path.join(root, "src-tauri", "binaries", "ffprobe-x86_64-pc-windows-msvc.exe"),
+        args: ["-version"],
+        expectedText: expectedVersion,
+      },
+    ];
+  }
+
+  if (targetPlatform === "macos-universal") {
+    const nativeTriple = process.arch === "arm64" ? "aarch64-apple-darwin" : "x86_64-apple-darwin";
+    return ["ffmpeg", "ffprobe"].flatMap((stem) => [
+      ...["aarch64-apple-darwin", "x86_64-apple-darwin"].map((targetTriple) => ({
+        id: `${stem}-${targetTriple}`,
+        filePath: path.join(root, "src-tauri", "binaries", `${stem}-${targetTriple}`),
+        args: ["-version"],
+        expectedText: expectedVersion,
+        smoke: process.platform === "darwin" && targetTriple === nativeTriple,
+      })),
+      {
+        id: `${stem}-universal-apple-darwin`,
+        filePath: path.join(root, "src-tauri", "binaries", `${stem}-universal-apple-darwin`),
+        args: ["-version"],
+        expectedText: expectedVersion,
+        smoke: process.platform === "darwin",
+      },
+    ]);
+  }
+
+  return [];
 }

@@ -88,6 +88,9 @@ async function packageEngine(config, engine, options, workDir) {
     if (!stat?.isFile()) {
       throw new Error(`${engine.engineId}: fichier requis absent: ${relative}`);
     }
+    if (isExecutableRequired(config, engine, relative) && canCheckExecutableBits() && (stat.mode & 0o111) === 0) {
+      throw new Error(`${engine.engineId}: binaire non executable pour ${engine.platform ?? config.platform}: ${relative}`);
+    }
   }
 
   const stageDir = path.join(workDir, `${engine.engineId}-${engine.version}`);
@@ -253,6 +256,63 @@ async function runValidation() {
     throw new Error("URL configuree du manifeste invalide");
   }
 
+  const macosSource = path.join(root, "sources", "macos-ffmpeg");
+  await fs.mkdir(path.join(macosSource, "bin"), { recursive: true });
+  await fs.mkdir(path.join(macosSource, "licenses"), { recursive: true });
+  const macosBinary = path.join(macosSource, "bin", "ffmpeg-universal-apple-darwin");
+  await fs.writeFile(macosBinary, "fake macos ffmpeg\n");
+  await fs.chmod(macosBinary, 0o755);
+  await fs.writeFile(path.join(macosSource, "licenses", "LICENSE.txt"), "LGPL/GPL\n");
+  await fs.writeFile(path.join(macosSource, "licenses", "THIRD_PARTY_NOTICES.txt"), "notices\n");
+  const macosConfig = {
+    manifestVersion: 1,
+    packageFormatVersion: 1,
+    platform: "macos-universal",
+    downloadBaseUrl: placeholderBaseUrl,
+    engines: [
+      {
+        engineId: "ffmpeg",
+        displayName: "FFmpeg",
+        mode: "base",
+        version: "8.1.1",
+        platform: "macos-universal",
+        sourceDir: path.relative(repoRoot, macosSource),
+        outputArchiveName: "ffmpeg-8.1.1-macos-universal.zip",
+        binaryPaths: ["bin/ffmpeg-universal-apple-darwin"],
+        healthCheck: "ffmpeg-audio",
+        licenseName: "LGPL/GPL selon build",
+        licenseUrl: null,
+        licenseFiles: ["licenses/LICENSE.txt"],
+        noticeFiles: ["licenses/THIRD_PARTY_NOTICES.txt"],
+        required: false,
+        dependencies: []
+      }
+    ]
+  };
+  await packageFromConfig(macosConfig, {
+    configPath: "validation-macos-universal",
+    outputDir: path.join(root, "macos-universal"),
+    releaseBaseUrl: `${placeholderBaseUrl}/`,
+    clean: true
+  });
+  const macosManifest = await readJson(path.join(root, "macos-universal", "engines-manifest.json"));
+  if (macosManifest.engines?.[0]?.platform !== "macos-universal") {
+    throw new Error("Plateforme macOS invalide dans le manifeste de validation");
+  }
+  const macosNonExecutableSource = path.join(root, "sources", "macos-non-executable");
+  await fs.cp(macosSource, macosNonExecutableSource, { recursive: true, force: true });
+  await fs.chmod(path.join(macosNonExecutableSource, "bin", "ffmpeg-universal-apple-darwin"), 0o644);
+  const macosNonExecutable = structuredClone(macosConfig);
+  macosNonExecutable.engines[0].sourceDir = path.relative(repoRoot, macosNonExecutableSource);
+  if (canCheckExecutableBits()) {
+    await expectFailure(() => packageFromConfig(macosNonExecutable, {
+      configPath: "validation-macos-non-executable",
+      outputDir: path.join(root, "macos-non-executable"),
+      releaseBaseUrl: `${placeholderBaseUrl}/`,
+      clean: true
+    }), "binaire macOS non executable accepte a tort");
+  }
+
   const missingNotice = structuredClone(config);
   missingNotice.engines[0].noticeFiles = ["licenses/MISSING_NOTICE.txt"];
   await expectFailure(() => packageFromConfig(missingNotice, {
@@ -405,11 +465,35 @@ async function copyTreeSafe(sourceDir, targetDir) {
     } else if (entry.isFile()) {
       await fs.mkdir(path.dirname(target), { recursive: true });
       await fs.copyFile(source, target);
+      const stat = await fs.stat(source);
+      await fs.chmod(target, stat.mode);
     }
   }
 }
 
+function isExecutableRequired(config, engine, relative) {
+  const platform = engine.platform ?? config.platform;
+  return platform !== "windows-x64" && engine.binaryPaths.includes(relative);
+}
+
+function canCheckExecutableBits() {
+  return process.platform !== "win32";
+}
+
 async function createZip(sourceDir, archivePath) {
+  if (process.platform !== "win32") {
+    await fs.rm(archivePath, { force: true });
+    const result = spawnSync("zip", ["-qr", archivePath, "."], {
+      cwd: sourceDir,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    if (result.status !== 0) {
+      throw new Error(`Creation ZIP impossible: ${result.stderr || result.stdout}`);
+    }
+    return;
+  }
+
   const script = [
     "Add-Type -AssemblyName System.IO.Compression.FileSystem",
     `$source = ${psQuote(sourceDir)}`,
@@ -423,6 +507,17 @@ async function createZip(sourceDir, archivePath) {
 async function extractZip(archivePath, destinationDir) {
   await fs.rm(destinationDir, { recursive: true, force: true });
   await fs.mkdir(destinationDir, { recursive: true });
+  if (process.platform !== "win32") {
+    const result = spawnSync("unzip", ["-q", archivePath, "-d", destinationDir], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    if (result.status !== 0) {
+      throw new Error(`Extraction ZIP de validation impossible: ${result.stderr || result.stdout}`);
+    }
+    return;
+  }
+
   const script = [
     "Add-Type -AssemblyName System.IO.Compression.FileSystem",
     `[System.IO.Compression.ZipFile]::ExtractToDirectory(${psQuote(archivePath)}, ${psQuote(destinationDir)})`

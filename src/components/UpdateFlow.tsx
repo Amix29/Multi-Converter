@@ -110,7 +110,7 @@ export function UpdateReminder(props: {
   const installing = props.updateStatus === "installing";
 
   return (
-    <aside className="update-reminder" role="status" aria-live="polite">
+    <aside className="update-reminder" data-testid="update-reminder" role="status" aria-live="polite">
       <div>
         <span>{t(props.language, "update.availableBadge")}</span>
         <strong>{t(props.language, "update.reminderTitle", { version: props.updateInfo.version })}</strong>

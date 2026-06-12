@@ -2,7 +2,9 @@
 
 ## Supported Version
 
-Multi-Converter currently supports Windows x64. Security fixes are prioritized for the latest tagged release and the default branch.
+Multi-Converter currently supports the latest Windows x64 public release. macOS support is in development for V1.0.5 and should not be described as publicly supported until the universal DMG has been built and verified on macOS.
+
+Security fixes are prioritized for the latest tagged release and the default branch.
 
 ## Reporting a Vulnerability
 
@@ -28,5 +30,5 @@ In scope:
 Out of scope:
 
 - vulnerabilities in upstream third-party engines unless Multi-Converter packaging or invocation makes them worse;
-- unsupported operating systems for the V1 Windows x64 release;
+- unsupported operating systems or unverified development builds;
 - issues requiring local administrator compromise before launching the app.

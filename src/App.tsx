@@ -141,6 +141,8 @@ export default function App() {
     language,
     showNotice,
   });
+  const updateReminderActive = updateReminderVisible && Boolean(updateInfo) && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen;
+  const feedbackLauncherActive = step === 1 && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen && updateStatus !== "installing" && !isFeedbackOpen && !isFeedbackPrivacyOpen;
 
   function openFeedback() {
     if (feedbackPrivacyAccepted) {
@@ -728,20 +730,24 @@ export default function App() {
         size={updateDownloadSize}
       />
 
-      <UpdateReminder
-        isVisible={updateReminderVisible && Boolean(updateInfo) && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen}
-        language={language}
-        updateInfo={updateInfo}
-        updateStatus={updateStatus}
-        onInstall={() => void installAvailableUpdate()}
-        onOpenDetails={() => setIsUpdateDialogOpen(true)}
-      />
+      {(updateReminderActive || feedbackLauncherActive) && (
+        <div className="floating-corner" data-testid="floating-corner">
+          <UpdateReminder
+            isVisible={updateReminderActive}
+            language={language}
+            updateInfo={updateInfo}
+            updateStatus={updateStatus}
+            onInstall={() => void installAvailableUpdate()}
+            onOpenDetails={() => setIsUpdateDialogOpen(true)}
+          />
 
-      <FeedbackButton
-        isVisible={step === 1 && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen && updateStatus !== "installing" && !isFeedbackOpen && !isFeedbackPrivacyOpen}
-        language={language}
-        onOpen={openFeedback}
-      />
+          <FeedbackButton
+            isVisible={feedbackLauncherActive}
+            language={language}
+            onOpen={openFeedback}
+          />
+        </div>
+      )}
 
       <FeedbackPrivacyDialog
         isOpen={isFeedbackPrivacyOpen}
@@ -1078,7 +1084,7 @@ function ImportToast(props: { language: LanguageCode; feedback: ImportFeedback }
 function FeedbackButton(props: { isVisible: boolean; language: LanguageCode; onOpen(): void }) {
   if (!props.isVisible) return null;
   return (
-    <button className="feedback-launcher" type="button" onClick={props.onOpen} aria-label={t(props.language, "feedback.open")}>
+    <button className="feedback-launcher" data-testid="feedback-launcher" type="button" onClick={props.onOpen} aria-label={t(props.language, "feedback.open")}>
       <span aria-hidden="true">!</span>
       <strong>{t(props.language, "feedback.launcher")}</strong>
     </button>
@@ -2163,7 +2169,9 @@ function readStoredFeedbackPrivacyAccepted() {
 }
 
 function shouldShowWelcome() {
-  if (import.meta.env.DEV) return true;
+  if (import.meta.env.DEV) {
+    return new URLSearchParams(window.location.search).get("mockWelcomeSeen") !== "1";
+  }
   return false;
 }
 

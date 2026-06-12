@@ -28,6 +28,7 @@
   --shadow: 0 18px 54px rgba(29, 36, 31, 0.08);
   --shadow-tight: 4px 5px 0 rgba(29, 36, 31, 0.1);
   --shadow-hard: 4px 5px 0 rgba(29, 36, 31, 0.14);
+  --ease-ui: cubic-bezier(0.2, 0.8, 0.2, 1);
   --radius-sm: 8px;
   --radius: 12px;
   --radius-lg: 18px;
@@ -67,6 +68,7 @@ select {
 
 button {
   border: 0;
+  touch-action: manipulation;
 }
 
 button,
@@ -347,7 +349,7 @@ summary:focus-visible {
     linear-gradient(180deg, rgba(255, 253, 247, 0.78), rgba(255, 250, 240, 0.54)),
     var(--surface);
   box-shadow: var(--shadow-tight);
-  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  transition: border-color 180ms var(--ease-ui), transform 180ms var(--ease-ui), background 180ms var(--ease-ui), box-shadow 180ms var(--ease-ui);
 }
 
 .drop-zone::after {
@@ -362,8 +364,15 @@ summary:focus-visible {
   transition: opacity 180ms ease, transform 180ms ease;
 }
 
+.drop-zone:hover,
+.drop-zone:focus-within,
 .drop-zone.is-over {
   border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 46px rgba(29, 36, 31, 0.11), 0 0 0 4px rgba(200, 106, 52, 0.06);
+}
+
+.drop-zone.is-over {
   background:
     linear-gradient(180deg, rgba(245, 228, 216, 0.9), rgba(229, 240, 235, 0.72)),
     var(--accent-soft);
@@ -478,13 +487,15 @@ summary:focus-visible {
   padding: 9px 9px 9px 12px;
   border-radius: 14px;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
-  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+  transition: transform 150ms var(--ease-ui), box-shadow 150ms var(--ease-ui), border-color 150ms var(--ease-ui), background 150ms var(--ease-ui);
   animation: ticketIn 180ms ease both;
 }
 
-.file-ticket:hover {
+.file-ticket:hover,
+.file-ticket:focus-within {
   transform: translateY(-1px);
   border-color: var(--line-strong);
+  background: var(--paper);
   box-shadow: var(--shadow-tight);
 }
 
@@ -1571,7 +1582,7 @@ summary:focus-visible {
   border-radius: 999px;
   font-weight: 760;
   cursor: pointer;
-  transition: transform 140ms ease, background 140ms ease, opacity 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+  transition: transform 140ms var(--ease-ui), background 140ms var(--ease-ui), opacity 140ms var(--ease-ui), box-shadow 140ms var(--ease-ui), border-color 140ms var(--ease-ui);
 }
 
 .primary-button {
@@ -1605,6 +1616,19 @@ summary:focus-visible {
 .ghost-button:hover:not(:disabled) {
   border-color: var(--line-strong);
   background: var(--surface-soft);
+}
+
+.primary-button:active:not(:disabled),
+.secondary-button:active:not(:disabled),
+.ghost-button:active:not(:disabled),
+.icon-button:active:not(:disabled),
+.remove-file-button:active:not(:disabled),
+.apply-compatible-button:active:not(:disabled),
+.rail-button:active:not(:disabled),
+.category-filter button:active:not(:disabled),
+.quick-choices button:active:not(:disabled),
+.batch-format-strip button:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
 }
 
 button:disabled {
@@ -2621,6 +2645,23 @@ button:disabled {
   fill: currentColor;
 }
 
+.floating-corner {
+  position: fixed;
+  right: 24px;
+  bottom: 22px;
+  z-index: 29;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: min(430px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.floating-corner > * {
+  pointer-events: auto;
+}
+
 .update-overlay {
   position: fixed;
   inset: 0;
@@ -2941,32 +2982,31 @@ button:disabled {
 }
 
 .update-reminder {
-  position: fixed;
-  right: 24px;
-  bottom: 22px;
-  z-index: 29;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
-  width: min(410px, calc(100vw - 32px));
+  width: min(410px, 100%);
   padding: 13px;
   border: 1px solid rgba(200, 106, 52, 0.32);
   border-radius: var(--radius-lg);
   background: var(--paper);
   box-shadow: var(--shadow);
   animation: noticeIn 180ms ease both;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.update-reminder:hover {
+  transform: translateY(-1px);
+  border-color: rgba(200, 106, 52, 0.48);
+  box-shadow: 0 22px 64px rgba(29, 36, 31, 0.12);
 }
 
 .feedback-launcher {
-  position: fixed;
-  right: 24px;
-  bottom: 22px;
-  z-index: 28;
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  max-width: min(300px, calc(100vw - 32px));
+  max-width: min(300px, 100%);
   min-height: 44px;
   padding: 8px 14px 8px 9px;
   border: 1px solid rgba(63, 118, 100, 0.34);
@@ -2982,6 +3022,10 @@ button:disabled {
   transform: translateY(-1px);
   border-color: rgba(63, 118, 100, 0.58);
   box-shadow: var(--shadow);
+}
+
+.feedback-launcher:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .feedback-launcher span {
@@ -3696,10 +3740,14 @@ button:disabled {
     flex-direction: column;
   }
 
-  .feedback-launcher {
+  .floating-corner {
     right: 14px;
     bottom: 14px;
-    max-width: calc(100vw - 28px);
+    width: calc(100vw - 28px);
+  }
+
+  .feedback-launcher {
+    max-width: 100%;
   }
 
   .welcome-overlay {

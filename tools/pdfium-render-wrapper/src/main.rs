@@ -277,13 +277,16 @@ fn load_document<'a>(pdfium: &'a Pdfium, input: &Path) -> Result<PdfDocument<'a>
 }
 
 fn pdfium_library_path() -> Result<PathBuf, String> {
-    if let Ok(path) = env::var("PDFIUM_DLL_PATH") {
+    let explicit_path = env::var("PDFIUM_LIBRARY_PATH")
+        .ok()
+        .or_else(|| env::var("PDFIUM_DLL_PATH").ok());
+    if let Some(path) = explicit_path {
         let path = PathBuf::from(path);
         if path.is_file() {
             return Ok(path);
         }
         return Err(format!(
-            "PDFIUM_DLL_PATH ne pointe pas vers un fichier : {}",
+            "Le chemin PDFium configure ne pointe pas vers un fichier : {}",
             path.display()
         ));
     }
@@ -297,8 +300,10 @@ fn pdfium_library_path() -> Result<PathBuf, String> {
     if candidate.is_file() {
         return Ok(candidate);
     }
+    let library_name = Pdfium::pdfium_platform_library_name();
     Err(format!(
-        "pdfium.dll est absent du dossier moteur : {}",
+        "La librairie PDFium ({}) est absente du dossier moteur : {}",
+        library_name.to_string_lossy(),
         candidate.display()
     ))
 }

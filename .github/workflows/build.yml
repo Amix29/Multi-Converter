@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   quality-gate:
+    name: Windows x64 quality gate
     runs-on: windows-latest
     timeout-minutes: 60
     env:
@@ -64,3 +65,97 @@ jobs:
       - run: npm run test:pdfium-wrapper
       - run: npm run clippy:pdfium-wrapper
       - run: npm run tauri:build
+
+  macos-code-check:
+    name: macOS code check (${{ matrix.rust-target }})
+    runs-on: macos-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        rust-target:
+          - aarch64-apple-darwin
+          - x86_64-apple-darwin
+    env:
+      CARGO_TERM_COLOR: always
+      RUST_BACKTRACE: 1
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      MULTI_CONVERTER_CARGO_TARGET_NAME: mc-cargo-target-${{ matrix.rust-target }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: ${{ matrix.rust-target }}
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-${{ matrix.rust-target }}-cargo-registry-v2-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.rust-target }}-cargo-registry-v2-
+            ${{ runner.os }}-cargo-registry-v2-
+
+      - run: npm ci
+      - run: npm run validate:embedded-manifest
+      - run: npm run validate:i18n
+      - run: npm run typecheck
+      - run: npm run test:release-notes
+      - run: npm run test:macos-packaging
+      - run: npm run test:github-workflows
+      - run: npm run test:release-assets
+      - run: npm run test:bundled-engines-platform
+      - run: npm run test:ui-layout
+      - run: npm run test:repository-metadata
+      - run: npm run test:run-tauri
+      - run: npm run fmt:rust:check
+      - run: node scripts/cargo-test-temp.mjs check --manifest-path src-tauri/Cargo.toml --target ${{ matrix.rust-target }}
+      - run: node scripts/cargo-test-temp.mjs clippy --manifest-path src-tauri/Cargo.toml --target ${{ matrix.rust-target }} --all-targets -- -D warnings
+
+  macos-host-tests:
+    name: macOS host unit tests
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      CARGO_TERM_COLOR: always
+      RUST_BACKTRACE: 1
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      MULTI_CONVERTER_CARGO_TARGET_NAME: mc-cargo-target-macos-host-tests
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-host-tests-cargo-registry-v2-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-host-tests-cargo-registry-v2-
+            ${{ runner.os }}-cargo-registry-v2-
+
+      - run: npm ci
+      - run: npm run test:rust
+      - run: npm run test:pdfium-wrapper:compile
+      - run: npm run clippy:pdfium-wrapper
