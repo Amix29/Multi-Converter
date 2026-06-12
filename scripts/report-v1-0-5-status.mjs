@@ -30,6 +30,8 @@ const macosAdvancedEngines = (enginesManifest.engines ?? []).filter((engine) => 
 const macosAdvancedEngineIds = new Set(macosAdvancedEngines.map((engine) => engine.id));
 const missingMacosAdvancedEngines = requiredAdvancedEngines.filter((id) => !macosAdvancedEngineIds.has(id));
 const missingMacosSidecars = requiredMacosSidecars.filter((name) => !fs.existsSync(path.join(root, "src-tauri", "binaries", name)));
+const evidenceBlockers = macosEvidenceBlockers();
+const hasMacosReleaseEvidence = evidenceBlockers.length === 0;
 
 const checks = [
   check("version is 1.0.5", packageJson.version === "1.0.5"),
@@ -37,7 +39,7 @@ const checks = [
   check("macOS bundle shape is app + dmg", JSON.stringify(macosConfig.bundle?.targets) === JSON.stringify(["app", "dmg"])),
   check("macOS updater artifacts are disabled for initial DMG", macosConfig.bundle?.createUpdaterArtifacts === false),
   check("macOS unsigned builds use ad-hoc signing", macosConfig.bundle?.macOS?.signingIdentity === "-"),
-  check("README keeps macOS in development", /\|\s*.*macOS\s*\|\s*.*In development for v1\.0\.5\s*\|/.test(readme)),
+  check("README macOS status matches available release evidence", readmeMacosStatusMatchesEvidence()),
   check("README keeps Linux in development", /\|\s*.*Linux\s*\|\s*.*In development\s*\|/.test(readme)),
   check("UI floating stack overlap contract exists", /floating-corner/.test(uiLayoutTest) && /feedback-launcher/.test(uiLayoutTest) && /update-reminder/.test(uiLayoutTest)),
   check("Windows CI gate is grouped and checkpointed", /windows-ci-gate-status\.json/.test(windowsGate) && /beginStep\(command\)/.test(windowsGate)),
@@ -47,31 +49,18 @@ const checks = [
   check("macOS checklist requires real conversion matrix before full coverage claims", /macOS Conversion Matrix/.test(macosChecklist) && /all macOS conversions pass/.test(macosChecklist)),
 ];
 
-const blockers = [];
-if (process.platform !== "darwin") {
-  blockers.push("macOS universal DMG build and verification still require a real macOS host.");
-}
-if (missingMacosSidecars.length > 0) {
-  blockers.push(`Missing real macOS FFmpeg/ffprobe sidecars: ${missingMacosSidecars.join(", ")}.`);
-}
-if (missingMacosAdvancedEngines.length > 0) {
-  blockers.push(`Missing reviewed macos-universal advanced engines in src-tauri/engines-manifest.json: ${missingMacosAdvancedEngines.join(", ")}.`);
-}
-if (missingMacosAdvancedEngines.length === 0 && !macosAdvancedEngines.every((engine) => /^[a-f0-9]{64}$/i.test(String(engine.sha256 ?? "")))) {
-  blockers.push("One or more macos-universal advanced engines has no pinned SHA-256 checksum.");
-}
-
 const failedChecks = checks.filter((item) => !item.passed);
 const status = {
   generatedAt: new Date().toISOString(),
   version: packageJson.version,
-  releaseReady: blockers.length === 0 && failedChecks.length === 0,
+  releaseReady: evidenceBlockers.length === 0 && failedChecks.length === 0,
   checks,
-  blockers,
+  blockers: evidenceBlockers,
   summary: {
     passedChecks: checks.length - failedChecks.length,
     totalChecks: checks.length,
-    blockerCount: blockers.length,
+    blockerCount: evidenceBlockers.length,
+    hasMacosReleaseEvidence,
     missingMacosAdvancedEngines,
     missingMacosSidecars,
   },
@@ -84,22 +73,43 @@ if (assertMode) {
   if (failedChecks.length > 0) {
     fail(`V1.0.5 status contradictions found:\n${failedChecks.map((item) => `- ${item.name}`).join("\n")}`);
   }
-  if (status.releaseReady) {
-    fail("V1.0.5 unexpectedly reports releaseReady=true. Recheck the completion audit before publishing.");
-  }
-  if (blockers.length === 0) {
-    fail("V1.0.5 status has no blockers; this should only happen after real macOS DMG and conversion validation.");
-  }
 }
 
 console.log(`V1.0.5 status written to ${path.relative(root, outPath)}`);
 console.log(status.releaseReady ? "V1.0.5 release status: ready" : "V1.0.5 release status: not ready");
-for (const blocker of blockers) {
+for (const blocker of evidenceBlockers) {
   console.log(`- ${blocker}`);
 }
 
 function check(name, passed) {
   return { name, passed: Boolean(passed) };
+}
+
+function macosEvidenceBlockers() {
+  const blockers = [];
+  if (process.platform !== "darwin") {
+    blockers.push("macOS universal DMG build and verification still require a real macOS host.");
+  }
+  if (missingMacosSidecars.length > 0) {
+    blockers.push(`Missing real macOS FFmpeg/ffprobe sidecars: ${missingMacosSidecars.join(", ")}.`);
+  }
+  if (missingMacosAdvancedEngines.length > 0) {
+    blockers.push(`Missing reviewed macos-universal advanced engines in src-tauri/engines-manifest.json: ${missingMacosAdvancedEngines.join(", ")}.`);
+  }
+  if (missingMacosAdvancedEngines.length === 0 && !macosAdvancedEngines.every((engine) => /^[a-f0-9]{64}$/i.test(String(engine.sha256 ?? "")))) {
+    blockers.push("One or more macos-universal advanced engines has no pinned SHA-256 checksum.");
+  }
+  return blockers;
+}
+
+function readmeMacosStatusMatchesEvidence() {
+  if (!hasMacosReleaseEvidence) {
+    return /\|\s*.*macOS\s*\|\s*.*In development for v1\.0\.5\s*\|/.test(readme);
+  }
+  return (
+    /\|\s*.*macOS\s*\|\s*.*Available\s*\|/.test(readme) &&
+    readme.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`)
+  );
 }
 
 function readText(relativePath) {

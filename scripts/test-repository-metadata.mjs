@@ -89,6 +89,7 @@ for (const topic of [
 
 assert.match(githubTopics, /Linux is in development and must not be presented as a released platform yet\./, "GitHub topic docs must prevent overclaiming Linux release support");
 assert.match(testingDocs, /npm run status:v1\.0\.5/, "testing docs must document the V1.0.5 status audit command");
-assert.match(testingDocs, /releaseReady` false/, "testing docs must state that V1.0.5 readiness remains false until real macOS validation");
+assert.match(testingDocs, /current preparation state[\s\S]*`releaseReady` should remain false/, "testing docs must state that current V1.0.5 readiness remains false until real macOS validation");
+assert.match(testingDocs, /same audit can report `releaseReady: true`/, "testing docs must allow the status audit to pass once final macOS proof exists");
 
 console.log("Repository metadata tests passed.");
