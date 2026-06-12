@@ -52,6 +52,7 @@ The manual `macOS libvips Runtime` workflow can build those two portable input a
 - The workflow installs `vips`, copies the runtime, rewrites non-system dynamic links with `install_name_tool`, rejects remaining absolute package-manager links, smoke-tests `vips copy`, then uploads `libvips-macos-aarch64.tar.gz` and `libvips-macos-x86_64.tar.gz`.
 - Use its `output_release_tag` as the `libvips_release_tag` input for `macOS Engine Staging`.
 - Treat the generated notices as staging evidence first. Review copied dependency licenses before a public release.
+- The workflow has an `arch` input for targeted retries. A public macOS release still requires successful `aarch64` and `x86_64` runtime archives.
 
 `npm run prepare:bundled-engines` must prune stale `src-tauri/bundled-engines` entries that do not match the current platform before packaging. `npm run validate:bundled-engines`, `npm run test:macos:host` and `npm run verify:macos-dmg` must fail if Windows-only bundled engines would be carried into a macOS build or final DMG.
 

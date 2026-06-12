@@ -8,6 +8,15 @@ on:
         required: false
         default: ""
         type: string
+      arch:
+        description: "Runtime architecture to build"
+        required: true
+        default: "both"
+        type: choice
+        options:
+          - both
+          - aarch64
+          - x86_64
 
 permissions:
   contents: write
@@ -19,6 +28,7 @@ concurrency:
 jobs:
   build:
     name: Build libvips runtime (${{ matrix.arch }})
+    if: ${{ inputs.arch == 'both' || inputs.arch == matrix.arch }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
     strategy:

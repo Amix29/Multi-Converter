@@ -142,7 +142,9 @@ async function copyFileRecord(source, target) {
   await fs.copyFile(realSource, target);
   const stat = await fs.stat(realSource);
   await fs.chmod(target, stat.mode);
-  registerRecord(realSource, target);
+  if (isRuntimeCodePath(target)) {
+    registerRecord(realSource, target);
+  }
 }
 
 function registerRecord(original, target) {
@@ -154,6 +156,13 @@ function registerRecord(original, target) {
     throw new Error(`Two different libvips dependencies share the same filename: ${path.basename(resolvedTarget)}`);
   }
   targetNames.set(path.basename(resolvedTarget), original);
+}
+
+function isRuntimeCodePath(filePath) {
+  const resolved = path.resolve(filePath);
+  const binRoot = path.join(runtimeDir, "bin");
+  const libRoot = path.join(runtimeDir, "lib");
+  return isInside(binRoot, resolved) || isInside(libRoot, resolved);
 }
 
 async function copyDependency(source) {
