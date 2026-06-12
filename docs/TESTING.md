@@ -24,6 +24,7 @@ npm run test:rust
 npm run test:conversions
 npm run test:pdfium-wrapper
 npm run clippy:pdfium-wrapper
+npm run test:secret-leaks
 npm run build
 npm run tauri:build
 ```
@@ -54,6 +55,16 @@ For V1.0.5, the expected Rust audit state is:
 - 0 reported vulnerabilities;
 - allowed warnings from transitive Tauri/Linux GTK-related crates and a few unmaintained utility crates;
 - follow-up review needed when Tauri, Wry or Linux support dependencies are upgraded.
+
+## Secret Leak Scan
+
+Run this before commits, release notes, release assets or the final Codex Security pass:
+
+```bash
+npm run test:secret-leaks
+```
+
+The scan checks tracked text files for private key blocks, common service tokens and accidental long secret assignments. It reports only the file, line and pattern name; it does not print the matched secret value.
 
 ## macOS Code Checks
 

@@ -147,6 +147,10 @@ assert.deepEqual(macosConfig.bundle.resources, tauriConfig.bundle.resources, "ma
 assert.equal(macosConfig.bundle.createUpdaterArtifacts, false, "macOS DMG releases must not create updater artifacts until Darwin updater metadata is enabled");
 assert.equal(macosConfig.bundle.macOS.signingIdentity, "-", "unsigned macOS builds should use Tauri ad-hoc signing");
 assert.equal(macosConfig.bundle.macOS.minimumSystemVersion, "11.0", "macOS minimum version must stay explicit");
+assert.match(macosChecklist, /## Mac Handoff Readiness/, "macOS checklist must include a clear handoff readiness section");
+assert.match(macosChecklist, /the only expected remaining work should be macOS-only work/, "macOS checklist must make the handoff boundary explicit");
+assert.match(macosChecklist, /npm run test:macos:conversions/, "macOS handoff must include the strict conversion matrix command");
+assert.match(macosChecklist, /npm run verify:macos-dmg/, "macOS handoff must include final DMG verification");
 assert.equal(macosEngineConfig.platform, "macos-universal", "macOS engine package config must target macos-universal");
 assert.deepEqual(
   macosEngineConfig.engines.map((engine) => engine.engineId),

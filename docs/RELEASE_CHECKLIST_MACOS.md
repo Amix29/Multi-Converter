@@ -13,6 +13,25 @@ This checklist is for the planned macOS v1.0.5 work. A macOS release is not read
 - macOS updater artifacts are disabled for this initial DMG workflow. Do not add Darwin entries to `latest.json` until macOS updater artifacts are generated and tested end to end.
 - Do not hand-edit the generated `.app`; change source/config/staged engines and rebuild.
 
+## Mac Handoff Readiness
+
+Before moving to a real Mac, the non-macOS side should already have passing local contract checks:
+
+```powershell
+npm run check
+npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp\mc-release-assets\vX.Y.Z" --platform windows
+```
+
+At that point, the only expected remaining work should be macOS-only work:
+
+- create or provide real Apple Silicon and Intel FFmpeg/ffprobe inputs, then build/verify the universal sidecars with `lipo`;
+- prepare PDFium, LibreOffice, Pandoc and libvips as reviewed `macos-universal` engine archives;
+- run `npm run test:macos:host` and `npm run test:macos:conversions` on macOS;
+- build `npm run tauri:build:macos`, prepare `Multi-Converter_X.Y.Z_macos-universal.dmg`, and run `npm run verify:macos-dmg`;
+- perform the manual clean-Mac smoke test before any public macOS release claim.
+
+If another task remains possible from Windows/Linux, finish it before treating the project as ready for Mac handoff.
+
 ## Required Local Inputs
 
 - `src-tauri/binaries/ffmpeg-aarch64-apple-darwin`
