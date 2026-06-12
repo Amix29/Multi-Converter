@@ -40,6 +40,7 @@
     "tauri:build:macos": "node scripts/run-tauri.mjs build --target universal-apple-darwin --bundles dmg --config src-tauri/tauri.macos.conf.json",
     "package:engines": "node scripts/package-engines.mjs",
     "package:macos-engines": "node scripts/package-engines.mjs --config tools/engine-packages.macos.config.json --output dist-engines-macos",
+    "prepare:macos-engine-release-assets": "node scripts/prepare-macos-engine-release-assets.mjs",
     "prepare:macos-dmg-artifact": "node scripts/prepare-macos-dmg-artifact.mjs",
     "prepare:release-assets": "node scripts/prepare-release-assets.mjs",
     "prepare:base-engines": "node scripts/prepare-base-engines.mjs",

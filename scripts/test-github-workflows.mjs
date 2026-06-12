@@ -3,10 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const buildWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "build.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
 const macosDmgWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-dmg.yml"), "utf8");
 const macosConversionsWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-conversions.yml"), "utf8");
+const macosEngineReleaseScript = fs.readFileSync(path.join(root, "scripts", "prepare-macos-engine-release-assets.mjs"), "utf8");
 const windowsBuildJob = workflowJob(buildWorkflow, "quality-gate");
 const macosBuildJob = workflowJob(buildWorkflow, "macos-code-check");
 const macosHostTestsJob = workflowJob(buildWorkflow, "macos-host-tests");
@@ -73,8 +75,7 @@ assert.doesNotMatch(macosDmgBuildJob, /CARGO_TARGET_DIR:\s+\$\{\{\s*runner\.temp
 assert.match(macosDmgBuildJob, /CARGO_TARGET_DIR=\$RUNNER_TEMP\/mc-cargo-target-macos-dmg/, "macOS DMG build must configure Cargo target dir through GITHUB_ENV");
 assert.match(macosDmgBuildJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS DMG build must install both Darwin Rust targets");
 assert.match(macosDmgBuildJob, /Download staged macOS engine archives from a release/, "macOS DMG build must support staged macOS engine release assets");
-assert.match(macosDmgBuildJob, /engines-manifest\.json/, "macOS DMG build must download the staged macOS engine manifest");
-assert.match(macosDmgBuildJob, /engine-sources\/\.bundled-engine-cache/, "macOS DMG build must seed the bundled-engine cache from release assets");
+assert.match(macosDmgBuildJob, /prepare-macos-engine-release-assets\.mjs/, "macOS DMG build must use the staged engine release helper");
 assert.match(macosDmgBuildJob, /npm run prepare:bundled-engines/, "macOS DMG build must prepare staged sidecars and engines");
 assert.doesNotMatch(macosDmgBuildJob, /prepare-tauri-ci-sidecars/, "macOS DMG build must use real staged sidecars, not CI placeholders");
 assert.match(macosDmgBuildJob, /npm run test:macos:host/, "macOS DMG build must verify staged sidecars before packaging");
@@ -93,9 +94,14 @@ assert.match(macosConversionsJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-univ
 assert.doesNotMatch(macosConversionsJob, /prepare-tauri-ci-sidecars/, "macOS conversion matrix must never use compile-only placeholder sidecars");
 assert.match(macosConversionsJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS conversion matrix must install both Darwin Rust targets");
 assert.match(macosConversionsJob, /Download staged macOS engine archives from a release/, "macOS conversion matrix must support staged macOS engine release assets");
-assert.match(macosConversionsJob, /engines-manifest\.json/, "macOS conversion matrix must download the staged macOS engine manifest");
-assert.match(macosConversionsJob, /engine-sources\/\.bundled-engine-cache/, "macOS conversion matrix must seed the bundled-engine cache from release assets");
+assert.match(macosConversionsJob, /prepare-macos-engine-release-assets\.mjs/, "macOS conversion matrix must use the staged engine release helper");
 assert.match(macosConversionsJob, /npm run test:macos:conversions/, "macOS conversion matrix must run the strict real conversion gate");
+
+assert.equal(packageJson.scripts["prepare:macos-engine-release-assets"], "node scripts/prepare-macos-engine-release-assets.mjs", "macOS staged engine release helper must be exposed through npm");
+assert.match(macosEngineReleaseScript, /gh.*release.*download/s, "macOS staged engine helper must download private release assets through gh");
+assert.match(macosEngineReleaseScript, /engines-manifest\.json/, "macOS staged engine helper must download the staged engine manifest");
+assert.match(macosEngineReleaseScript, /engine-sources", "\.bundled-engine-cache"/, "macOS staged engine helper must seed the bundled-engine cache");
+assert.match(macosEngineReleaseScript, /verifySha256/, "macOS staged engine helper must verify downloaded engine checksums");
 
 console.log("GitHub workflow contract tests passed.");
 
