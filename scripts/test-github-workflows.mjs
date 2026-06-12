@@ -141,6 +141,11 @@ assert.match(windowsCiGateScript, /process\.platform !== "win32"/, "Windows CI v
 assert.match(windowsCiGateScript, /process\.env\.npm_execpath/, "Windows CI validation wrapper must reuse npm's CLI path instead of spawning npm.cmd directly");
 assert.match(windowsCiGateScript, /process\.execPath/, "Windows CI validation wrapper must invoke npm through the current Node executable");
 assert.match(windowsCiGateScript, /result\.error/, "Windows CI validation wrapper must report command spawn failures");
+assert.match(windowsCiGateScript, /windows-ci-gate-status\.json/, "Windows CI validation wrapper must write a recoverable status file for long local runs");
+assert.match(windowsCiGateScript, /function beginStep\(command\)/, "Windows CI validation wrapper must checkpoint each started step");
+assert.match(windowsCiGateScript, /function finishStep\(entry, state, details\)/, "Windows CI validation wrapper must checkpoint each completed step");
+assert.match(windowsCiGateScript, /--status-file/, "Windows CI validation wrapper must allow an explicit status file path");
+assert.match(windowsCiGateScript, /status:\s+"skipped"/, "Windows CI validation wrapper dry runs must record skipped steps in the status file");
 assert.match(windowsCiGateScript, /\["npm", \["audit", "--omit=dev"\]\]/, "Windows CI validation wrapper must run production npm audit");
 assert.match(windowsCiGateScript, /\["npm", \["run", "prepare:bundled-engines"\]\]/, "Windows CI validation wrapper must prepare Windows bundled engines before validation");
 assert.match(windowsCiGateScript, /\["npm", \["run", "check"\]\]/, "Windows CI validation wrapper must run static and contract checks");

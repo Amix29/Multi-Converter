@@ -28,6 +28,8 @@ npm run build
 npm run tauri:build
 ```
 
+During a long local run, the wrapper writes progress to `tmp/windows-ci-gate-status.json`. If a terminal session times out while `tauri:build` or NSIS is still running, inspect that file and the running processes before starting another full gate.
+
 Before publishing Windows assets, prepare a clean release folder and run:
 
 ```powershell
