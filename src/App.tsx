@@ -649,7 +649,7 @@ export default function App() {
   const hasConvertibleFiles = files.some(hasAvailableTargets);
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${updateReminderActive ? "has-update-reminder" : ""} ${feedbackLauncherActive ? "has-feedback-launcher" : ""}`}>
       <header className="topbar">
         <div className="brand">
           <div className="brand-mark" aria-hidden="true">

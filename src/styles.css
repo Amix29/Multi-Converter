@@ -98,6 +98,7 @@ summary:focus-visible {
 }
 
 .app-shell {
+  --floating-toast-offset: 24px;
   display: grid;
   grid-template-rows: 72px minmax(0, 1fr);
   width: min(1220px, 100%);
@@ -105,6 +106,18 @@ summary:focus-visible {
   margin: 0 auto;
   overflow: hidden;
   padding: 22px 30px 26px;
+}
+
+.app-shell.has-feedback-launcher {
+  --floating-toast-offset: 88px;
+}
+
+.app-shell.has-update-reminder {
+  --floating-toast-offset: 124px;
+}
+
+.app-shell.has-update-reminder.has-feedback-launcher {
+  --floating-toast-offset: 176px;
 }
 
 .topbar {
@@ -2656,10 +2669,12 @@ button:disabled {
   gap: 10px;
   width: min(430px, calc(100vw - 32px));
   pointer-events: none;
+  transform: translateZ(0);
 }
 
 .floating-corner > * {
   pointer-events: auto;
+  transform-origin: right bottom;
 }
 
 .update-overlay {
@@ -2992,11 +3007,12 @@ button:disabled {
   border-radius: var(--radius-lg);
   background: var(--paper);
   box-shadow: var(--shadow);
-  animation: noticeIn 180ms ease both;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  animation: noticeIn 180ms var(--ease-ui) both;
+  transition: transform 160ms var(--ease-ui), border-color 160ms var(--ease-ui), box-shadow 160ms var(--ease-ui);
 }
 
-.update-reminder:hover {
+.update-reminder:hover,
+.update-reminder:focus-within {
   transform: translateY(-1px);
   border-color: rgba(200, 106, 52, 0.48);
   box-shadow: 0 22px 64px rgba(29, 36, 31, 0.12);
@@ -3015,10 +3031,11 @@ button:disabled {
   color: var(--ink);
   box-shadow: var(--shadow-tight);
   cursor: pointer;
-  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  transition: transform 150ms var(--ease-ui), border-color 150ms var(--ease-ui), box-shadow 150ms var(--ease-ui);
 }
 
-.feedback-launcher:hover {
+.feedback-launcher:hover,
+.feedback-launcher:focus-visible {
   transform: translateY(-1px);
   border-color: rgba(63, 118, 100, 0.58);
   box-shadow: var(--shadow);
@@ -3039,6 +3056,12 @@ button:disabled {
   font-size: 18px;
   font-weight: 900;
   line-height: 1;
+  transition: transform 150ms var(--ease-ui);
+}
+
+.feedback-launcher:hover span,
+.feedback-launcher:focus-visible span {
+  transform: rotate(-8deg) scale(1.04);
 }
 
 .feedback-launcher strong {
@@ -3185,6 +3208,12 @@ button:disabled {
   font-size: 12px;
   font-weight: 780;
   cursor: pointer;
+  transition: color 150ms var(--ease-ui);
+}
+
+.update-reminder button:not(.primary-button):hover,
+.update-reminder button:not(.primary-button):focus-visible {
+  color: var(--accent);
 }
 
 .update-reminder .primary-button {
@@ -3230,7 +3259,7 @@ button:disabled {
 .import-toast {
   position: fixed;
   left: 50%;
-  bottom: 24px;
+  bottom: var(--floating-toast-offset);
   z-index: 31;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -3244,6 +3273,7 @@ button:disabled {
   box-shadow: var(--shadow);
   transform: translateX(-50%);
   animation: importToastIn 180ms ease both;
+  transition: bottom 180ms var(--ease-ui);
 }
 
 .import-toast strong {
@@ -3748,6 +3778,15 @@ button:disabled {
 
   .feedback-launcher {
     max-width: 100%;
+  }
+
+  .update-reminder {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .update-reminder .primary-button {
+    width: 100%;
   }
 
   .welcome-overlay {

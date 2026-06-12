@@ -242,7 +242,8 @@ export function useAppUpdater(options: UseAppUpdaterOptions) {
   }, [options.isTauriRuntime]);
 
   useEffect(() => {
-    if (!import.meta.env.DEV || options.isTauriRuntime) return;
+    // Keep this browser-only hook available for built preview QA; the Tauri runtime ignores it.
+    if (options.isTauriRuntime) return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("mockUpdate") !== "1") return;
     const version = params.get("mockUpdateVersion") || "9.9.9";
