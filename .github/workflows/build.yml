@@ -51,9 +51,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bundled-engines-
 
+      - id: cargo-audit-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-audit.exe
+          key: ${{ runner.os }}-cargo-audit-bin-v1
+
       - run: npm ci
       - run: npm audit --omit=dev
       - run: cargo install cargo-audit --locked
+        if: steps.cargo-audit-cache.outputs.cache-hit != 'true'
       - run: npm run prepare:bundled-engines
       - run: npm run check
       - run: npm run fmt:rust:check

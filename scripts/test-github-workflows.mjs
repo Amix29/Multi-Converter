@@ -15,6 +15,9 @@ const macosConversionsJob = workflowJob(macosConversionsWorkflow, "macos-convers
 
 assert.match(buildWorkflow, /quality-gate:\s*\n\s+name:\s+Windows x64 quality gate/, "build workflow must keep the Windows job clearly named");
 assert.match(windowsBuildJob, /timeout-minutes:\s+120/, "Windows quality gate must allow enough time for conversion tests and the full Tauri build");
+assert.match(windowsBuildJob, /id:\s+cargo-audit-cache/, "Windows CI must cache the cargo-audit binary");
+assert.match(windowsBuildJob, /~\/\.cargo\/bin\/cargo-audit\.exe/, "Windows CI cargo-audit cache must target the installed binary");
+assert.match(windowsBuildJob, /cargo install cargo-audit --locked\s*\n\s+if:\s+steps\.cargo-audit-cache\.outputs\.cache-hit != 'true'/, "Windows CI must skip cargo-audit installation on cache hits");
 assert.match(windowsBuildJob, /npm run test:pdfium-wrapper/, "Windows CI must run the PDFium wrapper runtime tests with a native PDFium DLL");
 assert.match(buildWorkflow, /macos-code-check:/, "build workflow must include a macOS code-check job");
 assert.match(macosBuildJob, /runs-on:\s+macos-latest/, "macOS CI must run on macOS");
@@ -48,6 +51,8 @@ assert.match(releaseWorkflow, /runs-on:\s+macos-latest/, "macOS DMG verification
 assert.match(releaseWorkflow, /npm run verify:macos-dmg -- --version "\$\{\{ steps\.version\.outputs\.version \}\}" --dmg "\$MACOS_DMG_PATH"/, "release workflow must verify the downloaded DMG on macOS");
 assert.match(releaseWorkflow, /needs:\s+macos-dmg-verify/, "Windows release publication must wait for macOS DMG verification when enabled");
 assert.match(releaseWorkflow, /needs\.macos-dmg-verify\.result == 'success' \|\| needs\.macos-dmg-verify\.result == 'skipped'/, "Windows release job must not run after a failed macOS DMG verification");
+assert.match(releaseWorkflow, /id:\s+cargo-audit-cache/, "release workflow must cache the cargo-audit binary");
+assert.match(releaseWorkflow, /cargo install cargo-audit --locked\s*\n\s+if:\s+steps\.cargo-audit-cache\.outputs\.cache-hit != 'true'/, "release workflow must skip cargo-audit installation on cache hits");
 assert.match(releaseWorkflow, /INCLUDE_MACOS:/, "release workflow must pass the include_macos switch to release steps");
 assert.match(releaseWorkflow, /gh release download \$tag --repo \$env:GITHUB_REPOSITORY --pattern \$macosDmgName --dir \$macosDmgDir/, "release workflow must download the pre-uploaded macOS DMG for validation");
 assert.match(releaseWorkflow, /--macos-dmg \$macosDmgPath/, "release workflow must prepare clean assets from the downloaded macOS DMG");
