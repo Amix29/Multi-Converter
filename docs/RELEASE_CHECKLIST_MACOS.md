@@ -27,6 +27,8 @@ All executable files must keep executable permissions. `npm run prepare:bundled-
 
 Current V1.0.5 preparation state: advanced bundled engines are still declared for `windows-x64` only. Do not claim PDFium, LibreOffice, Pandoc or libvips support on macOS until reviewed `macos-universal` manifest entries and engine archives exist and pass validation.
 
+`npm run prepare:macos-upstream-engines` can stage the reviewed upstream macOS candidates for PDFium and Pandoc on a real Mac. It does not prepare FFmpeg/ffprobe, LibreOffice or libvips. Those inputs still need maintainer-approved portable sources before the strict conversion matrix can pass.
+
 `npm run prepare:bundled-engines` must prune stale `src-tauri/bundled-engines` entries that do not match the current platform before packaging. `npm run validate:bundled-engines`, `npm run test:macos:host` and `npm run verify:macos-dmg` must fail if Windows-only bundled engines would be carried into a macOS build or final DMG.
 
 Before saying "all macOS conversions pass", run the manual GitHub `macOS Conversion Matrix` workflow or run `npm run test:macos:conversions` on a real Mac with the same staged inputs. This strict gate must not use `scripts/prepare-tauri-ci-sidecars.mjs`; it requires real macOS FFmpeg/ffprobe sidecars and `macos-universal` PDFium, LibreOffice, Pandoc and libvips engine archives.
@@ -37,6 +39,7 @@ Before saying "all macOS conversions pass", run the manual GitHub `macOS Convers
 npm ci
 rustup target add aarch64-apple-darwin x86_64-apple-darwin
 npm run test:github-workflows
+npm run prepare:macos-upstream-engines
 npm run prepare:bundled-engines
 npm run validate:bundled-engines
 npm run test:macos:host

@@ -11,6 +11,8 @@ const enginesManifest = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", 
 const tauriSchema = fs.readFileSync(path.join(root, "node_modules", "@tauri-apps", "cli", "config.schema.json"), "utf8");
 const macosHostTest = fs.readFileSync(path.join(root, "scripts", "test-macos-host.mjs"), "utf8");
 const macosDmgVerify = fs.readFileSync(path.join(root, "scripts", "verify-macos-dmg.mjs"), "utf8");
+const macosPdfiumPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-pdfium-engine-macos.mjs"), "utf8");
+const macosPandocPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-pandoc-engine-macos.mjs"), "utf8");
 const prepareScript = fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8");
 const validateScript = fs.readFileSync(path.join(root, "scripts", "validate-bundled-engines.mjs"), "utf8");
 const packageScript = fs.readFileSync(path.join(root, "scripts", "package-engines.mjs"), "utf8");
@@ -26,6 +28,10 @@ assert.equal(packageJson.scripts["test:macos:host"], "node scripts/test-macos-ho
 assert.equal(packageJson.scripts["verify:macos-dmg"], "node scripts/verify-macos-dmg.mjs", "macOS DMG verification script must be exposed through npm");
 assert.match(packageJson.scripts["tauri:build:macos"], /--target universal-apple-darwin/, "macOS build must target universal-apple-darwin");
 assert.match(packageJson.scripts["package:macos-engines"], /engine-packages\.macos\.config\.json/, "macOS engine packaging script must use the macOS engine config");
+assert.equal(packageJson.scripts["prepare:pdfium-engine:macos"], "node scripts/prepare-pdfium-engine-macos.mjs", "macOS PDFium preparation script must be exposed through npm");
+assert.equal(packageJson.scripts["prepare:pandoc-engine:macos"], "node scripts/prepare-pandoc-engine-macos.mjs", "macOS Pandoc preparation script must be exposed through npm");
+assert.match(packageJson.scripts["prepare:macos-upstream-engines"], /prepare:pdfium-engine:macos/, "macOS upstream preparation must include PDFium");
+assert.match(packageJson.scripts["prepare:macos-upstream-engines"], /prepare:pandoc-engine:macos/, "macOS upstream preparation must include Pandoc");
 assert.match(
   fs.readFileSync(path.join(root, "scripts", "run-tauri.mjs"), "utf8"),
   /macOS universal DMG builds must run on macOS/,
@@ -35,6 +41,17 @@ assert.match(macosHostTest, /process\.platform !== "darwin"/, "macOS host valida
 assert.match(macosHostTest, /lipo.*-verify_arch/s, "macOS host validation must verify binary architectures with lipo");
 assert.match(macosHostTest, /verifySidecarVersion\(universal, stem\)/, "macOS host validation must smoke-test universal sidecars");
 assert.match(macosHostTest, /MULTI_CONVERTER_ENGINE_PLATFORM:\s*"macos-universal"/, "macOS host validation must run bundled-engine validation as macos-universal");
+assert.match(macosPdfiumPrepare, /process\.platform !== "darwin"/, "macOS PDFium preparation must refuse non-macOS hosts");
+assert.match(macosPdfiumPrepare, /pdfium-mac-univ\.tgz/, "macOS PDFium preparation must use the upstream universal PDFium archive");
+assert.match(macosPdfiumPrepare, /aarch64-apple-darwin/, "macOS PDFium wrapper must build for Apple Silicon");
+assert.match(macosPdfiumPrepare, /x86_64-apple-darwin/, "macOS PDFium wrapper must build for Intel");
+assert.match(macosPdfiumPrepare, /lipo.*-create/s, "macOS PDFium preparation must create a universal wrapper with lipo");
+assert.match(macosPdfiumPrepare, /pdfium-render-universal-apple-darwin/, "macOS PDFium preparation must stage the universal wrapper name used by the engine config");
+assert.match(macosPandocPrepare, /process\.platform !== "darwin"/, "macOS Pandoc preparation must refuse non-macOS hosts");
+assert.match(macosPandocPrepare, /arm64-macOS\\.zip/, "macOS Pandoc preparation must use the official Apple Silicon ZIP");
+assert.match(macosPandocPrepare, /x86_64-macOS\\.zip/, "macOS Pandoc preparation must use the official Intel ZIP");
+assert.match(macosPandocPrepare, /lipo.*-create/s, "macOS Pandoc preparation must create a universal binary with lipo");
+assert.match(macosPandocPrepare, /pandoc-universal-apple-darwin/, "macOS Pandoc preparation must stage the universal binary name used by the engine config");
 assert.match(macosDmgVerify, /process\.platform !== "darwin"/, "macOS DMG verification must refuse non-macOS hosts");
 assert.match(macosDmgVerify, /hdiutil.*attach/s, "macOS DMG verification must mount the DMG");
 assert.match(macosDmgVerify, /CFBundleExecutable/, "macOS DMG verification must read the executable name from Info.plist");
