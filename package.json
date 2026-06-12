@@ -61,6 +61,7 @@
     "package:pandoc-engine": "node scripts/package-pandoc-engine.mjs",
     "prepare:libvips-engine": "node scripts/prepare-libvips-engine.mjs",
     "prepare:libvips-engine:macos": "node scripts/prepare-libvips-engine-macos.mjs",
+    "prepare:libvips-macos-release-inputs": "node scripts/prepare-libvips-macos-release-inputs.mjs",
     "package:libvips-engine": "node scripts/package-libvips-engine.mjs",
     "validate:engines": "node scripts/package-engines.mjs --validate",
     "validate:bundled-engines": "node scripts/validate-bundled-engines.mjs",

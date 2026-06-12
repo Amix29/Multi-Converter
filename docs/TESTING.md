@@ -112,6 +112,8 @@ Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Si
 
 For private GitHub Actions validation, upload real sidecars to the tag passed as `sidecar_release_tag`, and upload `engines-manifest.json` plus the referenced macOS engine ZIPs to the tag passed as `engine_release_tag`. The workflows download those assets with `gh release download`, then seed `engine-sources/.bundled-engine-cache` so private release assets can be tested without relying on public unauthenticated download URLs.
 
+The manual `macOS Engine Staging` workflow can produce that private test release. It still requires explicit FFmpeg archive URLs/checksums and portable libvips runtime archives; it does not select those sources automatically.
+
 Before building a DMG on macOS, also run:
 
 ```bash

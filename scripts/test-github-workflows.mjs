@@ -6,12 +6,15 @@ const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const buildWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "build.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
+const macosEngineStagingWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-engine-staging.yml"), "utf8");
 const macosDmgWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-dmg.yml"), "utf8");
 const macosConversionsWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-conversions.yml"), "utf8");
 const macosEngineReleaseScript = fs.readFileSync(path.join(root, "scripts", "prepare-macos-engine-release-assets.mjs"), "utf8");
+const macosLibvipsReleaseInputsScript = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-macos-release-inputs.mjs"), "utf8");
 const windowsBuildJob = workflowJob(buildWorkflow, "quality-gate");
 const macosBuildJob = workflowJob(buildWorkflow, "macos-code-check");
 const macosHostTestsJob = workflowJob(buildWorkflow, "macos-host-tests");
+const macosEngineStagingJob = workflowJob(macosEngineStagingWorkflow, "stage");
 const macosDmgBuildJob = workflowJob(macosDmgWorkflow, "build");
 const macosConversionsJob = workflowJob(macosConversionsWorkflow, "macos-conversions");
 
@@ -65,6 +68,23 @@ assert.match(releaseWorkflow, /macOS\\s\+automatic\\s\+updates\\s\+are\\s\+not\\
 assert.match(releaseWorkflow, /macOS\\s\+DMG\\s\+verification/, "release workflow must validate macOS DMG verification wording");
 assert.match(releaseWorkflow, /this workflow run was not started with include_macos=true/, "release workflow must reject accidental macOS notes in Windows-only runs");
 
+assert.match(macosEngineStagingWorkflow, /name:\s+macOS Engine Staging/, "macOS engine staging workflow must be clearly named");
+assert.match(macosEngineStagingWorkflow, /workflow_dispatch:/, "macOS engine staging workflow must be manually runnable");
+assert.match(macosEngineStagingWorkflow, /ffmpeg_aarch64_archive_url:/, "macOS engine staging must require an Apple Silicon FFmpeg archive URL");
+assert.match(macosEngineStagingWorkflow, /ffmpeg_aarch64_archive_sha256:/, "macOS engine staging must require an Apple Silicon FFmpeg checksum");
+assert.match(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_url:/, "macOS engine staging must require an Intel FFmpeg archive URL");
+assert.match(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_sha256:/, "macOS engine staging must require an Intel FFmpeg checksum");
+assert.match(macosEngineStagingWorkflow, /libvips_release_tag:/, "macOS engine staging must require portable libvips release inputs");
+assert.match(macosEngineStagingWorkflow, /permissions:\s*\n\s+contents:\s+write/, "macOS engine staging must be able to upload private test release assets");
+assert.match(macosEngineStagingJob, /runs-on:\s+macos-latest/, "macOS engine staging must run on macOS");
+assert.match(macosEngineStagingJob, /prepare:ffmpeg-engine:macos/, "macOS engine staging must prepare real FFmpeg sidecars");
+assert.match(macosEngineStagingJob, /prepare:macos-upstream-engines/, "macOS engine staging must prepare PDFium, LibreOffice and Pandoc");
+assert.match(macosEngineStagingJob, /prepare:libvips-macos-release-inputs/, "macOS engine staging must download portable libvips inputs");
+assert.match(macosEngineStagingJob, /prepare:libvips-engine:macos/, "macOS engine staging must validate and stage libvips");
+assert.match(macosEngineStagingJob, /package:macos-engines/, "macOS engine staging must package macos-universal engine archives");
+assert.match(macosEngineStagingJob, /actions\/upload-artifact@v4/, "macOS engine staging must upload staged assets as a workflow artifact");
+assert.match(macosEngineStagingJob, /gh release upload/, "macOS engine staging must optionally upload assets to a private test release");
+
 assert.match(macosDmgWorkflow, /name:\s+macOS DMG Build/, "macOS DMG workflow must be clearly named");
 assert.match(macosDmgWorkflow, /workflow_dispatch:/, "macOS DMG workflow must be manually runnable");
 assert.match(macosDmgWorkflow, /sidecar_release_tag:/, "macOS DMG workflow must allow staged sidecars from a release tag");
@@ -98,10 +118,15 @@ assert.match(macosConversionsJob, /prepare-macos-engine-release-assets\.mjs/, "m
 assert.match(macosConversionsJob, /npm run test:macos:conversions/, "macOS conversion matrix must run the strict real conversion gate");
 
 assert.equal(packageJson.scripts["prepare:macos-engine-release-assets"], "node scripts/prepare-macos-engine-release-assets.mjs", "macOS staged engine release helper must be exposed through npm");
+assert.equal(packageJson.scripts["prepare:libvips-macos-release-inputs"], "node scripts/prepare-libvips-macos-release-inputs.mjs", "macOS libvips release input helper must be exposed through npm");
 assert.match(macosEngineReleaseScript, /gh.*release.*download/s, "macOS staged engine helper must download private release assets through gh");
 assert.match(macosEngineReleaseScript, /engines-manifest\.json/, "macOS staged engine helper must download the staged engine manifest");
 assert.match(macosEngineReleaseScript, /engine-sources", "\.bundled-engine-cache"/, "macOS staged engine helper must seed the bundled-engine cache");
 assert.match(macosEngineReleaseScript, /verifySha256/, "macOS staged engine helper must verify downloaded engine checksums");
+assert.match(macosLibvipsReleaseInputsScript, /gh.*release.*download/s, "macOS libvips input helper must download private release assets through gh");
+assert.match(macosLibvipsReleaseInputsScript, /LIBVIPS_MACOS_AARCH64_SOURCE_DIR/, "macOS libvips input helper must export the Apple Silicon source directory");
+assert.match(macosLibvipsReleaseInputsScript, /LIBVIPS_MACOS_X86_64_SOURCE_DIR/, "macOS libvips input helper must export the Intel source directory");
+assert.match(macosLibvipsReleaseInputsScript, /bin", "vips"/, "macOS libvips input helper must find a runtime root containing bin/vips");
 
 console.log("GitHub workflow contract tests passed.");
 

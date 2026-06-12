@@ -84,6 +84,15 @@ Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conv
 - The workflow is expected to fail until all required `macos-universal` advanced engine entries exist in `src-tauri/engines-manifest.json` and their archives download, validate and run.
 - A passing `macOS Conversion Matrix` run is required before release notes or status updates can say that all macOS conversions were tested.
 
+## GitHub Actions Engine Staging
+
+Use the manual `macOS Engine Staging` workflow to create the private test assets consumed by the conversion and DMG workflows.
+
+- Provide maintainer-approved FFmpeg/ffprobe Apple Silicon and Intel archive URLs plus SHA-256 checksums.
+- Provide a `libvips_release_tag` that contains portable Apple Silicon and Intel libvips runtime archives. Those archives must contain a `bin/vips` runtime root and bundled non-system dependencies.
+- The workflow prepares FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips on `macos-latest`, packages `tools/engine-packages.macos.config.json`, uploads a `macos-engine-assets` workflow artifact, and optionally uploads the same assets to `output_release_tag`.
+- If `output_release_tag` is set, use that same tag as both `sidecar_release_tag` and `engine_release_tag` for `macOS Conversion Matrix` and `macOS DMG Build`.
+
 ## GitHub Actions DMG Build
 
 Use the manual `macOS DMG Build` workflow when a Mac runner should build and verify the DMG.
