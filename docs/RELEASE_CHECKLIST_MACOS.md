@@ -79,6 +79,7 @@ npm run verify:macos-dmg -- --version X.Y.Z --dmg path/to/Multi-Converter_X.Y.Z_
 Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conversion behavior on macOS, not only build readiness.
 
 - Provide `sidecar_release_tag` when the real macOS FFmpeg/ffprobe sidecars live on a test release.
+- Provide `engine_release_tag` when the macOS `engines-manifest.json` and engine ZIP archives live on a test release.
 - The workflow runs `npm run test:macos:conversions` on `macos-latest`.
 - The workflow is expected to fail until all required `macos-universal` advanced engine entries exist in `src-tauri/engines-manifest.json` and their archives download, validate and run.
 - A passing `macOS Conversion Matrix` run is required before release notes or status updates can say that all macOS conversions were tested.
@@ -89,6 +90,7 @@ Use the manual `macOS DMG Build` workflow when a Mac runner should build and ver
 
 - If the repository already contains staged macOS sidecars, run the workflow with the default empty `sidecar_release_tag`.
 - If sidecars are stored on a private test release, set `sidecar_release_tag` to the release tag that contains `ffmpeg-aarch64-apple-darwin`, `ffmpeg-x86_64-apple-darwin`, `ffprobe-aarch64-apple-darwin` and `ffprobe-x86_64-apple-darwin`.
+- If macOS engine archives are stored on a private test release, set `engine_release_tag` to the release tag that contains `engines-manifest.json` plus every ZIP referenced by that manifest.
 - The workflow prepares `macos-universal` engines, runs `npm run test:macos:host`, builds `npm run tauri:build:macos`, renames the output to `Multi-Converter_X.Y.Z_macos-universal.dmg`, verifies it with `npm run verify:macos-dmg`, then uploads the verified DMG as a workflow artifact.
 - A failed workflow is not a release blocker by itself until the failure is reviewed. Common expected failures are missing staged sidecars, missing executable bits or a DMG that still contains Windows-only bundled engines.
 

@@ -8,6 +8,11 @@ on:
         required: false
         default: ""
         type: string
+      engine_release_tag:
+        description: "Release tag containing macOS engine archives and engines-manifest.json"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -79,6 +84,39 @@ jobs:
             gh release download "${{ inputs.sidecar_release_tag }}" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries
           done
           chmod +x src-tauri/binaries/*-apple-darwin
+
+      - name: Download staged macOS engine archives from a release
+        if: ${{ inputs.engine_release_tag != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine_dir="$RUNNER_TEMP/mc-macos-engine-assets"
+          cache_dir="engine-sources/.bundled-engine-cache"
+          mkdir -p "$engine_dir" "$cache_dir"
+          gh release download "${{ inputs.engine_release_tag }}" --repo "$GITHUB_REPOSITORY" --pattern engines-manifest.json --dir "$engine_dir"
+          cp "$engine_dir/engines-manifest.json" src-tauri/engines-manifest.json
+          node --input-type=module <<'NODE' > "$RUNNER_TEMP/mc-macos-engine-assets.tsv"
+          import fs from "node:fs";
+          import path from "node:path";
+
+          const manifest = JSON.parse(fs.readFileSync("src-tauri/engines-manifest.json", "utf8"));
+          const rows = [];
+          for (const engine of manifest.engines ?? []) {
+            if (engine.platform !== "macos-universal") continue;
+            const assetName = decodeURIComponent(path.posix.basename(new URL(engine.downloadUrl).pathname));
+            rows.push([engine.id, engine.version, assetName].join("\t"));
+          }
+          if (rows.length === 0) {
+            console.error("No macos-universal engine entries found in staged engines-manifest.json.");
+            process.exit(1);
+          }
+          console.log(rows.join("\n"));
+          NODE
+          while IFS=$'\t' read -r engine_id engine_version asset_name; do
+            [[ -n "$engine_id" ]] || continue
+            gh release download "${{ inputs.engine_release_tag }}" --repo "$GITHUB_REPOSITORY" --pattern "$asset_name" --dir "$engine_dir"
+            cp "$engine_dir/$asset_name" "$cache_dir/${engine_id}-${engine_version}.zip"
+          done < "$RUNNER_TEMP/mc-macos-engine-assets.tsv"
 
       - name: Run strict macOS conversion validation
         run: npm run test:macos:conversions
