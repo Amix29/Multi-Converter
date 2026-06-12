@@ -119,6 +119,7 @@ jobs:
       - run: npm run test:repository-metadata
       - run: npm run test:run-tauri
       - run: npm run fmt:rust:check
+      - run: node scripts/prepare-tauri-ci-sidecars.mjs --target ${{ matrix.rust-target }}
       - run: node scripts/cargo-test-temp.mjs check --manifest-path src-tauri/Cargo.toml --target ${{ matrix.rust-target }}
       - run: node scripts/cargo-test-temp.mjs clippy --manifest-path src-tauri/Cargo.toml --target ${{ matrix.rust-target }} --all-targets -- -D warnings
 
@@ -156,6 +157,7 @@ jobs:
             ${{ runner.os }}-cargo-registry-v2-
 
       - run: npm ci
+      - run: node scripts/prepare-tauri-ci-sidecars.mjs --target host
       - run: npm run test:rust
       - run: npm run test:pdfium-wrapper:compile
       - run: npm run clippy:pdfium-wrapper

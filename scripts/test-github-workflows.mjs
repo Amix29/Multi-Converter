@@ -25,12 +25,14 @@ assert.match(macosBuildJob, /npm run test:bundled-engines-platform/, "macOS CI m
 assert.match(macosBuildJob, /npm run test:repository-metadata/, "macOS CI must run repository metadata checks");
 assert.match(macosBuildJob, /npm run test:run-tauri/, "macOS CI must run Tauri wrapper safety checks");
 assert.match(macosBuildJob, /npm run fmt:rust:check/, "macOS CI must run Rust formatting checks");
+assert.match(macosBuildJob, /node scripts\/prepare-tauri-ci-sidecars\.mjs --target \$\{\{ matrix\.rust-target \}\}/, "macOS CI must stage compile-only Tauri sidecar placeholders for target checks");
 assert.match(macosBuildJob, /node scripts\/cargo-test-temp\.mjs check --manifest-path src-tauri\/Cargo\.toml --target \$\{\{ matrix\.rust-target \}\}/, "macOS CI must cargo-check each target");
 assert.match(macosBuildJob, /node scripts\/cargo-test-temp\.mjs clippy --manifest-path src-tauri\/Cargo\.toml --target \$\{\{ matrix\.rust-target \}\} --all-targets -- -D warnings/, "macOS CI must run Clippy for each target");
 assert.doesNotMatch(macosBuildJob, /npm run test:macos:host/, "macOS code checks must not pretend to run host-only sidecar validation before macOS sidecars are staged");
 
 assert.match(buildWorkflow, /macos-host-tests:/, "build workflow must include a macOS host unit-test job");
 assert.match(macosHostTestsJob, /runs-on:\s+macos-latest/, "macOS host tests must run on macOS");
+assert.match(macosHostTestsJob, /node scripts\/prepare-tauri-ci-sidecars\.mjs --target host/, "macOS host tests must stage compile-only Tauri sidecar placeholders");
 assert.match(macosHostTestsJob, /npm run test:rust/, "macOS host tests must run native Rust unit tests");
 assert.match(macosHostTestsJob, /npm run test:pdfium-wrapper:compile/, "macOS host tests must compile PDFium wrapper tests without pretending runtime PDFium is staged");
 assert.doesNotMatch(macosHostTestsJob, /npm run test:pdfium-wrapper\s*$/m, "macOS host tests must not run PDFium runtime tests until a macOS PDFium library is staged");
@@ -60,6 +62,7 @@ assert.match(macosDmgBuildJob, /runs-on:\s+macos-latest/, "macOS DMG build must 
 assert.match(macosDmgBuildJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS DMG build must prepare macos-universal engines");
 assert.match(macosDmgBuildJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS DMG build must install both Darwin Rust targets");
 assert.match(macosDmgBuildJob, /npm run prepare:bundled-engines/, "macOS DMG build must prepare staged sidecars and engines");
+assert.doesNotMatch(macosDmgBuildJob, /prepare-tauri-ci-sidecars/, "macOS DMG build must use real staged sidecars, not CI placeholders");
 assert.match(macosDmgBuildJob, /npm run test:macos:host/, "macOS DMG build must verify staged sidecars before packaging");
 assert.match(macosDmgBuildJob, /npm run tauri:build:macos/, "macOS DMG build must produce the universal DMG");
 assert.match(macosDmgBuildJob, /npm run prepare:macos-dmg-artifact/, "macOS DMG build must normalize the DMG release asset name");

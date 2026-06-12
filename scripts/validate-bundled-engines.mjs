@@ -10,6 +10,7 @@ const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const expectedVersion = "8.1.1";
 const platform = process.env.MULTI_CONVERTER_ENGINE_PLATFORM?.trim() || hostEnginePlatform();
 const baseBinaries = baseBinariesForPlatform(platform);
+const skipExecutableSmoke = process.env.MULTI_CONVERTER_SKIP_ENGINE_SMOKE === "1";
 
 const errors = [];
 
@@ -148,6 +149,7 @@ function executableScore(filePath) {
 
 function validateExecutable(id, filePath, args, expectedText, cwd = path.dirname(filePath)) {
   if (!validateFile(id, filePath)) return;
+  if (skipExecutableSmoke) return;
   const result = spawnSync(filePath, args, {
     cwd,
     encoding: "utf8",

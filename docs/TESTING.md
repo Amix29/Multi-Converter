@@ -69,13 +69,17 @@ npm run test:ui-layout
 npm run test:repository-metadata
 npm run test:run-tauri
 npm run fmt:rust:check
+node scripts/prepare-tauri-ci-sidecars.mjs --target <darwin-target>
 node scripts/cargo-test-temp.mjs check --manifest-path src-tauri/Cargo.toml --target <darwin-target>
 node scripts/cargo-test-temp.mjs clippy --manifest-path src-tauri/Cargo.toml --target <darwin-target> --all-targets -- -D warnings
 ```
 
+`prepare-tauri-ci-sidecars.mjs` is compile-only CI scaffolding. It creates small placeholder sidecar files so the Tauri build script can evaluate `externalBin` during `cargo check`, `cargo clippy` and native unit tests. It must not be used for DMG packaging or conversion validation.
+
 The same workflow also runs a separate `macOS host unit tests` job on `macos-latest`:
 
 ```bash
+node scripts/prepare-tauri-ci-sidecars.mjs --target host
 npm run test:rust
 npm run test:pdfium-wrapper:compile
 npm run clippy:pdfium-wrapper

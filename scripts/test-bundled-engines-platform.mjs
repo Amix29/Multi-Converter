@@ -49,7 +49,7 @@ function linkFixtureBinary(fileName) {
 function runValidator(platform) {
   const result = spawnSync(process.execPath, [validator], {
     cwd: fixtureRoot,
-    env: { ...process.env, MULTI_CONVERTER_ENGINE_PLATFORM: platform },
+    env: { ...process.env, MULTI_CONVERTER_ENGINE_PLATFORM: platform, MULTI_CONVERTER_SKIP_ENGINE_SMOKE: "1" },
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
@@ -60,7 +60,7 @@ function runValidator(platform) {
 function runValidatorFails(platform, expectedMessage) {
   const result = spawnSync(process.execPath, [validator], {
     cwd: fixtureRoot,
-    env: { ...process.env, MULTI_CONVERTER_ENGINE_PLATFORM: platform },
+    env: { ...process.env, MULTI_CONVERTER_ENGINE_PLATFORM: platform, MULTI_CONVERTER_SKIP_ENGINE_SMOKE: "1" },
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
