@@ -170,6 +170,14 @@ That DMG verification also runs only on macOS. It mounts the DMG, checks `Multi-
 
 A macOS release is not ready from code checks alone. The release DMG must be built and tested on macOS using `docs/RELEASE_CHECKLIST_MACOS.md`.
 
+For a local readiness snapshot that does not overclaim macOS support, run:
+
+```bash
+npm run status:v1.0.5
+```
+
+The command writes `tmp/v1.0.5-status.json` and should keep `releaseReady` false until a real macOS host has produced and verified the universal DMG and the strict macOS conversion matrix has passed with final staged sidecars and engines.
+
 The manual GitHub `macOS DMG Build` workflow can build and verify the universal DMG on `macos-latest`. Use it for test-repository validation before copying the verified artifact into a public release.
 
 When the GitHub `Release` workflow is started with `include_macos=true`, it runs a `macOS DMG verification` job on `macos-latest` before the Windows release job republishes the final asset set. If that macOS DMG verification fails, the release publication job does not run.
