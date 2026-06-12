@@ -122,6 +122,9 @@ assert.match(macosLocalEnginesPrepare, /prepare-libvips-macos-release-inputs\.mj
 assert.match(macosLocalEnginesPrepare, /package:macos-engines/, "local macOS engine staging must package macOS engine archives");
 assert.match(macosLocalEnginesPrepare, /src-tauri", "engines-manifest\.json"/, "local macOS engine staging must copy the generated manifest for local validation");
 assert.match(macosLocalEnginesPrepare, /\.bundled-engine-cache/, "local macOS engine staging must seed the bundled engine cache");
+assert.match(macosLocalEnginesPrepare, /Restored src-tauri\/engines-manifest\.json after local macOS validation/, "local macOS engine staging must restore the committed manifest by default");
+assert.match(macosLocalEnginesPrepare, /--keep-generated-manifest/, "local macOS engine staging must require an explicit flag to keep the generated manifest");
+assert.match(macosLocalEnginesPrepare, /finally/, "local macOS engine staging must restore the manifest even after failed validation steps");
 assert.match(macosLocalEnginesPrepare, /Do not commit generated engine manifests or archives/, "local macOS engine staging must warn against committing generated engine output");
 assert.match(macosDmgVerify, /process\.platform !== "darwin"/, "macOS DMG verification must refuse non-macOS hosts");
 assert.match(macosDmgVerify, /hdiutil.*attach/s, "macOS DMG verification must mount the DMG");

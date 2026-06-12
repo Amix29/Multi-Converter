@@ -15,42 +15,60 @@ const env = {
   ...process.env,
   MULTI_CONVERTER_ENGINE_PLATFORM: "macos-universal",
 };
+let originalManifest = null;
+let stagedManifest = false;
 
 if (process.platform !== "darwin") {
   fail("Local macOS engine staging must run on macOS.");
 }
 
-console.log("Preparing FFmpeg and ffprobe from configured macOS archives.");
-runNpm(["run", "prepare:ffmpeg-engine:macos"], env);
+try {
+  originalManifest = await fs.readFile(targetManifest, "utf8");
 
-console.log("Preparing upstream macOS engines: PDFium, LibreOffice and Pandoc.");
-runNpm(["run", "prepare:macos-upstream-engines"], env);
+  console.log("Preparing FFmpeg and ffprobe from configured macOS archives.");
+  runNpm(["run", "prepare:ffmpeg-engine:macos"], env);
 
-await configureLibvips(env);
+  console.log("Preparing upstream macOS engines: PDFium, LibreOffice and Pandoc.");
+  runNpm(["run", "prepare:macos-upstream-engines"], env);
 
-console.log("Preparing libvips from portable macOS runtime inputs.");
-runNpm(["run", "prepare:libvips-engine:macos"], env);
+  await configureLibvips(env);
 
-console.log("Packaging macOS engine archives.");
-runNpm(["run", "package:macos-engines", "--", "--release-base-url", releaseBaseUrl, "--output", outputDir], env);
+  console.log("Preparing libvips from portable macOS runtime inputs.");
+  runNpm(["run", "prepare:libvips-engine:macos"], env);
 
-await stagePackagedEngines();
+  console.log("Packaging macOS engine archives.");
+  runNpm(["run", "package:macos-engines", "--", "--release-base-url", releaseBaseUrl, "--output", outputDir], env);
 
-console.log("Preparing bundled engines from the local cache.");
-runNpm(["run", "prepare:bundled-engines"], env);
+  await stagePackagedEngines();
 
-if (args.hostCheck) {
-  console.log("Running macOS host validation.");
-  runNpm(["run", "test:macos:host"], env);
+  console.log("Preparing bundled engines from the local cache.");
+  runNpm(["run", "prepare:bundled-engines"], env);
+
+  if (args.hostCheck) {
+    console.log("Running macOS host validation.");
+    runNpm(["run", "test:macos:host"], env);
+  }
+
+  if (args.conversions) {
+    console.log("Running full macOS conversion validation.");
+    runNpm(["run", "test:macos:conversions"], env);
+  }
+
+  console.log("Local macOS engine staging is ready.");
+} catch (error) {
+  console.error(error.message);
+  process.exitCode = 1;
+} finally {
+  if (stagedManifest && !args.keepGeneratedManifest && originalManifest !== null) {
+    await fs.writeFile(targetManifest, originalManifest, "utf8");
+    console.log("Restored src-tauri/engines-manifest.json after local macOS validation.");
+  }
 }
 
-if (args.conversions) {
-  console.log("Running full macOS conversion validation.");
-  runNpm(["run", "test:macos:conversions"], env);
+if (stagedManifest && args.keepGeneratedManifest) {
+  console.log("Generated macOS engines-manifest.json was kept in src-tauri for maintainer review.");
 }
-
-console.log("Local macOS engine staging is ready.");
-console.log("Note: src-tauri/engines-manifest.json was updated for local validation. Do not commit generated engine manifests or archives without maintainer approval.");
+console.log("Do not commit generated engine manifests or archives without maintainer approval.");
 
 async function configureLibvips(targetEnv) {
   if (args.libvipsAarch64Dir) targetEnv.LIBVIPS_MACOS_AARCH64_SOURCE_DIR = path.resolve(args.libvipsAarch64Dir);
@@ -85,6 +103,7 @@ async function stagePackagedEngines() {
   await assertFile(sourceManifest, "macOS packaged engines manifest");
   await fs.mkdir(cacheDir, { recursive: true });
   await fs.copyFile(sourceManifest, targetManifest);
+  stagedManifest = true;
 
   const manifest = JSON.parse(await fs.readFile(sourceManifest, "utf8"));
   const engines = (manifest.engines ?? []).filter((engine) => engine.platform === "macos-universal");
@@ -114,7 +133,9 @@ function runNpm(npmArgs, commandEnv) {
     shell: true,
     stdio: "inherit",
   });
-  if (result.status !== 0) process.exit(result.status ?? 1);
+  if (result.status !== 0) {
+    throw new Error(`npm ${npmArgs.join(" ")} failed with exit code ${result.status ?? 1}.`);
+  }
 }
 
 function runNode(script, scriptArgs, commandEnv, options = {}) {
@@ -128,7 +149,7 @@ function runNode(script, scriptArgs, commandEnv, options = {}) {
     if (options.capture) {
       process.stderr.write(result.stderr || result.stdout);
     }
-    process.exit(result.status ?? 1);
+    throw new Error(`${script} failed with exit code ${result.status ?? 1}.`);
   }
   return result.stdout ?? "";
 }
@@ -145,6 +166,7 @@ function parseArgs(rawArgs) {
     else if (arg === "--libvips-x86_64-dir") parsed.libvipsX86_64Dir = rawArgs[++index];
     else if (arg === "--host-check") parsed.hostCheck = true;
     else if (arg === "--conversions") parsed.conversions = true;
+    else if (arg === "--keep-generated-manifest") parsed.keepGeneratedManifest = true;
     else fail(`Unknown argument: ${arg}`);
   }
   return parsed;

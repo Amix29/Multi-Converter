@@ -92,7 +92,7 @@ npm run prepare:macos-local-engines -- \
   --host-check
 ```
 
-Add `--conversions` on a real Mac when it is time to prove the full conversion matrix. The wrapper still requires the `FFMPEG_MACOS_*` archive/checksum variables. It updates `src-tauri/engines-manifest.json` and `engine-sources/.bundled-engine-cache` for local validation only; do not commit those generated outputs unless a maintainer explicitly approves the exact engine set.
+Add `--conversions` on a real Mac when it is time to prove the full conversion matrix. The wrapper still requires the `FFMPEG_MACOS_*` archive/checksum variables. It stages the generated `macos-universal` manifest only while local validation runs, seeds `engine-sources/.bundled-engine-cache`, then restores the committed `src-tauri/engines-manifest.json` by default. Use `--keep-generated-manifest` only when a maintainer explicitly wants to review and commit the exact generated engine set.
 
 ## GitHub Actions Conversion Matrix
 
