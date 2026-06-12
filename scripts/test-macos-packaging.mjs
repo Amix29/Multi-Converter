@@ -10,6 +10,7 @@ const macosEngineConfig = JSON.parse(fs.readFileSync(path.join(root, "tools", "e
 const enginesManifest = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "engines-manifest.json"), "utf8"));
 const tauriSchema = fs.readFileSync(path.join(root, "node_modules", "@tauri-apps", "cli", "config.schema.json"), "utf8");
 const macosHostTest = fs.readFileSync(path.join(root, "scripts", "test-macos-host.mjs"), "utf8");
+const macosConversionTest = fs.readFileSync(path.join(root, "scripts", "test-macos-conversions.mjs"), "utf8");
 const macosDmgVerify = fs.readFileSync(path.join(root, "scripts", "verify-macos-dmg.mjs"), "utf8");
 const macosFfmpegPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-ffmpeg-engine-macos.mjs"), "utf8");
 const macosPdfiumPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-pdfium-engine-macos.mjs"), "utf8");
@@ -30,6 +31,7 @@ const thirdPartyEngines = fs.readFileSync(path.join(root, "docs", "THIRD_PARTY_E
 assert.deepEqual(tauriConfig.bundle.externalBin, ["binaries/ffmpeg", "binaries/ffprobe"], "Tauri sidecar stems changed unexpectedly");
 assert.match(tauriSchema, /binary-name\{-target-triple\}/, "Tauri externalBin schema must keep target-triple sidecar naming");
 assert.equal(packageJson.scripts["test:macos:host"], "node scripts/test-macos-host.mjs", "macOS host test script must be exposed through npm");
+assert.equal(packageJson.scripts["test:macos:conversions"], "node scripts/test-macos-conversions.mjs", "macOS conversion test script must be exposed through npm");
 assert.equal(packageJson.scripts["verify:macos-dmg"], "node scripts/verify-macos-dmg.mjs", "macOS DMG verification script must be exposed through npm");
 assert.match(packageJson.scripts["tauri:build:macos"], /--target universal-apple-darwin/, "macOS build must target universal-apple-darwin");
 assert.match(packageJson.scripts["package:macos-engines"], /engine-packages\.macos\.config\.json/, "macOS engine packaging script must use the macOS engine config");
@@ -53,6 +55,25 @@ assert.match(macosHostTest, /process\.platform !== "darwin"/, "macOS host valida
 assert.match(macosHostTest, /lipo.*-verify_arch/s, "macOS host validation must verify binary architectures with lipo");
 assert.match(macosHostTest, /verifySidecarVersion\(universal, stem\)/, "macOS host validation must smoke-test universal sidecars");
 assert.match(macosHostTest, /MULTI_CONVERTER_ENGINE_PLATFORM:\s*"macos-universal"/, "macOS host validation must run bundled-engine validation as macos-universal");
+assert.match(macosConversionTest, /process\.platform !== "darwin"/, "macOS conversion validation must refuse non-macOS hosts");
+assert.match(macosConversionTest, /sidecarMarker = "Multi-Converter CI placeholder sidecar for Tauri compile checks only\."/,
+  "macOS conversion validation must know the CI placeholder sidecar marker");
+assert.match(macosConversionTest, /is a CI placeholder, not a real conversion sidecar/, "macOS conversion validation must reject placeholder sidecars");
+assert.match(macosConversionTest, /const requiredAdvancedEngines = \["pdfium", "libreoffice", "pandoc", "libvips"\]/,
+  "macOS conversion validation must require every advanced engine before claiming full coverage");
+assert.match(macosConversionTest, /downloadUrl.*REPLACE_WITH_RELEASE_BASE_URL/, "macOS conversion validation must reject placeholder engine URLs");
+assert.match(macosConversionTest, /sha256 is missing or placeholder/, "macOS conversion validation must reject placeholder engine checksums");
+assert.match(macosConversionTest, /binaryPaths must not reference Windows files/, "macOS conversion validation must reject Windows binary paths");
+assert.match(macosConversionTest, /runStep\("Preparing real macOS bundled engines", "npm", \["run", "prepare:bundled-engines"\]/,
+  "macOS conversion validation must prepare bundled engines before testing");
+assert.match(macosConversionTest, /runStep\("Validating macOS sidecars and bundled engines", "npm", \["run", "test:macos:host"\]/,
+  "macOS conversion validation must include staged sidecar host validation");
+assert.match(macosConversionTest, /runStep\("Running PDFium wrapper runtime tests with macOS PDFium", "npm", \["run", "test:pdfium-wrapper"\]/,
+  "macOS conversion validation must include PDFium runtime tests");
+assert.match(macosConversionTest, /runStep\("Running full conversion matrix on macOS", "npm", \["run", "test:conversions"\]/,
+  "macOS conversion validation must run the full conversion matrix");
+assert.doesNotMatch(macosConversionTest, /prepare-tauri-ci-sidecars/, "macOS conversion validation must never stage compile-only placeholder sidecars");
+assert.match(macosConversionTest, /This gate is intentionally strict/, "macOS conversion validation failure must explain why strictness matters");
 assert.match(macosFfmpegPrepare, /process\.platform !== "darwin"/, "macOS FFmpeg preparation must refuse non-macOS hosts");
 assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_AARCH64_ARCHIVE_URL/, "macOS FFmpeg preparation must accept an Apple Silicon source URL");
 assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_X86_64_ARCHIVE_URL/, "macOS FFmpeg preparation must accept an Intel source URL");

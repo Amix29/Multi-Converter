@@ -59,6 +59,15 @@ macOS Rust checks and host validation must run on macOS. Do not treat a failed W
 
 `npm run test:macos-packaging` is a static contract test and may run on any OS. `npm run test:macos:host` is different: it must run on a real macOS host or a GitHub Actions `macos-latest` runner, and it intentionally fails on Windows and Linux.
 
+When GitHub Actions minutes are unavailable and no real Mac is connected, keep using the static contract checks only:
+
+```bash
+npm run test:macos-packaging
+npm run test:github-workflows
+```
+
+Those checks prove the gates are still strict. They do not prove that macOS conversions work.
+
 The GitHub `Build` workflow runs a `macOS code check` job on `macos-latest` for both:
 
 - `aarch64-apple-darwin`
