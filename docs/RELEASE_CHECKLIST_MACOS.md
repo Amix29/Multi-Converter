@@ -29,6 +29,8 @@ Current V1.0.5 preparation state: advanced bundled engines are still declared fo
 
 `npm run prepare:bundled-engines` must prune stale `src-tauri/bundled-engines` entries that do not match the current platform before packaging. `npm run validate:bundled-engines`, `npm run test:macos:host` and `npm run verify:macos-dmg` must fail if Windows-only bundled engines would be carried into a macOS build or final DMG.
 
+Before saying "all macOS conversions pass", run the manual GitHub `macOS Conversion Matrix` workflow or run `npm run test:macos:conversions` on a real Mac with the same staged inputs. This strict gate must not use `scripts/prepare-tauri-ci-sidecars.mjs`; it requires real macOS FFmpeg/ffprobe sidecars and `macos-universal` PDFium, LibreOffice, Pandoc and libvips engine archives.
+
 ## Suggested Commands
 
 ```bash
@@ -45,10 +47,20 @@ node scripts/cargo-test-temp.mjs clippy --manifest-path src-tauri/Cargo.toml --t
 node scripts/cargo-test-temp.mjs clippy --manifest-path src-tauri/Cargo.toml --target x86_64-apple-darwin --all-targets -- -D warnings
 npm run test:rust
 npm run test:pdfium-wrapper:compile
+npm run test:macos:conversions
 npm run build
 npm run tauri:build:macos
 npm run verify:macos-dmg -- --version X.Y.Z --dmg path/to/Multi-Converter_X.Y.Z_macos-universal.dmg
 ```
+
+## GitHub Actions Conversion Matrix
+
+Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conversion behavior on macOS, not only build readiness.
+
+- Provide `sidecar_release_tag` when the real macOS FFmpeg/ffprobe sidecars live on a test release.
+- The workflow runs `npm run test:macos:conversions` on `macos-latest`.
+- The workflow is expected to fail until all required `macos-universal` advanced engine entries exist in `src-tauri/engines-manifest.json` and their archives download, validate and run.
+- A passing `macOS Conversion Matrix` run is required before release notes or status updates can say that all macOS conversions were tested.
 
 ## GitHub Actions DMG Build
 

@@ -6,10 +6,12 @@ const root = process.cwd();
 const buildWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "build.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
 const macosDmgWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-dmg.yml"), "utf8");
+const macosConversionsWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-conversions.yml"), "utf8");
 const windowsBuildJob = workflowJob(buildWorkflow, "quality-gate");
 const macosBuildJob = workflowJob(buildWorkflow, "macos-code-check");
 const macosHostTestsJob = workflowJob(buildWorkflow, "macos-host-tests");
 const macosDmgBuildJob = workflowJob(macosDmgWorkflow, "build");
+const macosConversionsJob = workflowJob(macosConversionsWorkflow, "macos-conversions");
 
 assert.match(buildWorkflow, /quality-gate:\s*\n\s+name:\s+Windows x64 quality gate/, "build workflow must keep the Windows job clearly named");
 assert.match(windowsBuildJob, /npm run test:pdfium-wrapper/, "Windows CI must run the PDFium wrapper runtime tests with a native PDFium DLL");
@@ -70,6 +72,16 @@ assert.match(macosDmgBuildJob, /npm run tauri:build:macos/, "macOS DMG build mus
 assert.match(macosDmgBuildJob, /npm run prepare:macos-dmg-artifact/, "macOS DMG build must normalize the DMG release asset name");
 assert.match(macosDmgBuildJob, /npm run verify:macos-dmg/, "macOS DMG build must verify the final DMG on macOS");
 assert.match(macosDmgBuildJob, /actions\/upload-artifact@v4/, "macOS DMG build must upload the verified DMG artifact");
+
+assert.match(macosConversionsWorkflow, /name:\s+macOS Conversion Matrix/, "macOS conversion workflow must be clearly named");
+assert.match(macosConversionsWorkflow, /workflow_dispatch:/, "macOS conversion workflow must be manually runnable");
+assert.match(macosConversionsWorkflow, /sidecar_release_tag:/, "macOS conversion workflow must allow staged real sidecars from a release tag");
+assert.match(macosConversionsJob, /runs-on:\s+macos-latest/, "macOS conversion matrix must run on a macOS runner");
+assert.match(macosConversionsJob, /timeout-minutes:\s+180/, "macOS conversion matrix must allow enough time for real engine downloads and conversions");
+assert.match(macosConversionsJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS conversion matrix must validate macos-universal engines");
+assert.doesNotMatch(macosConversionsJob, /prepare-tauri-ci-sidecars/, "macOS conversion matrix must never use compile-only placeholder sidecars");
+assert.match(macosConversionsJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS conversion matrix must install both Darwin Rust targets");
+assert.match(macosConversionsJob, /npm run test:macos:conversions/, "macOS conversion matrix must run the strict real conversion gate");
 
 console.log("GitHub workflow contract tests passed.");
 

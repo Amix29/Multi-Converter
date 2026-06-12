@@ -1,0 +1,84 @@
+name: macOS Conversion Matrix
+
+on:
+  workflow_dispatch:
+    inputs:
+      sidecar_release_tag:
+        description: "Release tag containing real macOS FFmpeg/ffprobe sidecar binary assets"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-conversions-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  macos-conversions:
+    name: Real macOS conversion matrix
+    runs-on: macos-latest
+    timeout-minutes: 180
+    env:
+      CARGO_TERM_COLOR: always
+      RUST_BACKTRACE: 1
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-macos-conversions-cargo-registry-v2-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-macos-conversions-cargo-registry-v2-
+            ${{ runner.os }}-cargo-registry-v2-
+
+      - uses: actions/cache@v4
+        with:
+          path: src-tauri/bundled-engines
+          key: ${{ runner.os }}-macos-conversions-bundled-engines-${{ hashFiles('src-tauri/engines-manifest.json') }}
+          restore-keys: |
+            ${{ runner.os }}-macos-conversions-bundled-engines-
+
+      - run: npm ci
+
+      - name: Configure Cargo target directory
+        run: echo "CARGO_TARGET_DIR=$RUNNER_TEMP/mc-cargo-target-macos-conversions" >> "$GITHUB_ENV"
+
+      - name: Download staged macOS sidecars from a release
+        if: ${{ inputs.sidecar_release_tag != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p src-tauri/binaries
+          for asset in \
+            ffmpeg-aarch64-apple-darwin \
+            ffmpeg-x86_64-apple-darwin \
+            ffprobe-aarch64-apple-darwin \
+            ffprobe-x86_64-apple-darwin
+          do
+            gh release download "${{ inputs.sidecar_release_tag }}" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries
+          done
+          chmod +x src-tauri/binaries/*-apple-darwin
+
+      - name: Run strict macOS conversion validation
+        run: npm run test:macos:conversions

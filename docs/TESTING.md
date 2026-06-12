@@ -87,6 +87,27 @@ npm run clippy:pdfium-wrapper
 
 This job proves the Rust unit tests run on a real macOS runner and that the PDFium wrapper compiles and lints there. It intentionally does not run the PDFium wrapper runtime tests until a macOS PDFium library is staged.
 
+## macOS Conversion Matrix
+
+Do not claim that all macOS conversions work from the `macOS code check` or `macOS host unit tests` jobs. Those jobs are compile/unit gates only.
+
+Full macOS conversion validation is the manual `macOS Conversion Matrix` workflow. It runs on `macos-latest`, refuses CI placeholder sidecars, requires real Apple Silicon and Intel FFmpeg/ffprobe sidecars, requires `macos-universal` manifest entries for PDFium, LibreOffice, Pandoc and libvips, prepares the bundled engines, runs real macOS host validation, runs the PDFium wrapper runtime tests with a macOS PDFium library, and then runs:
+
+```bash
+npm run test:macos:conversions
+```
+
+That script ultimately runs:
+
+```bash
+npm run prepare:bundled-engines
+npm run test:macos:host
+npm run test:pdfium-wrapper
+npm run test:conversions
+```
+
+At the current V1.0.5 preparation stage this strict gate is expected to fail until real macOS sidecars and all `macos-universal` advanced engine archives are staged and declared in `src-tauri/engines-manifest.json`. That failure is intentional. It prevents release notes or status updates from saying "all macOS conversions pass" before the real conversion stack exists on macOS.
+
 Before building a DMG on macOS, also run:
 
 ```bash
