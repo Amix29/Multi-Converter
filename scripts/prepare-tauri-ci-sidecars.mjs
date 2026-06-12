@@ -4,6 +4,7 @@ import process from "node:process";
 
 const root = process.cwd();
 const binariesDir = path.join(root, "src-tauri", "binaries");
+const bundledEnginesDir = path.join(root, "src-tauri", "bundled-engines");
 const marker = "Multi-Converter CI placeholder sidecar for Tauri compile checks only.";
 const darwinTargets = new Set(["aarch64-apple-darwin", "x86_64-apple-darwin"]);
 const allowed = process.env.CI === "true" || process.env.MULTI_CONVERTER_ALLOW_PLACEHOLDER_SIDECARS === "1";
@@ -15,6 +16,7 @@ if (!allowed) {
 
 const targets = parseTargets(process.argv.slice(2));
 fs.mkdirSync(binariesDir, { recursive: true });
+fs.mkdirSync(bundledEnginesDir, { recursive: true });
 
 for (const target of targets) {
   for (const stem of ["ffmpeg", "ffprobe"]) {
