@@ -24,6 +24,7 @@ npm run test:rust
 npm run test:conversions
 npm run test:pdfium-wrapper
 npm run clippy:pdfium-wrapper
+npm run test:production-config
 npm run test:secret-leaks
 npm run build
 npm run tauri:build
@@ -65,6 +66,16 @@ npm run test:secret-leaks
 ```
 
 The scan checks tracked text files for private key blocks, common service tokens and accidental long secret assignments. It reports only the file, line and pattern name; it does not print the matched secret value.
+
+## Production Config Check
+
+Run this before publishing code or building release assets:
+
+```bash
+npm run test:production-config
+```
+
+This check keeps frontend environment exposure narrow. In particular, Vite must expose only `VITE_` variables to client code; broad prefixes such as `TAURI_` are not allowed because maintainer machines and CI can carry signing or release secrets in `TAURI_*` variables.
 
 ## macOS Code Checks
 

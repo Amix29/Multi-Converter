@@ -26,6 +26,7 @@ const windowsGate = readText("scripts/test-windows-ci-gate.mjs");
 const uiLayoutTest = readText("scripts/test-ui-layout.mjs");
 const macosConversionTest = readText("scripts/test-macos-conversions.mjs");
 const secretLeakTest = readText("scripts/test-secret-leaks.mjs");
+const productionConfigTest = readText("scripts/test-production-config.mjs");
 
 const macosAdvancedEngines = (enginesManifest.engines ?? []).filter((engine) => engine.platform === "macos-universal" && engine.mode === "advanced");
 const macosAdvancedEngineIds = new Set(macosAdvancedEngines.map((engine) => engine.id));
@@ -46,6 +47,7 @@ const checks = [
   check("Windows CI gate is grouped and checkpointed", /windows-ci-gate-status\.json/.test(windowsGate) && /beginStep\(command\)/.test(windowsGate)),
   check("macOS conversion gate rejects placeholders", /is a CI placeholder, not a real conversion sidecar/.test(macosConversionTest)),
   check("release validator guards macOS conversion coverage claims", /claimsFullMacosConversionCoverage/.test(releaseValidator)),
+  check("production config does not expose broad Tauri env variables", packageJson.scripts?.check?.includes("test:production-config") && /must not expose broad TAURI_/.test(productionConfigTest)),
   check("secret leak guard is part of the local quality gate", packageJson.scripts?.check?.includes("test:secret-leaks") && /Potential secret leak detected/.test(secretLeakTest)),
   check("testing docs warn static checks do not prove macOS conversions", /They do not prove that macOS conversions work\./.test(testingDocs)),
   check("macOS checklist defines the Mac-only handoff boundary", /## Mac Handoff Readiness/.test(macosChecklist) && /macOS-only work/.test(macosChecklist)),
