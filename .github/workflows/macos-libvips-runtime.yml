@@ -1,0 +1,71 @@
+name: macOS libvips Runtime
+
+on:
+  workflow_dispatch:
+    inputs:
+      output_release_tag:
+        description: "Optional private test release tag that will receive the libvips runtime archives"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: macos-libvips-runtime-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build libvips runtime (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64
+            runner: macos-latest
+          - arch: x86_64
+            runner: macos-15-intel
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install libvips from Homebrew
+        run: |
+          set -euo pipefail
+          brew update
+          brew install vips
+
+      - name: Build portable libvips runtime
+        id: libvips
+        run: >
+          npm run build:libvips-macos-runtime -- --arch "${{ matrix.arch }}"
+          --output-dir "$RUNNER_TEMP/mc-libvips-${{ matrix.arch }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libvips-macos-${{ matrix.arch }}
+          path: ${{ steps.libvips.outputs.archive }}
+          if-no-files-found: error
+
+      - name: Upload libvips runtime to a test release
+        if: ${{ inputs.output_release_tag != '' }}
+        run: |
+          set -euo pipefail
+          tag="${{ inputs.output_release_tag }}"
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$tag" --notes "Private macOS libvips runtime assets for Multi-Converter testing." --prerelease || true
+          gh release upload "$tag" "${{ steps.libvips.outputs.archive }}" --repo "$GITHUB_REPOSITORY" --clobber

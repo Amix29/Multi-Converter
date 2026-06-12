@@ -49,7 +49,7 @@ Sources candidates vérifiées au 12 juin 2026 :
 - PDFium : `bblanchon/pdfium-binaries` publie `pdfium-mac-univ.tgz`, ainsi que `pdfium-mac-arm64.tgz` et `pdfium-mac-x64.tgz`. Le paquet Multi-Converter doit aussi inclure un wrapper `pdfium-render-universal-apple-darwin`.
 - Pandoc : les releases officielles `jgm/pandoc` publient des ZIP macOS séparés `arm64` et `x86_64`. Préparez un binaire `bin/pandoc-universal-apple-darwin` avec `lipo`, ou adaptez explicitement la config si un build universel officiel est validé.
 - LibreOffice : The Document Foundation publie des DMG macOS séparés Apple Silicon et Intel. Le paquet `macos-universal` doit conserver les deux app bundles sous `aarch64/` et `x86_64/`; le runtime choisit ensuite le lanceur natif.
-- libvips : la documentation officielle macOS renvoie vers Homebrew, MacPorts ou Fink, et ne fournit pas de ZIP portable équivalent au build Windows. Tant qu'un paquet portable n'est pas validé, conservez deux arbres `aarch64/` et `x86_64/` avec leurs dépendances et notices exactes. `npm run prepare:libvips-engine:macos` peut seulement copier et vérifier deux arbres portables déjà préparés; il refuse les liens dynamiques absolus non système.
+- libvips : la documentation officielle macOS renvoie vers Homebrew, MacPorts ou Fink, et ne fournit pas de ZIP portable équivalent au build Windows. Le workflow manuel `macOS libvips Runtime` fabrique deux archives de staging depuis Homebrew sur runners natifs Apple Silicon et Intel, réécrit les liens dynamiques vers `@rpath`, puis smoke-test `vips copy`. Tant qu'un paquet portable n'est pas validé, conservez deux arbres `aarch64/` et `x86_64/` avec leurs dépendances et notices exactes. `npm run prepare:libvips-engine:macos` peut seulement copier et vérifier deux arbres portables déjà préparés; il refuse les liens dynamiques absolus non système.
 - FFmpeg/ffprobe : FFmpeg fournit le code source mais pas de binaires officiels. Il faut soit produire un build macOS statique maison reproductible, soit valider juridiquement et techniquement un fournisseur tiers. `npm run prepare:ffmpeg-engine:macos` demande des archives mainteneur explicites et leurs SHA-256; il ne choisit pas un fournisseur automatiquement. Ne copiez pas simplement un binaire Homebrew dans le DMG sans ses dépendances.
 
 PDFium, LibreOffice et Pandoc peuvent être préparés automatiquement sur un Mac avec Xcode Command Line Tools et les targets Rust Darwin installées :
@@ -81,6 +81,8 @@ export LIBVIPS_MACOS_X86_64_SOURCE_DIR="/path/to/libvips-x86_64-runtime"
 export LIBVIPS_MACOS_LICENSE_FILE="/path/to/LICENSE"
 npm run prepare:libvips-engine:macos
 ```
+
+Pour générer ces entrées dans GitHub Actions, lancez le workflow manuel `macOS libvips Runtime` avec un `output_release_tag`. Il produit `libvips-macos-aarch64.tar.gz` sur `macos-latest` et `libvips-macos-x86_64.tar.gz` sur `macos-15-intel`. Passez ensuite ce tag comme `libvips_release_tag` au workflow `macOS Engine Staging`.
 
 Le script copie les deux arbres sous `engine-sources/macos-universal/libvips/`, vérifie `bin/vips` avec `lipo`, inspecte les dépendances avec `otool -L`, refuse les liens absolus non système comme `/opt/homebrew`, `/usr/local`, `/opt/local` ou `/sw`, puis lance un test image sur l'architecture native du Mac.
 

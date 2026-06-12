@@ -45,6 +45,14 @@ npm run prepare:libvips-engine:macos
 
 The libvips script rejects Homebrew/MacPorts/Fink-style absolute links and any other non-system absolute dynamic dependency. Fix those install names and bundle the dependencies before packaging.
 
+The manual `macOS libvips Runtime` workflow can build those two portable input archives from Homebrew on native macOS runners:
+
+- Apple Silicon runs on `macos-latest`.
+- Intel runs on `macos-15-intel`.
+- The workflow installs `vips`, copies the runtime, rewrites non-system dynamic links with `install_name_tool`, rejects remaining absolute package-manager links, smoke-tests `vips copy`, then uploads `libvips-macos-aarch64.tar.gz` and `libvips-macos-x86_64.tar.gz`.
+- Use its `output_release_tag` as the `libvips_release_tag` input for `macOS Engine Staging`.
+- Treat the generated notices as staging evidence first. Review copied dependency licenses before a public release.
+
 `npm run prepare:bundled-engines` must prune stale `src-tauri/bundled-engines` entries that do not match the current platform before packaging. `npm run validate:bundled-engines`, `npm run test:macos:host` and `npm run verify:macos-dmg` must fail if Windows-only bundled engines would be carried into a macOS build or final DMG.
 
 Before saying "all macOS conversions pass", run the manual GitHub `macOS Conversion Matrix` workflow or run `npm run test:macos:conversions` on a real Mac with the same staged inputs. This strict gate must not use `scripts/prepare-tauri-ci-sidecars.mjs`; it requires real macOS FFmpeg/ffprobe sidecars and `macos-universal` PDFium, LibreOffice, Pandoc and libvips engine archives.
@@ -89,7 +97,7 @@ Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conv
 Use the manual `macOS Engine Staging` workflow to create the private test assets consumed by the conversion and DMG workflows.
 
 - Provide maintainer-approved FFmpeg/ffprobe Apple Silicon and Intel archive URLs plus SHA-256 checksums.
-- Provide a `libvips_release_tag` that contains portable Apple Silicon and Intel libvips runtime archives. Those archives must contain a `bin/vips` runtime root and bundled non-system dependencies.
+- Provide a `libvips_release_tag` that contains portable Apple Silicon and Intel libvips runtime archives, preferably produced by `macOS libvips Runtime`. Those archives must contain a `bin/vips` runtime root and bundled non-system dependencies.
 - The workflow prepares FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips on `macos-latest`, packages `tools/engine-packages.macos.config.json`, uploads a `macos-engine-assets` workflow artifact, and optionally uploads the same assets to `output_release_tag`.
 - If `output_release_tag` is set, use that same tag as both `sidecar_release_tag` and `engine_release_tag` for `macOS Conversion Matrix` and `macOS DMG Build`.
 

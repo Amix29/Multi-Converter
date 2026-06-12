@@ -110,9 +110,11 @@ At the current V1.0.5 preparation stage this strict gate is expected to fail unt
 
 Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Silicon and Intel archives plus SHA-256 checksums. Use `npm run prepare:libvips-engine:macos` only with two already-portable libvips runtime trees. These scripts are strict packaging gates; they are not CI placeholders and should fail when the inputs are missing, unpinned or still linked to machine-local package manager paths.
 
+The manual `macOS libvips Runtime` workflow builds native Homebrew-derived libvips runtime archives on Apple Silicon and Intel runners, rewrites their dynamic links to portable `@rpath` links, smoke-tests the native `vips copy` path, and can upload the two archives to a private release. Use that release tag as `libvips_release_tag` for the engine staging workflow after reviewing dependency licenses.
+
 For private GitHub Actions validation, upload real sidecars to the tag passed as `sidecar_release_tag`, and upload `engines-manifest.json` plus the referenced macOS engine ZIPs to the tag passed as `engine_release_tag`. The workflows download those assets with `gh release download`, then seed `engine-sources/.bundled-engine-cache` so private release assets can be tested without relying on public unauthenticated download URLs.
 
-The manual `macOS Engine Staging` workflow can produce that private test release. It still requires explicit FFmpeg archive URLs/checksums and portable libvips runtime archives; it does not select those sources automatically.
+The manual `macOS Engine Staging` workflow can produce that private test release. It still requires explicit FFmpeg archive URLs/checksums and a `libvips_release_tag`; it does not select FFmpeg sources automatically.
 
 Before building a DMG on macOS, also run:
 
