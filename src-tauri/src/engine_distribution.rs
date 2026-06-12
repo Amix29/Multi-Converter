@@ -343,24 +343,61 @@ fn wide_null(value: &str) -> Vec<u16> {
 }
 
 fn executable_candidate_score(path: &Path) -> u8 {
+    executable_candidate_score_for(path, env::consts::OS, env::consts::ARCH)
+}
+
+fn executable_candidate_score_for(path: &Path, os: &str, arch: &str) -> u8 {
     let extension = path
         .extension()
         .and_then(|value| value.to_str())
-        .unwrap_or_default();
-    if cfg!(target_os = "windows") {
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    if os == "windows" {
         if extension.eq_ignore_ascii_case("exe") {
-            return 2;
+            return 20;
         }
         if extension.eq_ignore_ascii_case("com") {
-            return 1;
+            return 10;
         }
         return 0;
     }
-    if extension.eq_ignore_ascii_case("dll") || extension.eq_ignore_ascii_case("traineddata") {
-        0
-    } else {
-        1
+
+    if matches!(
+        extension.as_str(),
+        "dll" | "dylib" | "so" | "a" | "traineddata"
+    ) {
+        return 0;
     }
+
+    let path_text = path
+        .to_string_lossy()
+        .replace('\\', "/")
+        .to_ascii_lowercase();
+    10 + architecture_score(&path_text, os, arch)
+}
+
+fn architecture_score(path_text: &str, os: &str, arch: &str) -> u8 {
+    if os != "macos" {
+        return 5;
+    }
+    let native_arm = matches!(arch, "aarch64" | "arm64");
+    let has_arm = path_text.contains("aarch64") || path_text.contains("arm64");
+    let has_x64 = path_text.contains("x86_64") || path_text.contains("x64");
+    let has_universal = path_text.contains("universal") || path_text.contains("univ");
+
+    if native_arm && has_arm {
+        return 30;
+    }
+    if !native_arm && has_x64 {
+        return 30;
+    }
+    if has_universal {
+        return 25;
+    }
+    if has_arm || has_x64 {
+        return 1;
+    }
+    15
 }
 
 fn directory_size(path: &Path) -> io::Result<u64> {
@@ -457,6 +494,52 @@ mod tests {
         assert_eq!(
             selected.file_name().and_then(|value| value.to_str()),
             Some("pdfium-render-x86_64-pc-windows-msvc.exe")
+        );
+    }
+
+    #[test]
+    fn installed_binary_ignores_macos_support_libraries() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        let bin = root.join("pdfium").join("compatible").join("bin");
+        fs::create_dir_all(&bin).unwrap();
+        fs::write(bin.join("libpdfium.dylib"), b"support dylib").unwrap();
+        fs::write(bin.join("pdfium-render-universal-apple-darwin"), b"wrapper").unwrap();
+
+        let selected = installed_binary(
+            root,
+            "pdfium",
+            "compatible",
+            &[
+                "bin/libpdfium.dylib".to_string(),
+                "bin/pdfium-render-universal-apple-darwin".to_string(),
+            ],
+        )
+        .unwrap();
+
+        assert_eq!(
+            selected.file_name().and_then(|value| value.to_str()),
+            Some("pdfium-render-universal-apple-darwin")
+        );
+    }
+
+    #[test]
+    fn macos_engine_binary_selection_prefers_native_architecture() {
+        let arm = Path::new("aarch64/LibreOffice.app/Contents/MacOS/soffice");
+        let x64 = Path::new("x86_64/LibreOffice.app/Contents/MacOS/soffice");
+        let universal = Path::new("bin/pandoc-universal-apple-darwin");
+
+        assert!(
+            executable_candidate_score_for(arm, "macos", "aarch64")
+                > executable_candidate_score_for(x64, "macos", "aarch64")
+        );
+        assert!(
+            executable_candidate_score_for(x64, "macos", "x86_64")
+                > executable_candidate_score_for(arm, "macos", "x86_64")
+        );
+        assert!(
+            executable_candidate_score_for(universal, "macos", "x86_64")
+                > executable_candidate_score_for(arm, "macos", "x86_64")
         );
     }
 

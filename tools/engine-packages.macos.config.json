@@ -1,0 +1,119 @@
+{
+  "manifestVersion": 1,
+  "packageFormatVersion": 1,
+  "platform": "macos-universal",
+  "downloadBaseUrl": "REPLACE_WITH_RELEASE_BASE_URL",
+  "engines": [
+    {
+      "engineId": "ffmpeg",
+      "displayName": "FFmpeg",
+      "mode": "base",
+      "version": "8.1.1",
+      "platform": "macos-universal",
+      "sourceDir": "engine-sources/macos-universal/ffmpeg",
+      "outputArchiveName": "ffmpeg-8.1.1-macos-universal.zip",
+      "binaryPaths": ["bin/ffmpeg-universal-apple-darwin"],
+      "healthCheck": "ffmpeg-audio",
+      "licenseName": "LGPL/GPL selon build",
+      "licenseUrl": "https://ffmpeg.org/legal.html",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": []
+    },
+    {
+      "engineId": "ffprobe",
+      "displayName": "ffprobe",
+      "mode": "base",
+      "version": "8.1.1",
+      "platform": "macos-universal",
+      "sourceDir": "engine-sources/macos-universal/ffprobe",
+      "outputArchiveName": "ffprobe-8.1.1-macos-universal.zip",
+      "binaryPaths": ["bin/ffprobe-universal-apple-darwin"],
+      "healthCheck": "ffprobe-media",
+      "licenseName": "LGPL/GPL selon build",
+      "licenseUrl": "https://ffmpeg.org/legal.html",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": ["ffmpeg"]
+    },
+    {
+      "engineId": "pdfium",
+      "displayName": "PDFium",
+      "mode": "advanced",
+      "version": "compatible",
+      "platform": "macos-universal",
+      "sourceDir": "engine-sources/macos-universal/pdfium",
+      "outputArchiveName": "pdfium-compatible-macos-universal.zip",
+      "binaryPaths": [
+        "bin/libpdfium.dylib",
+        "bin/pdfium-render-universal-apple-darwin"
+      ],
+      "healthCheck": "pdfium-render",
+      "licenseName": "BSD-3-Clause",
+      "licenseUrl": "https://github.com/bblanchon/pdfium-binaries",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": []
+    },
+    {
+      "engineId": "libreoffice",
+      "displayName": "LibreOffice headless",
+      "mode": "advanced",
+      "version": "compatible",
+      "platform": "macos-universal",
+      "sourceDir": "engine-sources/macos-universal/libreoffice",
+      "outputArchiveName": "libreoffice-compatible-macos-universal.zip",
+      "binaryPaths": [
+        "aarch64/LibreOffice.app/Contents/MacOS/soffice",
+        "x86_64/LibreOffice.app/Contents/MacOS/soffice"
+      ],
+      "healthCheck": "libreoffice-headless",
+      "licenseName": "MPL-2.0",
+      "licenseUrl": "https://www.libreoffice.org/about-us/licenses/",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": []
+    },
+    {
+      "engineId": "pandoc",
+      "displayName": "Pandoc",
+      "mode": "advanced",
+      "version": "compatible",
+      "platform": "macos-universal",
+      "sourceDir": "engine-sources/macos-universal/pandoc",
+      "outputArchiveName": "pandoc-compatible-macos-universal.zip",
+      "binaryPaths": ["bin/pandoc-universal-apple-darwin"],
+      "healthCheck": "pandoc-md-html",
+      "licenseName": "GPL-2.0-or-later",
+      "licenseUrl": "https://github.com/jgm/pandoc/blob/main/COPYRIGHT",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": []
+    },
+    {
+      "engineId": "libvips",
+      "displayName": "libvips",
+      "mode": "advanced",
+      "version": "compatible",
+      "platform": "macos-universal",
+      "sourceDir": "engine-sources/macos-universal/libvips",
+      "outputArchiveName": "libvips-compatible-macos-universal.zip",
+      "binaryPaths": [
+        "aarch64/bin/vips",
+        "x86_64/bin/vips"
+      ],
+      "healthCheck": "libvips-image",
+      "licenseName": "LGPL-2.1-or-later",
+      "licenseUrl": "https://github.com/libvips/libvips/blob/master/LICENSE",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": []
+    }
+  ]
+}

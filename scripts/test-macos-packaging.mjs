@@ -6,6 +6,7 @@ const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const tauriConfig = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "tauri.conf.json"), "utf8"));
 const macosConfig = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "tauri.macos.conf.json"), "utf8"));
+const macosEngineConfig = JSON.parse(fs.readFileSync(path.join(root, "tools", "engine-packages.macos.config.json"), "utf8"));
 const enginesManifest = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "engines-manifest.json"), "utf8"));
 const tauriSchema = fs.readFileSync(path.join(root, "node_modules", "@tauri-apps", "cli", "config.schema.json"), "utf8");
 const macosHostTest = fs.readFileSync(path.join(root, "scripts", "test-macos-host.mjs"), "utf8");
@@ -24,6 +25,7 @@ assert.match(tauriSchema, /binary-name\{-target-triple\}/, "Tauri externalBin sc
 assert.equal(packageJson.scripts["test:macos:host"], "node scripts/test-macos-host.mjs", "macOS host test script must be exposed through npm");
 assert.equal(packageJson.scripts["verify:macos-dmg"], "node scripts/verify-macos-dmg.mjs", "macOS DMG verification script must be exposed through npm");
 assert.match(packageJson.scripts["tauri:build:macos"], /--target universal-apple-darwin/, "macOS build must target universal-apple-darwin");
+assert.match(packageJson.scripts["package:macos-engines"], /engine-packages\.macos\.config\.json/, "macOS engine packaging script must use the macOS engine config");
 assert.match(
   fs.readFileSync(path.join(root, "scripts", "run-tauri.mjs"), "utf8"),
   /macOS universal DMG builds must run on macOS/,
@@ -52,6 +54,33 @@ assert.deepEqual(macosConfig.bundle.resources, tauriConfig.bundle.resources, "ma
 assert.equal(macosConfig.bundle.createUpdaterArtifacts, false, "macOS DMG releases must not create updater artifacts until Darwin updater metadata is enabled");
 assert.equal(macosConfig.bundle.macOS.signingIdentity, "-", "unsigned macOS builds should use Tauri ad-hoc signing");
 assert.equal(macosConfig.bundle.macOS.minimumSystemVersion, "11.0", "macOS minimum version must stay explicit");
+assert.equal(macosEngineConfig.platform, "macos-universal", "macOS engine package config must target macos-universal");
+assert.deepEqual(
+  macosEngineConfig.engines.map((engine) => engine.engineId),
+  ["ffmpeg", "ffprobe", "pdfium", "libreoffice", "pandoc", "libvips"],
+  "macOS engine package config must cover every required engine",
+);
+
+for (const engine of macosEngineConfig.engines) {
+  assert.equal(engine.platform, "macos-universal", `${engine.engineId} must be declared for macos-universal`);
+  assert.match(engine.sourceDir, /^engine-sources\/macos-universal\//, `${engine.engineId} must use macOS staged engine sources`);
+  for (const relative of engine.binaryPaths) {
+    assert.doesNotMatch(relative, /\.(exe|dll)$/i, `${engine.engineId} macOS binary path must not point to Windows files`);
+  }
+}
+assert.deepEqual(
+  macosEngineConfig.engines.find((engine) => engine.engineId === "libreoffice").binaryPaths,
+  [
+    "aarch64/LibreOffice.app/Contents/MacOS/soffice",
+    "x86_64/LibreOffice.app/Contents/MacOS/soffice",
+  ],
+  "LibreOffice macOS packaging must carry both architecture-specific app bundles in the universal engine pack",
+);
+assert.deepEqual(
+  macosEngineConfig.engines.find((engine) => engine.engineId === "libvips").binaryPaths,
+  ["aarch64/bin/vips", "x86_64/bin/vips"],
+  "libvips macOS packaging must carry both architecture-specific binaries until a portable universal build is validated",
+);
 
 for (const name of ["ffmpeg", "ffprobe"]) {
   for (const triple of ["aarch64-apple-darwin", "x86_64-apple-darwin", "universal-apple-darwin"]) {

@@ -40,6 +40,53 @@ The release build needs the `*-universal-apple-darwin` sidecars because Tauri's 
 
 `engine-sources/` est ignoré par Git. `tools/engine-packages.config.json` et ce document restent commitables.
 
+## Sources macOS à préparer
+
+Le packaging macOS utilise une configuration séparée : `tools/engine-packages.macos.config.json`. Elle sert de contrat pour le futur paquet `macos-universal` sans modifier le manifeste public tant que les archives ne sont pas publiées.
+
+Sources candidates vérifiées au 12 juin 2026 :
+
+- PDFium : `bblanchon/pdfium-binaries` publie `pdfium-mac-univ.tgz`, ainsi que `pdfium-mac-arm64.tgz` et `pdfium-mac-x64.tgz`. Le paquet Multi-Converter doit aussi inclure un wrapper `pdfium-render-universal-apple-darwin`.
+- Pandoc : les releases officielles `jgm/pandoc` publient des ZIP macOS séparés `arm64` et `x86_64`. Préparez un binaire `bin/pandoc-universal-apple-darwin` avec `lipo`, ou adaptez explicitement la config si un build universel officiel est validé.
+- LibreOffice : The Document Foundation publie des DMG macOS séparés Apple Silicon et Intel. Le paquet `macos-universal` doit conserver les deux app bundles sous `aarch64/` et `x86_64/`; le runtime choisit ensuite le lanceur natif.
+- libvips : la documentation officielle macOS renvoie vers Homebrew, MacPorts ou Fink, et ne fournit pas de ZIP portable équivalent au build Windows. Tant qu'un paquet portable n'est pas validé, conservez deux arbres `aarch64/` et `x86_64/` avec leurs dépendances et notices exactes.
+- FFmpeg/ffprobe : FFmpeg fournit le code source mais pas de binaires officiels. Il faut soit produire un build macOS statique maison reproductible, soit valider juridiquement et techniquement un fournisseur tiers. Ne copiez pas simplement un binaire Homebrew dans le DMG sans ses dépendances.
+
+Structure avancée attendue :
+
+```text
+engine-sources/macos-universal/pdfium/
+  bin/
+    libpdfium.dylib
+    pdfium-render-universal-apple-darwin
+  licenses/
+    LICENSE.txt
+    THIRD_PARTY_NOTICES.txt
+
+engine-sources/macos-universal/libreoffice/
+  aarch64/LibreOffice.app/Contents/MacOS/soffice
+  x86_64/LibreOffice.app/Contents/MacOS/soffice
+  licenses/
+    LICENSE.txt
+    THIRD_PARTY_NOTICES.txt
+
+engine-sources/macos-universal/pandoc/
+  bin/
+    pandoc-universal-apple-darwin
+  licenses/
+    LICENSE.txt
+    THIRD_PARTY_NOTICES.txt
+
+engine-sources/macos-universal/libvips/
+  aarch64/bin/vips
+  x86_64/bin/vips
+  licenses/
+    LICENSE.txt
+    THIRD_PARTY_NOTICES.txt
+```
+
+Sur macOS, les moteurs avancés peuvent être soit réellement universels, soit embarqués en deux sous-arbres d'architecture. Dans ce deuxième cas, déclarez les deux chemins dans `binaryPaths`; le runtime préfère automatiquement le chemin natif et ignore les bibliothèques de support comme `.dylib` ou `.so` quand il cherche l'exécutable principal.
+
 ## Configuration
 
 `tools/engine-packages.config.json` contient des valeurs de préparation :
@@ -74,6 +121,15 @@ npm run package:engines
 ```
 
 Le script écrit les ZIP et `engines-manifest.json` dans `dist-engines/`. Ce dossier est ignoré par Git. Le manifeste généré peut être publié séparément avec les archives, par exemple via GitHub Releases ou un CDN, quand les URLs réelles existent.
+
+Packaging macOS depuis les sources préparées :
+
+```powershell
+$env:ENGINE_RELEASE_BASE_URL="https://<host>/<path>/"
+npm run package:macos-engines
+```
+
+Cette commande lit `tools/engine-packages.macos.config.json` et écrit dans `dist-engines-macos/`. Elle doit échouer tant que les vrais dossiers `engine-sources/macos-universal/*` ne sont pas complets.
 
 Préparation et packaging local du pack base Windows :
 
