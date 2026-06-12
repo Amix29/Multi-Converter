@@ -92,9 +92,9 @@ assert.match(macosLibvipsRuntimeWorkflow, /name:\s+macOS libvips Runtime/, "macO
 assert.match(macosLibvipsRuntimeWorkflow, /workflow_dispatch:/, "macOS libvips runtime workflow must be manually runnable");
 assert.match(macosLibvipsRuntimeWorkflow, /arch:\s*\n\s+description:\s+"Runtime architecture to build"/, "macOS libvips runtime workflow must allow architecture-scoped retries");
 assert.match(macosLibvipsRuntimeWorkflow, /permissions:\s*\n\s+contents:\s+write/, "macOS libvips runtime workflow must be able to upload private test release assets");
-assert.match(macosLibvipsRuntimeJob, /inputs\.arch == 'both' \|\| inputs\.arch == matrix\.arch/, "macOS libvips runtime jobs must respect the selected architecture");
-assert.match(macosLibvipsRuntimeJob, /runner:\s+macos-latest/, "macOS libvips runtime must build Apple Silicon on an arm64 macOS runner");
-assert.match(macosLibvipsRuntimeJob, /runner:\s+macos-15-intel/, "macOS libvips runtime must build Intel on an Intel macOS runner");
+assert.match(macosLibvipsRuntimeJob, /fromJSON\(inputs\.arch == 'both'/, "macOS libvips runtime matrix must respect the selected architecture before runner allocation");
+assert.match(macosLibvipsRuntimeJob, /"arch":"aarch64","runner":"macos-latest"/, "macOS libvips runtime must build Apple Silicon on an arm64 macOS runner");
+assert.match(macosLibvipsRuntimeJob, /"arch":"x86_64","runner":"macos-15-intel"/, "macOS libvips runtime must build Intel on an Intel macOS runner");
 assert.match(macosLibvipsRuntimeJob, /brew install vips/, "macOS libvips runtime must install libvips from Homebrew before packaging");
 assert.match(macosLibvipsRuntimeJob, /build:libvips-macos-runtime/, "macOS libvips runtime must call the portable runtime builder");
 assert.match(macosLibvipsRuntimeJob, /actions\/upload-artifact@v4/, "macOS libvips runtime must upload both runtime archives as artifacts");

@@ -28,17 +28,12 @@ concurrency:
 jobs:
   build:
     name: Build libvips runtime (${{ matrix.arch }})
-    if: ${{ inputs.arch == 'both' || inputs.arch == matrix.arch }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - arch: aarch64
-            runner: macos-latest
-          - arch: x86_64
-            runner: macos-15-intel
+        include: ${{ fromJSON(inputs.arch == 'both' && '[{"arch":"aarch64","runner":"macos-latest"},{"arch":"x86_64","runner":"macos-15-intel"}]' || inputs.arch == 'aarch64' && '[{"arch":"aarch64","runner":"macos-latest"}]' || '[{"arch":"x86_64","runner":"macos-15-intel"}]') }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
