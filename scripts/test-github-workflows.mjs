@@ -60,6 +60,8 @@ assert.match(macosDmgWorkflow, /workflow_dispatch:/, "macOS DMG workflow must be
 assert.match(macosDmgWorkflow, /sidecar_release_tag:/, "macOS DMG workflow must allow staged sidecars from a release tag");
 assert.match(macosDmgBuildJob, /runs-on:\s+macos-latest/, "macOS DMG build must run on macOS");
 assert.match(macosDmgBuildJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS DMG build must prepare macos-universal engines");
+assert.doesNotMatch(macosDmgBuildJob, /CARGO_TARGET_DIR:\s+\$\{\{\s*runner\.temp/, "macOS DMG job env must not use runner context before it is available");
+assert.match(macosDmgBuildJob, /CARGO_TARGET_DIR=\$RUNNER_TEMP\/mc-cargo-target-macos-dmg/, "macOS DMG build must configure Cargo target dir through GITHUB_ENV");
 assert.match(macosDmgBuildJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS DMG build must install both Darwin Rust targets");
 assert.match(macosDmgBuildJob, /npm run prepare:bundled-engines/, "macOS DMG build must prepare staged sidecars and engines");
 assert.doesNotMatch(macosDmgBuildJob, /prepare-tauri-ci-sidecars/, "macOS DMG build must use real staged sidecars, not CI placeholders");

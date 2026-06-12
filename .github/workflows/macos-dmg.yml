@@ -26,7 +26,6 @@ jobs:
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
-      CARGO_TARGET_DIR: ${{ runner.temp }}/mc-cargo-target-macos-dmg
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +53,9 @@ jobs:
             ${{ runner.os }}-cargo-registry-v2-
 
       - run: npm ci
+
+      - name: Configure Cargo target directory
+        run: echo "CARGO_TARGET_DIR=$RUNNER_TEMP/mc-cargo-target-macos-dmg" >> "$GITHUB_ENV"
 
       - name: Download staged macOS sidecars from a release
         if: ${{ inputs.sidecar_release_tag != '' }}
