@@ -11,6 +11,23 @@ const tag = `v${version}`;
 const versionedInstaller = `Multi-Converter_${version}_x64-setup.exe`;
 const stableInstaller = "Multi-Converter_windows-x64_setup.exe";
 const signature = "x".repeat(128);
+const windowsNotes = [
+  `# Multi-Converter v${version}`,
+  "",
+  "A focused validation release for installer asset tests.",
+  "",
+  "## Highlights",
+  "",
+  "- Validates the Windows release asset contract for automated checks.",
+  "",
+  "## Download And Installation",
+  "",
+  `- Windows uses ${versionedInstaller}.`,
+  "",
+  "## Validation",
+  "",
+  "- Release asset validation, updater metadata validation and naming checks passed in this test fixture.",
+].join("\n");
 const notes = [
   `# Multi-Converter v${version}`,
   "",
@@ -70,6 +87,7 @@ const windowsDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-windows-"));
 const allDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-"));
 const macosOnlyDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-macos-"));
 const windowsWithDmgDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-windows-extra-dmg-"));
+const windowsWithMacosNotesDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-windows-macos-notes-"));
 const allBadNotesDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-bad-notes-"));
 const allDarwinUpdaterDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-darwin-updater-"));
 const allMissingDmgDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-missing-dmg-"));
@@ -83,7 +101,16 @@ try {
   writeWindowsAssets(windowsDir);
   runValidator(windowsDir, "windows");
 
-  writeWindowsAssets(allDir);
+  const windowsNotesPath = path.join(preparedDmgDir, "windows-notes.md");
+  fs.writeFileSync(windowsNotesPath, windowsNotes);
+  runReleaseNotesValidator(windowsNotesPath, false);
+
+  const macosNotesPath = path.join(preparedDmgDir, "macos-notes.md");
+  fs.writeFileSync(macosNotesPath, notes);
+  runReleaseNotesValidator(macosNotesPath, true);
+  runReleaseNotesValidatorFails(macosNotesPath, false, "include_macos=true");
+
+  writeWindowsAssets(allDir, notes);
   fs.writeFileSync(path.join(allDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");
   runValidator(allDir, "all");
 
@@ -93,6 +120,9 @@ try {
   writeWindowsAssets(windowsWithDmgDir);
   fs.writeFileSync(path.join(windowsWithDmgDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");
   runValidatorFails(windowsWithDmgDir, "windows", "Release asset set");
+
+  writeWindowsAssets(windowsWithMacosNotesDir, notes);
+  runValidatorFails(windowsWithMacosNotesDir, "windows", "include_macos=true");
 
   writeWindowsAssets(allBadNotesDir, notesWithoutMacosWarning);
   fs.writeFileSync(path.join(allBadNotesDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");
@@ -130,6 +160,7 @@ try {
     allDir,
     macosOnlyDir,
     windowsWithDmgDir,
+    windowsWithMacosNotesDir,
     allBadNotesDir,
     allDarwinUpdaterDir,
     allMissingDmgDir,
@@ -145,7 +176,7 @@ try {
 
 console.log("Release asset tests passed.");
 
-function writeWindowsAssets(dir, releaseNotes = notes, options = {}) {
+function writeWindowsAssets(dir, releaseNotes = windowsNotes, options = {}) {
   const installerBytes = Buffer.from("fake installer\n", "utf8");
   const platforms = {
     "windows-x86_64": {
@@ -200,6 +231,56 @@ function runValidatorFails(dir, platform, expectedMessage) {
     windowsHide: true,
   });
   assert.notEqual(result.status, 0, "validator unexpectedly passed");
+  const output = `${result.stderr}\n${result.stdout}`;
+  assert.match(output, new RegExp(expectedMessage.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), output);
+}
+
+function runReleaseNotesValidator(notesPath, includeMacos) {
+  const result = spawnSync(
+    process.execPath,
+    [
+      "scripts/validate-release-notes.mjs",
+      "--version",
+      version,
+      "--notes-file",
+      notesPath,
+      "--include-macos",
+      String(includeMacos),
+      "--min-length",
+      "200",
+    ],
+    {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
+    },
+  );
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+}
+
+function runReleaseNotesValidatorFails(notesPath, includeMacos, expectedMessage) {
+  const result = spawnSync(
+    process.execPath,
+    [
+      "scripts/validate-release-notes.mjs",
+      "--version",
+      version,
+      "--notes-file",
+      notesPath,
+      "--include-macos",
+      String(includeMacos),
+      "--min-length",
+      "200",
+    ],
+    {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
+    },
+  );
+  assert.notEqual(result.status, 0, "release notes validator unexpectedly passed");
   const output = `${result.stderr}\n${result.stdout}`;
   assert.match(output, new RegExp(expectedMessage.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), output);
 }

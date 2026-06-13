@@ -2,9 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-
-const disallowedLanguages = ["fr", "es", "de", "pt", "it"];
-const requiredSections = ["Highlights", "Download And Installation", "Validation"];
+import { expectedMacosDmgName, validateReleaseNotes } from "./lib/release-notes-validation.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 const version = args.version ?? readPackageVersion();
@@ -28,7 +26,7 @@ const versionedInstaller = `Multi-Converter_${version}_x64-setup.exe`;
 const stableInstaller = "Multi-Converter_windows-x64_setup.exe";
 const signatureFile = `${versionedInstaller}.sig`;
 const checksumFile = `${versionedInstaller}.sha256`;
-const macosDmg = `Multi-Converter_${version}_macos-universal.dmg`;
+const macosDmg = expectedMacosDmgName(version);
 const expectedNames = [
   ...(includeWindows ? [checksumFile, "latest.json", signatureFile, stableInstaller, versionedInstaller] : []),
   ...(includeMacos ? [macosDmg] : []),
@@ -44,7 +42,6 @@ const checksumPath = path.join(dir, checksumFile);
 const latestPath = path.join(dir, "latest.json");
 
 let latest = null;
-let notesBody = "";
 
 if (includeWindows) {
   const versionedHash = sha256File(versionedPath);
@@ -80,41 +77,14 @@ if (includeWindows) {
     if (entry.signature !== signature) fail(`latest.json ${platform} signature does not match ${signatureFile}.`);
   }
 
-  for (const language of disallowedLanguages) {
-    if (releaseNotesBlock(latest.notes, language)) {
-      fail(`Release notes must be published in English only; found disallowed ${language} block.`);
-    }
-  }
-
-  notesBody = releaseNotesBlock(latest.notes, "en") ?? latest.notes.trim();
-  if (!notesBody.includes(`# Multi-Converter v${version}`)) fail("Release notes have the wrong title.");
-  for (const section of requiredSections) {
-    if (!notesBody.includes(`## ${section}`)) fail(`Release notes are missing "## ${section}".`);
-  }
+  const notesValidation = validateReleaseNotes({ body: latest.notes, version, includeMacos, minLength: 200 });
+  if (!notesValidation.ok) fail(notesValidation.errors.join("\n"));
 }
 
 if (includeMacos) {
   const dmgPath = path.join(dir, macosDmg);
   const stat = fs.statSync(dmgPath);
   if (!stat.isFile() || stat.size <= 0) fail(`macOS DMG is missing or empty: ${macosDmg}`);
-  if (latest) {
-    if (!notesBody.includes(macosDmg)) fail(`Release notes must name the macOS DMG: ${macosDmg}`);
-    if (!/not\s+Apple-signed/i.test(notesBody) || !/not\s+notarized/i.test(notesBody)) {
-      fail("Release notes must state that the macOS build is not Apple-signed and not notarized.");
-    }
-    if (!notesBody.includes("Open Anyway") || !notesBody.includes("Privacy & Security")) {
-      fail("Release notes must include the macOS Open Anyway path through Privacy & Security.");
-    }
-    if (!/macOS\s+automatic\s+updates\s+are\s+not\s+enabled/i.test(notesBody)) {
-      fail("Release notes must state that macOS automatic updates are not enabled when latest.json has Windows-only updater metadata.");
-    }
-    if (!/macOS\s+DMG\s+verification/i.test(notesBody) && !/verified\s+on\s+macOS/i.test(notesBody)) {
-      fail("Release notes must mention that the macOS DMG was verified on macOS.");
-    }
-    if (claimsFullMacosConversionCoverage(notesBody) && !/macOS\s+Conversion\s+Matrix/i.test(notesBody)) {
-      fail("Release notes must mention the macOS Conversion Matrix before claiming full macOS conversion coverage.");
-    }
-  }
 }
 
 console.log(`Release assets validated for Multi-Converter v${version} (${platformSet}): ${dir}`);
@@ -140,20 +110,6 @@ function sha256File(file) {
   const hash = createHash("sha256");
   hash.update(fs.readFileSync(file));
   return hash.digest("hex");
-}
-
-function releaseNotesBlock(body, language) {
-  const pattern = new RegExp(`<!--\\s*mc-release-notes:${language}\\s*-->([\\s\\S]*?)<!--\\s*/mc-release-notes\\s*-->`, "i");
-  return body.match(pattern)?.[1]?.trim() ?? null;
-}
-
-function claimsFullMacosConversionCoverage(body) {
-  const normalized = body.replace(/\s+/g, " ");
-  return [
-    /all\s+macOS\s+conversions\s+(?:pass|passed|work|were\s+tested)/i,
-    /all\s+conversions\s+(?:pass|passed|work|were\s+tested)\s+on\s+macOS/i,
-    /every\s+macOS\s+conversion\s+(?:pass|passed|works|was\s+tested)/i,
-  ].some((pattern) => pattern.test(normalized));
 }
 
 function assertArrayEqual(actual, expected, message) {

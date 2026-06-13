@@ -26,7 +26,7 @@ const testingDocs = readText("docs/TESTING.md");
 const macosChecklist = readText("docs/RELEASE_CHECKLIST_MACOS.md");
 const validationEvidence = readOptionalText(validationEvidencePath);
 const cleanMacSmokeReceipt = markdownSection(validationEvidence, "Manual Clean-Mac Smoke Test Receipt");
-const releaseValidator = readText("scripts/validate-release-assets.mjs");
+const releaseNotesValidator = readText("scripts/lib/release-notes-validation.mjs");
 const windowsGate = readText("scripts/test-windows-ci-gate.mjs");
 const uiLayoutTest = readText("scripts/test-ui-layout.mjs");
 const macosConversionTest = readText("scripts/test-macos-conversions.mjs");
@@ -57,7 +57,7 @@ const checks = [
   check("UI floating stack overlap contract exists", /floating-corner/.test(uiLayoutTest) && /feedback-launcher/.test(uiLayoutTest) && /update-reminder/.test(uiLayoutTest)),
   check("Windows CI gate is grouped and checkpointed", /windows-ci-gate-status\.json/.test(windowsGate) && /beginStep\(command\)/.test(windowsGate)),
   check("macOS conversion gate rejects placeholders", /is a CI placeholder, not a real conversion sidecar/.test(macosConversionTest)),
-  check("release validator guards macOS conversion coverage claims", /claimsFullMacosConversionCoverage/.test(releaseValidator)),
+  check("release validator guards macOS conversion coverage claims", /claimsFullMacosConversionCoverage/.test(releaseNotesValidator)),
   check("production config does not expose broad Tauri env variables", packageJson.scripts?.check?.includes("test:production-config") && /must not expose broad TAURI_/.test(productionConfigTest)),
   check("secret leak guard is part of the local quality gate", packageJson.scripts?.check?.includes("test:secret-leaks") && /Potential secret leak detected/.test(secretLeakTest)),
   check("v1.0.5 validation evidence records macOS CI runs", hasMacosAutomatedReleaseEvidence),

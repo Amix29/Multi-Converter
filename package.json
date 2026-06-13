@@ -33,6 +33,7 @@
     "test:repository-metadata": "node scripts/test-repository-metadata.mjs",
     "test:production-config": "node scripts/test-production-config.mjs",
     "test:secret-leaks": "node scripts/test-secret-leaks.mjs",
+    "validate:release-notes-body": "node scripts/validate-release-notes.mjs",
     "status:v1.0.5": "node scripts/report-v1-0-5-status.mjs",
     "test:v1.0.5-status": "node scripts/test-v1-0-5-status.mjs",
     "test:run-tauri": "node scripts/test-run-tauri.mjs",

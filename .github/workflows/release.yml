@@ -54,53 +54,9 @@ jobs:
           version="$(node -p "require('./package.json').version")"
           tag="v$version"
           include_macos="${{ steps.mode.outputs.include_macos }}"
-          macos_dmg_name="Multi-Converter_${version}_macos-universal.dmg"
-          body="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq ".body")"
-          if [[ -z "${body//[[:space:]]/}" ]]; then
-            echo "Missing GitHub release notes for $tag. Create or edit the release notes directly on GitHub in English, then rerun this workflow." >&2
-            exit 1
-          fi
-          if [[ "$body" != "# Multi-Converter $tag"* ]]; then
-            echo "GitHub release notes must start with '# Multi-Converter $tag'." >&2
-            exit 1
-          fi
-          for section in "## Highlights" "## Download And Installation" "## Validation"; do
-            if [[ "$body" != *"$section"* ]]; then
-              echo "GitHub release notes are missing required section '$section'." >&2
-              exit 1
-            fi
-          done
-          if grep -Eiq "mc-release-notes:(fr|es|de|pt|it)" <<< "$body"; then
-            echo "GitHub release notes must be published in English only." >&2
-            exit 1
-          fi
-          if [[ "$include_macos" != "true" ]]; then
-            if [[ "$body" == *"$macos_dmg_name"* ]] || grep -Eq "_macos-universal\.dmg" <<< "$body"; then
-              echo "Release notes mention a macOS DMG, but this workflow run was not started with include_macos=true." >&2
-              exit 1
-            fi
-            exit 0
-          fi
-          if [[ "$body" != *"$macos_dmg_name"* ]]; then
-            echo "macOS release notes must name $macos_dmg_name." >&2
-            exit 1
-          fi
-          if ! grep -Eiq "not[[:space:]]+Apple-signed" <<< "$body" || ! grep -Eiq "not[[:space:]]+notarized" <<< "$body"; then
-            echo "macOS release notes must state that the macOS build is not Apple-signed and not notarized." >&2
-            exit 1
-          fi
-          if [[ "$body" != *"Open Anyway"* || "$body" != *"Privacy & Security"* ]]; then
-            echo "macOS release notes must include the Open Anyway path through Privacy & Security." >&2
-            exit 1
-          fi
-          if ! grep -Eiq "macOS[[:space:]]+automatic[[:space:]]+updates[[:space:]]+are[[:space:]]+not[[:space:]]+enabled" <<< "$body"; then
-            echo "macOS release notes must state that macOS automatic updates are not enabled." >&2
-            exit 1
-          fi
-          if ! grep -Eiq "macOS[[:space:]]+DMG[[:space:]]+verification|verified[[:space:]]+on[[:space:]]+macOS" <<< "$body"; then
-            echo "macOS release notes must mention that the macOS DMG was verified on macOS." >&2
-            exit 1
-          fi
+          notes_file="$RUNNER_TEMP/release-notes.md"
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq ".body" > "$notes_file"
+          node scripts/validate-release-notes.mjs --version "$version" --notes-file "$notes_file" --include-macos "$include_macos" --min-length 200
 
       - name: Require V1.0.5 macOS release readiness
         if: ${{ steps.mode.outputs.include_macos == 'true' }}
@@ -228,40 +184,16 @@ jobs:
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
           $includeMacos = $env:INCLUDE_MACOS -eq "true"
-          $macosDmgName = "Multi-Converter_${version}_macos-universal.dmg"
           $body = gh release view $tag --repo $env:GITHUB_REPOSITORY --json body --jq ".body"
           if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($body)) {
             throw "Missing GitHub release notes for $tag. Create or edit the release notes directly on GitHub in English, then rerun this workflow."
           }
-          if (-not $body.StartsWith("# Multi-Converter $tag")) {
-            throw "GitHub release notes must start with '# Multi-Converter $tag'."
-          }
-          foreach ($section in @("## Highlights", "## Download And Installation", "## Validation")) {
-            if (-not $body.Contains($section)) {
-              throw "GitHub release notes are missing required section '$section'."
-            }
-          }
-          if ($body -match "mc-release-notes:(fr|es|de|pt|it)") {
-            throw "GitHub release notes must be published in English only."
-          }
-          if ($includeMacos) {
-            if (-not $body.Contains($macosDmgName)) {
-              throw "macOS release notes must name $macosDmgName."
-            }
-            if ($body -notmatch "not\s+Apple-signed" -or $body -notmatch "not\s+notarized") {
-              throw "macOS release notes must state that the macOS build is not Apple-signed and not notarized."
-            }
-            if (-not $body.Contains("Open Anyway") -or -not $body.Contains("Privacy & Security")) {
-              throw "macOS release notes must include the Open Anyway path through Privacy & Security."
-            }
-            if ($body -notmatch "macOS\s+automatic\s+updates\s+are\s+not\s+enabled") {
-              throw "macOS release notes must state that macOS automatic updates are not enabled."
-            }
-            if ($body -notmatch "macOS\s+DMG\s+verification" -and $body -notmatch "verified\s+on\s+macOS") {
-              throw "macOS release notes must mention that the macOS DMG was verified on macOS."
-            }
-          } elseif ($body.Contains($macosDmgName) -or $body -match "_macos-universal\.dmg") {
-            throw "Release notes mention a macOS DMG, but this workflow run was not started with include_macos=true."
+          $notesFile = Join-Path $env:RUNNER_TEMP "release-notes.md"
+          $includeMacosArg = if ($includeMacos) { "true" } else { "false" }
+          Set-Content -LiteralPath $notesFile -Value $body -Encoding utf8
+          node scripts/validate-release-notes.mjs --version $version --notes-file $notesFile --include-macos $includeMacosArg --min-length 200
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
           }
           $delimiter = "MC_RELEASE_NOTES_$([guid]::NewGuid().ToString("N"))"
           Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_NOTES_BODY<<$delimiter"

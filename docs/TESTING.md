@@ -212,7 +212,7 @@ The manual GitHub `macOS DMG Build` workflow can build and verify the universal 
 
 When the GitHub `Release` workflow is started with `include_macos=true`, it runs a `macOS DMG verification` job on `macos-latest` before the Windows release job republishes the final asset set. If that macOS DMG verification fails, the release publication job does not run.
 
-The GitHub `Release` workflow first runs a lightweight `release-preflight` job before allocating release runners. For every release, it checks the GitHub release body title, required sections and English-only marker rule. For Windows-only runs, it also rejects accidental macOS DMG mentions.
+The GitHub `Release` workflow first runs a lightweight `release-preflight` job before allocating release runners. For every release, it validates the GitHub release body through `scripts/validate-release-notes.mjs`, the same shared rules used by release asset validation. For Windows-only runs, it also rejects accidental macOS DMG mentions.
 
 For macOS publication, the same preflight also runs:
 
@@ -220,7 +220,7 @@ For macOS publication, the same preflight also runs:
 npm run status:v1.0.5 -- --require-ready
 ```
 
-That gate intentionally fails until the clean-Mac smoke-test receipt and final Codex Security scan or accepted replacement evidence are recorded, and the README macOS row has been updated from "In development" to the final public DMG. For macOS runs, the preflight also checks the GitHub release body for the required macOS DMG name, unsigned/not-notarized wording, `Open Anyway` instructions, disabled macOS updater note and macOS verification wording. If the preflight fails, the macOS DMG verification job and the publishing job do not run.
+That gate intentionally fails until the clean-Mac smoke-test receipt and final Codex Security scan or accepted replacement evidence are recorded, and the README macOS row has been updated from "In development" to the final public DMG. For macOS runs, the shared release-note validator also checks the GitHub release body for the required macOS DMG name, unsigned/not-notarized wording, `Open Anyway` instructions, disabled macOS updater note, macOS verification wording, and `macOS Conversion Matrix` evidence before any full macOS conversion claim. If the preflight fails, the macOS DMG verification job and the publishing job do not run.
 
 The minimum manual DMG smoke test is:
 
