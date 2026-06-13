@@ -68,6 +68,10 @@ const notesWithoutSystemSettings = notes.replace(
   "After the first launch warning, open System Settings > Privacy & Security, choose Open Anyway, then confirm Open.",
   "After the first launch warning, open Privacy & Security, choose Open Anyway.",
 );
+const notesWithFailedMacosDmgVerification = notes.replace(
+  "macOS DMG verification passed",
+  "macOS DMG verification failed",
+);
 const notesWithUnsupportedMacosConversionClaim = [
   `# Multi-Converter v${version}`,
   "",
@@ -117,6 +121,10 @@ try {
   const macosNotesWithoutSystemSettingsPath = path.join(preparedDmgDir, "macos-notes-without-system-settings.md");
   fs.writeFileSync(macosNotesWithoutSystemSettingsPath, notesWithoutSystemSettings);
   runReleaseNotesValidatorFails(macosNotesWithoutSystemSettingsPath, true, "System Settings");
+
+  const macosNotesWithFailedDmgVerificationPath = path.join(preparedDmgDir, "macos-notes-with-failed-dmg-verification.md");
+  fs.writeFileSync(macosNotesWithFailedDmgVerificationPath, notesWithFailedMacosDmgVerification);
+  runReleaseNotesValidatorFails(macosNotesWithFailedDmgVerificationPath, true, "verified on macOS");
 
   writeWindowsAssets(allDir, notes);
   fs.writeFileSync(path.join(allDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");

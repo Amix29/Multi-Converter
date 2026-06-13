@@ -92,7 +92,13 @@ export function validateReleaseNotes({ body, version, includeMacos = false, minL
   if (!/macOS\s+automatic\s+updates\s+are\s+not\s+enabled/i.test(notesBody)) {
     errors.push("Release notes must state that macOS automatic updates are not enabled.");
   }
-  if (!/macOS\s+DMG\s+verification/i.test(notesBody) && !/verified\s+on\s+macOS/i.test(notesBody)) {
+  const macosDmgVerificationPassed =
+    /macOS\s+DMG\s+verification\s+(?:passed|succeeded|completed)/i.test(notesBody) ||
+    /verified\s+on\s+macOS/i.test(notesBody);
+  const macosDmgVerificationFailed =
+    /(?:not|never)\s+verified\s+on\s+macOS/i.test(notesBody) ||
+    /macOS\s+DMG\s+verification\s+(?:failed|did\s+not\s+pass|not\s+completed)/i.test(notesBody);
+  if (!macosDmgVerificationPassed || macosDmgVerificationFailed) {
     errors.push("Release notes must mention that the macOS DMG was verified on macOS.");
   }
   if (claimsFullMacosConversionCoverage(notesBody) && !/macOS\s+Conversion\s+Matrix/i.test(notesBody)) {
