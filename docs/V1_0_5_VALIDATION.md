@@ -7,11 +7,12 @@ This file records validation evidence for the in-progress v1.0.5 release. It is 
 - macOS libvips Runtime: run `27459737669`, success. Produced `libvips-macos-aarch64` and `libvips-macos-x86_64` artifacts.
 - macOS Engine Staging: run `27463128979`, success. Produced the `macos-engine-assets` artifact with FFmpeg, ffprobe, PDFium, LibreOffice, Pandoc and libvips staged for `macos-universal`.
 - macOS Conversion Matrix (single macOS runner): run `27464257789`, success. This passed the strict macOS conversion matrix for the conversions exposed on macOS with the staged engine set before the workflow was hardened into a two-architecture Apple Silicon + Intel matrix. AMR output is intentionally hidden on macOS because this FFmpeg build does not include the OpenCORE AMR encoder.
-- macOS DMG Build: run `27465964283`, success. Built, mounted and verified `Multi-Converter_1.0.5_macos-universal.dmg` on `macos-latest`, then uploaded it as a workflow artifact.
+- macOS DMG Build (Apple Silicon): run `27465964283`, success. Built, mounted and verified `Multi-Converter_1.0.5_macos-universal.dmg` on `macos-latest`, then uploaded it as a workflow artifact before the workflow was hardened to verify the same artifact on Intel.
 
 ## Remaining Release Evidence
 
 - The two-architecture `macOS Conversion Matrix` still needs to pass on Apple Silicon and Intel with the final staged sidecars and engine archives before the release can claim universal macOS conversion coverage.
+- The final `Multi-Converter_1.0.5_macos-universal.dmg` still needs to be verified on Intel with the hardened `macOS DMG Build` or release verification workflow before publication.
 - Manual clean-Mac smoke testing is still required before a public macOS release claim: mount DMG, drag to Applications, approve the unsigned/not-notarized first launch through `System Settings > Privacy & Security > Open Anyway`, confirm second launch, file selection, one FFmpeg media conversion, and one document/PDF/image path when those engines are included.
 - The public release body still needs to state that the macOS build is not Apple-signed and not notarized, that macOS automatic updates are not enabled for the first DMG workflow, and how to open the app through `Open Anyway`.
 

@@ -202,15 +202,15 @@ For a local readiness snapshot that does not overclaim macOS support, run:
 npm run status:v1.0.5
 ```
 
-The command writes `tmp/v1.0.5-status.json`. In the current preparation state, `releaseReady` should remain false because the final two-architecture macOS conversion matrix, the clean-Mac Gatekeeper/install smoke test and the final security approval have not all been recorded yet. When those final proofs exist, the same audit can report `releaseReady: true` instead of blocking that state.
+The command writes `tmp/v1.0.5-status.json`. In the current preparation state, `releaseReady` should remain false because the final two-architecture macOS conversion matrix, Intel verification of the universal DMG, the clean-Mac Gatekeeper/install smoke test and the final security approval have not all been recorded yet. When those final proofs exist, the same audit can report `releaseReady: true` instead of blocking that state.
 
-Current v1.0.5 macOS automation evidence is recorded in `docs/V1_0_5_VALIDATION.md`. It covers macOS engine staging, a single-run macOS conversion matrix, and the verified universal DMG artifact. Do not convert that evidence into a public macOS release claim until the two-architecture matrix and the manual clean-Mac smoke test are complete.
+Current v1.0.5 macOS automation evidence is recorded in `docs/V1_0_5_VALIDATION.md`. It covers macOS engine staging, a single-run macOS conversion matrix, and Apple Silicon verification of the universal DMG artifact. Do not convert that evidence into a public macOS release claim until the two-architecture matrix, Intel DMG verification and the manual clean-Mac smoke test are complete.
 
 The clean-Mac smoke test must be recorded in `docs/V1_0_5_VALIDATION.md` under `## Manual Clean-Mac Smoke Test Receipt`. `npm run status:v1.0.5` requires the receipt to name `Multi-Converter_1.0.5_macos-universal.dmg`, mark the test as `success`, and record `yes` for the DMG mount, Applications install, unsigned/not-notarized first-launch warning, `Open Anyway` path, second launch, file selection, FFmpeg media conversion, document/PDF/image advanced conversion, and updater metadata behavior.
 
-The manual GitHub `macOS DMG Build` workflow can build and verify the universal DMG on `macos-latest`. Use it for test-repository validation before copying the verified artifact into a public release.
+The manual GitHub `macOS DMG Build` workflow builds and verifies the universal DMG on Apple Silicon (`macos-latest`), uploads the release-named artifact, then downloads and verifies that same artifact on Intel (`macos-15-intel`). Use it for test-repository validation before copying the verified artifact into a public release.
 
-When the GitHub `Release` workflow is started with `include_macos=true`, it runs a `macOS DMG verification` job on `macos-latest` before the Windows release job republishes the final asset set. If that macOS DMG verification fails, the release publication job does not run.
+When the GitHub `Release` workflow is started with `include_macos=true`, it runs `macOS DMG verification` jobs on Apple Silicon (`macos-latest`) and Intel (`macos-15-intel`) before the Windows release job republishes the final asset set. If either macOS DMG verification fails, the release publication job does not run.
 
 The GitHub `Release` workflow first runs a lightweight `release-preflight` job before allocating release runners. For every release, it validates the GitHub release body through `scripts/validate-release-notes.mjs`, the same shared rules used by release asset validation. For Windows-only runs, it also rejects accidental macOS DMG mentions.
 
@@ -220,7 +220,7 @@ For macOS publication, the same preflight also runs:
 npm run status:v1.0.5 -- --require-ready
 ```
 
-That gate intentionally fails until the two-architecture macOS conversion matrix, the clean-Mac smoke-test receipt and final Codex Security scan or accepted replacement evidence are recorded, and the README macOS row has been updated from "In development" to the final public DMG. For macOS runs, the shared release-note validator also checks the GitHub release body for the required macOS DMG name, unsigned/not-notarized wording, `Open Anyway` instructions, disabled macOS updater note, macOS verification wording, and `macOS Conversion Matrix` evidence before any full macOS conversion claim. If the preflight fails, the macOS DMG verification job and the publishing job do not run.
+That gate intentionally fails until the two-architecture macOS conversion matrix, Intel DMG verification, the clean-Mac smoke-test receipt and final Codex Security scan or accepted replacement evidence are recorded, and the README macOS row has been updated from "In development" to the final public DMG. For macOS runs, the shared release-note validator also checks the GitHub release body for the required macOS DMG name, unsigned/not-notarized wording, `Open Anyway` instructions, disabled macOS updater note, macOS verification wording, and `macOS Conversion Matrix` evidence before any full macOS conversion claim. If the preflight fails, the macOS DMG verification job and the publishing job do not run.
 
 The minimum manual DMG smoke test is:
 

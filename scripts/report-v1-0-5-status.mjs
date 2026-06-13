@@ -46,12 +46,15 @@ const hasMacosAutomatedBaselineEvidence =
   macosAutomationEvidence.libvipsRuntime &&
   macosAutomationEvidence.engineStaging &&
   (macosAutomationEvidence.conversionMatrixSingleRunner || hasMacosTwoArchitectureConversionEvidence) &&
-  macosAutomationEvidence.dmgBuild;
+  macosAutomationEvidence.dmgBuildAppleSilicon;
+const hasMacosTwoArchitectureDmgEvidence =
+  macosAutomationEvidence.dmgBuildAppleSilicon &&
+  macosAutomationEvidence.dmgVerifyIntel;
 const hasMacosAutomatedReleaseEvidence =
   macosAutomationEvidence.libvipsRuntime &&
   macosAutomationEvidence.engineStaging &&
   hasMacosTwoArchitectureConversionEvidence &&
-  macosAutomationEvidence.dmgBuild;
+  hasMacosTwoArchitectureDmgEvidence;
 const cleanMacSmokeEvidence = cleanMacSmokeEvidenceFromDocs();
 const hasManualCleanMacEvidence = cleanMacSmokeEvidence.complete;
 const hasMacosPublicReleaseEvidence = hasMacosAutomatedReleaseEvidence && hasManualCleanMacEvidence;
@@ -95,6 +98,7 @@ const status = {
     hasMacosAutomatedReleaseEvidence,
     hasMacosAutomatedBaselineEvidence,
     hasMacosTwoArchitectureConversionEvidence,
+    hasMacosTwoArchitectureDmgEvidence,
     hasManualCleanMacEvidence,
     hasSecurityCheckEvidence,
     hasCodexSecurityScanEvidence,
@@ -134,7 +138,7 @@ function check(name, passed) {
 function macosEvidenceBlockers() {
   const blockers = [];
   if (!hasMacosAutomatedReleaseEvidence) {
-    if (!macosAutomationEvidence.dmgBuild && process.platform !== "darwin") {
+    if (!macosAutomationEvidence.dmgBuildAppleSilicon && process.platform !== "darwin") {
       blockers.push("macOS universal DMG build and verification still require a real macOS host or successful macOS GitHub Actions evidence.");
     }
     if (!macosAutomationEvidence.engineStaging && missingMacosSidecars.length > 0) {
@@ -149,8 +153,11 @@ function macosEvidenceBlockers() {
       if (!macosAutomationEvidence.conversionMatrixIntel) missingArchitectures.push("Intel");
       blockers.push(`macOS Conversion Matrix success evidence is missing for ${missingArchitectures.join(" and ")}.`);
     }
-    if (!macosAutomationEvidence.dmgBuild) {
-      blockers.push("macOS universal DMG build and verification success evidence is missing.");
+    if (!hasMacosTwoArchitectureDmgEvidence) {
+      const missingArchitectures = [];
+      if (!macosAutomationEvidence.dmgBuildAppleSilicon) missingArchitectures.push("Apple Silicon");
+      if (!macosAutomationEvidence.dmgVerifyIntel) missingArchitectures.push("Intel");
+      blockers.push(`macOS universal DMG verification success evidence is missing for ${missingArchitectures.join(" and ")}.`);
     }
   }
   if (!macosAutomationEvidence.engineStaging && missingMacosAdvancedEngines.length === 0 && !macosAdvancedEngines.every((engine) => /^[a-f0-9]{64}$/i.test(String(engine.sha256 ?? "")))) {
@@ -176,7 +183,8 @@ function macosAutomationEvidenceFromDocs() {
     conversionMatrixSingleRunner: /macOS Conversion Matrix \(single macOS runner\):\s*run `27464257789`, success/i.test(validationEvidence),
     conversionMatrixAppleSilicon: /macOS Conversion Matrix \(Apple Silicon\):\s*run `\d+`, success/i.test(validationEvidence),
     conversionMatrixIntel: /macOS Conversion Matrix \(Intel\):\s*run `\d+`, success/i.test(validationEvidence),
-    dmgBuild: /macOS DMG Build:\s*run `27465964283`, success/i.test(validationEvidence) && validationEvidence.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`),
+    dmgBuildAppleSilicon: /macOS DMG Build \(Apple Silicon\):\s*run `\d+`, success/i.test(validationEvidence) && validationEvidence.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`),
+    dmgVerifyIntel: /macOS DMG Verification \(Intel\):\s*run `\d+`, success/i.test(validationEvidence) && validationEvidence.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`),
   };
 }
 

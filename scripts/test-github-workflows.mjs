@@ -24,6 +24,7 @@ const macosHostTestsJob = workflowJob(buildWorkflow, "macos-host-tests");
 const macosEngineStagingJob = workflowJob(macosEngineStagingWorkflow, "stage");
 const macosLibvipsRuntimeJob = workflowJob(macosLibvipsRuntimeWorkflow, "build");
 const macosDmgBuildJob = workflowJob(macosDmgWorkflow, "build");
+const macosDmgIntelVerifyJob = workflowJob(macosDmgWorkflow, "verify-intel");
 const macosConversionsJob = workflowJob(macosConversionsWorkflow, "macos-conversions");
 
 assert.match(buildWorkflow, /quality-gate:\s*\n\s+name:\s+Windows x64 quality gate/, "build workflow must keep the Windows job clearly named");
@@ -88,7 +89,10 @@ assert.match(releasePreflightJob, /npm run status:v1\.0\.5 -- --require-ready/, 
 assert.match(releaseWorkflow, /macos-dmg-verify:/, "release workflow must include a macOS DMG verification job");
 assert.match(releaseWorkflow, /macos-dmg-verify:[\s\S]*?needs:\s+release-preflight/, "macOS DMG verification must wait for the cheap preflight");
 assert.match(releaseWorkflow, /needs\.release-preflight\.outputs\.include_macos == 'true'/, "macOS DMG verification must only run when preflight confirms macOS publication");
-assert.match(releaseWorkflow, /runs-on:\s+macos-latest/, "macOS DMG verification must run on a macOS runner");
+assert.match(releaseWorkflow, /name:\s+macOS DMG verification \(\$\{\{\s*matrix\.arch_label\s*\}\}\)/, "release macOS DMG verification must identify the tested architecture");
+assert.match(releaseWorkflow, /arch_label:\s+Apple Silicon[\s\S]*?runner:\s+macos-latest/, "release macOS DMG verification must run on Apple Silicon");
+assert.match(releaseWorkflow, /arch_label:\s+Intel[\s\S]*?runner:\s+macos-15-intel/, "release macOS DMG verification must run on Intel");
+assert.match(releaseWorkflow, /runs-on:\s+\$\{\{\s*matrix\.runner\s*\}\}/, "release macOS DMG verification must use the matrix runner");
 assert.match(releaseWorkflow, /npm run verify:macos-dmg -- --version "\$\{\{ steps\.version\.outputs\.version \}\}" --dmg "\$MACOS_DMG_PATH"/, "release workflow must verify the downloaded DMG on macOS");
 assert.match(releaseWindowsJob, /needs:\s*\n\s+- release-preflight\s*\n\s+- macos-dmg-verify/, "Windows release publication must wait for preflight and macOS DMG verification");
 assert.match(releaseWindowsJob, /needs\.release-preflight\.result == 'success'/, "Windows release job must not run after failed preflight");
@@ -171,6 +175,7 @@ assert.match(macosDmgWorkflow, /engine_release_tag:/, "macOS DMG workflow must a
 assert.match(macosDmgWorkflow, /engine_staging_run_id:/, "macOS DMG workflow must allow staged engines from a workflow artifact");
 assert.match(macosDmgWorkflow, /permissions:[\s\S]*?actions:\s+read/, "macOS DMG workflow must be able to download staging workflow artifacts");
 assert.match(macosDmgBuildJob, /vars\.MC_ENABLE_MACOS_DMG == '1'/, "codex/test macOS DMG push runs must require an explicit repository variable gate");
+assert.match(macosDmgBuildJob, /outputs:[\s\S]*?version:\s+\$\{\{\s*steps\.version\.outputs\.version\s*\}\}[\s\S]*?dmg_name:\s+\$\{\{\s*steps\.version\.outputs\.dmg_name\s*\}\}/, "macOS DMG build must expose the verified artifact name to follow-up verification jobs");
 assert.match(macosDmgBuildJob, /vars\.MC_MACOS_ENGINE_STAGING_RUN_ID/, "codex/test macOS DMG push runs must read the staging run ID from a repository variable");
 assert.match(macosDmgBuildJob, /runs-on:\s+macos-latest/, "macOS DMG build must run on macOS");
 assert.match(macosDmgBuildJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS DMG build must prepare macos-universal engines");
@@ -189,6 +194,13 @@ assert.match(macosDmgBuildJob, /npm run tauri:build:macos/, "macOS DMG build mus
 assert.match(macosDmgBuildJob, /npm run prepare:macos-dmg-artifact/, "macOS DMG build must normalize the DMG release asset name");
 assert.match(macosDmgBuildJob, /npm run verify:macos-dmg/, "macOS DMG build must verify the final DMG on macOS");
 assert.match(macosDmgBuildJob, /actions\/upload-artifact@v4/, "macOS DMG build must upload the verified DMG artifact");
+assert.match(macosDmgWorkflow, /verify-intel:/, "macOS DMG workflow must verify the uploaded universal DMG on Intel");
+assert.match(macosDmgIntelVerifyJob, /needs:\s+build/, "macOS Intel DMG verification must wait for the build artifact");
+assert.match(macosDmgIntelVerifyJob, /needs\.build\.result == 'success'/, "macOS Intel DMG verification must only run after a successful build");
+assert.match(macosDmgIntelVerifyJob, /runs-on:\s+macos-15-intel/, "macOS Intel DMG verification must run on an Intel runner");
+assert.match(macosDmgIntelVerifyJob, /actions\/download-artifact@v4/, "macOS Intel DMG verification must download the exact uploaded DMG artifact");
+assert.match(macosDmgIntelVerifyJob, /name:\s+\$\{\{\s*needs\.build\.outputs\.dmg_name\s*\}\}/, "macOS Intel DMG verification must download the release-named DMG artifact");
+assert.match(macosDmgIntelVerifyJob, /npm run verify:macos-dmg -- --version "\$\{\{\s*needs\.build\.outputs\.version\s*\}\}" --dmg "\$RUNNER_TEMP\/mc-macos-dmg-artifact\/\$\{\{\s*needs\.build\.outputs\.dmg_name\s*\}\}"/, "macOS Intel DMG verification must verify the same uploaded DMG artifact");
 
 assert.match(macosConversionsWorkflow, /name:\s+macOS Conversion Matrix/, "macOS conversion workflow must be clearly named");
 assert.match(macosConversionsWorkflow, /workflow_dispatch:/, "macOS conversion workflow must be manually runnable");

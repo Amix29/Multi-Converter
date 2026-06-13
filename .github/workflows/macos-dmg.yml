@@ -52,6 +52,9 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || vars.MC_ENABLE_MACOS_DMG == '1' }}
     runs-on: macos-latest
     timeout-minutes: 120
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      dmg_name: ${{ steps.version.outputs.dmg_name }}
     env:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
@@ -185,3 +188,28 @@ jobs:
           name: ${{ steps.version.outputs.dmg_name }}
           path: ${{ runner.temp }}/mc-macos-dmg-artifact/${{ steps.version.outputs.dmg_name }}
           if-no-files-found: error
+
+  verify-intel:
+    name: Verify universal DMG on Intel
+    needs: build
+    if: ${{ needs.build.result == 'success' }}
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.dmg_name }}
+          path: ${{ runner.temp }}/mc-macos-dmg-artifact
+
+      - name: Verify final DMG on Intel
+        run: npm run verify:macos-dmg -- --version "${{ needs.build.outputs.version }}" --dmg "$RUNNER_TEMP/mc-macos-dmg-artifact/${{ needs.build.outputs.dmg_name }}"

@@ -13,7 +13,9 @@ try {
   const currentStatus = runStatus("current.md", currentEvidence, { assertMode: true });
   assert.equal(currentStatus.summary.hasManualCleanMacEvidence, false, "current pending receipt must not count as clean-Mac proof");
   assert.equal(currentStatus.summary.hasMacosTwoArchitectureConversionEvidence, false, "current single-run macOS conversion evidence must not count as two-architecture proof");
+  assert.equal(currentStatus.summary.hasMacosTwoArchitectureDmgEvidence, false, "current single-architecture DMG evidence must not count as two-architecture proof");
   assert.match(currentStatus.blockers.join("\n"), /Apple Silicon and Intel/, "current status must require both Apple Silicon and Intel conversion evidence");
+  assert.match(currentStatus.blockers.join("\n"), /DMG verification.*Intel/, "current status must require Intel DMG verification evidence");
   assert.match(currentStatus.blockers.join("\n"), /Manual clean-Mac Gatekeeper\/install smoke testing/, "current status must keep the clean-Mac blocker");
   const currentReadyGate = runStatus("current-require-ready.md", currentEvidence, { requireReady: true, expectedStatus: 1 });
   assert.equal(currentReadyGate.status.releaseReady, false, "require-ready fixture must still write the failing status JSON");
@@ -42,8 +44,9 @@ try {
   const completedReceiptStatus = runStatus("completed-receipt.md", completedReceipt(currentEvidence));
   assert.equal(completedReceiptStatus.summary.hasManualCleanMacEvidence, true, "a complete receipt section must count as clean-Mac proof");
   assert.equal(completedReceiptStatus.summary.cleanMacSmokeEvidence.missing.length, 0, "complete receipt should not report missing smoke-test fields");
-  assert.equal(completedReceiptStatus.releaseReady, false, "clean-Mac proof alone must not bypass final conversion and security gates");
+  assert.equal(completedReceiptStatus.releaseReady, false, "clean-Mac proof alone must not bypass final conversion, DMG and security gates");
   assert.match(completedReceiptStatus.blockers.join("\n"), /Conversion Matrix/, "clean-Mac proof alone must keep the two-architecture conversion blocker");
+  assert.match(completedReceiptStatus.blockers.join("\n"), /DMG verification/, "clean-Mac proof alone must keep the two-architecture DMG verification blocker");
   assert.match(completedReceiptStatus.blockers.join("\n"), /Codex Security/, "clean-Mac proof alone must keep the security blocker");
 
   const missingMetadataStatus = runStatus("missing-metadata.md", completedReceipt(currentEvidence).replace("- Date: 2026-06-13", "- Date: pending"));
@@ -70,6 +73,14 @@ try {
   });
   assert.equal(appleSiliconOnlyStatus.status.releaseReady, false, "Apple Silicon-only conversion proof must not unlock universal macOS readiness");
   assert.match(appleSiliconOnlyStatus.output, /Intel/, "missing Intel conversion evidence must be reported explicitly");
+
+  const missingIntelDmgStatus = runStatus("missing-intel-dmg.md", completedReleaseEvidence(currentEvidence).replace(/^- macOS DMG Verification \(Intel\):.*\n/m, ""), {
+    requireReady: true,
+    expectedStatus: 1,
+    readme: readyReadme(currentReadme),
+  });
+  assert.equal(missingIntelDmgStatus.status.releaseReady, false, "Apple Silicon-only DMG proof must not unlock universal macOS readiness");
+  assert.match(missingIntelDmgStatus.output, /DMG verification.*Intel/, "missing Intel DMG evidence must be reported explicitly");
 
   const missingReadmeInstallNotesStatus = runStatus("missing-readme-install-notes.md", completedReleaseEvidence(currentEvidence), {
     requireReady: true,
@@ -143,7 +154,7 @@ function completedReceipt(evidence) {
 }
 
 function completedReleaseEvidence(evidence) {
-  return completedReceipt(finalMacosConversionEvidence(evidence)).replace(
+  return completedReceipt(finalDmgVerificationEvidence(finalMacosConversionEvidence(evidence))).replace(
     "The exhaustive Codex Security subagent scan is still pending explicit maintainer approval for subagent use. Do not mark the full v1.0.5 goal complete until that scan, or an approved equivalent, is finished and any findings are resolved or explicitly accepted.",
     "- Exhaustive Codex Security subagent scan: accepted\n- Security reviewer: maintainer-approved fixture",
   );
@@ -153,6 +164,13 @@ function finalMacosConversionEvidence(evidence) {
   return evidence.replace(
     /^- macOS Conversion Matrix \(single macOS runner\):.*$/m,
     "- macOS Conversion Matrix (Apple Silicon): run `9990001`, success. Passed the strict macOS conversion matrix for the conversions exposed on macOS with the staged engine set.\n- macOS Conversion Matrix (Intel): run `9990002`, success. Passed the strict macOS conversion matrix for the conversions exposed on macOS with the staged engine set.",
+  );
+}
+
+function finalDmgVerificationEvidence(evidence) {
+  return evidence.replace(
+    /^- macOS DMG Build \(Apple Silicon\):.*$/m,
+    "- macOS DMG Build (Apple Silicon): run `9991001`, success. Built, mounted and verified `Multi-Converter_1.0.5_macos-universal.dmg` on Apple Silicon.\n- macOS DMG Verification (Intel): run `9991001`, success. Downloaded the same `Multi-Converter_1.0.5_macos-universal.dmg` artifact and verified it on Intel.",
   );
 }
 

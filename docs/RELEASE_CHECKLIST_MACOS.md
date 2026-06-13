@@ -153,7 +153,7 @@ Use the manual `macOS DMG Build` workflow when a Mac runner should build and ver
 - Prefer `engine_staging_run_id` from a successful `macOS Engine Staging` run for private `codex/test` DMG validation. The workflow will download the staged sidecars, engine manifest and engine archives from the `macos-engine-assets` workflow artifact.
 - On `codex/test`, push runs require `MC_ENABLE_MACOS_DMG=1` and read the staging artifact run from `MC_MACOS_ENGINE_STAGING_RUN_ID`.
 - Do not combine `engine_staging_run_id` with release-tag inputs in the same run.
-- The workflow prepares `macos-universal` engines, runs `npm run test:macos:host`, builds `npm run tauri:build:macos`, renames the output to `Multi-Converter_X.Y.Z_macos-universal.dmg`, verifies it with `npm run verify:macos-dmg`, then uploads the verified DMG as a workflow artifact.
+- The workflow prepares `macos-universal` engines, runs `npm run test:macos:host`, builds `npm run tauri:build:macos` on Apple Silicon, renames the output to `Multi-Converter_X.Y.Z_macos-universal.dmg`, verifies it with `npm run verify:macos-dmg`, uploads the verified DMG as a workflow artifact, then downloads and verifies that same DMG on Intel.
 - A failed workflow is not a release blocker by itself until the failure is reviewed. Common expected failures are missing staged sidecars, missing executable bits or a DMG that still contains Windows-only bundled engines.
 
 `npm run verify:macos-dmg` mounts the final DMG and inspects the app bundle. It must reject a DMG that contains Windows-only engine files such as `.exe` or `.dll`, missing engine metadata, or `engine.json` entries whose platform is not `macos-universal`.
@@ -169,9 +169,9 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$TMPDIR/mc-release-ass
 - Create or edit the GitHub release body in English before running the release workflow.
 - Upload the verified DMG asset to that release first: `Multi-Converter_X.Y.Z_macos-universal.dmg`.
 - Run the `Release` workflow manually with `include_macos=true`.
-- The workflow downloads that pre-uploaded DMG, verifies it on `macos-latest`, copies it into a clean release folder, validates `--platform all`, then republishes the exact final asset list.
+- The workflow downloads that pre-uploaded DMG, verifies it on Apple Silicon and Intel macOS runners, copies it into a clean release folder, validates `--platform all`, then republishes the exact final asset list.
 - Before allocating release runners, the workflow validates the GitHub release notes with `scripts/validate-release-notes.mjs`, the same shared rules used by release asset validation. Before allocating a macOS runner, it also runs `npm run status:v1.0.5 -- --require-ready` and validates the macOS-specific wording; it must fail until the clean-Mac smoke-test receipt, final security approval, final README macOS availability row and required public macOS installation notes are recorded.
-- If the macOS DMG verification job fails, the publication job must not run.
+- If either macOS DMG verification job fails, the publication job must not run.
 - Do not use `include_macos=true` for a DMG that has not passed the manual smoke test below.
 
 ## Manual DMG Smoke Test

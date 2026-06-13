@@ -63,10 +63,18 @@ jobs:
         run: npm run status:v1.0.5 -- --require-ready
 
   macos-dmg-verify:
-    name: macOS DMG verification
+    name: macOS DMG verification (${{ matrix.arch_label }})
     needs: release-preflight
     if: ${{ needs.release-preflight.outputs.include_macos == 'true' }}
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch_label: Apple Silicon
+            runner: macos-latest
+          - arch_label: Intel
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

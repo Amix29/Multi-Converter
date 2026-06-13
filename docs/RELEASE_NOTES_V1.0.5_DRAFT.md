@@ -22,8 +22,8 @@ Multi-Converter v1.0.5 prepares the first macOS build while keeping the Windows 
 ## Validation
 
 - Windows checks remain required before publication: TypeScript/i18n checks, Rust tests, conversion tests, PDFium wrapper checks, Clippy, production config checks, secret leak checks, release asset validation and Windows x64 build validation.
-- macOS automation passed for engine staging, a single-run `macOS Conversion Matrix`, and the universal DMG build. The macOS DMG was built, mounted and verified on macOS by the `macOS DMG Build` workflow.
-- Final publication still requires the hardened two-architecture `macOS Conversion Matrix` on Apple Silicon and Intel, a clean-Mac smoke test of the downloaded DMG, and final security approval. Replace this bullet with the recorded result before publishing.
+- macOS automation passed for engine staging, a single-run `macOS Conversion Matrix`, and the universal DMG build on Apple Silicon. The macOS DMG was built, mounted and verified on macOS by the `macOS DMG Build` workflow before the workflow was hardened with Intel verification.
+- Final publication still requires the hardened two-architecture `macOS Conversion Matrix` on Apple Silicon and Intel, Intel verification of the final DMG, a clean-Mac smoke test of the downloaded DMG, and final security approval. Replace this bullet with the recorded result before publishing.
 
 ## Formats And Conversions
 
