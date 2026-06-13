@@ -12,8 +12,8 @@ const env = {
 
 const result = spawnSync("cargo", args, {
   env,
-  shell: true,
   stdio: "inherit",
+  windowsHide: true,
 });
 
 process.exit(result.status ?? 1);

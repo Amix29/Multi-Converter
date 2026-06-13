@@ -62,7 +62,6 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
       MACOS_CONVERSION_ARCH: ${{ matrix.arch }}
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SIDECAR_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_release_tag || '' }}
       ENGINE_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_release_tag || '' }}
       ENGINE_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_MACOS_ENGINE_STAGING_RUN_ID || '' }}
@@ -109,15 +108,32 @@ jobs:
             echo "Use either engine_staging_run_id or release tags, not both." >&2
             exit 1
           fi
+          if [[ -n "$ENGINE_STAGING_RUN_ID" && ! "$ENGINE_STAGING_RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "engine_staging_run_id must be a numeric GitHub Actions run ID." >&2
+            exit 1
+          fi
+          for tag in "$SIDECAR_RELEASE_TAG" "$ENGINE_RELEASE_TAG"; do
+            if [[ -n "$tag" && ( ! "$tag" =~ ^[A-Za-z0-9._/-]+$ || "$tag" == -* || "$tag" == */..* || "$tag" == *..* ) ]]; then
+              echo "Invalid release tag input: $tag" >&2
+              exit 1
+            fi
+          done
 
       - name: Download staged macOS assets from a workflow artifact
         if: ${{ env.ENGINE_STAGING_RUN_ID != '' }}
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           asset_dir="$RUNNER_TEMP/mc-macos-engine-assets"
           mkdir -p "$asset_dir" src-tauri/binaries
           gh run download "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --name macos-engine-assets --dir "$asset_dir"
+          run_info="$(gh run view "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,name --jq '.name + "|" + .conclusion')"
+          if [[ "$run_info" != "macOS Engine Staging|success" ]]; then
+            echo "engine_staging_run_id must reference a successful macOS Engine Staging run. Got: $run_info" >&2
+            exit 1
+          fi
           for asset in \
             ffmpeg-aarch64-apple-darwin \
             ffmpeg-x86_64-apple-darwin \
@@ -125,6 +141,8 @@ jobs:
             ffprobe-x86_64-apple-darwin
           do
             test -s "$asset_dir/$asset"
+            test -s "$asset_dir/$asset.sha256"
+            (cd "$asset_dir" && shasum -a 256 -c "$asset.sha256")
             cp "$asset_dir/$asset" "src-tauri/binaries/$asset"
           done
           chmod +x src-tauri/binaries/*-apple-darwin
@@ -133,6 +151,8 @@ jobs:
       - name: Download staged macOS sidecars from a release
         if: ${{ env.SIDECAR_RELEASE_TAG != '' }}
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p src-tauri/binaries
@@ -143,11 +163,15 @@ jobs:
             ffprobe-x86_64-apple-darwin
           do
             gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries
+            gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset.sha256" --dir src-tauri/binaries
+            (cd src-tauri/binaries && shasum -a 256 -c "$asset.sha256")
           done
           chmod +x src-tauri/binaries/*-apple-darwin
 
       - name: Download staged macOS engine archives from a release
         if: ${{ env.ENGINE_RELEASE_TAG != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/prepare-macos-engine-release-assets.mjs --tag "$ENGINE_RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
 
       - name: Run strict macOS conversion validation

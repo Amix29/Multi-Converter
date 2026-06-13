@@ -94,7 +94,12 @@ async function ensureAsset(assetName) {
 
 function assetNameFromUrl(url) {
   try {
-    return decodeURIComponent(path.posix.basename(new URL(url).pathname));
+    const rawName = path.posix.basename(new URL(url).pathname);
+    const decoded = decodeURIComponent(rawName);
+    if (!decoded || decoded.includes("/") || decoded.includes("\\") || decoded === "." || decoded === "..") {
+      fail(`Unsafe macOS engine asset name in downloadUrl: ${url}`);
+    }
+    return decoded;
   } catch {
     fail(`Invalid macOS engine downloadUrl: ${url}`);
   }

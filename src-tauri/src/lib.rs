@@ -257,18 +257,22 @@ fn bootstrap_dependencies(app: AppHandle) -> CommandResult<DependencyBootstrap> 
                 "engines",
                 &format!(
                     "bootstrap ok={} mode={} env={}",
-                    info.ok, info.mode, info.env_dir
+                    info.ok,
+                    info.mode,
+                    runtime_log::path(Path::new(&info.env_dir))
                 ),
             );
             for check in &info.checks {
+                let path = check
+                    .path
+                    .as_deref()
+                    .map(|value| runtime_log::path(Path::new(value)))
+                    .unwrap_or_default();
                 runtime_log::write(
                     "engines",
                     &format!(
                         "{} status={} available={} path={}",
-                        check.id,
-                        check.status,
-                        check.available,
-                        check.path.as_deref().unwrap_or("")
+                        check.id, check.status, check.available, path
                     ),
                 );
             }
@@ -461,7 +465,7 @@ fn ensure_destination_folder(destination_dir: &Path) -> CommandResult<()> {
             "export",
             &format!(
                 "create_dir_all failed for {}: {}",
-                destination_dir.display(),
+                runtime_log::path(destination_dir),
                 error
             ),
         );
@@ -479,8 +483,8 @@ fn copy_export_file(source: &Path, output_path: &Path) -> std::io::Result<u64> {
             "export",
             &format!(
                 "copy failed from {} to {}: {}",
-                source.display(),
-                output_path.display(),
+                runtime_log::path(source),
+                runtime_log::path(output_path),
                 error
             ),
         );
@@ -634,7 +638,11 @@ fn cleanup_stale_temp_output_folders() {
         {
             runtime_log::write(
                 "cleanup",
-                &format!("temp cleanup failed for {}: {}", path.display(), error),
+                &format!(
+                    "temp cleanup failed for {}: {}",
+                    runtime_log::path(&path),
+                    error
+                ),
             );
         }
     }

@@ -1,10 +1,14 @@
 import fs from "node:fs/promises";
-import { createWriteStream } from "node:fs";
 import path from "node:path";
-import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 import os from "node:os";
+import {
+  download,
+  downloadIfMissingVerified,
+  publicSourceLabel,
+  requireSha256Env,
+} from "./lib/download-integrity.mjs";
 
 const root = process.cwd();
 const downloads = path.join(root, "engine-sources", ".downloads");
@@ -30,7 +34,12 @@ if (!asset) {
 }
 
 const archive = path.join(downloads, asset.name);
-await downloadIfMissing(asset.browser_download_url, archive);
+await downloadIfMissingVerified(
+  asset.browser_download_url,
+  archive,
+  requireSha256Env("LIBVIPS_WINDOWS_X64_ARCHIVE_SHA256"),
+  userAgent,
+);
 
 const extractDir = path.join(extracts, "libvips");
 await extractZip(archive, extractDir);
@@ -69,7 +78,7 @@ await assertFile(path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"), "T
 await smokeTestLibvips(path.join(sourceDir, "bin", "vips.exe"));
 const detectedFormats = await detectFormats(path.join(sourceDir, "bin", "vips.exe"));
 
-console.log(`libvips ready from ${release.name ?? release.tag_name}: ${asset.browser_download_url}`);
+console.log(`libvips ready from ${release.name ?? release.tag_name}: ${publicSourceLabel(asset.browser_download_url)}`);
 console.log(`Formats detectes pour l'activation Multi-Converter: ${detectedFormats.join(", ")}`);
 
 function selectWindowsX64Asset(assets) {
@@ -78,26 +87,6 @@ function selectWindowsX64Asset(assets) {
     ?? stable.find((item) => /^vips-dev-x64-web-\d/i.test(item.name))
     ?? stable.find((item) => /^vips-dev-x64-all-/i.test(item.name))
     ?? null;
-}
-
-async function downloadIfMissing(url, target) {
-  try {
-    const stat = await fs.stat(target);
-    if (stat.size > 0) return;
-  } catch {
-    // Download below.
-  }
-  await download(url, target);
-}
-
-async function download(url, target) {
-  console.log(`Downloading ${url}`);
-  const response = await fetch(url, { headers: userAgent });
-  if (!response.ok || !response.body) {
-    throw new Error(`Telechargement impossible (${response.status}) : ${url}`);
-  }
-  await fs.mkdir(path.dirname(target), { recursive: true });
-  await pipeline(response.body, createWriteStream(target));
 }
 
 async function getJson(url) {
@@ -134,7 +123,7 @@ async function findRuntimeRoot(dir) {
 async function writeThirdPartyNotices(asset, release, runtimeRoot) {
   const lines = [
     "libvips Windows x64 package",
-    `Source: ${asset.browser_download_url}`,
+    `Source: ${publicSourceLabel(asset.browser_download_url)}`,
     `Release: ${release.name ?? release.tag_name}`,
     `Build repository: ${release.html_url ?? "https://github.com/libvips/build-win64-mxe"}`,
     "",

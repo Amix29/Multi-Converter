@@ -109,6 +109,7 @@ assert.match(macosPdfiumPrepare, /process\.platform !== "darwin"/, "macOS PDFium
 assert.match(macosPdfiumPrepare, /function githubApiHeaders\(\)/, "macOS PDFium preparation must use authenticated GitHub API headers when a token is available");
 assert.match(macosPdfiumPrepare, /process\.env\.GH_TOKEN/, "macOS PDFium preparation must read the GitHub Actions token from GH_TOKEN");
 assert.match(macosPdfiumPrepare, /pdfium-mac-univ\.tgz/, "macOS PDFium preparation must use the upstream universal PDFium archive");
+assert.match(macosPdfiumPrepare, /PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256/, "macOS PDFium preparation must require the pinned universal PDFium checksum");
 assert.match(macosPdfiumPrepare, /aarch64-apple-darwin/, "macOS PDFium wrapper must build for Apple Silicon");
 assert.match(macosPdfiumPrepare, /x86_64-apple-darwin/, "macOS PDFium wrapper must build for Intel");
 assert.match(macosPdfiumPrepare, /lipo.*-create/s, "macOS PDFium preparation must create a universal wrapper with lipo");
@@ -116,6 +117,8 @@ assert.match(macosPdfiumPrepare, /pdfium-render-universal-apple-darwin/, "macOS 
 assert.match(macosLibreOfficePrepare, /process\.platform !== "darwin"/, "macOS LibreOffice preparation must refuse non-macOS hosts");
 assert.match(macosLibreOfficePrepare, /LibreOffice_\$\{version\}_MacOS_aarch64\.dmg/, "macOS LibreOffice preparation must use the official Apple Silicon DMG name");
 assert.match(macosLibreOfficePrepare, /LibreOffice_\$\{version\}_MacOS_x86-64\.dmg/, "macOS LibreOffice preparation must use the official Intel DMG name");
+assert.match(macosLibreOfficePrepare, /LIBREOFFICE_MACOS_AARCH64_DMG_SHA256/, "macOS LibreOffice preparation must require the pinned Apple Silicon DMG checksum");
+assert.match(macosLibreOfficePrepare, /LIBREOFFICE_MACOS_X86_64_DMG_SHA256/, "macOS LibreOffice preparation must require the pinned Intel DMG checksum");
 assert.match(macosLibreOfficePrepare, /hdiutil.*attach/s, "macOS LibreOffice preparation must mount official DMGs with hdiutil");
 assert.match(macosLibreOfficePrepare, /arch:\s+"aarch64"/, "macOS LibreOffice preparation must stage Apple Silicon app bundle input");
 assert.match(macosLibreOfficePrepare, /arch:\s+"x86_64"/, "macOS LibreOffice preparation must stage Intel app bundle input");
@@ -126,6 +129,8 @@ assert.match(macosPandocPrepare, /function githubApiHeaders\(\)/, "macOS Pandoc 
 assert.match(macosPandocPrepare, /process\.env\.GH_TOKEN/, "macOS Pandoc preparation must read the GitHub Actions token from GH_TOKEN");
 assert.match(macosPandocPrepare, /arm64-macOS\\.zip/, "macOS Pandoc preparation must use the official Apple Silicon ZIP");
 assert.match(macosPandocPrepare, /x86_64-macOS\\.zip/, "macOS Pandoc preparation must use the official Intel ZIP");
+assert.match(macosPandocPrepare, /PANDOC_MACOS_AARCH64_ARCHIVE_SHA256/, "macOS Pandoc preparation must require the pinned Apple Silicon archive checksum");
+assert.match(macosPandocPrepare, /PANDOC_MACOS_X86_64_ARCHIVE_SHA256/, "macOS Pandoc preparation must require the pinned Intel archive checksum");
 assert.match(macosPandocPrepare, /lipo.*-create/s, "macOS Pandoc preparation must create a universal binary with lipo");
 assert.match(macosPandocPrepare, /pandoc-universal-apple-darwin/, "macOS Pandoc preparation must stage the universal binary name used by the engine config");
 assert.match(macosLibvipsPrepare, /process\.platform !== "darwin"/, "macOS libvips preparation must refuse non-macOS hosts");
@@ -158,12 +163,13 @@ assert.match(macosDmgVerify, /process\.platform !== "darwin"/, "macOS DMG verifi
 assert.match(macosDmgVerify, /hdiutil.*attach/s, "macOS DMG verification must mount the DMG");
 assert.match(macosDmgVerify, /CFBundleExecutable/, "macOS DMG verification must read the executable name from Info.plist");
 assert.match(macosDmgVerify, /Mounted DMG contains multiple app bundles/, "macOS DMG verification must reject ambiguous DMGs with multiple app bundles");
-assert.match(macosDmgVerify, /function sidecarSearchDirs\(appPath\)/, "macOS DMG verification must constrain sidecar lookup to runtime sidecar locations");
+assert.match(macosDmgVerify, /function sidecarRuntimeCandidates\(appPath, stem\)/, "macOS DMG verification must constrain sidecar lookup to runtime sidecar locations");
 assert.match(macosDmgVerify, /Contents", "MacOS"/, "macOS DMG verification must check Contents/MacOS for sidecars");
 assert.match(macosDmgVerify, /Contents", "Resources"/, "macOS DMG verification must check Contents/Resources for sidecars");
 assert.match(macosDmgVerify, /codesign.*--verify/s, "macOS DMG verification must verify the app signature");
 assert.match(macosDmgVerify, /lipo.*-verify_arch/s, "macOS DMG verification must verify universal binaries");
-assert.match(macosDmgVerify, /verifySidecarVersion\(universal, stem\)/, "macOS DMG verification must smoke-test bundled universal sidecars");
+assert.match(macosDmgVerify, /runtime-resolvable but not universal arm64 \+ x86_64/, "macOS DMG verification must reject decoy sidecars when an earlier runtime candidate is not universal");
+assert.match(macosDmgVerify, /codesign[\s\S]*verifySidecarVersion\(ffmpeg, "ffmpeg"\)/, "macOS DMG verification must verify code signature before executing sidecar smoke tests");
 assert.match(macosDmgVerify, /function verifyBundledEngines\(appPath\)/, "macOS DMG verification must inspect bundled engine resources");
 assert.match(macosDmgVerify, /Windows-only bundled engine resource found in macOS app bundle/, "macOS DMG verification must reject Windows-only engine files");
 assert.match(macosDmgVerify, /metadata\.platform !== "macos-universal"/, "macOS DMG verification must reject non-macOS engine metadata");
@@ -220,6 +226,8 @@ for (const name of ["ffmpeg", "ffprobe"]) {
 }
 
 assert.match(prepareScript, /spawnSync\("lipo", \["-create"/, "macOS preparation must create universal sidecars with lipo");
+assert.match(prepareScript, /macOS universal sidecars must be prepared and architecture-verified on macOS/, "macOS sidecar preparation must reject non-macOS universal reuse");
+assert.match(prepareScript, /function verifyDarwinArch\(filePath, arches\)/, "macOS sidecar preparation must verify non-native slices with lipo");
 assert.match(prepareScript, /async function pruneBundledEngines\(expectedEngines\)/, "macOS preparation must prune stale bundled engines before packaging");
 assert.match(prepareScript, /Refusing to remove path outside bundled engines/, "stale engine pruning must guard recursive removals");
 assert.match(prepareScript, /assertNoBrokenSymlinksForNonWindowsEngine/, "macOS preparation must reject stale bundled engines with broken symbolic links");

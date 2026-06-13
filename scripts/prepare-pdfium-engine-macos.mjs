@@ -1,10 +1,13 @@
 import fs from "node:fs/promises";
-import { createWriteStream } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
+import {
+  downloadIfMissingVerified,
+  publicSourceLabel,
+  requireSha256Env,
+} from "./lib/download-integrity.mjs";
 
 const root = process.cwd();
 const downloads = path.join(root, "engine-sources", ".downloads");
@@ -32,7 +35,12 @@ if (!asset) {
 }
 
 const archive = path.join(downloads, asset.name);
-await downloadIfMissing(asset.browser_download_url, archive);
+await downloadIfMissingVerified(
+  asset.browser_download_url,
+  archive,
+  requireSha256Env("PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256"),
+  userAgent,
+);
 
 const extractDir = path.join(extracts, "pdfium-macos-universal");
 await extractTgz(archive, extractDir);
@@ -86,7 +94,7 @@ await fs.writeFile(
   path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"),
   [
     "PDFium macOS universal package",
-    `Source: ${asset.browser_download_url}`,
+    `Source: ${publicSourceLabel(asset.browser_download_url)}`,
     `Release: ${release.name ?? release.tag_name}`,
     "",
     "PDFium is distributed by bblanchon/pdfium-binaries from Chromium PDFium sources.",
@@ -104,26 +112,6 @@ run(universalWrapper, ["--check"], {
 });
 
 console.log(`macOS PDFium ready from ${release.name ?? release.tag_name}.`);
-
-async function downloadIfMissing(url, target) {
-  try {
-    const stat = await fs.stat(target);
-    if (stat.size > 0) return;
-  } catch {
-    // Download below.
-  }
-  await download(url, target);
-}
-
-async function download(url, target) {
-  console.log(`Downloading ${url}`);
-  const response = await fetch(url, { headers: userAgent });
-  if (!response.ok || !response.body) {
-    throw new Error(`Download failed (${response.status}): ${url}`);
-  }
-  await fs.mkdir(path.dirname(target), { recursive: true });
-  await pipeline(response.body, createWriteStream(target));
-}
 
 async function getJson(url) {
   const response = await fetch(url, { headers: githubApiHeaders() });

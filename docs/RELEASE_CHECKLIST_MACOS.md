@@ -46,7 +46,19 @@ All executable files must keep executable permissions. `npm run prepare:bundled-
 
 Current V1.0.5 preparation state: advanced bundled engines are still declared for `windows-x64` only in the committed embedded manifest, while the release workflows stage reviewed `macos-universal` entries for macOS validation. Those staged FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips assets have passed `macOS Engine Staging`, the two-architecture `macOS Conversion Matrix`, and the universal DMG verification workflow on `codex/test`. Do not treat that as public release approval until the manual clean-Mac smoke test and final security evidence are recorded.
 
-`npm run prepare:macos-upstream-engines` can stage the reviewed upstream macOS candidates for PDFium, LibreOffice and Pandoc on a real Mac. It does not prepare FFmpeg/ffprobe or libvips.
+`npm run prepare:macos-upstream-engines` can stage the reviewed upstream macOS candidates for PDFium, LibreOffice and Pandoc on a real Mac. It requires pinned SHA-256 values for every upstream archive and does not prepare FFmpeg/ffprobe or libvips.
+
+Before running it, set:
+
+```bash
+export PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256="<sha256>"
+export LIBREOFFICE_MACOS_AARCH64_DMG_SHA256="<sha256>"
+export LIBREOFFICE_MACOS_X86_64_DMG_SHA256="<sha256>"
+export PANDOC_MACOS_AARCH64_ARCHIVE_SHA256="<sha256>"
+export PANDOC_MACOS_X86_64_ARCHIVE_SHA256="<sha256>"
+```
+
+Do not use placeholder hashes. If an archive is already cached in `engine-sources/.downloads`, the script must still recalculate and verify it before extraction.
 
 For FFmpeg/ffprobe, set maintainer-approved Apple Silicon and Intel archive inputs plus SHA-256 checksums, then run:
 
@@ -135,6 +147,7 @@ Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conv
 Use the `macOS Engine Staging` workflow to create the test assets consumed by the conversion and DMG workflows.
 
 - Provide maintainer-approved FFmpeg/ffprobe Apple Silicon and Intel archive URLs plus SHA-256 checksums. If `ffmpeg` and `ffprobe` are published as separate archives, provide the optional `ffprobe_*` URL/checksum inputs too.
+- Provide pinned SHA-256 inputs for upstream PDFium, LibreOffice and Pandoc. On `codex/test`, push runs read them from `MC_PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256`, `MC_LIBREOFFICE_MACOS_AARCH64_DMG_SHA256`, `MC_LIBREOFFICE_MACOS_X86_64_DMG_SHA256`, `MC_PANDOC_MACOS_AARCH64_ARCHIVE_SHA256` and `MC_PANDOC_MACOS_X86_64_ARCHIVE_SHA256`.
 - The workflow downloads the official FFmpeg `n8.1.1` license texts from the source tag, verifies their SHA-256 checksums and passes the generated temporary license bundle to `npm run prepare:ffmpeg-engine:macos`.
 - Provide either `libvips_runtime_run_id` from a successful `macOS libvips Runtime` run, or a `libvips_release_tag` that contains portable Apple Silicon and Intel libvips runtime archives. Those archives must contain a `bin/vips` runtime root and bundled non-system dependencies.
 - The workflow prepares FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips on `macos-latest`, packages `tools/engine-packages.macos.config.json`, uploads a `macos-engine-assets` workflow artifact, and optionally uploads the same assets to `output_release_tag`.

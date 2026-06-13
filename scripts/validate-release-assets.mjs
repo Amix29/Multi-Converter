@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -59,6 +60,7 @@ if (includeWindows) {
   if (!signature || signature.length < 100) {
     fail("Updater signature is missing or unexpectedly short.");
   }
+  verifyUpdaterSignature(versionedPath, signaturePath);
 
   latest = JSON.parse(fs.readFileSync(latestPath, "utf8"));
   if (latest.version !== version) fail(`latest.json version is ${latest.version}, expected ${version}.`);
@@ -85,6 +87,27 @@ if (includeMacos) {
   const dmgPath = path.join(dir, macosDmg);
   const stat = fs.statSync(dmgPath);
   if (!stat.isFile() || stat.size <= 0) fail(`macOS DMG is missing or empty: ${macosDmg}`);
+  if (args.macosDmgSha256) {
+    const actual = sha256File(dmgPath);
+    if (actual !== args.macosDmgSha256.toLowerCase()) {
+      fail(`macOS DMG SHA-256 mismatch. Expected ${args.macosDmgSha256}, got ${actual}.`);
+    }
+  } else if (process.platform === "darwin") {
+    const result = spawnSync(process.execPath, [
+      "scripts/verify-macos-dmg.mjs",
+      "--version",
+      version,
+      "--dmg",
+      dmgPath,
+    ], {
+      cwd: path.resolve("."),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    if (result.status !== 0) fail(result.stderr || result.stdout || "macOS DMG verification failed.");
+  } else {
+    fail("macOS DMG validation requires --macos-dmg-sha256 from a verified macOS DMG job when running off macOS.");
+  }
 }
 
 console.log(`Release assets validated for Multi-Converter v${version} (${platformSet}): ${dir}`);
@@ -96,6 +119,9 @@ function parseArgs(rawArgs) {
     if (arg === "--version") parsed.version = rawArgs[++index];
     else if (arg === "--dir") parsed.dir = rawArgs[++index];
     else if (arg === "--platform") parsed.platform = rawArgs[++index];
+    else if (arg === "--updater-public-key") parsed.updaterPublicKey = rawArgs[++index];
+    else if (arg === "--updater-signature-verifier") parsed.updaterSignatureVerifier = rawArgs[++index];
+    else if (arg === "--macos-dmg-sha256") parsed.macosDmgSha256 = rawArgs[++index];
     else fail(`Unknown argument: ${arg}`);
   }
   return parsed;
@@ -110,6 +136,73 @@ function sha256File(file) {
   const hash = createHash("sha256");
   hash.update(fs.readFileSync(file));
   return hash.digest("hex");
+}
+
+function verifyUpdaterSignature(filePath, signaturePath) {
+  const publicKeyPath = args.updaterPublicKey
+    ? path.resolve(args.updaterPublicKey)
+    : writeConfiguredUpdaterPublicKey();
+  const decodedSignaturePath = writeDecodedUpdaterSignature(signaturePath);
+  const verifier = args.updaterSignatureVerifier ? path.resolve(args.updaterSignatureVerifier) : null;
+  const command = verifier ?? "cargo";
+  const commandArgs = verifier ? [
+    "--public-key",
+    publicKeyPath,
+    "--file",
+    filePath,
+    "--signature",
+    decodedSignaturePath,
+  ] : [
+    "run",
+    "--quiet",
+    "--manifest-path",
+    path.join("tools", "updater-signature-verifier", "Cargo.toml"),
+    "--",
+    "--public-key",
+    publicKeyPath,
+    "--file",
+    filePath,
+    "--signature",
+    decodedSignaturePath,
+  ];
+  const result = spawnSync(command, commandArgs, {
+    cwd: path.resolve("."),
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
+  if (result.status !== 0) {
+    fail(result.stderr || result.stdout || "Updater signature verification failed.");
+  }
+}
+
+function writeDecodedUpdaterSignature(signaturePath) {
+  const raw = fs.readFileSync(signaturePath, "utf8").trim();
+  if (raw.startsWith("untrusted comment:")) {
+    return signaturePath;
+  }
+  const decoded = Buffer.from(raw, "base64").toString("utf8");
+  if (!decoded.startsWith("untrusted comment:")) {
+    fail("Updater signature is not a valid Tauri/minisign signature.");
+  }
+  const decodedPath = path.join(os.tmpdir(), `mc-updater-signature-${process.pid}.sig`);
+  fs.writeFileSync(decodedPath, decoded, "utf8");
+  return decodedPath;
+}
+
+function writeConfiguredUpdaterPublicKey() {
+  const config = JSON.parse(fs.readFileSync(path.join("src-tauri", "tauri.conf.json"), "utf8"));
+  const encoded = config.plugins?.updater?.pubkey;
+  if (typeof encoded !== "string" || encoded.trim() === "") {
+    fail("Tauri updater public key is missing from src-tauri/tauri.conf.json.");
+  }
+  const publicKey = Buffer.from(encoded, "base64").toString("utf8");
+  if (!publicKey.includes("minisign public key")) {
+    fail("Tauri updater public key does not look like a minisign public key.");
+  }
+  const keyPath = path.join(os.tmpdir(), `mc-updater-public-key-${process.pid}.pub`);
+  fs.writeFileSync(keyPath, publicKey, "utf8");
+  return keyPath;
 }
 
 function assertArrayEqual(actual, expected, message) {

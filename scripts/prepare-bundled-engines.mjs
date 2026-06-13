@@ -5,6 +5,7 @@ import path from "node:path";
 import process from "node:process";
 import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
+import { publicSourceLabel } from "./lib/download-integrity.mjs";
 
 const root = process.cwd();
 const platform = process.env.MULTI_CONVERTER_ENGINE_PLATFORM?.trim() || hostEnginePlatform();
@@ -71,10 +72,13 @@ async function prepareBaseSidecar(item) {
 
 async function prepareDerivedSidecars(targetPlatform) {
   if (targetPlatform !== "macos-universal") return;
+  if (process.platform !== "darwin") {
+    throw new Error("macOS universal sidecars must be prepared and architecture-verified on macOS.");
+  }
 
   for (const stem of ["ffmpeg", "ffprobe"]) {
     const universalTarget = path.join(binariesDir, `${stem}-universal-apple-darwin`);
-    if (await sidecarLooksCurrent(universalTarget, { id: stem, smoke: process.platform === "darwin" })) continue;
+    if (await sidecarLooksCurrent(universalTarget, { id: stem, smoke: true, lipoArch: ["arm64", "x86_64"] })) continue;
 
     const universalSource = await firstExisting([
       path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", stem, "8.1.1", "bin", `${stem}-universal-apple-darwin`),
@@ -83,22 +87,13 @@ async function prepareDerivedSidecars(targetPlatform) {
     if (universalSource) {
       await fs.copyFile(universalSource, universalTarget);
       await ensureExecutable(universalTarget);
-      if (await sidecarLooksCurrent(universalTarget, { id: stem, smoke: process.platform === "darwin" })) continue;
+      if (await sidecarLooksCurrent(universalTarget, { id: stem, smoke: true, lipoArch: ["arm64", "x86_64"] })) continue;
     }
 
     const arm64Source = path.join(binariesDir, `${stem}-aarch64-apple-darwin`);
     const x64Source = path.join(binariesDir, `${stem}-x86_64-apple-darwin`);
-    if (process.platform !== "darwin") {
-      const stat = await fs.stat(universalTarget).catch(() => null);
-      if (stat?.isFile() && stat.size > 0) {
-        await ensureExecutable(universalTarget);
-        continue;
-      }
-      throw new Error(`${stem}: le sidecar universel macOS doit etre cree sur macOS avec lipo ou fourni dans ${path.relative(root, universalTarget)}.`);
-    }
-
     await createUniversalDarwinBinary(stem, arm64Source, x64Source, universalTarget);
-    if (!(await sidecarLooksCurrent(universalTarget, { id: stem, smoke: true }))) {
+    if (!(await sidecarLooksCurrent(universalTarget, { id: stem, smoke: true, lipoArch: ["arm64", "x86_64"] }))) {
       throw new Error(`${stem}: le sidecar universel macOS prepare ne repond pas avec la version attendue.`);
     }
   }
@@ -298,11 +293,29 @@ async function binaryLooksCurrent(filePath) {
 }
 
 async function sidecarLooksCurrent(filePath, item) {
+  if (item.lipoArch && !(await verifyDarwinArch(filePath, item.lipoArch))) {
+    return false;
+  }
   if (item.smoke === false) {
     const stat = await fs.stat(filePath).catch(() => null);
     return Boolean(stat?.isFile() && stat.size > 0);
   }
   return binaryLooksCurrent(filePath);
+}
+
+async function verifyDarwinArch(filePath, arches) {
+  if (process.platform !== "darwin") return false;
+  const stat = await fs.stat(filePath).catch(() => null);
+  if (!stat?.isFile() || stat.size <= 0) return false;
+  const required = Array.isArray(arches) ? arches : [arches];
+  for (const arch of required) {
+    const result = spawnSync("lipo", [filePath, "-verify_arch", arch], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    if (result.status !== 0) return false;
+  }
+  return true;
 }
 
 async function downloadVerified(url, target, expectedSha256, label) {
@@ -312,7 +325,7 @@ async function downloadVerified(url, target, expectedSha256, label) {
   } catch {
     // Download below.
   }
-  console.log(`Downloading ${label}: ${url}`);
+  console.log(`Downloading ${label}: ${publicSourceLabel(url)}`);
   const response = await fetch(url, { headers: { "User-Agent": "Multi-Converter-Packager" } });
   if (!response.ok || !response.body) {
     throw new Error(`${label}: telechargement impossible (${response.status})`);
@@ -503,6 +516,7 @@ function baseSidecarsForPlatform(targetPlatform) {
         id: "ffmpeg",
         fileName: `ffmpeg-${targetTriple}`,
         smoke: process.platform === "darwin" && targetTriple === nativeTriple,
+        lipoArch: targetTriple === "aarch64-apple-darwin" ? "arm64" : "x86_64",
         localCandidates: [
           path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffmpeg", "8.1.1", "bin", `ffmpeg-${targetTriple}`),
           path.join(root, "engine-sources", "macos-universal", "ffmpeg", "bin", `ffmpeg-${targetTriple}`),
@@ -512,6 +526,7 @@ function baseSidecarsForPlatform(targetPlatform) {
         id: "ffprobe",
         fileName: `ffprobe-${targetTriple}`,
         smoke: process.platform === "darwin" && targetTriple === nativeTriple,
+        lipoArch: targetTriple === "aarch64-apple-darwin" ? "arm64" : "x86_64",
         localCandidates: [
           path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffprobe", "8.1.1", "bin", `ffprobe-${targetTriple}`),
           path.join(root, "engine-sources", "macos-universal", "ffprobe", "bin", `ffprobe-${targetTriple}`),

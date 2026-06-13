@@ -40,6 +40,8 @@ The macOS packaging contract lives in `tools/engine-packages.macos.config.json`.
 
 The V1.0.5 `codex/test` automation has staged maintainer-provided FFmpeg/ffprobe inputs and Homebrew-derived portable libvips runtime archives for Apple Silicon and Intel. `npm run prepare:ffmpeg-engine:macos` accepts only explicit archives with SHA-256 checksums, either as one combined archive per architecture or as separate `ffmpeg` and `ffprobe` archives, then creates universal sidecars with `lipo`. `npm run prepare:libvips-engine:macos` accepts only two already-portable libvips runtime trees and rejects non-system absolute dynamic links such as Homebrew, MacPorts or Fink paths. Maintainers must still review copied dependency licenses and notices before a public release.
 
+macOS upstream engine downloads must be pinned before staging. Set `PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256`, `LIBREOFFICE_MACOS_AARCH64_DMG_SHA256`, `LIBREOFFICE_MACOS_X86_64_DMG_SHA256`, `PANDOC_MACOS_AARCH64_ARCHIVE_SHA256` and `PANDOC_MACOS_X86_64_ARCHIVE_SHA256` when running the macOS upstream engine preparation workflow or scripts. Windows upstream preparation has the same rule for `PANDOC_WINDOWS_X64_ARCHIVE_SHA256`, `PDFIUM_WINDOWS_X64_ARCHIVE_SHA256`, `LIBREOFFICE_WINDOWS_X64_MSI_SHA256`, `LESSMSI_WINDOWS_X64_ARCHIVE_SHA256` and `LIBVIPS_WINDOWS_X64_ARCHIVE_SHA256`.
+
 The normal committed embedded manifest remains conservative for public builds unless a release workflow stages the reviewed `macos-universal` entries. macOS release notes and user-facing docs must limit macOS conversion claims to the engines that are actually bundled and tested in the final DMG.
 
 ## User-facing warning

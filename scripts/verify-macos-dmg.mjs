@@ -49,11 +49,13 @@ try {
   const appExecutable = path.join(appPath, "Contents", "MacOS", executableName);
   assertExecutable(appExecutable, "app executable");
   verifyUniversalBinary(appExecutable, "app executable");
-  verifySidecar(appPath, "ffmpeg");
-  verifySidecar(appPath, "ffprobe");
+  const ffmpeg = verifySidecar(appPath, "ffmpeg");
+  const ffprobe = verifySidecar(appPath, "ffprobe");
   verifyBundledEngines(appPath);
 
   run("codesign", ["--verify", "--deep", "--strict", appPath], "App code signature verification failed.");
+  verifySidecarVersion(ffmpeg, "ffmpeg");
+  verifySidecarVersion(ffprobe, "ffprobe");
   console.log(`macOS DMG verified: ${dmgPath}`);
 } finally {
   if (mountPoint) {
@@ -63,29 +65,37 @@ try {
 }
 
 function verifySidecar(appPath, stem) {
-  const candidates = sidecarSearchDirs(appPath)
-    .flatMap((dir) => findFiles(dir, (filePath) => {
-      const name = path.basename(filePath);
-      return name === stem || name.startsWith(`${stem}-`);
-    }, { maxDepth: 1 }))
-    .filter((candidate, index, all) => all.indexOf(candidate) === index);
+  const candidates = sidecarRuntimeCandidates(appPath, stem);
   if (!candidates.length) {
     fail(`Missing ${stem} sidecar in app bundle.`);
   }
-  const universal = candidates.find((candidate) => hasArchitectures(candidate, "arm64", "x86_64"));
-  if (!universal) {
-    fail(`${stem} sidecar is present but no universal arm64 + x86_64 binary was found.`);
+  const nonUniversal = candidates.find((candidate) => !hasArchitectures(candidate, "arm64", "x86_64"));
+  if (nonUniversal) {
+    fail(`${stem} sidecar is runtime-resolvable but not universal arm64 + x86_64: ${path.relative(appPath, nonUniversal)}`);
   }
-  assertExecutable(universal, `${stem} sidecar`);
-  verifySidecarVersion(universal, stem);
+  const selected = candidates[0];
+  assertExecutable(selected, `${stem} sidecar`);
+  return selected;
 }
 
-function sidecarSearchDirs(appPath) {
-  return [
-    path.join(appPath, "Contents", "MacOS"),
-    path.join(appPath, "Contents", "Resources"),
-    path.join(appPath, "Contents", "Resources", "binaries"),
-  ].filter((dir) => fs.existsSync(dir));
+function sidecarRuntimeCandidates(appPath, stem) {
+  const binaryName = `${stem}-${process.arch === "arm64" ? "aarch64" : "x86_64"}-apple-darwin`;
+  const universalName = `${stem}-universal-apple-darwin`;
+  const ordered = [
+    path.join(appPath, "Contents", "MacOS", stem),
+    path.join(appPath, "Contents", "MacOS", universalName),
+    path.join(appPath, "Contents", "MacOS", binaryName),
+    path.join(appPath, "Contents", "Resources", stem),
+    path.join(appPath, "Contents", "Resources", universalName),
+    path.join(appPath, "Contents", "Resources", binaryName),
+    path.join(appPath, "Contents", "Resources", "binaries", universalName),
+    path.join(appPath, "Contents", "Resources", "binaries", binaryName),
+  ];
+  return ordered.filter((candidate, index, all) => (
+    all.indexOf(candidate) === index
+      && fs.existsSync(candidate)
+      && fs.statSync(candidate, { throwIfNoEntry: false })?.isFile()
+  ));
 }
 
 function verifyBundledEngines(appPath) {

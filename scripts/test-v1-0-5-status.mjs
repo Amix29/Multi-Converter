@@ -18,7 +18,7 @@ try {
   assert.doesNotMatch(currentStatus.blockers.join("\n"), /Conversion Matrix/, "current status must not keep the conversion blocker after final matrix proof");
   assert.doesNotMatch(currentStatus.blockers.join("\n"), /DMG verification.*Intel/, "current status must not keep the Intel DMG blocker after final DMG proof");
   assert.match(currentStatus.blockers.join("\n"), /Manual clean-Mac Gatekeeper\/install smoke testing/, "current status must keep the clean-Mac blocker");
-  assert.match(currentStatus.blockers.join("\n"), /Codex Security/, "current status must keep the final security blocker");
+  assert.doesNotMatch(currentStatus.blockers.join("\n"), /Codex Security/, "current status must not keep the final security blocker after completed scan evidence");
   const currentReadyGate = runStatus("current-require-ready.md", currentEvidence, { requireReady: true, expectedStatus: 1 });
   assert.equal(currentReadyGate.status.releaseReady, false, "require-ready fixture must still write the failing status JSON");
   assert.match(currentReadyGate.output, /V1\.0\.5 is not release-ready/, "require-ready mode must explain that the release is blocked");
@@ -46,10 +46,10 @@ try {
   const completedReceiptStatus = runStatus("completed-receipt.md", completedReceipt(currentEvidence));
   assert.equal(completedReceiptStatus.summary.hasManualCleanMacEvidence, true, "a complete receipt section must count as clean-Mac proof");
   assert.equal(completedReceiptStatus.summary.cleanMacSmokeEvidence.missing.length, 0, "complete receipt should not report missing smoke-test fields");
-  assert.equal(completedReceiptStatus.releaseReady, false, "clean-Mac proof must not bypass the final security gate");
+  assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /Codex Security/, "complete security proof must satisfy the security blocker");
   assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /Conversion Matrix/, "complete automation evidence must satisfy the conversion blocker");
   assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /DMG verification/, "complete automation evidence must satisfy the DMG blocker");
-  assert.match(completedReceiptStatus.blockers.join("\n"), /Codex Security/, "clean-Mac proof must keep the security blocker");
+  assert.equal(completedReceiptStatus.summary.hasCodexSecurityScanEvidence, true, "completed scan evidence must count as Codex Security proof");
 
   const missingMetadataStatus = runStatus("missing-metadata.md", completedReceipt(currentEvidence).replace("- Date: 2026-06-13", "- Date: pending"));
   assert.equal(missingMetadataStatus.summary.hasManualCleanMacEvidence, false, "receipt metadata must be recorded before clean-Mac proof counts");
@@ -65,7 +65,7 @@ try {
 
   const untrustedSecurityStatus = runStatus(
     "untrusted-security.md",
-    `${completedReceipt(currentEvidence)}
+    `${pendingSecurityEvidence(completedReceipt(currentEvidence))}
 
 ## Untrusted Notes
 
@@ -78,10 +78,7 @@ try {
 
   const incompleteSecurityStatus = runStatus(
     "incomplete-security.md",
-    completedReceipt(currentEvidence).replace(
-      "The exhaustive Codex Security subagent scan is still pending explicit maintainer approval for subagent use. Do not mark the full v1.0.5 goal complete until that scan, or an approved equivalent, is finished and any findings are resolved or explicitly accepted.",
-      "- Exhaustive Codex Security subagent scan: accepted",
-    ),
+    incompleteSecurityEvidence(completedReceipt(currentEvidence)),
     { requireReady: true, expectedStatus: 1, readme: readyReadme(currentReadme) },
   );
   assert.equal(incompleteSecurityStatus.status.releaseReady, false, "a bare accepted Codex Security line must not unlock readiness");
@@ -183,16 +180,23 @@ function completedReceipt(evidence) {
 }
 
 function completedReleaseEvidence(evidence) {
-  return completedReceipt(finalDmgVerificationEvidence(finalMacosConversionEvidence(evidence))).replace(
-    "The exhaustive Codex Security subagent scan is still pending explicit maintainer approval for subagent use. Do not mark the full v1.0.5 goal complete until that scan, or an approved equivalent, is finished and any findings are resolved or explicitly accepted.",
-    [
-      "- Exhaustive Codex Security subagent scan: accepted",
-      "- Security date: 2026-06-13",
-      "- Security reviewer: maintainer-approved fixture",
-      "- Security scope: tracked repository files, release workflows, release notes, generated asset rules and confidentiality scans",
-      "- Confidential information exposure: none unresolved in fixture",
-      "- Security outcome: findings resolved or explicitly accepted in fixture",
-    ].join("\n"),
+  return completedReceipt(finalDmgVerificationEvidence(finalMacosConversionEvidence(evidence)));
+}
+
+function pendingSecurityEvidence(evidence) {
+  return evidence
+    .replace(/^- Exhaustive Codex Security subagent scan:.*$/m, "- Exhaustive Codex Security subagent scan: pending")
+    .replace(/^- Security date:.*$/m, "- Security date: pending")
+    .replace(/^- Security reviewer:.*$/m, "- Security reviewer: pending")
+    .replace(/^- Security scope:.*$/m, "- Security scope: pending")
+    .replace(/^- Confidential information exposure:.*$/m, "- Confidential information exposure: pending")
+    .replace(/^- Security outcome:.*$/m, "- Security outcome: pending");
+}
+
+function incompleteSecurityEvidence(evidence) {
+  return pendingSecurityEvidence(evidence).replace(
+    "- Exhaustive Codex Security subagent scan: pending",
+    "- Exhaustive Codex Security subagent scan: accepted",
   );
 }
 

@@ -12,8 +12,8 @@ for (const engine of manifest.engines ?? []) {
   const sha = String(engine.sha256 ?? "");
   const configured = !url.includes("REPLACE_WITH_RELEASE_BASE_URL") && !/^0{64}$/.test(sha);
 
-  if (/file:\/\//i.test(url) || /[A-Z]:\/Users\//i.test(url) || /[A-Z]:\\Users\\/i.test(url)) {
-    errors.push(`${engine.id}: manifest embarqué contient un chemin local (${url})`);
+  if (!isPublicReleaseUrl(url)) {
+    errors.push(`${engine.id}: manifest embarqué doit utiliser une URL HTTPS de release publique (${url})`);
   }
 
   if (!configured) {
@@ -40,3 +40,16 @@ if (errors.length) {
 }
 
 console.log("Embedded engine manifest validation OK");
+
+function isPublicReleaseUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "https:"
+      && parsed.hostname === "github.com"
+      && parsed.pathname.startsWith("/Amix29/Multi-Converter/releases/download/")
+      && !parsed.search
+      && !parsed.hash;
+  } catch {
+    return false;
+  }
+}

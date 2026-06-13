@@ -173,7 +173,7 @@ function macosEvidenceBlockers() {
     }
   }
   if (hasSecurityCheckEvidence && !hasCodexSecurityScanEvidence) {
-    if (/Exhaustive Codex Security subagent scan:\s*(?:success|accepted)/i.test(securityEvidenceSection) && codexSecurityEvidence.missing.length > 0) {
+    if (/Exhaustive Codex Security subagent scan:\s*(?:success|accepted|passed)/i.test(securityEvidenceSection) && codexSecurityEvidence.missing.length > 0) {
       blockers.push(`Codex Security evidence is incomplete: ${codexSecurityEvidence.missing.join(", ")}.`);
     } else {
       blockers.push("Exhaustive Codex Security subagent scan is still pending explicit maintainer approval or accepted replacement evidence.");
@@ -205,7 +205,7 @@ function securityCheckEvidenceFromDocs() {
 
 function codexSecurityEvidenceFromDocs() {
   const required = [
-    ["Exhaustive Codex Security subagent scan: success or accepted", /Exhaustive Codex Security subagent scan:\s*(?:success|accepted)/i],
+    ["Exhaustive Codex Security subagent scan: success, passed or accepted", /Exhaustive Codex Security subagent scan:\s*(?:success|accepted|passed)/i],
     ["Security date recorded", /^-\s*Security date:[ \t]+(?!pending\s*$).+\S\s*$/im],
     ["Security reviewer recorded", /^-\s*Security reviewer:[ \t]+(?!pending\s*$).+\S\s*$/im],
     ["Security scope recorded", /^-\s*Security scope:[ \t]+(?!pending\s*$).+\S\s*$/im],

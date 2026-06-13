@@ -332,7 +332,10 @@ pub fn convert(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult> 
             "conversion",
             &format!(
                 "job {} failed: {} -> {}: {}",
-                job.id, job.input_path, job.target_format, error
+                job.id,
+                runtime_log::path(Path::new(&job.input_path)),
+                job.target_format,
+                error
             ),
         );
     }

@@ -50,13 +50,13 @@ for (const asset of assets) {
   if (!runtimeRoot) {
     fail(`${asset.arch}: extracted libvips archive does not contain bin/vips.`);
   }
-  envLines.push(`${asset.envName}=${runtimeRoot}`);
+  envLines.push({ name: asset.envName, value: runtimeRoot });
 }
 
 if (process.env.GITHUB_ENV) {
-  await fs.appendFile(process.env.GITHUB_ENV, `${envLines.join("\n")}\n`, "utf8");
+  await appendGithubEnv(process.env.GITHUB_ENV, envLines);
 } else {
-  console.log(envLines.join("\n"));
+  console.log(envLines.map(({ name, value }) => `${name}=${value}`).join("\n"));
 }
 
 async function downloadReleaseAsset(pattern, dir) {
@@ -127,6 +127,20 @@ function parseArgs(rawArgs) {
     else fail(`Unknown argument: ${arg}`);
   }
   return parsed;
+}
+
+async function appendGithubEnv(filePath, entries) {
+  const lines = [];
+  for (const { name, value } of entries) {
+    if (!/^[A-Z0-9_]+$/.test(name)) {
+      fail(`Invalid GitHub env variable name: ${name}`);
+    }
+    if (/[\r\n]/.test(value)) {
+      fail(`${name} contains a newline and cannot be written safely to GITHUB_ENV.`);
+    }
+    lines.push(`${name}=${value}`);
+  }
+  await fs.appendFile(filePath, `${lines.join("\n")}\n`, "utf8");
 }
 
 function fail(message) {

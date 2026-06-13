@@ -16,7 +16,7 @@ This file records validation evidence for the in-progress v1.0.5 release. It is 
 
 - Automated macOS release evidence is now recorded for engine staging, the two-architecture `macOS Conversion Matrix`, and Apple Silicon + Intel verification of the universal DMG workflow artifact.
 - Manual clean-Mac smoke testing is still required before a public macOS release claim: mount DMG, drag to Applications, approve the unsigned/not-notarized first launch through `System Settings > Privacy & Security > Open Anyway`, confirm second launch, file selection, one FFmpeg media conversion, and one document/PDF/image path when those engines are included.
-- Final Codex Security review, or an explicitly accepted replacement, is still required before marking the full v1.0.5 goal complete.
+- Final Codex Security review is complete for the repository scan scope recorded below. Manual clean-Mac smoke testing is still required before marking the full v1.0.5 release goal complete.
 - The public release body still needs to state that the macOS build is not Apple-signed and not notarized, that macOS automatic updates are not enabled for the first DMG workflow, and how to open the app through `Open Anyway`.
 
 ## Manual Clean-Mac Smoke Test Receipt
@@ -53,11 +53,11 @@ Record this receipt only after testing the final downloaded DMG on a clean macOS
 - Extra tracked-file confidentiality search: passed on June 13, 2026. No private test repository reference, local maintainer path, signing-key value, Apple signing credential file name, npm token assignment or private-key block was found in tracked project files outside ignored/generated folders.
 - Local Git configuration was checked and the obsolete private test remote was removed from this machine. This was not a tracked repository change.
 
-- Exhaustive Codex Security subagent scan: pending
-- Security date: pending
-- Security reviewer: pending
-- Security scope: pending
-- Confidential information exposure: pending
-- Security outcome: pending
+- Exhaustive Codex Security subagent scan: passed
+- Security date: June 13, 2026
+- Security reviewer: Codex Security subagents, authorized by the maintainer in this thread
+- Security scope: full repository scan split into 27 read-only discovery shards, excluding `AGENTS.md` per maintainer instruction
+- Confidential information exposure: no tracked secret, signing key value, Apple credential file name, private repository reference or maintainer-local path exposure found by the configured secret scan and subagent review
+- Security outcome: all discovered release-integrity and confidentiality candidates were fixed or suppressed with counterevidence; no surviving reportable finding remains in `C:\tmp\codex-security-scans\Multi-Converter\ae599a3_20260613T182656\report.md`
 
-The exhaustive Codex Security subagent scan is still pending explicit maintainer approval for subagent use. Do not mark the full v1.0.5 goal complete until that scan, or an approved equivalent, is finished and any findings are resolved or explicitly accepted.
+Do not mark the full v1.0.5 release goal complete until the manual clean-Mac smoke test receipt above is completed for the final downloaded DMG.

@@ -10,7 +10,8 @@ const version = "9.8.7";
 const tag = `v${version}`;
 const versionedInstaller = `Multi-Converter_${version}_x64-setup.exe`;
 const stableInstaller = "Multi-Converter_windows-x64_setup.exe";
-const signature = "x".repeat(128);
+let updaterPublicKeyPath = "";
+let updaterSignatureVerifierPath = "";
 const windowsNotes = [
   `# Multi-Converter v${version}`,
   "",
@@ -95,6 +96,15 @@ const notesWithUnsupportedMacosConversionArchitectureClaim = notesWithUnsupporte
   "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon and Intel in this test fixture.",
   "- Release asset validation, updater metadata validation, naming checks, macOS Conversion Matrix and macOS DMG verification passed in this test fixture.",
 );
+const notesWithMarkerBypassText = [
+  "<!-- mc-release-notes:en -->",
+  notes,
+  "<!-- /mc-release-notes -->",
+  "",
+  "## Installation en francais",
+  "",
+  "- sudo spctl --master-disable",
+].join("\n");
 
 const windowsDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-windows-"));
 const allDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-"));
@@ -111,8 +121,11 @@ const preparedBundleDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepa
 const preparedOutputDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-output-"));
 const preparedDmgDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-dmg-"));
 const preparedBadNotesDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-bad-notes-"));
+const signingDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-signing-"));
 
 try {
+  updaterSignatureVerifierPath = buildUpdaterSignatureVerifier(signingDir);
+  updaterPublicKeyPath = generateUpdaterSigningKey(signingDir);
   writeWindowsAssets(windowsDir);
   runValidator(windowsDir, "windows");
 
@@ -124,6 +137,10 @@ try {
   fs.writeFileSync(macosNotesPath, notes);
   runReleaseNotesValidator(macosNotesPath, true);
   runReleaseNotesValidatorFails(macosNotesPath, false, "include_macos=true");
+
+  const macosNotesWithMarkerBypassTextPath = path.join(preparedDmgDir, "macos-notes-with-marker-bypass-text.md");
+  fs.writeFileSync(macosNotesWithMarkerBypassTextPath, notesWithMarkerBypassText);
+  runReleaseNotesValidatorFails(macosNotesWithMarkerBypassTextPath, true, "visible text outside");
 
   const macosNotesWithoutSystemSettingsPath = path.join(preparedDmgDir, "macos-notes-without-system-settings.md");
   fs.writeFileSync(macosNotesWithoutSystemSettingsPath, notesWithoutSystemSettings);
@@ -209,6 +226,7 @@ try {
     preparedOutputDir,
     preparedDmgDir,
     preparedBadNotesDir,
+    signingDir,
   ]) {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -218,6 +236,12 @@ console.log("Release asset tests passed.");
 
 function writeWindowsAssets(dir, releaseNotes = windowsNotes, options = {}) {
   const installerBytes = Buffer.from("fake installer\n", "utf8");
+  const installerPath = path.join(dir, versionedInstaller);
+  const signaturePath = path.join(dir, `${versionedInstaller}.sig`);
+  fs.writeFileSync(installerPath, installerBytes);
+  fs.writeFileSync(path.join(dir, stableInstaller), installerBytes);
+  signUpdaterFixture(installerPath, signaturePath);
+  const signature = fs.readFileSync(signaturePath, "utf8").trim();
   const platforms = {
     "windows-x86_64": {
       signature,
@@ -234,9 +258,6 @@ function writeWindowsAssets(dir, releaseNotes = windowsNotes, options = {}) {
       url: `https://github.com/Amix29/Multi-Converter/releases/download/${tag}/Multi-Converter_${version}_macos-universal.dmg`,
     };
   }
-  fs.writeFileSync(path.join(dir, versionedInstaller), installerBytes);
-  fs.writeFileSync(path.join(dir, stableInstaller), installerBytes);
-  fs.writeFileSync(path.join(dir, `${versionedInstaller}.sig`), signature);
   fs.writeFileSync(path.join(dir, `${versionedInstaller}.sha256`), `${sha256(installerBytes)}  ${versionedInstaller}`);
   fs.writeFileSync(
     path.join(dir, "latest.json"),
@@ -254,7 +275,20 @@ function writeWindowsAssets(dir, releaseNotes = windowsNotes, options = {}) {
 }
 
 function runValidator(dir, platform) {
-  const result = spawnSync(process.execPath, ["scripts/validate-release-assets.mjs", "--version", version, "--dir", dir, "--platform", platform], {
+  const result = spawnSync(process.execPath, [
+    "scripts/validate-release-assets.mjs",
+    "--version",
+    version,
+    "--dir",
+    dir,
+    "--platform",
+    platform,
+    "--updater-public-key",
+    updaterPublicKeyPath,
+    "--updater-signature-verifier",
+    updaterSignatureVerifierPath,
+    ...(platform === "all" || platform === "macos" ? ["--macos-dmg-sha256", sha256(fs.readFileSync(path.join(dir, `Multi-Converter_${version}_macos-universal.dmg`)))] : []),
+  ], {
     cwd: root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
@@ -264,7 +298,24 @@ function runValidator(dir, platform) {
 }
 
 function runValidatorFails(dir, platform, expectedMessage) {
-  const result = spawnSync(process.execPath, ["scripts/validate-release-assets.mjs", "--version", version, "--dir", dir, "--platform", platform], {
+  const args = [
+    "scripts/validate-release-assets.mjs",
+    "--version",
+    version,
+    "--dir",
+    dir,
+    "--platform",
+    platform,
+    "--updater-public-key",
+    updaterPublicKeyPath,
+    "--updater-signature-verifier",
+    updaterSignatureVerifierPath,
+  ];
+  const dmgPath = path.join(dir, `Multi-Converter_${version}_macos-universal.dmg`);
+  if (fs.existsSync(dmgPath)) {
+    args.push("--macos-dmg-sha256", sha256(fs.readFileSync(dmgPath)));
+  }
+  const result = spawnSync(process.execPath, args, {
     cwd: root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
@@ -327,8 +378,9 @@ function runReleaseNotesValidatorFails(notesPath, includeMacos, expectedMessage)
 
 function writeBundleFixture(dir) {
   const installerBytes = Buffer.from("fake installer\n", "utf8");
-  fs.writeFileSync(path.join(dir, versionedInstaller), installerBytes);
-  fs.writeFileSync(path.join(dir, `${versionedInstaller}.sig`), signature);
+  const installerPath = path.join(dir, versionedInstaller);
+  fs.writeFileSync(installerPath, installerBytes);
+  signUpdaterFixture(installerPath, path.join(dir, `${versionedInstaller}.sig`));
 }
 
 function runPrepare(bundleDir, outDir, releaseNotes, macosDmg) {
@@ -369,4 +421,60 @@ function runPrepareProcess(bundleDir, outDir, releaseNotes, macosDmg) {
 
 function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function generateUpdaterSigningKey(dir) {
+  const keyPath = path.join(dir, "updater-test-key");
+  const result = spawnSync(process.execPath, [tauriCliPath(), "signer", "generate", "--ci", "-w", keyPath, "-p", ""], {
+    cwd: root,
+    env: signerEnv(),
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const encodedPublicKey = fs.readFileSync(`${keyPath}.pub`, "utf8").trim();
+  const publicKey = Buffer.from(encodedPublicKey, "base64").toString("utf8");
+  const decodedPublicKeyPath = path.join(dir, "updater-test-key.decoded.pub");
+  fs.writeFileSync(decodedPublicKeyPath, publicKey, "utf8");
+  return decodedPublicKeyPath;
+}
+
+function buildUpdaterSignatureVerifier(dir) {
+  const manifestPath = path.join("tools", "updater-signature-verifier", "Cargo.toml");
+  const result = spawnSync("cargo", ["build", "--manifest-path", manifestPath], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const binary = path.join(root, "tools", "updater-signature-verifier", "target", "debug", process.platform === "win32" ? "mc-release-sigcheck.exe" : "mc-release-sigcheck");
+  assert.ok(fs.existsSync(binary), `Missing updater signature verifier: ${binary}`);
+  return binary;
+}
+
+function signUpdaterFixture(filePath, signaturePath) {
+  fs.rmSync(signaturePath, { force: true });
+  const result = spawnSync(process.execPath, [tauriCliPath(), "signer", "sign", "-f", path.join(signingDir, "updater-test-key"), "-p", "", filePath], {
+    cwd: root,
+    env: signerEnv(),
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.ok(fs.existsSync(signaturePath), `Missing generated signature: ${signaturePath}`);
+}
+
+function signerEnv() {
+  const env = { ...process.env };
+  delete env.TAURI_SIGNING_PRIVATE_KEY;
+  delete env.TAURI_SIGNING_PRIVATE_KEY_PATH;
+  delete env.TAURI_SIGNING_PRIVATE_KEY_PASSWORD;
+  return env;
+}
+
+function tauriCliPath() {
+  return path.join(root, "node_modules", "@tauri-apps", "cli", "tauri.js");
 }

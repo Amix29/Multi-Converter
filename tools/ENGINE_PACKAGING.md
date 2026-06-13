@@ -61,6 +61,8 @@ npm run prepare:macos-upstream-engines
 
 `prepare:macos-upstream-engines` prépare seulement les moteurs upstream dont les archives macOS sont identifiées et adaptées au packaging portable actuel : PDFium, LibreOffice et Pandoc. Il ne prépare pas FFmpeg/ffprobe ni libvips.
 
+Les téléchargements upstream doivent toujours être épinglés par SHA-256 avant extraction. Pour macOS, configurez `PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256`, `LIBREOFFICE_MACOS_AARCH64_DMG_SHA256`, `LIBREOFFICE_MACOS_X86_64_DMG_SHA256`, `PANDOC_MACOS_AARCH64_ARCHIVE_SHA256` et `PANDOC_MACOS_X86_64_ARCHIVE_SHA256`. Pour Windows, configurez `PANDOC_WINDOWS_X64_ARCHIVE_SHA256`, `PDFIUM_WINDOWS_X64_ARCHIVE_SHA256`, `LIBREOFFICE_WINDOWS_X64_MSI_SHA256`, `LESSMSI_WINDOWS_X64_ARCHIVE_SHA256` et `LIBVIPS_WINDOWS_X64_ARCHIVE_SHA256`.
+
 Préparation FFmpeg/ffprobe macOS avec archives validées par le mainteneur :
 
 ```bash

@@ -4,6 +4,7 @@ body:
     attributes:
       value: |
         Use this category for early ideas, experiments, or broader suggestions that are not ready to become a precise feature request.
+        Discussions are public. Do not include private files, local paths, keys, personal contact details, sensitive screenshots, or anything you do not want published.
   - type: textarea
     id: idea
     attributes:
@@ -16,4 +17,4 @@ body:
     id: context
     attributes:
       label: Context
-      description: Optional. Why do you think this would help Multi-Converter users?
+      description: Optional. Share only context that is safe to publish publicly.

@@ -59,6 +59,26 @@ on:
         required: false
         default: ""
         type: string
+      pdfium_macos_universal_archive_sha256:
+        description: "SHA-256 for the official pdfium-mac-univ.tgz archive"
+        required: true
+        type: string
+      libreoffice_macos_aarch64_dmg_sha256:
+        description: "SHA-256 for the official Apple Silicon LibreOffice DMG"
+        required: true
+        type: string
+      libreoffice_macos_x86_64_dmg_sha256:
+        description: "SHA-256 for the official Intel LibreOffice DMG"
+        required: true
+        type: string
+      pandoc_macos_aarch64_archive_sha256:
+        description: "SHA-256 for the official Apple Silicon Pandoc ZIP"
+        required: true
+        type: string
+      pandoc_macos_x86_64_archive_sha256:
+        description: "SHA-256 for the official Intel Pandoc ZIP"
+        required: true
+        type: string
       libvips_release_tag:
         description: "Release tag containing portable libvips macOS runtime archives"
         required: false
@@ -99,7 +119,6 @@ jobs:
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       FFMPEG_MACOS_AARCH64_ARCHIVE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_aarch64_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_MACOS_AARCH64_ARCHIVE_URL || '' }}
       FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_aarch64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256 || '' }}
       FFPROBE_MACOS_AARCH64_ARCHIVE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_aarch64_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_MACOS_AARCH64_ARCHIVE_URL || '' }}
@@ -108,6 +127,11 @@ jobs:
       FFMPEG_MACOS_X86_64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_x86_64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_MACOS_X86_64_ARCHIVE_SHA256 || '' }}
       FFPROBE_MACOS_X86_64_ARCHIVE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_x86_64_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_MACOS_X86_64_ARCHIVE_URL || '' }}
       FFPROBE_MACOS_X86_64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_x86_64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_MACOS_X86_64_ARCHIVE_SHA256 || '' }}
+      PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pdfium_macos_universal_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256 || '' }}
+      LIBREOFFICE_MACOS_AARCH64_DMG_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_macos_aarch64_dmg_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_MACOS_AARCH64_DMG_SHA256 || '' }}
+      LIBREOFFICE_MACOS_X86_64_DMG_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_macos_x86_64_dmg_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_MACOS_X86_64_DMG_SHA256 || '' }}
+      PANDOC_MACOS_AARCH64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pandoc_macos_aarch64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PANDOC_MACOS_AARCH64_ARCHIVE_SHA256 || '' }}
+      PANDOC_MACOS_X86_64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pandoc_macos_x86_64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PANDOC_MACOS_X86_64_ARCHIVE_SHA256 || '' }}
       LIBVIPS_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.libvips_release_tag || github.event_name != 'workflow_dispatch' && vars.MC_LIBVIPS_MACOS_RELEASE_TAG || '' }}
       LIBVIPS_RUNTIME_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.libvips_runtime_run_id || github.event_name != 'workflow_dispatch' && vars.MC_LIBVIPS_MACOS_RUNTIME_RUN_ID || '' }}
       LIBVIPS_AARCH64_ASSET: ${{ github.event_name == 'workflow_dispatch' && inputs.libvips_aarch64_asset || github.event_name != 'workflow_dispatch' && vars.MC_LIBVIPS_MACOS_AARCH64_ASSET || 'libvips-macos-aarch64.tar.gz' }}
@@ -196,12 +220,27 @@ jobs:
             echo "Provide libvips_runtime_run_id from a successful macOS libvips Runtime run, or libvips_release_tag from an intentional test release." >&2
             exit 1
           fi
+          if [[ -n "$run_id" && ! "$run_id" =~ ^[0-9]+$ ]]; then
+            echo "libvips_runtime_run_id must be a numeric GitHub Actions run ID." >&2
+            exit 1
+          fi
+          if [[ -n "$release_tag" && ( ! "$release_tag" =~ ^[A-Za-z0-9._/-]+$ || "$release_tag" == -* || "$release_tag" == */..* || "$release_tag" == *..* ) ]]; then
+            echo "Invalid libvips_release_tag: $release_tag" >&2
+            exit 1
+          fi
 
       - name: Prepare portable libvips inputs
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           if [[ -n "$LIBVIPS_RUNTIME_RUN_ID" ]]; then
+            run_info="$(gh run view "$LIBVIPS_RUNTIME_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,name --jq '.name + "|" + .conclusion')"
+            if [[ "$run_info" != "macOS libvips Runtime|success" ]]; then
+              echo "libvips_runtime_run_id must reference a successful macOS libvips Runtime run. Got: $run_info" >&2
+              exit 1
+            fi
             artifact_dir="$RUNNER_TEMP/mc-libvips-runtime-artifacts"
             mkdir -p "$artifact_dir/aarch64" "$artifact_dir/x86_64"
             gh run download "$LIBVIPS_RUNTIME_RUN_ID" --repo "$GITHUB_REPOSITORY" --name libvips-macos-aarch64 --dir "$artifact_dir/aarch64"
@@ -245,6 +284,12 @@ jobs:
           cp engine-sources/macos-universal/ffprobe/bin/ffprobe-aarch64-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
           cp engine-sources/macos-universal/ffprobe/bin/ffprobe-x86_64-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
           cp engine-sources/macos-universal/ffprobe/bin/ffprobe-universal-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
+          (
+            cd "$RUNNER_TEMP/mc-macos-engine-assets"
+            for asset in ffmpeg-*-apple-darwin ffprobe-*-apple-darwin; do
+              shasum -a 256 "$asset" > "$asset.sha256"
+            done
+          )
 
       - uses: actions/upload-artifact@v4
         with:
@@ -254,6 +299,8 @@ jobs:
 
       - name: Upload staged assets to a test release
         if: ${{ env.OUTPUT_RELEASE_TAG != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           tag="$OUTPUT_RELEASE_TAG"

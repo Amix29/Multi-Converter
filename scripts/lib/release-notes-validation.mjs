@@ -10,6 +10,16 @@ export function releaseNotesBlock(body, language) {
   return String(body ?? "").match(pattern)?.[1]?.trim() ?? null;
 }
 
+export function visibleTextOutsideEnglishMarker(body) {
+  const rawBody = String(body ?? "");
+  const markerPattern = /<!--\s*mc-release-notes:en\s*-->[\s\S]*?<!--\s*\/mc-release-notes\s*-->/i;
+  const outside = rawBody
+    .replace(markerPattern, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .trim();
+  return outside;
+}
+
 export function effectiveReleaseNotesBody(body) {
   const rawBody = String(body ?? "").trim();
   return releaseNotesBlock(rawBody, "en") ?? rawBody;
@@ -50,6 +60,8 @@ export function validateReleaseNotes({ body, version, includeMacos = false, minL
     errors.push("Release notes must contain at most one English marker block.");
   } else if (englishMarkerCount === 1 && !releaseNotesBlock(trimmedBody, "en")) {
     errors.push("English release notes marker block is not closed correctly.");
+  } else if (englishMarkerCount === 1 && visibleTextOutsideEnglishMarker(trimmedBody)) {
+    errors.push("Release notes with an English marker block must not contain visible text outside that block.");
   }
 
   for (const language of disallowedReleaseNoteLanguages) {

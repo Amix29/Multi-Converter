@@ -2,14 +2,13 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
-import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
 const fullConfigPath = path.join(root, "tools", "engine-packages.config.json");
 const libvipsConfigPath = path.join(root, "engine-sources", ".libvips-engine-packages.config.json");
 const outputDir = path.join(root, "dist-engines-advanced");
 const embeddedManifestPath = path.join(root, "src-tauri", "engines-manifest.json");
-const releaseBaseUrl = process.env.ENGINE_RELEASE_BASE_URL ?? fileBaseUrl(outputDir);
+const releaseBaseUrl = requireReleaseBaseUrl();
 
 const fullConfig = JSON.parse(await fs.readFile(fullConfigPath, "utf8"));
 const libvipsConfig = {
@@ -50,8 +49,15 @@ await fs.writeFile(embeddedManifestPath, `${JSON.stringify(embedded, null, 2)}\n
 await writeMergedAdvancedManifest(generatedManifestPath, embedded);
 console.log(`Embedded manifest updated with libvips from ${path.relative(root, generatedManifestPath)}`);
 
-function fileBaseUrl(dir) {
-  return `${pathToFileURL(path.resolve(dir)).href}/`;
+function requireReleaseBaseUrl() {
+  const value = process.env.ENGINE_RELEASE_BASE_URL?.trim();
+  if (!value) {
+    throw new Error("ENGINE_RELEASE_BASE_URL is required before updating the embedded engine manifest. Use scripts/package-engines.mjs directly for local-only archives.");
+  }
+  if (!/^https:\/\/[^/\s]+\/.+/i.test(value)) {
+    throw new Error("ENGINE_RELEASE_BASE_URL must be an HTTPS release asset base URL.");
+  }
+  return value;
 }
 
 async function writeMergedAdvancedManifest(target, embedded) {

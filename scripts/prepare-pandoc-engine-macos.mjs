@@ -1,9 +1,13 @@
 import fs from "node:fs/promises";
-import { createWriteStream } from "node:fs";
 import path from "node:path";
-import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
+import {
+  download,
+  downloadIfMissingVerified,
+  publicSourceLabel,
+  requireSha256Env,
+} from "./lib/download-integrity.mjs";
 
 const root = process.cwd();
 const downloads = path.join(root, "engine-sources", ".downloads");
@@ -29,8 +33,18 @@ if (!armAsset || !x64Asset) {
 
 const armArchive = path.join(downloads, armAsset.name);
 const x64Archive = path.join(downloads, x64Asset.name);
-await downloadIfMissing(armAsset.browser_download_url, armArchive);
-await downloadIfMissing(x64Asset.browser_download_url, x64Archive);
+await downloadIfMissingVerified(
+  armAsset.browser_download_url,
+  armArchive,
+  requireSha256Env("PANDOC_MACOS_AARCH64_ARCHIVE_SHA256"),
+  userAgent,
+);
+await downloadIfMissingVerified(
+  x64Asset.browser_download_url,
+  x64Archive,
+  requireSha256Env("PANDOC_MACOS_X86_64_ARCHIVE_SHA256"),
+  userAgent,
+);
 
 const armExtract = path.join(extracts, "pandoc-macos-arm64");
 const x64Extract = path.join(extracts, "pandoc-macos-x86_64");
@@ -62,8 +76,8 @@ await fs.writeFile(
   path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"),
   [
     "Pandoc macOS universal package",
-    `Apple Silicon source: ${armAsset.browser_download_url}`,
-    `Intel source: ${x64Asset.browser_download_url}`,
+    `Apple Silicon source: ${publicSourceLabel(armAsset.browser_download_url)}`,
+    `Intel source: ${publicSourceLabel(x64Asset.browser_download_url)}`,
     `Release: ${release.name ?? release.tag_name}`,
     "",
     "Pandoc is distributed under GPL-2.0-or-later.",
@@ -79,26 +93,6 @@ await assertFile(path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"), "T
 await smokeTestPandoc(universalPandoc);
 
 console.log(`macOS Pandoc ready from ${release.name ?? release.tag_name}.`);
-
-async function downloadIfMissing(url, target) {
-  try {
-    const stat = await fs.stat(target);
-    if (stat.size > 0) return;
-  } catch {
-    // Download below.
-  }
-  await download(url, target);
-}
-
-async function download(url, target) {
-  console.log(`Downloading ${url}`);
-  const response = await fetch(url, { headers: userAgent });
-  if (!response.ok || !response.body) {
-    throw new Error(`Download failed (${response.status}): ${url}`);
-  }
-  await fs.mkdir(path.dirname(target), { recursive: true });
-  await pipeline(response.body, createWriteStream(target));
-}
 
 async function getJson(url) {
   const response = await fetch(url, { headers: githubApiHeaders() });

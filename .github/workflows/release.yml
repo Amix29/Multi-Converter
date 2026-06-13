@@ -13,7 +13,7 @@ on:
       - "v*"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}
@@ -28,7 +28,6 @@ jobs:
       include_macos: ${{ steps.mode.outputs.include_macos }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -49,6 +48,8 @@ jobs:
 
       - name: Validate release notes before release runners
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           version="$(node -p "require('./package.json').version")"
@@ -66,6 +67,8 @@ jobs:
     name: macOS DMG verification (${{ matrix.arch_label }})
     needs: release-preflight
     if: ${{ needs.release-preflight.outputs.include_macos == 'true' }}
+    outputs:
+      macos_dmg_sha256: ${{ steps.hash.outputs.sha256 }}
     strategy:
       fail-fast: false
       matrix:
@@ -77,7 +80,6 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
@@ -98,6 +100,8 @@ jobs:
 
       - name: Download pre-uploaded macOS DMG
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           version="${{ steps.version.outputs.version }}"
           tag="${{ steps.version.outputs.tag }}"
@@ -113,7 +117,16 @@ jobs:
         shell: bash
         run: npm run verify:macos-dmg -- --version "${{ steps.version.outputs.version }}" --dmg "$MACOS_DMG_PATH"
 
+      - id: hash
+        name: Record verified DMG SHA-256
+        shell: bash
+        run: |
+          sha="$(shasum -a 256 "$MACOS_DMG_PATH" | awk '{print $1}')"
+          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+
   windows:
+    permissions:
+      contents: write
     needs:
       - release-preflight
       - macos-dmg-verify
@@ -124,8 +137,6 @@ jobs:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -218,6 +229,9 @@ jobs:
       - run: npm run test:pdfium-wrapper
       - run: npm run clippy:pdfium-wrapper
       - run: npm run tauri:build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Prepare and validate clean release assets
         id: assets
@@ -245,6 +259,14 @@ jobs:
             if (-not (Test-Path -LiteralPath $macosDmgPath)) {
               throw "Missing pre-uploaded macOS DMG asset on release $tag: $macosDmgName"
             }
+            $expectedMacosDmgSha = "${{ needs.macos-dmg-verify.outputs.macos_dmg_sha256 }}"
+            if ([string]::IsNullOrWhiteSpace($expectedMacosDmgSha)) {
+              throw "Missing SHA-256 from the verified macOS DMG job."
+            }
+            $actualMacosDmgSha = (Get-FileHash -LiteralPath $macosDmgPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($actualMacosDmgSha -ne $expectedMacosDmgSha.ToLowerInvariant()) {
+              throw "Downloaded macOS DMG SHA-256 does not match the verified macOS DMG. Expected $expectedMacosDmgSha, got $actualMacosDmgSha."
+            }
             npm run prepare:release-assets -- --version $version --dir $assetDir --notes-env RELEASE_NOTES_BODY --macos-dmg $macosDmgPath
             if ($LASTEXITCODE -ne 0) {
               exit $LASTEXITCODE
@@ -257,7 +279,11 @@ jobs:
             }
           }
 
-          npm run validate:release-assets -- --version $version --dir $assetDir --platform $platform
+          $validateArgs = @("run", "validate:release-assets", "--", "--version", $version, "--dir", $assetDir, "--platform", $platform)
+          if ($includeMacos) {
+            $validateArgs += @("--macos-dmg-sha256", "${{ needs.macos-dmg-verify.outputs.macos_dmg_sha256 }}")
+          }
+          npm @validateArgs
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }

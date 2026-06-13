@@ -1,10 +1,13 @@
 import fs from "node:fs/promises";
-import { createWriteStream } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
+import {
+  downloadIfMissingVerified,
+  publicSourceLabel,
+  requireSha256Env,
+} from "./lib/download-integrity.mjs";
 
 const root = process.cwd();
 const version = process.env.LIBREOFFICE_VERSION ?? "26.2.3";
@@ -18,12 +21,14 @@ const inputs = [
     fileName: `LibreOffice_${version}_MacOS_aarch64.dmg`,
     url: process.env.LIBREOFFICE_MAC_AARCH64_DMG_URL
       ?? `https://download.documentfoundation.org/libreoffice/stable/${version}/mac/aarch64/LibreOffice_${version}_MacOS_aarch64.dmg`,
+    shaEnv: "LIBREOFFICE_MACOS_AARCH64_DMG_SHA256",
   },
   {
     arch: "x86_64",
     fileName: `LibreOffice_${version}_MacOS_x86-64.dmg`,
     url: process.env.LIBREOFFICE_MAC_X86_64_DMG_URL
       ?? `https://download.documentfoundation.org/libreoffice/stable/${version}/mac/x86_64/LibreOffice_${version}_MacOS_x86-64.dmg`,
+    shaEnv: "LIBREOFFICE_MACOS_X86_64_DMG_SHA256",
   },
 ];
 
@@ -40,7 +45,7 @@ await fs.rm(sourceDir, { recursive: true, force: true });
 
 for (const input of inputs) {
   const dmgPath = path.join(downloadsDir, input.fileName);
-  await downloadIfMissing(input.url, dmgPath);
+  await downloadIfMissingVerified(input.url, dmgPath, requireSha256Env(input.shaEnv), userAgent);
   await stageLibreOfficeApp(input, dmgPath);
 }
 
@@ -61,7 +66,7 @@ await fs.writeFile(
   path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"),
   [
     "LibreOffice macOS package prepared for Multi-Converter.",
-    ...inputs.map((input) => `${input.arch} source DMG: ${input.url}`),
+    ...inputs.map((input) => `${input.arch} source DMG: ${publicSourceLabel(input.url)}`),
     `Prepared version: ${version}`,
     "",
     "LibreOffice includes third-party components. Keep this notice with the package and refer to the official LibreOffice license page:",
@@ -113,25 +118,6 @@ async function findLibreOfficeApp(base) {
     }
   }
   return null;
-}
-
-async function downloadIfMissing(url, target) {
-  try {
-    const stat = await fs.stat(target);
-    if (stat.size > 0) return;
-  } catch {
-    // Download below.
-  }
-  await download(url, target);
-}
-
-async function download(url, target) {
-  console.log(`Downloading ${url}`);
-  const response = await fetch(url, { headers: userAgent });
-  if (!response.ok || !response.body) {
-    throw new Error(`LibreOffice download failed (${response.status}): ${url}`);
-  }
-  await pipeline(response.body, createWriteStream(target));
 }
 
 async function smokeTestLibreOffice(soffice, arch) {

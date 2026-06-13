@@ -5,6 +5,7 @@ import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
+import { publicSourceLabel } from "./lib/download-integrity.mjs";
 
 const root = process.cwd();
 const downloads = path.join(root, "engine-sources", ".downloads");
@@ -153,10 +154,10 @@ async function materializeArchive(source, arch, stem) {
   } catch {
     // Download below.
   }
-  console.log(`Downloading ${source.url}`);
+  console.log(`Downloading ${publicSourceLabel(source.url)}`);
   const response = await fetch(source.url, { headers: userAgent });
   if (!response.ok || !response.body) {
-    throw new Error(`${arch}: download failed (${response.status}) for ${source.url}`);
+    throw new Error(`${arch}: download failed (${response.status}) for ${publicSourceLabel(source.url)}`);
   }
   await pipeline(response.body, createWriteStream(target));
   await verifySha256(target, source.sha256, `${arch} ${stem} downloaded archive`);
@@ -223,8 +224,8 @@ async function stageNotices(items) {
   const noticeText = [
     "FFmpeg/ffprobe macOS universal package",
     ...items.flatMap((item) => [
-      `${item.arch} ffmpeg source: ${item.source.url ?? item.source.archivePath}`,
-      `${item.arch} ffprobe source: ${item.ffprobeSource?.url ?? item.ffprobeSource?.archivePath ?? item.source.url ?? item.source.archivePath}`,
+      `${item.arch} ffmpeg source: ${publicSourceLabel(item.source.url ?? item.source.archivePath)}`,
+      `${item.arch} ffprobe source: ${publicSourceLabel(item.ffprobeSource?.url ?? item.ffprobeSource?.archivePath ?? item.source.url ?? item.source.archivePath)}`,
     ]),
     `Expected version: ${expectedVersion}`,
     "",

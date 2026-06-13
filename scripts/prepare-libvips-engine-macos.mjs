@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
+import { publicSourceLabel } from "./lib/download-integrity.mjs";
 
 const root = process.cwd();
 const sourceDir = path.join(root, "engine-sources", "macos-universal", "libvips");
@@ -184,7 +185,7 @@ async function stageLicenseAndNotices(inputs) {
     : null;
   const lines = [
     "libvips macOS package",
-    ...inputs.map((input) => `${input.arch} source tree: ${input.sourceDir}`),
+    ...inputs.map((input) => `${input.arch} source tree: verified portable libvips runtime`),
     "",
     "libvips is distributed under LGPL-2.1-or-later.",
     "This package must include every non-system dynamic dependency required by the staged vips binaries.",
@@ -192,7 +193,7 @@ async function stageLicenseAndNotices(inputs) {
     "",
   ];
   if (providedNotice) {
-    lines.push(`Additional notice copied from: ${providedNotice}`, "");
+    lines.push(`Additional notice copied from: ${publicSourceLabel(providedNotice)}`, "");
   }
   const target = path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt");
   await fs.writeFile(target, lines.join("\n"), "utf8");

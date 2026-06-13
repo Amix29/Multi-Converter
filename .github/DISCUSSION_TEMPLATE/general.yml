@@ -4,11 +4,12 @@ body:
     attributes:
       value: |
         Use this category for general Multi-Converter discussion, questions, feedback, and community conversation.
+        Discussions are public. Do not include private files, local paths, keys, personal contact details, sensitive screenshots, or anything you do not want published.
   - type: textarea
     id: topic
     attributes:
       label: Topic
-      description: What would you like to discuss?
+      description: What would you like to discuss? Keep it safe to publish publicly.
       placeholder: Start the conversation here.
     validations:
       required: true

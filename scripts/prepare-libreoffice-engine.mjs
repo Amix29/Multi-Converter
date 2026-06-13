@@ -1,10 +1,14 @@
 import fs from "node:fs/promises";
-import { createWriteStream, existsSync } from "node:fs";
+import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
+import {
+  downloadIfMissingVerified,
+  publicSourceLabel,
+  requireSha256Env,
+} from "./lib/download-integrity.mjs";
 
 const root = process.cwd();
 const version = process.env.LIBREOFFICE_VERSION ?? "26.2.3";
@@ -21,9 +25,12 @@ const lessMsiExe = path.join(lessMsiDir, "lessmsi.exe");
 const workDir = path.join(os.tmpdir(), "mc-libreoffice-msi");
 
 await fs.mkdir(downloadsDir, { recursive: true });
-if (!existsSync(msiPath)) {
-  await download(downloadUrl, msiPath);
-}
+await downloadIfMissingVerified(
+  downloadUrl,
+  msiPath,
+  requireSha256Env("LIBREOFFICE_WINDOWS_X64_MSI_SHA256"),
+  { "User-Agent": "Multi-Converter-Packager" },
+);
 await ensureLessMsi();
 
 await fs.rm(workDir, { recursive: true, force: true });
@@ -66,7 +73,7 @@ await fs.writeFile(
   path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"),
   [
     "LibreOffice Windows x86-64 package prepared for Multi-Converter.",
-    `Source MSI: ${downloadUrl}`,
+    `Source MSI: ${publicSourceLabel(downloadUrl)}`,
     `Prepared version: ${version}`,
     "",
     "LibreOffice includes third-party components. Keep this notice with the package and refer to the official LibreOffice license page:",
@@ -100,13 +107,12 @@ if (smoke.status !== 0) {
 console.log(`LibreOffice ready from ${fileName}`);
 
 async function ensureLessMsi() {
-  if (existsSync(lessMsiExe)) return;
-  if (!existsSync(lessMsiZip)) {
-    await download(
-      `https://github.com/activescott/lessmsi/releases/download/v${lessMsiVersion}/lessmsi-v${lessMsiVersion}.zip`,
-      lessMsiZip,
-    );
-  }
+  await downloadIfMissingVerified(
+    `https://github.com/activescott/lessmsi/releases/download/v${lessMsiVersion}/lessmsi-v${lessMsiVersion}.zip`,
+    lessMsiZip,
+    requireSha256Env("LESSMSI_WINDOWS_X64_ARCHIVE_SHA256"),
+    { "User-Agent": "Multi-Converter-Packager" },
+  );
   await fs.rm(lessMsiDir, { recursive: true, force: true });
   await fs.mkdir(lessMsiDir, { recursive: true });
   const expand = spawnSync("powershell", [
@@ -125,15 +131,6 @@ async function ensureLessMsi() {
     throw new Error(`Extraction lessmsi impossible : ${expand.stderr || expand.stdout}`);
   }
   await assertFile(lessMsiExe, "lessmsi.exe absent après extraction.");
-}
-
-async function download(url, target) {
-  console.log(`Downloading ${url}`);
-  const response = await fetch(url, { headers: { "User-Agent": "Multi-Converter-Packager" } });
-  if (!response.ok || !response.body) {
-    throw new Error(`Téléchargement LibreOffice impossible (${response.status}) : ${url}`);
-  }
-  await pipeline(response.body, createWriteStream(target));
 }
 
 async function findLibreOfficeRoot(base) {

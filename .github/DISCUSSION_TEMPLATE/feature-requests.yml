@@ -4,6 +4,7 @@ body:
     attributes:
       value: |
         Use this category to request a specific Multi-Converter feature or workflow improvement.
+        Discussions are public. Do not include private files, local paths, keys, personal contact details, sensitive screenshots, or anything you do not want published.
   - type: textarea
     id: feature
     attributes:
@@ -24,4 +25,4 @@ body:
     id: details
     attributes:
       label: Details or examples
-      description: Optional. Add examples, screenshots, or related tools if useful.
+      description: Optional. Add only public-safe examples, screenshots, or related tools if useful.
