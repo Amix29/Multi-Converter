@@ -18,6 +18,7 @@ concurrency:
 jobs:
   quality-gate:
     name: Windows x64 quality gate
+    if: ${{ github.event_name != 'push' || github.ref_name != 'codex/test' || vars.MC_ENABLE_CODEX_TEST_BUILD == '1' }}
     runs-on: windows-latest
     timeout-minutes: 120
     env:
@@ -67,6 +68,7 @@ jobs:
 
   macos-code-check:
     name: macOS code check (${{ matrix.rust-target }})
+    if: ${{ github.event_name != 'push' || github.ref_name != 'codex/test' || vars.MC_ENABLE_CODEX_TEST_BUILD == '1' }}
     runs-on: macos-latest
     timeout-minutes: 60
     strategy:
@@ -124,6 +126,7 @@ jobs:
 
   macos-host-tests:
     name: macOS host unit tests
+    if: ${{ github.event_name != 'push' || github.ref_name != 'codex/test' || vars.MC_ENABLE_CODEX_TEST_BUILD == '1' }}
     runs-on: macos-latest
     timeout-minutes: 60
     env:

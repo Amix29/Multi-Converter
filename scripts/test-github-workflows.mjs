@@ -28,6 +28,7 @@ const macosConversionsJob = workflowJob(macosConversionsWorkflow, "macos-convers
 
 assert.match(buildWorkflow, /quality-gate:\s*\n\s+name:\s+Windows x64 quality gate/, "build workflow must keep the Windows job clearly named");
 assert.match(buildWorkflow, /paths-ignore:\s*\n\s+- "\*\*\/\*\.md"\s*\n\s+- "docs\/\*\*"/, "build workflow push runs must skip docs-only changes to conserve GitHub Actions minutes");
+assertCodexTestBuildGate(windowsBuildJob, "Windows quality gate");
 assert.match(windowsBuildJob, /timeout-minutes:\s+120/, "Windows quality gate must allow enough time for conversion tests and the full Tauri build");
 assert.match(windowsBuildJob, /id:\s+cargo-audit-cache/, "Windows CI must cache the cargo-audit binary");
 assert.match(windowsBuildJob, /~\/\.cargo\/bin\/cargo-audit\.exe/, "Windows CI cargo-audit cache must target the installed binary");
@@ -35,6 +36,7 @@ assert.match(windowsBuildJob, /cargo install cargo-audit --locked\s*\n\s+if:\s+s
 assert.match(windowsBuildJob, /npm run test:windows:ci/, "Windows CI must use the explicit Windows validation wrapper");
 assert.match(buildWorkflow, /macos-code-check:/, "build workflow must include a macOS code-check job");
 assert.match(macosBuildJob, /runs-on:\s+macos-latest/, "macOS CI must run on macOS");
+assertCodexTestBuildGate(macosBuildJob, "macOS code-check");
 assert.match(macosBuildJob, /aarch64-apple-darwin/, "macOS CI must check Apple Silicon target compilation");
 assert.match(macosBuildJob, /x86_64-apple-darwin/, "macOS CI must check Intel target compilation");
 assert.match(macosBuildJob, /components:\s+rustfmt, clippy/, "macOS CI must install Rust formatting and Clippy components explicitly");
@@ -52,6 +54,7 @@ assert.doesNotMatch(macosBuildJob, /npm run test:macos:host/, "macOS code checks
 
 assert.match(buildWorkflow, /macos-host-tests:/, "build workflow must include a macOS host unit-test job");
 assert.match(macosHostTestsJob, /runs-on:\s+macos-latest/, "macOS host tests must run on macOS");
+assertCodexTestBuildGate(macosHostTestsJob, "macOS host-test");
 assert.match(macosHostTestsJob, /node scripts\/prepare-tauri-ci-sidecars\.mjs --target host/, "macOS host tests must stage compile-only Tauri sidecar placeholders");
 assert.match(macosHostTestsJob, /npm run test:rust/, "macOS host tests must run native Rust unit tests");
 assert.match(macosHostTestsJob, /npm run test:pdfium-wrapper:compile/, "macOS host tests must compile PDFium wrapper tests without pretending runtime PDFium is staged");
@@ -261,4 +264,12 @@ function workflowJob(workflow, jobName) {
   const match = workflow.match(new RegExp(`^  ${jobName}:\\r?\\n([\\s\\S]*?)(?=^  [A-Za-z0-9_-]+:\\r?\\n|(?![\\s\\S]))`, "m"));
   assert.ok(match, `workflow job is missing: ${jobName}`);
   return match[0];
+}
+
+function assertCodexTestBuildGate(job, label) {
+  assert.match(
+    job,
+    /if:\s+\$\{\{\s*github\.event_name != 'push' \|\| github\.ref_name != 'codex\/test' \|\| vars\.MC_ENABLE_CODEX_TEST_BUILD == '1'\s*\}\}/,
+    `${label} must skip codex/test push runs unless MC_ENABLE_CODEX_TEST_BUILD=1`,
+  );
 }

@@ -97,7 +97,7 @@ The GitHub `Build` workflow runs a `macOS code check` job on `macos-latest` for 
 - `aarch64-apple-darwin`
 - `x86_64-apple-darwin`
 
-Pushes that modify only Markdown/docs files skip the full `Build` workflow to conserve GitHub Actions minutes. Use `workflow_dispatch` when a maintainer intentionally wants the full build after a docs-only change.
+Pushes that modify only Markdown/docs files skip the full `Build` workflow to conserve GitHub Actions minutes. Pushes to the persistent `codex/test` branch also skip the expensive `Build` jobs unless the repository variable `MC_ENABLE_CODEX_TEST_BUILD` is set to `1`; use that variable or `workflow_dispatch` when a maintainer intentionally wants the full build from the test branch.
 
 That job intentionally runs code and contract checks that do not require unreleased local engine binaries:
 
