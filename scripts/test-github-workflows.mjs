@@ -132,6 +132,7 @@ assert.match(macosDmgWorkflow, /workflow_dispatch:/, "macOS DMG workflow must be
 assert.match(macosDmgWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS DMG workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosDmgWorkflow, /scripts\/validate-bundled-engines\.mjs/, "macOS DMG push paths must include bundled-engine validation changes");
 assert.match(macosDmgWorkflow, /src-tauri\/src\/converters\.rs/, "macOS DMG push paths must include converter changes");
+assert.match(macosDmgWorkflow, /src-tauri\/src\/engine_distribution\.rs/, "macOS DMG push paths must include engine distribution changes");
 assert.match(macosDmgWorkflow, /sidecar_release_tag:/, "macOS DMG workflow must allow staged sidecars from a release tag");
 assert.match(macosDmgWorkflow, /engine_release_tag:/, "macOS DMG workflow must allow staged engine archives from a release tag");
 assert.match(macosDmgWorkflow, /engine_staging_run_id:/, "macOS DMG workflow must allow staged engines from a workflow artifact");
@@ -161,6 +162,7 @@ assert.match(macosConversionsWorkflow, /workflow_dispatch:/, "macOS conversion w
 assert.match(macosConversionsWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS conversion workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosConversionsWorkflow, /scripts\/validate-bundled-engines\.mjs/, "macOS conversion push paths must include bundled-engine validation changes");
 assert.match(macosConversionsWorkflow, /src-tauri\/src\/converters\.rs/, "macOS conversion push paths must include converter changes");
+assert.match(macosConversionsWorkflow, /src-tauri\/src\/engine_distribution\.rs/, "macOS conversion push paths must include engine distribution changes");
 assert.match(macosConversionsWorkflow, /sidecar_release_tag:/, "macOS conversion workflow must allow staged real sidecars from a release tag");
 assert.match(macosConversionsWorkflow, /engine_release_tag:/, "macOS conversion workflow must allow staged engine archives from a release tag");
 assert.match(macosConversionsWorkflow, /engine_staging_run_id:/, "macOS conversion workflow must allow staged engines from a workflow artifact");

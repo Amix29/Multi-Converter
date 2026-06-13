@@ -453,7 +453,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parses_dev_manifest_and_selects_windows_x64() {
+    fn parses_embedded_manifest_and_selects_declared_pdfium_platform() {
         let manifest = load_manifest().unwrap();
         assert_eq!(manifest.manifest_version, 1);
         assert!(
@@ -462,8 +462,14 @@ mod tests {
                 .iter()
                 .all(|engine| engine.mode == EngineMode::Advanced)
         );
-        let pdfium = manifest_for_platform_id(&manifest, "pdfium", "windows-x64").unwrap();
-        assert_eq!(pdfium.platform, "windows-x64");
+        let pdfium_platform = manifest
+            .engines
+            .iter()
+            .find(|engine| engine.id == "pdfium")
+            .map(|engine| engine.platform.as_str())
+            .unwrap();
+        let pdfium = manifest_for_platform_id(&manifest, "pdfium", pdfium_platform).unwrap();
+        assert_eq!(pdfium.platform, pdfium_platform);
         assert_eq!(pdfium.archive_type, ArchiveType::Zip);
     }
 
@@ -569,15 +575,24 @@ mod tests {
     #[test]
     fn manifest_uses_pdfium_instead_of_poppler_or_mupdf() {
         let manifest = load_manifest().unwrap();
-        assert!(manifest_for_platform_id(&manifest, "pdfium", "windows-x64").is_some());
-        assert!(manifest_for_platform_id(&manifest, "poppler", "windows-x64").is_none());
-        assert!(manifest_for_platform_id(&manifest, "mupdf", "windows-x64").is_none());
-        assert_eq!(
-            manifest_for_platform_id(&manifest, "pdfium", "windows-x64")
-                .unwrap()
-                .mode,
-            EngineMode::Advanced
-        );
+        let pdfium_platforms = manifest
+            .engines
+            .iter()
+            .filter(|engine| engine.id == "pdfium")
+            .map(|engine| engine.platform.as_str())
+            .collect::<Vec<_>>();
+        assert!(!pdfium_platforms.is_empty());
+        for platform in pdfium_platforms {
+            assert!(manifest_for_platform_id(&manifest, "pdfium", platform).is_some());
+            assert!(manifest_for_platform_id(&manifest, "poppler", platform).is_none());
+            assert!(manifest_for_platform_id(&manifest, "mupdf", platform).is_none());
+            assert_eq!(
+                manifest_for_platform_id(&manifest, "pdfium", platform)
+                    .unwrap()
+                    .mode,
+                EngineMode::Advanced
+            );
+        }
     }
 
     #[test]
