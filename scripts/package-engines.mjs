@@ -493,8 +493,8 @@ function normalizeSafeSymlinkTarget(source, linkTarget) {
 
   const normalizedAbsoluteTarget = linkTarget.replaceAll("\\", "/");
   const isFrameworkLink = source.split(path.sep).some((part) => part.endsWith(".framework"));
-  if (isFrameworkLink && normalizedAbsoluteTarget.startsWith("/Versions/")) {
-    return normalizedAbsoluteTarget.slice(1);
+  if (isFrameworkLink) {
+    return normalizedAbsoluteTarget.replace(/^\/+/, "");
   }
   return null;
 }
