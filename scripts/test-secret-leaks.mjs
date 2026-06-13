@@ -14,6 +14,15 @@ const ignoredPrefixes = [
   "src-tauri/installer-assets/",
 ];
 const maxTextFileBytes = 2 * 1024 * 1024;
+const pathPatterns = [
+  ["tracked dotenv file", /(^|\/)\.env(?:\.[^/]+)?$/i],
+  ["tracked npm credentials file", /(^|\/)\.npmrc$/i],
+  ["tracked netrc credentials file", /(^|\/)\.netrc$/i],
+  ["Apple signing private key file", /(^|\/)(?:AuthKey|Apple|ASC|AppStoreConnect|DeveloperID|Developer-ID)[A-Za-z0-9_.-]*\.p8$/i],
+  ["Apple signing certificate file", /(^|\/)[^/]+\.p12$/i],
+  ["Apple provisioning profile file", /(^|\/)[^/]+\.(?:mobileprovision|provisionprofile)$/i],
+  ["tracked private key file", /(^|\/)[^/]+\.(?:pem|key)$/i],
+];
 const patterns = [
   ["private test repository reference", new RegExp(`\\b(?:Amix29/)?Multi-Converter-Test-${"Prive"}\\b`, "gi")],
   ["private test repository slug", new RegExp(`\\btest-${"prive"}\\b`, "gi")],
@@ -39,6 +48,16 @@ const findings = [];
 for (const relative of files) {
   const normalized = relative.replaceAll("\\", "/");
   if (ignoredPaths.has(normalized) || ignoredPrefixes.some((prefix) => normalized.startsWith(prefix))) continue;
+
+  for (const [label, pattern] of pathPatterns) {
+    if (pattern.test(normalized)) {
+      findings.push({
+        file: normalized,
+        line: 1,
+        label,
+      });
+    }
+  }
 
   const absolute = path.join(root, relative);
   const stat = fs.statSync(absolute, { throwIfNoEntry: false });

@@ -111,9 +111,13 @@ assert.match(macosChecklist, /workflow must fail if any required `macos-universa
 assert.doesNotMatch(macosChecklist, /workflow is expected to fail until all required `macos-universal` advanced engine entries exist/i, "macOS checklist must not say the conversion matrix is still expected to fail");
 assert.match(secretLeakScript, /private test repository reference/, "secret leak scan must reject private test repository references");
 assert.match(secretLeakScript, /maintainer local Windows path/, "secret leak scan must reject maintainer-local Windows paths");
+assert.match(secretLeakScript, /tracked dotenv file/, "secret leak scan must reject tracked dotenv files");
+assert.match(secretLeakScript, /tracked npm credentials file/, "secret leak scan must reject tracked npm credential files");
+assert.match(secretLeakScript, /tracked netrc credentials file/, "secret leak scan must reject tracked netrc credential files");
 assert.match(secretLeakScript, /AuthKey_/, "secret leak scan must reject Apple signing private key filenames");
 assert.match(secretLeakScript, /\\.p12/, "secret leak scan must reject Apple signing certificate filenames");
 assert.match(secretLeakScript, /mobileprovision/, "secret leak scan must reject Apple provisioning profile filenames");
+assert.match(secretLeakScript, /tracked private key file/, "secret leak scan must reject tracked private key filenames");
 assert.match(secretLeakScript, /TAURI_SIGNING_PRIVATE_KEY/, "secret leak scan must reject accidental Tauri signing key values");
 
 console.log("Repository metadata tests passed.");

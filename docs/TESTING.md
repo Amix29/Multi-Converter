@@ -65,7 +65,7 @@ Run this before commits, release notes, release assets or the final Codex Securi
 npm run test:secret-leaks
 ```
 
-The scan checks tracked text files for private key blocks, common service tokens, accidental long secret assignments, Apple signing key/certificate/profile filenames, private test repository references and maintainer-local Windows paths. It reports only the file, line and pattern name; it does not print the matched secret value.
+The scan checks tracked file paths and tracked text files for credential file names, private key blocks, common service tokens, accidental long secret assignments, Apple signing key/certificate/profile filenames, private test repository references and maintainer-local Windows paths. It reports only the file, line and pattern name; it does not print the matched secret value.
 
 ## Production Config Check
 
