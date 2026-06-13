@@ -60,9 +60,17 @@ assert.doesNotMatch(macosHostTestsJob, /npm run test:macos:host/, "macOS host un
 assert.match(releaseWorkflow, /include_macos:/, "release workflow must expose the manual include_macos switch");
 assert.match(releaseWorkflow, /release-preflight:/, "release workflow must run a cheap preflight before release publication");
 assert.match(releasePreflightJob, /runs-on:\s+ubuntu-latest/, "release preflight must avoid macOS runners");
+assert.match(releasePreflightJob, /GH_TOKEN:\s+\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}/, "release preflight must be able to read GitHub release notes");
 assert.match(releasePreflightJob, /echo "include_macos=true" >> "\$GITHUB_OUTPUT"/, "release preflight must expose whether macOS publication was requested");
 assert.match(releasePreflightJob, /Require V1\.0\.5 macOS release readiness/, "release preflight must require V1.0.5 readiness before macOS DMG verification");
 assert.match(releasePreflightJob, /npm run status:v1\.0\.5 -- --require-ready/, "release preflight must fail before macOS runner allocation while V1.0.5 is not ready");
+assert.match(releasePreflightJob, /Validate macOS release notes before DMG runner/, "release preflight must validate macOS release notes before macOS runner allocation");
+assert.match(releasePreflightJob, /gh release view "\$tag" --repo "\$GITHUB_REPOSITORY" --json body --jq "\.body"/, "release preflight must read the GitHub release body");
+assert.match(releasePreflightJob, /macos_dmg_name="Multi-Converter_\$\{version\}_macos-universal\.dmg"/, "release preflight must require the exact macOS universal DMG name in release notes");
+assert.ok(releasePreflightJob.includes("not[[:space:]]+Apple-signed"), "release preflight must validate unsigned macOS wording before DMG verification");
+assert.match(releasePreflightJob, /Open Anyway/, "release preflight must validate Open Anyway guidance before DMG verification");
+assert.ok(releasePreflightJob.includes("macOS[[:space:]]+automatic[[:space:]]+updates[[:space:]]+are[[:space:]]+not[[:space:]]+enabled"), "release preflight must validate disabled macOS updater wording before DMG verification");
+assert.ok(releasePreflightJob.includes("macOS[[:space:]]+DMG[[:space:]]+verification|verified[[:space:]]+on[[:space:]]+macOS"), "release preflight must validate macOS DMG verification wording before DMG verification");
 assert.match(releaseWorkflow, /macos-dmg-verify:/, "release workflow must include a macOS DMG verification job");
 assert.match(releaseWorkflow, /macos-dmg-verify:[\s\S]*?needs:\s+release-preflight/, "macOS DMG verification must wait for the cheap preflight");
 assert.match(releaseWorkflow, /needs\.release-preflight\.outputs\.include_macos == 'true'/, "macOS DMG verification must only run when preflight confirms macOS publication");

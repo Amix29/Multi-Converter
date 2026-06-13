@@ -170,7 +170,7 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$TMPDIR/mc-release-ass
 - Upload the verified DMG asset to that release first: `Multi-Converter_X.Y.Z_macos-universal.dmg`.
 - Run the `Release` workflow manually with `include_macos=true`.
 - The workflow downloads that pre-uploaded DMG, verifies it on `macos-latest`, copies it into a clean release folder, validates `--platform all`, then republishes the exact final asset list.
-- Before allocating a macOS runner, the workflow also runs `npm run status:v1.0.5 -- --require-ready`; it must fail until the clean-Mac smoke-test receipt, final security approval and final README macOS availability row are recorded.
+- Before allocating a macOS runner, the workflow also runs `npm run status:v1.0.5 -- --require-ready` and validates the GitHub release notes macOS wording; it must fail until the clean-Mac smoke-test receipt, final security approval, final README macOS availability row and required public macOS installation notes are recorded.
 - If the macOS DMG verification job fails, the publication job must not run.
 - Do not use `include_macos=true` for a DMG that has not passed the manual smoke test below.
 

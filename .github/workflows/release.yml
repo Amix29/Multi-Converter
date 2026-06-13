@@ -28,6 +28,7 @@ jobs:
       include_macos: ${{ steps.mode.outputs.include_macos }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -49,6 +50,54 @@ jobs:
       - name: Require V1.0.5 macOS release readiness
         if: ${{ steps.mode.outputs.include_macos == 'true' }}
         run: npm run status:v1.0.5 -- --require-ready
+
+      - name: Validate macOS release notes before DMG runner
+        if: ${{ steps.mode.outputs.include_macos == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          tag="v$version"
+          macos_dmg_name="Multi-Converter_${version}_macos-universal.dmg"
+          body="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq ".body")"
+          if [[ -z "${body//[[:space:]]/}" ]]; then
+            echo "Missing GitHub release notes for $tag. Create or edit the release notes directly on GitHub in English, then rerun this workflow." >&2
+            exit 1
+          fi
+          if [[ "$body" != "# Multi-Converter $tag"* ]]; then
+            echo "GitHub release notes must start with '# Multi-Converter $tag'." >&2
+            exit 1
+          fi
+          for section in "## Highlights" "## Download And Installation" "## Validation"; do
+            if [[ "$body" != *"$section"* ]]; then
+              echo "GitHub release notes are missing required section '$section'." >&2
+              exit 1
+            fi
+          done
+          if grep -Eiq "mc-release-notes:(fr|es|de|pt|it)" <<< "$body"; then
+            echo "GitHub release notes must be published in English only." >&2
+            exit 1
+          fi
+          if [[ "$body" != *"$macos_dmg_name"* ]]; then
+            echo "macOS release notes must name $macos_dmg_name." >&2
+            exit 1
+          fi
+          if ! grep -Eiq "not[[:space:]]+Apple-signed" <<< "$body" || ! grep -Eiq "not[[:space:]]+notarized" <<< "$body"; then
+            echo "macOS release notes must state that the macOS build is not Apple-signed and not notarized." >&2
+            exit 1
+          fi
+          if [[ "$body" != *"Open Anyway"* || "$body" != *"Privacy & Security"* ]]; then
+            echo "macOS release notes must include the Open Anyway path through Privacy & Security." >&2
+            exit 1
+          fi
+          if ! grep -Eiq "macOS[[:space:]]+automatic[[:space:]]+updates[[:space:]]+are[[:space:]]+not[[:space:]]+enabled" <<< "$body"; then
+            echo "macOS release notes must state that macOS automatic updates are not enabled." >&2
+            exit 1
+          fi
+          if ! grep -Eiq "macOS[[:space:]]+DMG[[:space:]]+verification|verified[[:space:]]+on[[:space:]]+macOS" <<< "$body"; then
+            echo "macOS release notes must mention that the macOS DMG was verified on macOS." >&2
+            exit 1
+          fi
 
   macos-dmg-verify:
     name: macOS DMG verification
