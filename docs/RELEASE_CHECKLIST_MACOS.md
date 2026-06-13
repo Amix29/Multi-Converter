@@ -130,6 +130,7 @@ Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conv
 Use the `macOS Engine Staging` workflow to create the test assets consumed by the conversion and DMG workflows.
 
 - Provide maintainer-approved FFmpeg/ffprobe Apple Silicon and Intel archive URLs plus SHA-256 checksums. If `ffmpeg` and `ffprobe` are published as separate archives, provide the optional `ffprobe_*` URL/checksum inputs too.
+- The workflow downloads the official FFmpeg `n8.1.1` license texts from the source tag, verifies their SHA-256 checksums and passes the generated temporary license bundle to `npm run prepare:ffmpeg-engine:macos`.
 - Provide either `libvips_runtime_run_id` from a successful `macOS libvips Runtime` run, or a `libvips_release_tag` that contains portable Apple Silicon and Intel libvips runtime archives. Those archives must contain a `bin/vips` runtime root and bundled non-system dependencies.
 - The workflow prepares FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips on `macos-latest`, packages `tools/engine-packages.macos.config.json`, uploads a `macos-engine-assets` workflow artifact, and optionally uploads the same assets to `output_release_tag`.
 - On `codex/test`, the workflow is push-runnable when `MC_ENABLE_MACOS_ENGINE_STAGING=1` is configured as a repository variable. Push runs read the FFmpeg/ffprobe URLs, checksums and libvips input from the `MC_*` repository variables, so staging can be validated before this workflow exists on `main`.
