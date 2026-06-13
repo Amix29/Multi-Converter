@@ -234,7 +234,8 @@ assert.match(packageScript, /canCheckExecutableBits\(\)/, "engine packaging must
 assert.match(packageScript, /Lien symbolique non relatif refuse/, "engine packaging must reject absolute symbolic links");
 assert.match(packageScript, /Lien symbolique hors source refuse/, "engine packaging must reject symbolic links that escape the source tree");
 assert.match(packageScript, /Lien symbolique casse refuse/, "engine packaging must reject broken symbolic links");
-assert.match(packageScript, /fs\.symlink\(linkTarget, target\)/, "engine packaging must preserve safe internal symbolic links for macOS app bundles");
+assert.match(packageScript, /normalizedAbsoluteTarget\.startsWith\("\/Versions\/"\)/, "engine packaging must normalize macOS framework-rooted symbolic links");
+assert.match(packageScript, /fs\.symlink\(safeLinkTarget, target\)/, "engine packaging must preserve safe internal symbolic links for macOS app bundles");
 assert.match(packageScript, /\["-qry", archivePath, "\."\]/, "engine packaging must store Unix symbolic links in generated ZIP archives");
 assert.match(packageScript, /ffmpeg-8\.1\.1-macos-universal\.zip/, "engine packaging validation must include a macOS universal fixture");
 

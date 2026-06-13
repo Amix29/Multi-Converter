@@ -461,10 +461,11 @@ async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir) {
     const target = path.join(targetDir, relative);
     if (entry.isSymbolicLink()) {
       const linkTarget = await fs.readlink(source);
-      if (!linkTarget || linkTarget.includes("\0") || path.isAbsolute(linkTarget)) {
+      const safeLinkTarget = normalizeSafeSymlinkTarget(source, linkTarget);
+      if (!safeLinkTarget) {
         throw new Error(`Lien symbolique non relatif refuse: ${source}`);
       }
-      const resolvedLinkTarget = path.resolve(path.dirname(source), linkTarget);
+      const resolvedLinkTarget = path.resolve(path.dirname(source), safeLinkTarget);
       if (resolvedLinkTarget !== resolvedSourceRoot && !resolvedLinkTarget.startsWith(`${resolvedSourceRoot}${path.sep}`)) {
         throw new Error(`Lien symbolique hors source refuse: ${source}`);
       }
@@ -473,7 +474,7 @@ async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir) {
         throw new Error(`Lien symbolique casse refuse: ${source}`);
       }
       await fs.mkdir(path.dirname(target), { recursive: true });
-      await fs.symlink(linkTarget, target);
+      await fs.symlink(safeLinkTarget, target);
     } else if (entry.isDirectory()) {
       await fs.mkdir(target, { recursive: true });
       await copyTreeSafe(source, target, resolvedSourceRoot);
@@ -484,6 +485,18 @@ async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir) {
       await fs.chmod(target, stat.mode);
     }
   }
+}
+
+function normalizeSafeSymlinkTarget(source, linkTarget) {
+  if (!linkTarget || linkTarget.includes("\0")) return null;
+  if (!path.isAbsolute(linkTarget)) return linkTarget;
+
+  const normalizedAbsoluteTarget = linkTarget.replaceAll("\\", "/");
+  const isFrameworkLink = source.split(path.sep).some((part) => part.endsWith(".framework"));
+  if (isFrameworkLink && normalizedAbsoluteTarget.startsWith("/Versions/")) {
+    return normalizedAbsoluteTarget.slice(1);
+  }
+  return null;
 }
 
 function isExecutableRequired(config, engine, relative) {
