@@ -47,17 +47,13 @@ jobs:
             echo "include_macos=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Require V1.0.5 macOS release readiness
-        if: ${{ steps.mode.outputs.include_macos == 'true' }}
-        run: npm run status:v1.0.5 -- --require-ready
-
-      - name: Validate macOS release notes before DMG runner
-        if: ${{ steps.mode.outputs.include_macos == 'true' }}
+      - name: Validate release notes before release runners
         shell: bash
         run: |
           set -euo pipefail
           version="$(node -p "require('./package.json').version")"
           tag="v$version"
+          include_macos="${{ steps.mode.outputs.include_macos }}"
           macos_dmg_name="Multi-Converter_${version}_macos-universal.dmg"
           body="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq ".body")"
           if [[ -z "${body//[[:space:]]/}" ]]; then
@@ -77,6 +73,13 @@ jobs:
           if grep -Eiq "mc-release-notes:(fr|es|de|pt|it)" <<< "$body"; then
             echo "GitHub release notes must be published in English only." >&2
             exit 1
+          fi
+          if [[ "$include_macos" != "true" ]]; then
+            if [[ "$body" == *"$macos_dmg_name"* ]] || grep -Eq "_macos-universal\.dmg" <<< "$body"; then
+              echo "Release notes mention a macOS DMG, but this workflow run was not started with include_macos=true." >&2
+              exit 1
+            fi
+            exit 0
           fi
           if [[ "$body" != *"$macos_dmg_name"* ]]; then
             echo "macOS release notes must name $macos_dmg_name." >&2
@@ -98,6 +101,10 @@ jobs:
             echo "macOS release notes must mention that the macOS DMG was verified on macOS." >&2
             exit 1
           fi
+
+      - name: Require V1.0.5 macOS release readiness
+        if: ${{ steps.mode.outputs.include_macos == 'true' }}
+        run: npm run status:v1.0.5 -- --require-ready
 
   macos-dmg-verify:
     name: macOS DMG verification
