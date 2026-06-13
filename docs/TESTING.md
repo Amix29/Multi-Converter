@@ -204,6 +204,8 @@ The command writes `tmp/v1.0.5-status.json`. In the current preparation state, `
 
 Current v1.0.5 macOS automation evidence is recorded in `docs/V1_0_5_VALIDATION.md`. It covers macOS engine staging, the macOS Conversion Matrix, and the verified universal DMG artifact. Do not convert that evidence into a public macOS release claim until the manual clean-Mac smoke test is complete.
 
+The clean-Mac smoke test must be recorded in `docs/V1_0_5_VALIDATION.md` under `## Manual Clean-Mac Smoke Test Receipt`. `npm run status:v1.0.5` requires the receipt to name `Multi-Converter_1.0.5_macos-universal.dmg`, mark the test as `success`, and record `yes` for the DMG mount, Applications install, unsigned/not-notarized first-launch warning, `Open Anyway` path, second launch, file selection, FFmpeg media conversion, document/PDF/image advanced conversion, and updater metadata behavior.
+
 The manual GitHub `macOS DMG Build` workflow can build and verify the universal DMG on `macos-latest`. Use it for test-repository validation before copying the verified artifact into a public release.
 
 When the GitHub `Release` workflow is started with `include_macos=true`, it runs a `macOS DMG verification` job on `macos-latest` before the Windows release job republishes the final asset set. If that macOS DMG verification fails, the release publication job does not run.

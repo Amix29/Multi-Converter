@@ -183,6 +183,21 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$TMPDIR/mc-release-ass
 - Verify file selection and at least one audio/video conversion using FFmpeg.
 - Verify document/PDF/image advanced conversions only if their macOS engines are included and validated.
 
+After the test passes, record the result in `docs/V1_0_5_VALIDATION.md` under `## Manual Clean-Mac Smoke Test Receipt`. Do not change `Manual clean-Mac smoke testing` to `success` unless every required smoke-test line is `yes` for the final downloaded DMG:
+
+- `Mounted final downloaded DMG`
+- `Dragged app to Applications`
+- `Unsigned/not-notarized first launch warning verified`
+- `Opened through System Settings > Privacy & Security > Open Anyway`
+- `Confirmed Open prompt`
+- `Second launch verified`
+- `File selection verified`
+- `FFmpeg media conversion verified`
+- `Document/PDF/image advanced conversion verified`
+- `Updater metadata behavior checked`
+
+`npm run status:v1.0.5` keeps the release blocked if this receipt is missing, still marked `pending`, or incomplete.
+
 ## Release Notes Requirement
 
 In `## Download And Installation`, name `Multi-Converter_X.Y.Z_macos-universal.dmg` exactly.

@@ -14,6 +14,30 @@ This file records validation evidence for the in-progress v1.0.5 release. It is 
 - Manual clean-Mac smoke testing is still required before a public macOS release claim: mount DMG, drag to Applications, approve the unsigned/not-notarized first launch through `System Settings > Privacy & Security > Open Anyway`, confirm second launch, file selection, one FFmpeg media conversion, and one document/PDF/image path when those engines are included.
 - The public release body still needs to state that the macOS build is not Apple-signed and not notarized, that macOS automatic updates are not enabled for the first DMG workflow, and how to open the app through `Open Anyway`.
 
+## Manual Clean-Mac Smoke Test Receipt
+
+Record this receipt only after testing the final downloaded DMG on a clean macOS environment. Leave the result as `pending` until every required line below is true for the exact release DMG.
+
+- Manual clean-Mac smoke testing: pending
+- Date: pending
+- Tester: pending
+- macOS version: pending
+- Mac model: pending
+- Architecture tested: pending
+- DMG: Multi-Converter_1.0.5_macos-universal.dmg
+- DMG source: pending
+- Mounted final downloaded DMG: no
+- Dragged app to Applications: no
+- Unsigned/not-notarized first launch warning verified: no
+- Opened through System Settings > Privacy & Security > Open Anyway: no
+- Confirmed Open prompt: no
+- Second launch verified: no
+- File selection verified: no
+- FFmpeg media conversion verified: no
+- Document/PDF/image advanced conversion verified: no
+- Updater metadata behavior checked: no
+- Notes: pending
+
 ## Security And Confidentiality Evidence
 
 - `npm run test:secret-leaks`: passed on June 13, 2026.

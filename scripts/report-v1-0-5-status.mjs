@@ -35,7 +35,8 @@ const missingMacosAdvancedEngines = requiredAdvancedEngines.filter((id) => !maco
 const missingMacosSidecars = requiredMacosSidecars.filter((name) => !fs.existsSync(path.join(root, "src-tauri", "binaries", name)));
 const macosAutomationEvidence = macosAutomationEvidenceFromDocs();
 const hasMacosAutomatedReleaseEvidence = Object.values(macosAutomationEvidence).every(Boolean);
-const hasManualCleanMacEvidence = /Manual clean-Mac smoke testing: success/i.test(validationEvidence);
+const cleanMacSmokeEvidence = cleanMacSmokeEvidenceFromDocs();
+const hasManualCleanMacEvidence = cleanMacSmokeEvidence.complete;
 const hasMacosPublicReleaseEvidence = hasMacosAutomatedReleaseEvidence && hasManualCleanMacEvidence;
 const hasSecurityCheckEvidence = securityCheckEvidenceFromDocs();
 const hasCodexSecurityScanEvidence = /Exhaustive Codex Security subagent scan:\s*(?:success|accepted)/i.test(validationEvidence);
@@ -57,6 +58,7 @@ const checks = [
   check("secret leak guard is part of the local quality gate", packageJson.scripts?.check?.includes("test:secret-leaks") && /Potential secret leak detected/.test(secretLeakTest)),
   check("v1.0.5 validation evidence records macOS CI runs", hasMacosAutomatedReleaseEvidence),
   check("v1.0.5 validation evidence records security checks", hasSecurityCheckEvidence),
+  check("v1.0.5 validation evidence includes a structured clean-Mac smoke receipt", /## Manual Clean-Mac Smoke Test Receipt/.test(validationEvidence) && /Mounted final downloaded DMG/.test(validationEvidence) && /Opened through System Settings > Privacy & Security > Open Anyway/.test(validationEvidence)),
   check("testing docs warn static checks do not prove macOS conversions", /They do not prove that macOS conversions work\./.test(testingDocs)),
   check("macOS checklist defines the Mac-only handoff boundary", /## Mac Handoff Readiness/.test(macosChecklist) && /macOS-only work/.test(macosChecklist)),
   check("macOS checklist requires real conversion matrix before full coverage claims", /macOS Conversion Matrix/.test(macosChecklist) && /all macOS conversions pass/.test(macosChecklist)),
@@ -80,6 +82,7 @@ const status = {
     missingMacosAdvancedEngines,
     missingMacosSidecars,
     macosAutomationEvidence,
+    cleanMacSmokeEvidence,
   },
 };
 
@@ -125,7 +128,11 @@ function macosEvidenceBlockers() {
     blockers.push("One or more macos-universal advanced engines has no pinned SHA-256 checksum.");
   }
   if (hasMacosAutomatedReleaseEvidence && !hasManualCleanMacEvidence) {
-    blockers.push("Manual clean-Mac Gatekeeper/install smoke testing is still required before a public macOS release claim.");
+    if (/Manual clean-Mac smoke testing:\s*success/i.test(validationEvidence) && cleanMacSmokeEvidence.missing.length > 0) {
+      blockers.push(`Manual clean-Mac smoke receipt is incomplete: ${cleanMacSmokeEvidence.missing.join(", ")}.`);
+    } else {
+      blockers.push("Manual clean-Mac Gatekeeper/install smoke testing is still required before a public macOS release claim.");
+    }
   }
   if (hasSecurityCheckEvidence && !hasCodexSecurityScanEvidence) {
     blockers.push("Exhaustive Codex Security subagent scan is still pending explicit maintainer approval or accepted replacement evidence.");
@@ -149,6 +156,30 @@ function securityCheckEvidenceFromDocs() {
     /`npm audit --audit-level=moderate`: passed on June 13, 2026 with 0 reported npm vulnerabilities\./.test(validationEvidence) &&
     /Extra tracked-file confidentiality search: passed on June 13, 2026\./.test(validationEvidence)
   );
+}
+
+function cleanMacSmokeEvidenceFromDocs() {
+  const expectedDmg = `Multi-Converter_${packageJson.version}_macos-universal.dmg`;
+  const required = [
+    ["Manual clean-Mac smoke testing: success", /Manual clean-Mac smoke testing:\s*success/i],
+    [`DMG: ${expectedDmg}`, new RegExp(`DMG:\\s*${escapeRegExp(expectedDmg)}\\b`, "i")],
+    ["Mounted final downloaded DMG: yes", /Mounted final downloaded DMG:\s*yes/i],
+    ["Dragged app to Applications: yes", /Dragged app to Applications:\s*yes/i],
+    ["Unsigned/not-notarized first launch warning verified: yes", /Unsigned\/not-notarized first launch warning verified:\s*yes/i],
+    ["Opened through System Settings > Privacy & Security > Open Anyway: yes", /Opened through System Settings > Privacy & Security > Open Anyway:\s*yes/i],
+    ["Confirmed Open prompt: yes", /Confirmed Open prompt:\s*yes/i],
+    ["Second launch verified: yes", /Second launch verified:\s*yes/i],
+    ["File selection verified: yes", /File selection verified:\s*yes/i],
+    ["FFmpeg media conversion verified: yes", /FFmpeg media conversion verified:\s*yes/i],
+    ["Document/PDF/image advanced conversion verified: yes", /Document\/PDF\/image advanced conversion verified:\s*yes/i],
+    ["Updater metadata behavior checked: yes", /Updater metadata behavior checked:\s*yes/i],
+  ];
+  const missing = required.filter(([, pattern]) => !pattern.test(validationEvidence)).map(([name]) => name);
+  return {
+    complete: missing.length === 0,
+    expectedDmg,
+    missing,
+  };
 }
 
 function readmeMacosStatusMatchesEvidence() {
@@ -181,6 +212,10 @@ function optionValue(values, name) {
     if (value.startsWith(`${name}=`)) return value.slice(name.length + 1);
   }
   return null;
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function fail(message) {
