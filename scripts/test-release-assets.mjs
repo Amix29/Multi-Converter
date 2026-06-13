@@ -64,6 +64,10 @@ const notesWithoutMacosWarning = [
   "",
   "- Release asset validation, updater metadata validation and naming checks passed in this test fixture.",
 ].join("\n");
+const notesWithoutSystemSettings = notes.replace(
+  "After the first launch warning, open System Settings > Privacy & Security, choose Open Anyway, then confirm Open.",
+  "After the first launch warning, open Privacy & Security, choose Open Anyway.",
+);
 const notesWithUnsupportedMacosConversionClaim = [
   `# Multi-Converter v${version}`,
   "",
@@ -109,6 +113,10 @@ try {
   fs.writeFileSync(macosNotesPath, notes);
   runReleaseNotesValidator(macosNotesPath, true);
   runReleaseNotesValidatorFails(macosNotesPath, false, "include_macos=true");
+
+  const macosNotesWithoutSystemSettingsPath = path.join(preparedDmgDir, "macos-notes-without-system-settings.md");
+  fs.writeFileSync(macosNotesWithoutSystemSettingsPath, notesWithoutSystemSettings);
+  runReleaseNotesValidatorFails(macosNotesWithoutSystemSettingsPath, true, "System Settings");
 
   writeWindowsAssets(allDir, notes);
   fs.writeFileSync(path.join(allDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");

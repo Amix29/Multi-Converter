@@ -74,7 +74,9 @@ assert.match(releaseNotesValidationLibrary, /Release notes must be published in 
 assert.match(releaseNotesValidationLibrary, /Release notes mention a macOS DMG, but this workflow run was not started with include_macos=true\./, "shared release-note validation must reject accidental macOS notes in Windows-only runs");
 assert.match(releaseNotesValidationLibrary, /Multi-Converter_\$\{version\}_macos-universal\.dmg/, "shared release-note validation must require the exact macOS universal DMG name");
 assert.match(releaseNotesValidationLibrary, /not\\s\+Apple-signed/, "shared release-note validation must validate unsigned macOS wording before DMG verification");
+assert.match(releaseNotesValidationLibrary, /System Settings/, "shared release-note validation must validate the full System Settings path before DMG verification");
 assert.match(releaseNotesValidationLibrary, /Open Anyway/, "shared release-note validation must validate Open Anyway guidance before DMG verification");
+assert.match(releaseNotesValidationLibrary, /confirm\\s\+\`\?Open/, "shared release-note validation must validate the confirm Open instruction before DMG verification");
 assert.match(releaseNotesValidationLibrary, /macOS\\s\+automatic\\s\+updates\\s\+are\\s\+not\\s\+enabled/, "shared release-note validation must validate disabled macOS updater wording before DMG verification");
 assert.match(releaseNotesValidationLibrary, /macOS\\s\+DMG\\s\+verification/, "shared release-note validation must validate macOS DMG verification wording before DMG verification");
 assert.match(releasePreflightJob, /Require V1\.0\.5 macOS release readiness/, "release preflight must require V1.0.5 readiness before macOS DMG verification");

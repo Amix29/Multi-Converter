@@ -209,8 +209,10 @@ function readmeMacosStatusMatchesEvidence() {
     readme.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`) &&
     /not\s+Apple-signed/i.test(readme) &&
     /not\s+notarized/i.test(readme) &&
+    readme.includes("System Settings") &&
     readme.includes("Open Anyway") &&
     readme.includes("Privacy & Security") &&
+    /confirm\s+`?Open`?/i.test(readme) &&
     /macOS\s+automatic\s+updates\s+are\s+not\s+enabled/i.test(readme)
   );
 }

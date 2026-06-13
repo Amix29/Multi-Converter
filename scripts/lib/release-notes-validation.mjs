@@ -81,8 +81,13 @@ export function validateReleaseNotes({ body, version, includeMacos = false, minL
   if (!/not\s+Apple-signed/i.test(notesBody) || !/not\s+notarized/i.test(notesBody)) {
     errors.push("Release notes must state that the macOS build is not Apple-signed and not notarized.");
   }
-  if (!notesBody.includes("Open Anyway") || !notesBody.includes("Privacy & Security")) {
-    errors.push("Release notes must include the macOS Open Anyway path through Privacy & Security.");
+  if (
+    !notesBody.includes("System Settings") ||
+    !notesBody.includes("Open Anyway") ||
+    !notesBody.includes("Privacy & Security") ||
+    !/confirm\s+`?Open`?/i.test(notesBody)
+  ) {
+    errors.push("Release notes must include the macOS System Settings > Privacy & Security > Open Anyway path and confirm Open instruction.");
   }
   if (!/macOS\s+automatic\s+updates\s+are\s+not\s+enabled/i.test(notesBody)) {
     errors.push("Release notes must state that macOS automatic updates are not enabled.");

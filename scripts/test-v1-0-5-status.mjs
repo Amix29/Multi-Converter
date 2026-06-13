@@ -68,6 +68,14 @@ try {
   assert.equal(missingReadmeInstallNotesStatus.status.releaseReady, false, "macOS release readiness must require public README install notes");
   assert.match(missingReadmeInstallNotesStatus.output, /README macOS status matches available release evidence/, "missing README install notes must fail the README evidence check");
 
+  const incompleteReadmeInstallNotesStatus = runStatus("incomplete-readme-install-notes.md", completedReleaseEvidence(currentEvidence), {
+    requireReady: true,
+    expectedStatus: 1,
+    readme: readyReadme(currentReadme).replace("System Settings > Privacy & Security", "Privacy & Security"),
+  });
+  assert.equal(incompleteReadmeInstallNotesStatus.status.releaseReady, false, "macOS release readiness must require the full System Settings install path");
+  assert.match(incompleteReadmeInstallNotesStatus.output, /README macOS status matches available release evidence/, "incomplete README install notes must fail the README evidence check");
+
   const readyStatus = runStatus("ready.md", completedReleaseEvidence(currentEvidence), { requireReady: true, readme: readyReadme(currentReadme) });
   assert.equal(readyStatus.releaseReady, true, "complete clean-Mac and accepted security evidence must satisfy require-ready mode");
 } finally {
