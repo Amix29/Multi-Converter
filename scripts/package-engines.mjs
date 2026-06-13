@@ -461,6 +461,7 @@ async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir) {
     const target = path.join(targetDir, relative);
     if (entry.isSymbolicLink()) {
       const isFrameworkLink = isInsideFramework(source);
+      const isAppLink = Boolean(ancestorPathEnding(source, ".app"));
       const linkTarget = await fs.readlink(source);
       const safeLinkTarget = normalizeSafeSymlinkTarget(source, linkTarget);
       if (!safeLinkTarget) {
@@ -479,6 +480,13 @@ async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir) {
         if (!isFrameworkLink) {
           throw new Error(`Lien symbolique casse refuse: ${source}`);
         }
+      }
+      if (!isFrameworkLink && !isAppLink && linkStat?.isFile() && shouldMaterializeRuntimeSymlink(source, resolvedLinkTarget)) {
+        await fs.mkdir(path.dirname(target), { recursive: true });
+        await fs.copyFile(resolvedLinkTarget, target);
+        const targetStat = await fs.stat(resolvedLinkTarget);
+        await fs.chmod(target, targetStat.mode);
+        continue;
       }
       await fs.mkdir(path.dirname(target), { recursive: true });
       await fs.symlink(safeLinkTarget, target);
@@ -539,6 +547,12 @@ function shouldSkipBrokenFrameworkHeaderSymlink(source) {
   const name = path.basename(source);
   return (name === "Headers" || name === "PrivateHeaders")
     && isInsideFramework(source);
+}
+
+function shouldMaterializeRuntimeSymlink(source, target) {
+  const sourceName = path.basename(source).toLowerCase();
+  const targetName = path.basename(target).toLowerCase();
+  return sourceName.endsWith(".dylib") || targetName.endsWith(".dylib");
 }
 
 function isInsideFramework(source) {

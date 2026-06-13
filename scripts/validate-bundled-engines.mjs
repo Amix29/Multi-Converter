@@ -141,10 +141,31 @@ function primaryExecutable(engineRoot, engine) {
 
 function executableScore(filePath) {
   const extension = path.extname(filePath).toLowerCase();
-  if (process.platform !== "win32" && extension === "") return 2;
-  if (extension === ".exe") return 2;
-  if (extension === ".com") return 1;
+  if ([".dll", ".dylib", ".so", ".a"].includes(extension)) return 0;
+  if (platform === "windows-x64") {
+    if (extension === ".exe") return 20;
+    if (extension === ".com") return 10;
+    return 0;
+  }
+  if (extension === "") return 20 + architectureScore(filePath);
+  if (extension === ".exe") return 20;
+  if (extension === ".com") return 10;
   return 0;
+}
+
+function architectureScore(filePath) {
+  if (platform !== "macos-universal") return 5;
+  const text = filePath.replaceAll("\\", "/").toLowerCase();
+  const nativeArm = process.arch === "arm64";
+  const hasArm = text.includes("aarch64") || text.includes("arm64");
+  const hasX64 = text.includes("x86_64") || text.includes("x64");
+  const hasUniversal = text.includes("universal") || text.includes("univ");
+
+  if (nativeArm && hasArm) return 30;
+  if (!nativeArm && hasX64) return 30;
+  if (hasUniversal) return 25;
+  if (hasArm || hasX64) return 1;
+  return 15;
 }
 
 function validateExecutable(id, filePath, args, expectedText, cwd = path.dirname(filePath)) {

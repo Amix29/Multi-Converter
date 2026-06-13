@@ -225,6 +225,9 @@ assert.match(prepareScript, /Refusing to remove path outside bundled engines/, "
 assert.match(validateScript, /function validateNoStaleBundledEngines\(value\)/, "bundled engine validation must reject stale platform resources");
 assert.match(validateScript, /validateFile\(engine\.id,[\s\S]*executable:\s*platform !== "windows-x64"/, "bundled engine validation must require executable bits only for declared binary paths");
 assert.match(validateScript, /function validateFile\(id, filePath, options = \{\}\)/, "bundled engine validation must allow non-executable metadata, license and notice files");
+assert.match(validateScript, /function architectureScore\(filePath\)/, "bundled engine validation must score macOS executable candidates by architecture");
+assert.match(validateScript, /process\.arch === "arm64"/, "bundled engine validation must detect native Apple Silicon hosts");
+assert.match(validateScript, /hasX64[\s\S]*return 30/, "bundled engine validation must prefer native Intel binaries on Intel macOS runners");
 assert.match(enginesRust, /fn universal_binary_name\(stem: &str\) -> String/, "runtime must resolve universal macOS sidecar names");
 assert.match(enginesRust, /resource_dir\.join\(&universal_binary_name\)/, "runtime must check bundled universal sidecars");
 assert.match(enginesRust, /resource_dir\.join\("binaries"\)\.join\(&universal_binary_name\)/, "runtime must check resource-directory universal sidecars");
@@ -242,6 +245,8 @@ assert.match(packageScript, /appMarker[\s\S]*appIndex[\s\S]*normalizedAbsoluteTa
 assert.match(packageScript, /normalizedAbsoluteTarget\.startsWith\("\/Contents\/"\)/, "engine packaging must normalize app Contents-rooted symbolic links");
 assert.match(packageScript, /sameDirectoryTarget[\s\S]*return sameDirectoryTarget/, "engine packaging must normalize absolute dylib aliases to same-directory relative links");
 assert.match(packageScript, /sourceName\.endsWith\("\.dylib"\)[\s\S]*sameDirectoryTarget\.endsWith\("\.dylib"\)/, "engine packaging must limit same-directory absolute symlink normalization to dylib aliases");
+assert.match(packageScript, /function shouldMaterializeRuntimeSymlink\(source, target\)/, "engine packaging must decide which runtime symlinks should become regular files");
+assert.match(packageScript, /fs\.copyFile\(resolvedLinkTarget, target\)/, "engine packaging must materialize dylib aliases so Tauri resources do not contain broken symlinks");
 assert.match(packageScript, /fs\.symlink\(safeLinkTarget, target\)/, "engine packaging must preserve safe internal symbolic links for macOS app bundles");
 assert.match(packageScript, /shouldSkipBrokenFrameworkHeaderSymlink/, "engine packaging may skip broken framework header symlinks without accepting broken runtime links");
 assert.match(packageScript, /if \(!isFrameworkLink\)[\s\S]*Lien symbolique casse refuse/, "engine packaging must still reject broken non-framework symbolic links");
