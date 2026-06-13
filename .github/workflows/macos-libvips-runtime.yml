@@ -1,10 +1,18 @@
 name: macOS libvips Runtime
 
 on:
+  push:
+    branches:
+      - codex/test
+    paths:
+      - ".github/workflows/macos-libvips-runtime.yml"
+      - "scripts/build-libvips-macos-runtime.mjs"
+      - "package.json"
+      - "package-lock.json"
   workflow_dispatch:
     inputs:
       output_release_tag:
-        description: "Optional private test release tag that will receive the libvips runtime archives"
+        description: "Optional test release tag that will receive the libvips runtime archives"
         required: false
         default: ""
         type: string
@@ -33,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.arch == 'both' && '[{"arch":"aarch64","runner":"macos-latest"},{"arch":"x86_64","runner":"macos-15-intel"}]' || inputs.arch == 'aarch64' && '[{"arch":"aarch64","runner":"macos-latest"}]' || '[{"arch":"x86_64","runner":"macos-15-intel"}]') }}
+        include: ${{ fromJSON((github.event_name != 'workflow_dispatch' || inputs.arch == 'both') && '[{"arch":"aarch64","runner":"macos-latest"},{"arch":"x86_64","runner":"macos-15-intel"}]' || inputs.arch == 'aarch64' && '[{"arch":"aarch64","runner":"macos-latest"}]' || '[{"arch":"x86_64","runner":"macos-15-intel"}]') }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -72,5 +80,5 @@ jobs:
         run: |
           set -euo pipefail
           tag="${{ inputs.output_release_tag }}"
-          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$tag" --notes "Private macOS libvips runtime assets for Multi-Converter testing." --prerelease || true
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$tag" --notes "macOS libvips runtime assets for Multi-Converter testing." --prerelease || true
           gh release upload "$tag" "${{ steps.libvips.outputs.archive }}" --repo "$GITHUB_REPOSITORY" --clobber

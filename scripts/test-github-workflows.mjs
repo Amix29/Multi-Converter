@@ -79,7 +79,7 @@ assert.match(macosEngineStagingWorkflow, /ffmpeg_aarch64_archive_sha256:/, "macO
 assert.match(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_url:/, "macOS engine staging must require an Intel FFmpeg archive URL");
 assert.match(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_sha256:/, "macOS engine staging must require an Intel FFmpeg checksum");
 assert.match(macosEngineStagingWorkflow, /libvips_release_tag:/, "macOS engine staging must require portable libvips release inputs");
-assert.match(macosEngineStagingWorkflow, /permissions:\s*\n\s+contents:\s+write/, "macOS engine staging must be able to upload private test release assets");
+assert.match(macosEngineStagingWorkflow, /permissions:\s*\n\s+contents:\s+write/, "macOS engine staging must be able to upload optional test release assets");
 assert.match(macosEngineStagingJob, /runs-on:\s+macos-latest/, "macOS engine staging must run on macOS");
 assert.match(macosEngineStagingJob, /prepare:ffmpeg-engine:macos/, "macOS engine staging must prepare real FFmpeg sidecars");
 assert.match(macosEngineStagingJob, /prepare:macos-upstream-engines/, "macOS engine staging must prepare PDFium, LibreOffice and Pandoc");
@@ -87,19 +87,20 @@ assert.match(macosEngineStagingJob, /prepare:libvips-macos-release-inputs/, "mac
 assert.match(macosEngineStagingJob, /prepare:libvips-engine:macos/, "macOS engine staging must validate and stage libvips");
 assert.match(macosEngineStagingJob, /package:macos-engines/, "macOS engine staging must package macos-universal engine archives");
 assert.match(macosEngineStagingJob, /actions\/upload-artifact@v4/, "macOS engine staging must upload staged assets as a workflow artifact");
-assert.match(macosEngineStagingJob, /gh release upload/, "macOS engine staging must optionally upload assets to a private test release");
+assert.match(macosEngineStagingJob, /gh release upload/, "macOS engine staging must optionally upload assets to a test release");
 
 assert.match(macosLibvipsRuntimeWorkflow, /name:\s+macOS libvips Runtime/, "macOS libvips runtime workflow must be clearly named");
+assert.match(macosLibvipsRuntimeWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS libvips runtime workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosLibvipsRuntimeWorkflow, /workflow_dispatch:/, "macOS libvips runtime workflow must be manually runnable");
 assert.match(macosLibvipsRuntimeWorkflow, /arch:\s*\n\s+description:\s+"Runtime architecture to build"/, "macOS libvips runtime workflow must allow architecture-scoped retries");
-assert.match(macosLibvipsRuntimeWorkflow, /permissions:\s*\n\s+contents:\s+write/, "macOS libvips runtime workflow must be able to upload private test release assets");
-assert.match(macosLibvipsRuntimeJob, /fromJSON\(inputs\.arch == 'both'/, "macOS libvips runtime matrix must respect the selected architecture before runner allocation");
+assert.match(macosLibvipsRuntimeWorkflow, /permissions:\s*\n\s+contents:\s+write/, "macOS libvips runtime workflow must be able to upload optional test release assets");
+assert.match(macosLibvipsRuntimeJob, /fromJSON\(\(github\.event_name != 'workflow_dispatch' \|\| inputs\.arch == 'both'\)/, "macOS libvips runtime matrix must default push runs to both architectures before runner allocation");
 assert.match(macosLibvipsRuntimeJob, /"arch":"aarch64","runner":"macos-latest"/, "macOS libvips runtime must build Apple Silicon on an arm64 macOS runner");
 assert.match(macosLibvipsRuntimeJob, /"arch":"x86_64","runner":"macos-15-intel"/, "macOS libvips runtime must build Intel on an Intel macOS runner");
 assert.match(macosLibvipsRuntimeJob, /brew install vips/, "macOS libvips runtime must install libvips from Homebrew before packaging");
 assert.match(macosLibvipsRuntimeJob, /build:libvips-macos-runtime/, "macOS libvips runtime must call the portable runtime builder");
 assert.match(macosLibvipsRuntimeJob, /actions\/upload-artifact@v4/, "macOS libvips runtime must upload both runtime archives as artifacts");
-assert.match(macosLibvipsRuntimeJob, /gh release upload/, "macOS libvips runtime must optionally upload runtime archives to a private test release");
+assert.match(macosLibvipsRuntimeJob, /gh release upload/, "macOS libvips runtime must optionally upload runtime archives to a test release");
 
 assert.match(macosDmgWorkflow, /name:\s+macOS DMG Build/, "macOS DMG workflow must be clearly named");
 assert.match(macosDmgWorkflow, /workflow_dispatch:/, "macOS DMG workflow must be manually runnable");
@@ -158,7 +159,7 @@ assert.match(windowsCiGateScript, /\["npm", \["run", "test:pdfium-wrapper"\]\]/,
 assert.match(windowsCiGateScript, /\["npm", \["run", "clippy:pdfium-wrapper"\]\]/, "Windows CI validation wrapper must lint the PDFium wrapper");
 assert.match(windowsCiGateScript, /\["npm", \["run", "build"\]\]/, "Windows CI validation wrapper must run the frontend production build");
 assert.match(windowsCiGateScript, /\["npm", \["run", "tauri:build"\]\]/, "Windows CI validation wrapper must build the Windows Tauri installer");
-assert.match(macosEngineReleaseScript, /gh.*release.*download/s, "macOS staged engine helper must download private release assets through gh");
+assert.match(macosEngineReleaseScript, /gh.*release.*download/s, "macOS staged engine helper must download staged release assets through gh");
 assert.match(macosEngineReleaseScript, /engines-manifest\.json/, "macOS staged engine helper must download the staged engine manifest");
 assert.match(macosEngineReleaseScript, /engine-sources", "\.bundled-engine-cache"/, "macOS staged engine helper must seed the bundled-engine cache");
 assert.match(macosEngineReleaseScript, /engine\.mode === "advanced"/, "macOS staged engine helper must write only advanced engines into the embedded manifest");
@@ -170,7 +171,7 @@ assert.match(macosLibvipsRuntimeScript, /install_name_tool.*-change/s, "macOS li
 assert.match(macosLibvipsRuntimeScript, /otool.*-L/s, "macOS libvips runtime builder must inspect dynamic library links");
 assert.match(macosLibvipsRuntimeScript, /Non-portable dependency remains/, "macOS libvips runtime builder must reject non-portable links after rewriting");
 assert.match(macosLibvipsRuntimeScript, /libvips-macos-\$\{arch\}\.tar\.gz/, "macOS libvips runtime builder must emit architecture-specific runtime archives");
-assert.match(macosLibvipsReleaseInputsScript, /gh.*release.*download/s, "macOS libvips input helper must download private release assets through gh");
+assert.match(macosLibvipsReleaseInputsScript, /gh.*release.*download/s, "macOS libvips input helper must download staged release assets through gh");
 assert.match(macosLibvipsReleaseInputsScript, /LIBVIPS_MACOS_AARCH64_SOURCE_DIR/, "macOS libvips input helper must export the Apple Silicon source directory");
 assert.match(macosLibvipsReleaseInputsScript, /LIBVIPS_MACOS_X86_64_SOURCE_DIR/, "macOS libvips input helper must export the Intel source directory");
 assert.match(macosLibvipsReleaseInputsScript, /bin", "vips"/, "macOS libvips input helper must find a runtime root containing bin/vips");

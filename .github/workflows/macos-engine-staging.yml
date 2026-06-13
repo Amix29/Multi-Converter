@@ -143,5 +143,5 @@ jobs:
         run: |
           set -euo pipefail
           tag="${{ inputs.output_release_tag }}"
-          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$tag" --notes "Private macOS engine staging assets for Multi-Converter testing." --prerelease || true
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$tag" --notes "macOS engine staging assets for Multi-Converter testing." --prerelease || true
           gh release upload "$tag" "$RUNNER_TEMP"/mc-macos-engine-assets/* --repo "$GITHUB_REPOSITORY" --clobber
