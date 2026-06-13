@@ -20,7 +20,7 @@ assert.equal(packageJson.homepage, "https://github.com/Amix29/Multi-Converter#re
 assert.equal(packageJson.repository?.url, "git+https://github.com/Amix29/Multi-Converter.git", "repository URL must point to GitHub");
 assert.equal(packageJson.bugs?.url, "https://github.com/Amix29/Multi-Converter/issues", "bug tracker URL must point to GitHub issues");
 assert.equal(packageJson.scripts["status:v1.0.5"], "node scripts/report-v1-0-5-status.mjs", "V1.0.5 status report script must be exposed through npm");
-assert.equal(packageJson.scripts["test:v1.0.5-status"], "node scripts/report-v1-0-5-status.mjs --assert", "V1.0.5 status assertion script must be exposed through npm");
+assert.equal(packageJson.scripts["test:v1.0.5-status"], "node scripts/test-v1-0-5-status.mjs", "V1.0.5 status assertion script must be exposed through npm");
 assert.equal(packageJson.scripts["test:secret-leaks"], "node scripts/test-secret-leaks.mjs", "secret leak scan must be exposed through npm");
 assert.equal(packageJson.scripts["test:production-config"], "node scripts/test-production-config.mjs", "production config test must be exposed through npm");
 assert.match(packageJson.scripts.check, /npm run test:secret-leaks/, "main check script must include the secret leak scan");

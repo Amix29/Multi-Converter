@@ -5,6 +5,7 @@ const root = process.cwd();
 const args = process.argv.slice(2);
 const assertMode = args.includes("--assert");
 const outPath = path.resolve(optionValue(args, "--out") ?? path.join(root, "tmp", "v1.0.5-status.json"));
+const validationEvidencePath = optionValue(args, "--validation-evidence") ?? "docs/V1_0_5_VALIDATION.md";
 const requiredAdvancedEngines = ["pdfium", "libreoffice", "pandoc", "libvips"];
 const requiredMacosSidecars = [
   "ffmpeg-aarch64-apple-darwin",
@@ -21,7 +22,8 @@ const enginesManifest = readJson("src-tauri/engines-manifest.json");
 const readme = readText("README.md");
 const testingDocs = readText("docs/TESTING.md");
 const macosChecklist = readText("docs/RELEASE_CHECKLIST_MACOS.md");
-const validationEvidence = readOptionalText("docs/V1_0_5_VALIDATION.md");
+const validationEvidence = readOptionalText(validationEvidencePath);
+const cleanMacSmokeReceipt = markdownSection(validationEvidence, "Manual Clean-Mac Smoke Test Receipt");
 const releaseValidator = readText("scripts/validate-release-assets.mjs");
 const windowsGate = readText("scripts/test-windows-ci-gate.mjs");
 const uiLayoutTest = readText("scripts/test-ui-layout.mjs");
@@ -58,7 +60,7 @@ const checks = [
   check("secret leak guard is part of the local quality gate", packageJson.scripts?.check?.includes("test:secret-leaks") && /Potential secret leak detected/.test(secretLeakTest)),
   check("v1.0.5 validation evidence records macOS CI runs", hasMacosAutomatedReleaseEvidence),
   check("v1.0.5 validation evidence records security checks", hasSecurityCheckEvidence),
-  check("v1.0.5 validation evidence includes a structured clean-Mac smoke receipt", /## Manual Clean-Mac Smoke Test Receipt/.test(validationEvidence) && /Mounted final downloaded DMG/.test(validationEvidence) && /Opened through System Settings > Privacy & Security > Open Anyway/.test(validationEvidence)),
+  check("v1.0.5 validation evidence includes a structured clean-Mac smoke receipt", cleanMacSmokeReceipt.length > 0 && /Mounted final downloaded DMG/.test(cleanMacSmokeReceipt) && /Opened through System Settings > Privacy & Security > Open Anyway/.test(cleanMacSmokeReceipt)),
   check("testing docs warn static checks do not prove macOS conversions", /They do not prove that macOS conversions work\./.test(testingDocs)),
   check("macOS checklist defines the Mac-only handoff boundary", /## Mac Handoff Readiness/.test(macosChecklist) && /macOS-only work/.test(macosChecklist)),
   check("macOS checklist requires real conversion matrix before full coverage claims", /macOS Conversion Matrix/.test(macosChecklist) && /all macOS conversions pass/.test(macosChecklist)),
@@ -128,7 +130,7 @@ function macosEvidenceBlockers() {
     blockers.push("One or more macos-universal advanced engines has no pinned SHA-256 checksum.");
   }
   if (hasMacosAutomatedReleaseEvidence && !hasManualCleanMacEvidence) {
-    if (/Manual clean-Mac smoke testing:\s*success/i.test(validationEvidence) && cleanMacSmokeEvidence.missing.length > 0) {
+    if (/Manual clean-Mac smoke testing:\s*success/i.test(cleanMacSmokeReceipt) && cleanMacSmokeEvidence.missing.length > 0) {
       blockers.push(`Manual clean-Mac smoke receipt is incomplete: ${cleanMacSmokeEvidence.missing.join(", ")}.`);
     } else {
       blockers.push("Manual clean-Mac Gatekeeper/install smoke testing is still required before a public macOS release claim.");
@@ -174,7 +176,7 @@ function cleanMacSmokeEvidenceFromDocs() {
     ["Document/PDF/image advanced conversion verified: yes", /Document\/PDF\/image advanced conversion verified:\s*yes/i],
     ["Updater metadata behavior checked: yes", /Updater metadata behavior checked:\s*yes/i],
   ];
-  const missing = required.filter(([, pattern]) => !pattern.test(validationEvidence)).map(([name]) => name);
+  const missing = required.filter(([, pattern]) => !pattern.test(cleanMacSmokeReceipt)).map(([name]) => name);
   return {
     complete: missing.length === 0,
     expectedDmg,
@@ -193,11 +195,11 @@ function readmeMacosStatusMatchesEvidence() {
 }
 
 function readText(relativePath) {
-  return fs.readFileSync(path.join(root, relativePath), "utf8");
+  return fs.readFileSync(projectPath(relativePath), "utf8");
 }
 
 function readOptionalText(relativePath) {
-  const fullPath = path.join(root, relativePath);
+  const fullPath = projectPath(relativePath);
   return fs.existsSync(fullPath) ? fs.readFileSync(fullPath, "utf8") : "";
 }
 
@@ -216,6 +218,20 @@ function optionValue(values, name) {
 
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function markdownSection(markdown, heading) {
+  const headingPattern = new RegExp(`^##\\s+${escapeRegExp(heading)}\\s*$`, "im");
+  const match = headingPattern.exec(markdown);
+  if (!match) return "";
+  const sectionStart = match.index + match[0].length;
+  const remaining = markdown.slice(sectionStart);
+  const nextSectionIndex = remaining.search(/^##\s+/m);
+  return (nextSectionIndex === -1 ? remaining : remaining.slice(0, nextSectionIndex)).trim();
+}
+
+function projectPath(value) {
+  return path.isAbsolute(value) ? value : path.join(root, value);
 }
 
 function fail(message) {

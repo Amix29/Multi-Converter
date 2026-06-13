@@ -34,7 +34,7 @@
     "test:production-config": "node scripts/test-production-config.mjs",
     "test:secret-leaks": "node scripts/test-secret-leaks.mjs",
     "status:v1.0.5": "node scripts/report-v1-0-5-status.mjs",
-    "test:v1.0.5-status": "node scripts/report-v1-0-5-status.mjs --assert",
+    "test:v1.0.5-status": "node scripts/test-v1-0-5-status.mjs",
     "test:run-tauri": "node scripts/test-run-tauri.mjs",
     "test:windows:ci": "node scripts/test-windows-ci-gate.mjs",
     "test:macos:host": "node scripts/test-macos-host.mjs",
