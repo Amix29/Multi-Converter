@@ -63,7 +63,7 @@ function validateExecutableInput(label, filePath) {
 
 function validateArch(label, filePath, arch) {
   if (!fs.existsSync(filePath) || startsWithPlaceholderMarker(filePath)) return;
-  const result = spawnSync("lipo", ["-verify_arch", arch, filePath], {
+  const result = spawnSync("lipo", [filePath, "-verify_arch", arch], {
     cwd: root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],

@@ -52,7 +52,7 @@ function assertExecutableFile(filePath) {
 }
 
 function verifyArch(filePath, ...architectures) {
-  const result = spawnSync("lipo", ["-verify_arch", ...architectures, filePath], {
+  const result = spawnSync("lipo", [filePath, "-verify_arch", ...architectures], {
     cwd: root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],

@@ -42,7 +42,7 @@ for (const input of inputs) {
   const vips = path.join(targetRoot, "bin", "vips");
   await assertFile(vips, `${input.arch}: bin/vips is missing from the staged libvips tree.`);
   await fs.chmod(vips, 0o755);
-  run("lipo", ["-verify_arch", input.lipoArch, vips]);
+  run("lipo", [vips, "-verify_arch", input.lipoArch]);
   await verifyPortableLinks(targetRoot, input.arch);
   await smokeTestNative(targetRoot, input.arch);
 }

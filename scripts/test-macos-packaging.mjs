@@ -17,6 +17,7 @@ const macosPdfiumPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-p
 const macosLibreOfficePrepare = fs.readFileSync(path.join(root, "scripts", "prepare-libreoffice-engine-macos.mjs"), "utf8");
 const macosPandocPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-pandoc-engine-macos.mjs"), "utf8");
 const macosLibvipsPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-engine-macos.mjs"), "utf8");
+const macosLibvipsRuntimeBuild = fs.readFileSync(path.join(root, "scripts", "build-libvips-macos-runtime.mjs"), "utf8");
 const macosLocalEnginesPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-macos-local-engines.mjs"), "utf8");
 const macosLibvipsInputPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-macos-release-inputs.mjs"), "utf8");
 const prepareScript = fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8");
@@ -53,6 +54,18 @@ assert.match(
 );
 assert.match(macosHostTest, /process\.platform !== "darwin"/, "macOS host validation must refuse non-macOS hosts");
 assert.match(macosHostTest, /lipo.*-verify_arch/s, "macOS host validation must verify binary architectures with lipo");
+for (const [scriptName, scriptText] of Object.entries({
+  "build-libvips-macos-runtime.mjs": macosLibvipsRuntimeBuild,
+  "prepare-ffmpeg-engine-macos.mjs": macosFfmpegPrepare,
+  "prepare-pdfium-engine-macos.mjs": macosPdfiumPrepare,
+  "prepare-pandoc-engine-macos.mjs": macosPandocPrepare,
+  "prepare-libvips-engine-macos.mjs": macosLibvipsPrepare,
+  "test-macos-host.mjs": macosHostTest,
+  "test-macos-conversions.mjs": macosConversionTest,
+  "verify-macos-dmg.mjs": macosDmgVerify,
+})) {
+  assert.doesNotMatch(scriptText, /\[\s*"-verify_arch"/, `${scriptName} must pass the input file before lipo -verify_arch`);
+}
 assert.match(macosHostTest, /verifySidecarVersion\(universal, stem\)/, "macOS host validation must smoke-test universal sidecars");
 assert.match(macosHostTest, /MULTI_CONVERTER_ENGINE_PLATFORM:\s*"macos-universal"/, "macOS host validation must run bundled-engine validation as macos-universal");
 assert.match(macosConversionTest, /process\.platform !== "darwin"/, "macOS conversion validation must refuse non-macOS hosts");

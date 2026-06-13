@@ -53,8 +53,8 @@ for (const input of archInputs) {
     throw new Error(`${input.arch}: archive must contain both ffmpeg and ffprobe executables.`);
   }
 
-  run("lipo", ["-verify_arch", input.lipoArch, ffmpeg]);
-  run("lipo", ["-verify_arch", input.lipoArch, ffprobe]);
+  run("lipo", [ffmpeg, "-verify_arch", input.lipoArch]);
+  run("lipo", [ffprobe, "-verify_arch", input.lipoArch]);
   await smokeTestVersion(ffmpeg, "ffmpeg");
   await smokeTestVersion(ffprobe, "ffprobe");
 
@@ -173,8 +173,8 @@ async function createUniversal(stem) {
   const universal = path.join(engineRoot, "bin", `${stem}-universal-apple-darwin`);
   run("lipo", ["-create", arm64, x64, "-output", universal]);
   await fs.chmod(universal, 0o755);
-  run("lipo", ["-verify_arch", "arm64", universal]);
-  run("lipo", ["-verify_arch", "x86_64", universal]);
+  run("lipo", [universal, "-verify_arch", "arm64"]);
+  run("lipo", [universal, "-verify_arch", "x86_64"]);
 }
 
 async function stageNotices(items) {

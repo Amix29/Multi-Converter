@@ -228,7 +228,7 @@ function resolveRpath(value, loader) {
 async function rewriteMachOLinks() {
   for (const record of recordsByTarget.values()) {
     if (!await isMachO(record.target)) continue;
-    run("lipo", ["-verify_arch", lipoArch, record.target]);
+    run("lipo", [record.target, "-verify_arch", lipoArch]);
     await rewriteInstallId(record.target);
     addRpath(record.target, record.target.includes(`${path.sep}bin${path.sep}`) ? "@executable_path/../lib" : "@loader_path");
     for (const dependency of record.dependencies) {

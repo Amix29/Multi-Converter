@@ -74,8 +74,8 @@ await fs.chmod(path.join(sourceDir, "bin", "libpdfium.dylib"), 0o755);
 const universalWrapper = path.join(sourceDir, "bin", "pdfium-render-universal-apple-darwin");
 run("lipo", ["-create", armWrapper, x64Wrapper, "-output", universalWrapper]);
 await fs.chmod(universalWrapper, 0o755);
-run("lipo", ["-verify_arch", "arm64", universalWrapper]);
-run("lipo", ["-verify_arch", "x86_64", universalWrapper]);
+run("lipo", [universalWrapper, "-verify_arch", "arm64"]);
+run("lipo", [universalWrapper, "-verify_arch", "x86_64"]);
 
 await copyIfExists(path.join(extractDir, "LICENSE"), path.join(sourceDir, "licenses", "LICENSE.txt"));
 await fs.cp(path.join(extractDir, "licenses"), path.join(sourceDir, "licenses", "pdfium-third-party"), {

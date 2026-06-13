@@ -50,8 +50,8 @@ await fs.mkdir(path.join(sourceDir, "licenses"), { recursive: true });
 const universalPandoc = path.join(sourceDir, "bin", "pandoc-universal-apple-darwin");
 run("lipo", ["-create", armPandoc, x64Pandoc, "-output", universalPandoc]);
 await fs.chmod(universalPandoc, 0o755);
-run("lipo", ["-verify_arch", "arm64", universalPandoc]);
-run("lipo", ["-verify_arch", "x86_64", universalPandoc]);
+run("lipo", [universalPandoc, "-verify_arch", "arm64"]);
+run("lipo", [universalPandoc, "-verify_arch", "x86_64"]);
 
 const tag = release.tag_name ?? release.name;
 await download(
