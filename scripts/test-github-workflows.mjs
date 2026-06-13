@@ -131,6 +131,7 @@ assert.match(macosDmgWorkflow, /name:\s+macOS DMG Build/, "macOS DMG workflow mu
 assert.match(macosDmgWorkflow, /workflow_dispatch:/, "macOS DMG workflow must be manually runnable");
 assert.match(macosDmgWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS DMG workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosDmgWorkflow, /scripts\/validate-bundled-engines\.mjs/, "macOS DMG push paths must include bundled-engine validation changes");
+assert.match(macosDmgWorkflow, /src-tauri\/src\/converters\.rs/, "macOS DMG push paths must include converter changes");
 assert.match(macosDmgWorkflow, /sidecar_release_tag:/, "macOS DMG workflow must allow staged sidecars from a release tag");
 assert.match(macosDmgWorkflow, /engine_release_tag:/, "macOS DMG workflow must allow staged engine archives from a release tag");
 assert.match(macosDmgWorkflow, /engine_staging_run_id:/, "macOS DMG workflow must allow staged engines from a workflow artifact");

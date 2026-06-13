@@ -13,6 +13,12 @@ on:
       - "scripts/test-macos-packaging.mjs"
       - "scripts/verify-macos-dmg.mjs"
       - "scripts/test-github-workflows.mjs"
+      - "src-tauri/src/converters.rs"
+      - "src-tauri/src/registry.rs"
+      - "src-tauri/tauri.macos.conf.json"
+      - "src-tauri/tauri.conf.json"
+      - "package.json"
+      - "package-lock.json"
   workflow_dispatch:
     inputs:
       sidecar_release_tag:
