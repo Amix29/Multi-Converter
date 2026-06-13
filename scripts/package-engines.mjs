@@ -499,14 +499,32 @@ function normalizeSafeSymlinkTarget(source, linkTarget) {
   if (!path.isAbsolute(linkTarget)) return linkTarget;
 
   const normalizedAbsoluteTarget = linkTarget.replaceAll("\\", "/");
-  const frameworkName = frameworkNameFor(source);
-  if (frameworkName) {
+  const frameworkRoot = ancestorPathEnding(source, ".framework");
+  if (frameworkRoot) {
+    const frameworkName = path.basename(frameworkRoot);
     const frameworkMarker = `/${frameworkName}/`;
     const frameworkIndex = normalizedAbsoluteTarget.indexOf(frameworkMarker);
     if (frameworkIndex >= 0) {
-      return normalizedAbsoluteTarget.slice(frameworkIndex + frameworkMarker.length);
+      const target = path.join(frameworkRoot, normalizedAbsoluteTarget.slice(frameworkIndex + frameworkMarker.length));
+      return relativeSymlinkTarget(path.dirname(source), target);
     }
-    return normalizedAbsoluteTarget.replace(/^\/+/, "");
+    const target = path.join(frameworkRoot, normalizedAbsoluteTarget.replace(/^\/+/, ""));
+    return relativeSymlinkTarget(path.dirname(source), target);
+  }
+
+  const appRoot = ancestorPathEnding(source, ".app");
+  if (appRoot) {
+    const appName = path.basename(appRoot);
+    const appMarker = `/${appName}/`;
+    const appIndex = normalizedAbsoluteTarget.indexOf(appMarker);
+    if (appIndex >= 0) {
+      const target = path.join(appRoot, normalizedAbsoluteTarget.slice(appIndex + appMarker.length));
+      return relativeSymlinkTarget(path.dirname(source), target);
+    }
+    if (normalizedAbsoluteTarget.startsWith("/Contents/")) {
+      const target = path.join(appRoot, normalizedAbsoluteTarget.slice(1));
+      return relativeSymlinkTarget(path.dirname(source), target);
+    }
   }
   return null;
 }
@@ -518,11 +536,21 @@ function shouldSkipBrokenFrameworkHeaderSymlink(source) {
 }
 
 function isInsideFramework(source) {
-  return Boolean(frameworkNameFor(source));
+  return Boolean(ancestorPathEnding(source, ".framework"));
 }
 
-function frameworkNameFor(source) {
-  return source.split(path.sep).find((part) => part.endsWith(".framework"));
+function ancestorPathEnding(source, suffix) {
+  let current = path.dirname(source);
+  while (current && current !== path.dirname(current)) {
+    if (path.basename(current).endsWith(suffix)) return current;
+    current = path.dirname(current);
+  }
+  return null;
+}
+
+function relativeSymlinkTarget(fromDir, target) {
+  const relative = path.relative(fromDir, target).replaceAll("\\", "/");
+  return relative || ".";
 }
 
 function isExecutableRequired(config, engine, relative) {
