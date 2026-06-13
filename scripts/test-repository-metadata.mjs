@@ -112,6 +112,8 @@ assert.doesNotMatch(macosChecklist, /workflow is expected to fail until all requ
 assert.match(secretLeakScript, /private test repository reference/, "secret leak scan must reject private test repository references");
 assert.match(secretLeakScript, /maintainer local Windows path/, "secret leak scan must reject maintainer-local Windows paths");
 assert.match(secretLeakScript, /AuthKey_/, "secret leak scan must reject Apple signing private key filenames");
+assert.match(secretLeakScript, /\\.p12/, "secret leak scan must reject Apple signing certificate filenames");
+assert.match(secretLeakScript, /mobileprovision/, "secret leak scan must reject Apple provisioning profile filenames");
 assert.match(secretLeakScript, /TAURI_SIGNING_PRIVATE_KEY/, "secret leak scan must reject accidental Tauri signing key values");
 
 console.log("Repository metadata tests passed.");
