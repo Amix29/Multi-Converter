@@ -13,8 +13,14 @@ on:
         required: false
         default: ""
         type: string
+      engine_staging_run_id:
+        description: "macOS Engine Staging workflow run ID containing the macos-engine-assets artifact"
+        required: false
+        default: ""
+        type: string
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -68,6 +74,35 @@ jobs:
 
       - name: Configure Cargo target directory
         run: echo "CARGO_TARGET_DIR=$RUNNER_TEMP/mc-cargo-target-macos-conversions" >> "$GITHUB_ENV"
+
+      - name: Validate staged macOS asset inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${{ inputs.engine_staging_run_id }}" && ( -n "${{ inputs.sidecar_release_tag }}" || -n "${{ inputs.engine_release_tag }}" ) ]]; then
+            echo "Use either engine_staging_run_id or release tags, not both." >&2
+            exit 1
+          fi
+
+      - name: Download staged macOS assets from a workflow artifact
+        if: ${{ inputs.engine_staging_run_id != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset_dir="$RUNNER_TEMP/mc-macos-engine-assets"
+          mkdir -p "$asset_dir" src-tauri/binaries
+          gh run download "${{ inputs.engine_staging_run_id }}" --repo "$GITHUB_REPOSITORY" --name macos-engine-assets --dir "$asset_dir"
+          for asset in \
+            ffmpeg-aarch64-apple-darwin \
+            ffmpeg-x86_64-apple-darwin \
+            ffprobe-aarch64-apple-darwin \
+            ffprobe-x86_64-apple-darwin
+          do
+            test -s "$asset_dir/$asset"
+            cp "$asset_dir/$asset" "src-tauri/binaries/$asset"
+          done
+          chmod +x src-tauri/binaries/*-apple-darwin
+          node scripts/prepare-macos-engine-release-assets.mjs --from-local-assets --asset-dir "$asset_dir"
 
       - name: Download staged macOS sidecars from a release
         if: ${{ inputs.sidecar_release_tag != '' }}

@@ -8,8 +8,9 @@ import process from "node:process";
 
 const root = process.cwd();
 const args = parseArgs(process.argv.slice(2));
-const tag = args.tag ?? fail("Missing --tag <release-tag>.");
-const repo = args.repo ?? process.env.GITHUB_REPOSITORY ?? fail("Missing --repo <owner/name> or GITHUB_REPOSITORY.");
+const fromLocalAssets = Boolean(args.fromLocalAssets);
+const tag = args.tag ?? (fromLocalAssets ? null : fail("Missing --tag <release-tag>."));
+const repo = args.repo ?? process.env.GITHUB_REPOSITORY ?? (fromLocalAssets ? null : fail("Missing --repo <owner/name> or GITHUB_REPOSITORY."));
 const assetDir = path.resolve(args.assetDir ?? path.join(process.env.RUNNER_TEMP ?? os.tmpdir(), "mc-macos-engine-assets"));
 const cacheDir = path.resolve(args.cacheDir ?? path.join(root, "engine-sources", ".bundled-engine-cache"));
 const manifestTarget = path.resolve(args.manifest ?? path.join(root, "src-tauri", "engines-manifest.json"));
@@ -17,9 +18,8 @@ const manifestAsset = path.join(assetDir, "engines-manifest.json");
 
 await fs.mkdir(assetDir, { recursive: true });
 await fs.mkdir(cacheDir, { recursive: true });
-await fs.rm(manifestAsset, { force: true });
 
-downloadReleaseAsset("engines-manifest.json");
+await ensureAsset("engines-manifest.json");
 await assertFile(manifestAsset, "downloaded engines-manifest.json");
 
 const manifest = JSON.parse(await fs.readFile(manifestAsset, "utf8"));
@@ -34,13 +34,13 @@ for (const engine of engines) {
   validateEngineEntry(engine);
   const assetName = assetNameFromUrl(engine.downloadUrl);
   const assetPath = path.join(assetDir, assetName);
-  await fs.rm(assetPath, { force: true });
-  downloadReleaseAsset(assetName);
+  await ensureAsset(assetName);
   await verifySha256(assetPath, engine.sha256, `${engine.id} macOS engine archive`);
   await fs.copyFile(assetPath, path.join(cacheDir, `${engine.id}-${engine.version}.zip`));
 }
 
-console.log(`Staged ${engines.length} macOS engine archives from ${repo}@${tag}.`);
+const sourceLabel = fromLocalAssets ? assetDir : `${repo}@${tag}`;
+console.log(`Staged ${engines.length} macOS engine archives from ${sourceLabel}.`);
 
 async function writeEmbeddedManifest(sourceManifest, macosEngines) {
   const embeddedEngines = macosEngines.filter((engine) => engine.mode === "advanced");
@@ -80,6 +80,16 @@ function downloadReleaseAsset(pattern) {
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
+}
+
+async function ensureAsset(assetName) {
+  const assetPath = path.join(assetDir, assetName);
+  if (fromLocalAssets) {
+    await assertFile(assetPath, `local macOS engine asset ${assetName}`);
+    return;
+  }
+  await fs.rm(assetPath, { force: true });
+  downloadReleaseAsset(assetName);
 }
 
 function assetNameFromUrl(url) {
@@ -124,6 +134,7 @@ function parseArgs(rawArgs) {
     else if (arg === "--asset-dir") parsed.assetDir = rawArgs[++index];
     else if (arg === "--cache-dir") parsed.cacheDir = rawArgs[++index];
     else if (arg === "--manifest") parsed.manifest = rawArgs[++index];
+    else if (arg === "--from-local-assets") parsed.fromLocalAssets = true;
     else fail(`Unknown argument: ${arg}`);
   }
   return parsed;
