@@ -127,11 +127,12 @@ Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conv
 
 ## GitHub Actions Engine Staging
 
-Use the manual `macOS Engine Staging` workflow to create the test assets consumed by the conversion and DMG workflows.
+Use the `macOS Engine Staging` workflow to create the test assets consumed by the conversion and DMG workflows.
 
 - Provide maintainer-approved FFmpeg/ffprobe Apple Silicon and Intel archive URLs plus SHA-256 checksums. If `ffmpeg` and `ffprobe` are published as separate archives, provide the optional `ffprobe_*` URL/checksum inputs too.
 - Provide either `libvips_runtime_run_id` from a successful `macOS libvips Runtime` run, or a `libvips_release_tag` that contains portable Apple Silicon and Intel libvips runtime archives. Those archives must contain a `bin/vips` runtime root and bundled non-system dependencies.
 - The workflow prepares FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips on `macos-latest`, packages `tools/engine-packages.macos.config.json`, uploads a `macos-engine-assets` workflow artifact, and optionally uploads the same assets to `output_release_tag`.
+- On `codex/test`, the workflow is push-runnable when `MC_ENABLE_MACOS_ENGINE_STAGING=1` is configured as a repository variable. Push runs read the FFmpeg/ffprobe URLs, checksums and libvips input from the `MC_*` repository variables, so staging can be validated before this workflow exists on `main`.
 - On the public main repository, any `output_release_tag` creates publicly visible prerelease assets. Leave it empty unless a maintainer intentionally wants that public test tag.
 - If `output_release_tag` is set, use that same tag as both `sidecar_release_tag` and `engine_release_tag` for `macOS Conversion Matrix` and `macOS DMG Build`.
 

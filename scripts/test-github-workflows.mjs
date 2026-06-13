@@ -74,6 +74,7 @@ assert.match(releaseWorkflow, /this workflow run was not started with include_ma
 
 assert.match(macosEngineStagingWorkflow, /name:\s+macOS Engine Staging/, "macOS engine staging workflow must be clearly named");
 assert.match(macosEngineStagingWorkflow, /workflow_dispatch:/, "macOS engine staging workflow must be manually runnable");
+assert.match(macosEngineStagingWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS engine staging workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosEngineStagingWorkflow, /ffmpeg_aarch64_archive_url:/, "macOS engine staging must require an Apple Silicon FFmpeg archive URL");
 assert.match(macosEngineStagingWorkflow, /ffmpeg_aarch64_archive_sha256:/, "macOS engine staging must require an Apple Silicon FFmpeg checksum");
 assert.match(macosEngineStagingWorkflow, /ffprobe_aarch64_archive_url:/, "macOS engine staging must allow a separate Apple Silicon FFprobe archive URL");
@@ -86,13 +87,19 @@ assert.match(macosEngineStagingWorkflow, /libvips_release_tag:/, "macOS engine s
 assert.match(macosEngineStagingWorkflow, /libvips_runtime_run_id:/, "macOS engine staging must support portable libvips workflow artifacts");
 assert.match(macosEngineStagingWorkflow, /permissions:[\s\S]*?contents:\s+write/, "macOS engine staging must be able to upload optional test release assets");
 assert.match(macosEngineStagingWorkflow, /permissions:[\s\S]*?actions:\s+read/, "macOS engine staging must be able to download workflow artifacts");
+assert.match(macosEngineStagingJob, /vars\.MC_ENABLE_MACOS_ENGINE_STAGING == '1'/, "codex/test macOS engine staging push runs must require an explicit repository variable gate");
 assert.match(macosEngineStagingJob, /runs-on:\s+macos-latest/, "macOS engine staging must run on macOS");
 assert.match(macosEngineStagingJob, /prepare:ffmpeg-engine:macos/, "macOS engine staging must prepare real FFmpeg sidecars");
+assert.match(macosEngineStagingJob, /vars\.MC_FFMPEG_MACOS_AARCH64_ARCHIVE_URL/, "macOS engine staging push runs must read Apple Silicon FFmpeg URLs from repository variables");
+assert.match(macosEngineStagingJob, /vars\.MC_FFMPEG_MACOS_X86_64_ARCHIVE_SHA256/, "macOS engine staging push runs must read Intel FFmpeg checksums from repository variables");
 assert.match(macosEngineStagingJob, /FFPROBE_MACOS_AARCH64_ARCHIVE_URL/, "macOS engine staging must pass separate Apple Silicon FFprobe URLs to the preparation script");
 assert.match(macosEngineStagingJob, /FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "macOS engine staging must pass separate Intel FFprobe checksums to the preparation script");
+assert.match(macosEngineStagingJob, /vars\.MC_FFPROBE_MACOS_AARCH64_ARCHIVE_URL/, "macOS engine staging push runs must read Apple Silicon FFprobe URLs from repository variables");
+assert.match(macosEngineStagingJob, /vars\.MC_FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "macOS engine staging push runs must read Intel FFprobe checksums from repository variables");
 assert.match(macosEngineStagingJob, /prepare:macos-upstream-engines/, "macOS engine staging must prepare PDFium, LibreOffice and Pandoc");
 assert.match(macosEngineStagingJob, /Provide only one libvips input source/, "macOS engine staging must reject ambiguous libvips input sources");
-assert.match(macosEngineStagingJob, /gh run download "\$\{\{ inputs\.libvips_runtime_run_id \}\}"/, "macOS engine staging must download libvips runtime workflow artifacts");
+assert.match(macosEngineStagingJob, /vars\.MC_LIBVIPS_MACOS_RUNTIME_RUN_ID/, "macOS engine staging push runs must read libvips runtime run IDs from repository variables");
+assert.match(macosEngineStagingJob, /gh run download "\$LIBVIPS_RUNTIME_RUN_ID"/, "macOS engine staging must download libvips runtime workflow artifacts");
 assert.match(macosEngineStagingJob, /--name libvips-macos-aarch64/, "macOS engine staging must download the Apple Silicon libvips artifact");
 assert.match(macosEngineStagingJob, /--name libvips-macos-x86_64/, "macOS engine staging must download the Intel libvips artifact");
 assert.match(macosEngineStagingJob, /--aarch64-archive "\$aarch64_archive"/, "macOS engine staging must pass local Apple Silicon libvips archives to the input helper");
@@ -100,6 +107,7 @@ assert.match(macosEngineStagingJob, /prepare:libvips-macos-release-inputs/, "mac
 assert.match(macosEngineStagingJob, /prepare:libvips-engine:macos/, "macOS engine staging must validate and stage libvips");
 assert.match(macosEngineStagingJob, /package:macos-engines/, "macOS engine staging must package macos-universal engine archives");
 assert.match(macosEngineStagingJob, /actions\/upload-artifact@v4/, "macOS engine staging must upload staged assets as a workflow artifact");
+assert.match(macosEngineStagingJob, /if:\s+\$\{\{\s*env\.OUTPUT_RELEASE_TAG != ''\s*\}\}/, "macOS engine staging must use the resolved output release tag before publishing public test assets");
 assert.match(macosEngineStagingJob, /gh release upload/, "macOS engine staging must optionally upload assets to a test release");
 
 assert.match(macosLibvipsRuntimeWorkflow, /name:\s+macOS libvips Runtime/, "macOS libvips runtime workflow must be clearly named");

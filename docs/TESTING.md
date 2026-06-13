@@ -170,7 +170,7 @@ This command prepares FFmpeg/ffprobe from the configured `FFMPEG_MACOS_*` archiv
 
 For GitHub Actions validation with staged release inputs, upload real sidecars to the tag passed as `sidecar_release_tag`, and upload `engines-manifest.json` plus the referenced macOS engine ZIPs to the tag passed as `engine_release_tag`. The workflows download those assets with `gh release download`, verify their SHA-256 checksums, write only advanced macOS engines into the embedded manifest, then seed `engine-sources/.bundled-engine-cache` so release assets can be tested without relying on public unauthenticated download URLs.
 
-The manual `macOS Engine Staging` workflow can produce that test release when `output_release_tag` is intentionally provided. It still requires explicit FFmpeg archive URLs/checksums and either `libvips_runtime_run_id` or `libvips_release_tag`; it does not select FFmpeg sources automatically.
+The `macOS Engine Staging` workflow can produce those staged assets as a GitHub Actions artifact without creating a release. On `codex/test`, it is also push-runnable when the repository variable `MC_ENABLE_MACOS_ENGINE_STAGING` is set to `1`; push runs read the explicit FFmpeg/ffprobe URLs, SHA-256 values and libvips source from `MC_*` repository variables. The manual workflow can still publish to a public test release when `output_release_tag` is intentionally provided. It always requires explicit FFmpeg archive URLs/checksums and either a libvips runtime run ID or a libvips release tag; it does not select FFmpeg sources automatically.
 
 Before building a DMG on macOS, also run:
 
