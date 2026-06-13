@@ -206,7 +206,12 @@ function readmeMacosStatusMatchesEvidence() {
   }
   return (
     /\|\s*.*macOS\s*\|\s*.*Available\s*\|/.test(readme) &&
-    readme.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`)
+    readme.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`) &&
+    /not\s+Apple-signed/i.test(readme) &&
+    /not\s+notarized/i.test(readme) &&
+    readme.includes("Open Anyway") &&
+    readme.includes("Privacy & Security") &&
+    /macOS\s+automatic\s+updates\s+are\s+not\s+enabled/i.test(readme)
   );
 }
 

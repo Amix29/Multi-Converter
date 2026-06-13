@@ -60,6 +60,14 @@ try {
   assert.equal(untrustedSecurityStatus.status.releaseReady, false, "Codex Security evidence outside the security section must not unlock readiness");
   assert.match(untrustedSecurityStatus.output, /Codex Security/, "untrusted security evidence must keep the security blocker");
 
+  const missingReadmeInstallNotesStatus = runStatus("missing-readme-install-notes.md", completedReleaseEvidence(currentEvidence), {
+    requireReady: true,
+    expectedStatus: 1,
+    readme: readyReadmeTableOnly(currentReadme),
+  });
+  assert.equal(missingReadmeInstallNotesStatus.status.releaseReady, false, "macOS release readiness must require public README install notes");
+  assert.match(missingReadmeInstallNotesStatus.output, /README macOS status matches available release evidence/, "missing README install notes must fail the README evidence check");
+
   const readyStatus = runStatus("ready.md", completedReleaseEvidence(currentEvidence), { requireReady: true, readme: readyReadme(currentReadme) });
   assert.equal(readyStatus.releaseReady, true, "complete clean-Mac and accepted security evidence must satisfy require-ready mode");
 } finally {
@@ -123,6 +131,17 @@ function completedReleaseEvidence(evidence) {
 }
 
 function readyReadme(readme) {
+  return `${readyReadmeTableOnly(readme)}
+
+## macOS Installation
+
+Download \`Multi-Converter_1.0.5_macos-universal.dmg\`. This macOS build is not Apple-signed and not notarized. After the first launch warning, open \`System Settings > Privacy & Security\`, choose \`Open Anyway\`, then confirm \`Open\`.
+
+macOS automatic updates are not enabled for this first DMG workflow. Download future macOS versions manually until macOS updater artifacts are enabled and tested.
+`;
+}
+
+function readyReadmeTableOnly(readme) {
   return readme.replace(
     /\|\s*🍎 macOS\s*\|[^\n]+/,
     "| 🍎 macOS | ✅ Available | `Multi-Converter_1.0.5_macos-universal.dmg` |",
