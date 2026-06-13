@@ -157,13 +157,12 @@ const INTEGRATED_DOCUMENT_TARGETS: &[&str] = &[
 const PDF_TEXT_TARGETS: &[&str] = &["txt", "md", "html", "csv", "json", "xml"];
 #[cfg(target_os = "macos")]
 const FFMPEG_AUDIO_FORMATS: &[&str] = &[
-    "mp3", "m4a", "flac", "wav", "ogg", "wma", "opus", "aiff", "alac", "ac3", "mp2", "au",
-    "caf",
+    "mp3", "m4a", "flac", "wav", "ogg", "wma", "opus", "aiff", "alac", "ac3", "mp2", "au", "caf",
 ];
 #[cfg(not(target_os = "macos"))]
 const FFMPEG_AUDIO_FORMATS: &[&str] = &[
-    "mp3", "m4a", "flac", "wav", "ogg", "wma", "opus", "aiff", "alac", "ac3", "mp2", "amr",
-    "au", "caf",
+    "mp3", "m4a", "flac", "wav", "ogg", "wma", "opus", "aiff", "alac", "ac3", "mp2", "amr", "au",
+    "caf",
 ];
 const FFMPEG_VIDEO_FORMATS: &[&str] = &[
     "mp4", "mkv", "webm", "mov", "avi", "wmv", "3gp", "mts", "mpeg2", "ogv",
@@ -536,17 +535,21 @@ mod tests {
     #[cfg(target_os = "macos")]
     fn macos_hides_amr_until_bundled_ffmpeg_supports_opencore() {
         assert!(get_targets_for_extension("amr").is_empty());
-        assert!(!get_targets_for_extension("wav")
-            .iter()
-            .any(|target| target.format == "amr"));
+        assert!(
+            !get_targets_for_extension("wav")
+                .iter()
+                .any(|target| target.format == "amr")
+        );
     }
 
     #[test]
     #[cfg(not(target_os = "macos"))]
     fn non_macos_keeps_amr_targets() {
-        assert!(get_targets_for_extension("wav")
-            .iter()
-            .any(|target| target.format == "amr" && target.engine == "ffmpeg"));
+        assert!(
+            get_targets_for_extension("wav")
+                .iter()
+                .any(|target| target.format == "amr" && target.engine == "ffmpeg")
+        );
     }
 
     #[test]
