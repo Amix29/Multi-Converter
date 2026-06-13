@@ -381,12 +381,12 @@ async function findAny(dir, names) {
 }
 
 async function isMachO(filePath) {
-  const result = spawnSync("otool", ["-hv", filePath], {
+  const result = spawnSync("file", ["-b", filePath], {
     cwd: root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   });
-  return result.status === 0;
+  return result.status === 0 && /\bMach-O\b/.test(result.stdout);
 }
 
 function isAllowedSystemDependency(value) {

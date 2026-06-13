@@ -126,6 +126,8 @@ assert.match(macosLibvipsPrepare, /\/opt\/homebrew\//, "macOS libvips preparatio
 assert.match(macosLibvipsPrepare, /if \(value\.startsWith\("\/"\)\) return false/, "macOS libvips preparation must reject non-system absolute dynamic links");
 assert.match(macosLibvipsPrepare, /lipo.*-verify_arch/s, "macOS libvips preparation must verify the staged architecture");
 assert.match(macosLibvipsPrepare, /smokeTestNative/, "macOS libvips preparation must smoke-test the native staged tree");
+assert.match(macosLibvipsRuntimeBuild, /spawnSync\("file", \["-b", filePath\]/, "macOS libvips runtime builder must identify Mach-O files with file(1)");
+assert.doesNotMatch(macosLibvipsRuntimeBuild, /spawnSync\("otool", \["-hv", filePath\]/, "macOS libvips runtime builder must not classify non-code library files through otool -hv");
 assert.match(macosLibvipsInputPrepare, /--aarch64-archive/, "macOS libvips input preparation must accept local Apple Silicon archives");
 assert.match(macosLibvipsInputPrepare, /--x86_64-archive/, "macOS libvips input preparation must accept local Intel archives");
 assert.match(macosLocalEnginesPrepare, /process\.platform !== "darwin"/, "local macOS engine staging must refuse non-macOS hosts");
