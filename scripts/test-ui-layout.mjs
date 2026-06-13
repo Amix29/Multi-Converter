@@ -33,16 +33,21 @@ assert.match(css, /--ease-ui:\s*cubic-bezier\(0\.2,\s*0\.8,\s*0\.2,\s*1\);/, "sh
 assert.match(cssRule("button"), /touch-action:\s*manipulation;/, "buttons should use manipulation touch action");
 assert.match(cssRule(".app-shell"), /--floating-toast-offset:\s*24px;/, "app shell must define the default floating toast offset");
 assert.match(cssRule(".app-shell.has-feedback-launcher"), /--floating-toast-offset:\s*88px;/, "feedback launcher state must reserve vertical toast space");
-assert.match(cssRule(".app-shell.has-update-reminder"), /--floating-toast-offset:\s*124px;/, "update reminder state must reserve vertical toast space");
-assert.match(cssRule(".app-shell.has-update-reminder.has-feedback-launcher"), /--floating-toast-offset:\s*176px;/, "combined floating controls must reserve enough toast space");
+assert.match(cssRule(".app-shell.has-update-reminder"), /--floating-toast-offset:\s*190px;/, "update reminder state must reserve vertical toast space");
+assert.match(cssRule(".app-shell.has-update-reminder.has-feedback-launcher"), /--floating-toast-offset:\s*250px;/, "combined floating controls must reserve enough toast space");
 
 const updateReminder = cssRule(".update-reminder");
 const feedbackLauncher = cssRule(".feedback-launcher");
 const importToast = cssRule(".import-toast");
+const pageNotice = cssRule(".page-notice");
 assert.doesNotMatch(updateReminder, /position:\s*fixed;/, "update-reminder must not be fixed independently");
 assert.doesNotMatch(feedbackLauncher, /position:\s*fixed;/, "feedback-launcher must not be fixed independently");
 assert.match(importToast, /bottom:\s*var\(--floating-toast-offset\);/, "import toast must avoid the floating feedback/update stack");
 assert.match(importToast, /transition:\s*bottom 180ms var\(--ease-ui\);/, "import toast should move smoothly when floating controls appear");
+assert.match(pageNotice, /bottom:\s*var\(--floating-toast-offset\);/, "page notices must avoid the floating feedback/update stack");
+assert.match(pageNotice, /transition:\s*bottom 180ms var\(--ease-ui\);/, "page notices should move smoothly when floating controls appear");
+assert.match(floatingCorner, /max-height:\s*calc\(100vh - 44px\);/, "floating corner must stay inside short viewports");
+assert.match(floatingCorner, /overflow:\s*auto;/, "floating corner must scroll instead of covering the app in short viewports");
 assert.match(css, /@media\s*\(max-width:\s*720px\)[\s\S]*?\.floating-corner\s*{[\s\S]*?width:\s*calc\(100vw - 28px\);/, "mobile layout must resize the floating stack");
 assert.match(css, /@media\s*\(max-width:\s*720px\)[\s\S]*?\.update-reminder\s*{[\s\S]*?grid-template-columns:\s*1fr;/, "mobile update reminder must stack actions instead of squeezing controls");
 assert.match(css, /\.drop-zone:hover,\s*[\r\n]+\.drop-zone:focus-within,\s*[\r\n]+\.drop-zone\.is-over/, "drop zone must have hover and keyboard focus motion states");

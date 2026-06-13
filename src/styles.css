@@ -113,11 +113,11 @@ summary:focus-visible {
 }
 
 .app-shell.has-update-reminder {
-  --floating-toast-offset: 124px;
+  --floating-toast-offset: 190px;
 }
 
 .app-shell.has-update-reminder.has-feedback-launcher {
-  --floating-toast-offset: 176px;
+  --floating-toast-offset: 250px;
 }
 
 .topbar {
@@ -2600,7 +2600,7 @@ button:disabled {
 .page-notice {
   position: fixed;
   right: 24px;
-  bottom: 22px;
+  bottom: var(--floating-toast-offset);
   z-index: 30;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -2614,6 +2614,7 @@ button:disabled {
   background: rgba(255, 255, 255, 0.98);
   box-shadow: var(--shadow);
   animation: noticeIn 180ms ease both;
+  transition: bottom 180ms var(--ease-ui);
 }
 
 .page-notice > span {
@@ -2668,6 +2669,9 @@ button:disabled {
   align-items: flex-end;
   gap: 10px;
   width: min(430px, calc(100vw - 32px));
+  max-height: calc(100vh - 44px);
+  overflow: auto;
+  overscroll-behavior: contain;
   pointer-events: none;
   transform: translateZ(0);
 }
