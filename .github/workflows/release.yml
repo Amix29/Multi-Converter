@@ -179,6 +179,10 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value $body
           Add-Content -Path $env:GITHUB_ENV -Value $delimiter
 
+      - name: Require V1.0.5 macOS release readiness
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.include_macos }}
+        run: npm run status:v1.0.5 -- --require-ready
+
       - run: npm run prepare:bundled-engines
       - run: npm run check
       - run: npm run fmt:rust:check

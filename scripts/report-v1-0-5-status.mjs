@@ -4,8 +4,10 @@ import path from "node:path";
 const root = process.cwd();
 const args = process.argv.slice(2);
 const assertMode = args.includes("--assert");
+const requireReady = args.includes("--require-ready");
 const outPath = path.resolve(optionValue(args, "--out") ?? path.join(root, "tmp", "v1.0.5-status.json"));
 const validationEvidencePath = optionValue(args, "--validation-evidence") ?? "docs/V1_0_5_VALIDATION.md";
+const readmePath = optionValue(args, "--readme") ?? "README.md";
 const requiredAdvancedEngines = ["pdfium", "libreoffice", "pandoc", "libvips"];
 const requiredMacosSidecars = [
   "ffmpeg-aarch64-apple-darwin",
@@ -19,7 +21,7 @@ const requiredMacosSidecars = [
 const packageJson = readJson("package.json");
 const macosConfig = readJson("src-tauri/tauri.macos.conf.json");
 const enginesManifest = readJson("src-tauri/engines-manifest.json");
-const readme = readText("README.md");
+const readme = readText(readmePath);
 const testingDocs = readText("docs/TESTING.md");
 const macosChecklist = readText("docs/RELEASE_CHECKLIST_MACOS.md");
 const validationEvidence = readOptionalText(validationEvidencePath);
@@ -97,8 +99,15 @@ if (assertMode) {
   }
 }
 
+if (requireReady && !status.releaseReady) {
+  fail(`V1.0.5 is not release-ready:\n${[...failedChecks.map((item) => item.name), ...evidenceBlockers].map((item) => `- ${item}`).join("\n")}`);
+}
+
 console.log(`V1.0.5 status written to ${path.relative(root, outPath)}`);
 console.log(status.releaseReady ? "V1.0.5 release status: ready" : "V1.0.5 release status: not ready");
+for (const failedCheck of failedChecks) {
+  console.log(`- Check failed: ${failedCheck.name}`);
+}
 for (const blocker of evidenceBlockers) {
   console.log(`- ${blocker}`);
 }

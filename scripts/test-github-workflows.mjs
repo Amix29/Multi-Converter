@@ -72,6 +72,8 @@ assert.match(releaseWorkflow, /not\\s\+Apple-signed/, "release workflow must val
 assert.match(releaseWorkflow, /macOS\\s\+automatic\\s\+updates\\s\+are\\s\+not\\s\+enabled/, "release workflow must validate macOS updater limitation wording");
 assert.match(releaseWorkflow, /macOS\\s\+DMG\\s\+verification/, "release workflow must validate macOS DMG verification wording");
 assert.match(releaseWorkflow, /this workflow run was not started with include_macos=true/, "release workflow must reject accidental macOS notes in Windows-only runs");
+assert.match(releaseWorkflow, /Require V1\.0\.5 macOS release readiness/, "release workflow must require the V1.0.5 readiness gate before macOS publication");
+assert.match(releaseWorkflow, /npm run status:v1\.0\.5 -- --require-ready/, "release workflow must fail macOS publication while V1.0.5 status is not release-ready");
 
 assert.match(macosEngineStagingWorkflow, /name:\s+macOS Engine Staging/, "macOS engine staging workflow must be clearly named");
 assert.match(macosEngineStagingWorkflow, /workflow_dispatch:/, "macOS engine staging workflow must be manually runnable");
