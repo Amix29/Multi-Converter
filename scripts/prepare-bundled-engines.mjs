@@ -137,6 +137,7 @@ async function prepareBundledEngine(engine) {
   await downloadVerified(engine.downloadUrl, archive, engine.sha256, engine.id);
   const extractDir = path.join(cacheDir, `${engine.id}-${engine.version}-extract`);
   await extractArchive(archive, extractDir);
+  await pruneWindowsOnlyResourcesForNonWindowsEngine(extractDir, engine);
   await verifyPackageMetadata(extractDir, engine);
   await verifyExpectedFiles(extractDir, engine);
 
@@ -258,6 +259,7 @@ async function bundledEngineLooksCurrent(rootDir, engine) {
     if (!stat.isDirectory()) return false;
     await verifyPackageMetadata(rootDir, engine);
     await verifyExpectedFiles(rootDir, engine);
+    await assertNoWindowsOnlyResourcesForNonWindowsEngine(rootDir, engine);
     return true;
   } catch {
     return false;
@@ -379,6 +381,52 @@ async function normalizeBundledNoticeText(rootDir, metadata) {
       await fs.writeFile(noticePath, updated);
     }
   }
+}
+
+async function pruneWindowsOnlyResourcesForNonWindowsEngine(rootDir, engine) {
+  if (platform === "windows-x64") return;
+
+  const removed = [];
+  await walkFiles(rootDir, async (filePath) => {
+    if (!isWindowsOnlyResource(filePath)) return;
+    await fs.rm(filePath, { force: true });
+    removed.push(path.relative(rootDir, filePath).replaceAll(path.sep, "/"));
+  });
+
+  if (removed.length) {
+    console.log(`${engine.id}: removed ${removed.length} Windows-only resource(s) from ${platform} bundle.`);
+  }
+}
+
+async function assertNoWindowsOnlyResourcesForNonWindowsEngine(rootDir, engine) {
+  if (platform === "windows-x64") return;
+
+  const found = [];
+  await walkFiles(rootDir, async (filePath) => {
+    if (isWindowsOnlyResource(filePath)) {
+      found.push(path.relative(rootDir, filePath).replaceAll(path.sep, "/"));
+    }
+  });
+
+  if (found.length) {
+    throw new Error(`${engine.id}: ressource Windows-only inattendue dans le moteur ${platform}: ${found[0]}`);
+  }
+}
+
+async function walkFiles(startDir, visit) {
+  const entries = await fs.readdir(startDir, { withFileTypes: true }).catch(() => []);
+  for (const entry of entries) {
+    const full = path.join(startDir, entry.name);
+    if (entry.isDirectory()) {
+      await walkFiles(full, visit);
+    } else if (entry.isFile()) {
+      await visit(full);
+    }
+  }
+}
+
+function isWindowsOnlyResource(filePath) {
+  return /\.(bat|cmd|dll|exe|msi|ps1)$/i.test(filePath);
 }
 
 function isPlaceholderUrl(url) {
