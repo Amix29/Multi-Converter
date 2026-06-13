@@ -32,7 +32,7 @@ Multi-Converter v1.0.5 prepares the first macOS build while keeping the Windows 
 
 ## Interface And Usability
 
-- The update reminder, feedback launcher, page notice and import toast now keep separate positions so important notices remain clickable and readable.
+- The update reminder, feedback launcher, page notice and import toast now keep separate positions so important notices remain clickable and readable, even when import progress and a page notice appear together.
 
 ## Security And Privacy
 

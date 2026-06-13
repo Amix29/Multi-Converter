@@ -143,6 +143,7 @@ export default function App() {
   });
   const updateReminderActive = updateReminderVisible && Boolean(updateInfo) && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen;
   const feedbackLauncherActive = step === 1 && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen && updateStatus !== "installing" && !isFeedbackOpen && !isFeedbackPrivacyOpen;
+  const importToastActive = Boolean(importFeedback?.visible);
 
   function openFeedback() {
     if (feedbackPrivacyAccepted) {
@@ -649,7 +650,7 @@ export default function App() {
   const hasConvertibleFiles = files.some(hasAvailableTargets);
 
   return (
-    <main className={`app-shell ${updateReminderActive ? "has-update-reminder" : ""} ${feedbackLauncherActive ? "has-feedback-launcher" : ""}`}>
+    <main className={`app-shell ${updateReminderActive ? "has-update-reminder" : ""} ${feedbackLauncherActive ? "has-feedback-launcher" : ""} ${importToastActive ? "has-import-toast" : ""}`}>
       <header className="topbar">
         <div className="brand">
           <div className="brand-mark" aria-hidden="true">

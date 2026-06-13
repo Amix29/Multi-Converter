@@ -99,6 +99,7 @@ summary:focus-visible {
 
 .app-shell {
   --floating-toast-offset: 24px;
+  --page-notice-offset: var(--floating-toast-offset);
   display: grid;
   grid-template-rows: 72px minmax(0, 1fr);
   width: min(1220px, 100%);
@@ -118,6 +119,10 @@ summary:focus-visible {
 
 .app-shell.has-update-reminder.has-feedback-launcher {
   --floating-toast-offset: 250px;
+}
+
+.app-shell.has-import-toast {
+  --page-notice-offset: calc(var(--floating-toast-offset) + 86px);
 }
 
 .topbar {
@@ -2600,7 +2605,7 @@ button:disabled {
 .page-notice {
   position: fixed;
   right: 24px;
-  bottom: var(--floating-toast-offset);
+  bottom: var(--page-notice-offset);
   z-index: 30;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;

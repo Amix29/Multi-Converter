@@ -12,6 +12,7 @@ const css = fs.readFileSync(path.join(root, "src", "styles.css"), "utf8");
 assert.match(app, /<div className="floating-corner" data-testid="floating-corner">/, "floating-corner wrapper is missing");
 assert.match(app, /updateReminderActive\s*\?\s*"has-update-reminder"\s*:\s*""/, "app shell must expose update reminder state for layout collision avoidance");
 assert.match(app, /feedbackLauncherActive\s*\?\s*"has-feedback-launcher"\s*:\s*""/, "app shell must expose feedback launcher state for layout collision avoidance");
+assert.match(app, /importToastActive\s*\?\s*"has-import-toast"\s*:\s*""/, "app shell must expose import toast state for notice collision avoidance");
 assert.match(app, /mockWelcomeSeen"\)\s*!==\s*"1"/, "dev QA hook for skipping the welcome dialog is missing");
 assert.match(api, /mockWelcomeSeen"\)\s*!==\s*"1"/, "preview API must honor the welcome-skip QA hook");
 assert.match(updaterHook, /mockUpdate"\)\s*!==\s*"1"/, "update reminder QA hook is missing");
@@ -32,9 +33,11 @@ assert.match(cssRule(".floating-corner > *"), /transform-origin:\s*right bottom;
 assert.match(css, /--ease-ui:\s*cubic-bezier\(0\.2,\s*0\.8,\s*0\.2,\s*1\);/, "shared UI easing token is missing");
 assert.match(cssRule("button"), /touch-action:\s*manipulation;/, "buttons should use manipulation touch action");
 assert.match(cssRule(".app-shell"), /--floating-toast-offset:\s*24px;/, "app shell must define the default floating toast offset");
+assert.match(cssRule(".app-shell"), /--page-notice-offset:\s*var\(--floating-toast-offset\);/, "page notices must default to the floating toast offset");
 assert.match(cssRule(".app-shell.has-feedback-launcher"), /--floating-toast-offset:\s*88px;/, "feedback launcher state must reserve vertical toast space");
 assert.match(cssRule(".app-shell.has-update-reminder"), /--floating-toast-offset:\s*190px;/, "update reminder state must reserve vertical toast space");
 assert.match(cssRule(".app-shell.has-update-reminder.has-feedback-launcher"), /--floating-toast-offset:\s*250px;/, "combined floating controls must reserve enough toast space");
+assert.match(cssRule(".app-shell.has-import-toast"), /--page-notice-offset:\s*calc\(var\(--floating-toast-offset\) \+ 86px\);/, "page notices must move above import toast when both are visible");
 
 const updateReminder = cssRule(".update-reminder");
 const feedbackLauncher = cssRule(".feedback-launcher");
@@ -44,7 +47,7 @@ assert.doesNotMatch(updateReminder, /position:\s*fixed;/, "update-reminder must 
 assert.doesNotMatch(feedbackLauncher, /position:\s*fixed;/, "feedback-launcher must not be fixed independently");
 assert.match(importToast, /bottom:\s*var\(--floating-toast-offset\);/, "import toast must avoid the floating feedback/update stack");
 assert.match(importToast, /transition:\s*bottom 180ms var\(--ease-ui\);/, "import toast should move smoothly when floating controls appear");
-assert.match(pageNotice, /bottom:\s*var\(--floating-toast-offset\);/, "page notices must avoid the floating feedback/update stack");
+assert.match(pageNotice, /bottom:\s*var\(--page-notice-offset\);/, "page notices must avoid the floating feedback/update/import stack");
 assert.match(pageNotice, /transition:\s*bottom 180ms var\(--ease-ui\);/, "page notices should move smoothly when floating controls appear");
 assert.match(floatingCorner, /max-height:\s*calc\(100vh - 44px\);/, "floating corner must stay inside short viewports");
 assert.match(floatingCorner, /overflow:\s*auto;/, "floating corner must scroll instead of covering the app in short viewports");
