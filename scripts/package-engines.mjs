@@ -496,8 +496,13 @@ function normalizeSafeSymlinkTarget(source, linkTarget) {
   if (!path.isAbsolute(linkTarget)) return linkTarget;
 
   const normalizedAbsoluteTarget = linkTarget.replaceAll("\\", "/");
-  const isFrameworkLink = source.split(path.sep).some((part) => part.endsWith(".framework"));
-  if (isFrameworkLink) {
+  const frameworkName = source.split(path.sep).find((part) => part.endsWith(".framework"));
+  if (frameworkName) {
+    const frameworkMarker = `/${frameworkName}/`;
+    const frameworkIndex = normalizedAbsoluteTarget.indexOf(frameworkMarker);
+    if (frameworkIndex >= 0) {
+      return normalizedAbsoluteTarget.slice(frameworkIndex + frameworkMarker.length);
+    }
     return normalizedAbsoluteTarget.replace(/^\/+/, "");
   }
   return null;
