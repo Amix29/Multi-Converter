@@ -115,7 +115,16 @@ async function copyTreeIfExists(source, target) {
 async function copyTreeDereference(source, target) {
   const stat = await fs.lstat(source);
   if (stat.isSymbolicLink()) {
+    const linkValue = await fs.readlink(source);
     const real = await fs.realpath(source);
+    if (!path.isAbsolute(linkValue) || isInside(vipsPrefix, real)) {
+      const targetLink = path.isAbsolute(linkValue)
+        ? path.relative(path.dirname(target), path.join(runtimeDir, path.relative(vipsPrefix, real)))
+        : linkValue;
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.symlink(targetLink || path.basename(real), target);
+      return;
+    }
     const realStat = await fs.stat(real);
     if (realStat.isDirectory()) {
       await copyTreeDereference(real, target);
