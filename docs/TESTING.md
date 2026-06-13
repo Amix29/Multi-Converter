@@ -222,6 +222,8 @@ npm run status:v1.0.5 -- --require-ready
 
 That gate intentionally fails until the two-architecture macOS conversion matrix, Intel DMG verification, the clean-Mac smoke-test receipt and final Codex Security scan or accepted replacement evidence are recorded, and the README macOS row has been updated from "In development" to the final public DMG. The README must also include a `## macOS Installation` section that names the universal DMG, Apple Silicon, Intel, the unsigned/not-notarized status, the `Open Anyway` path and the disabled macOS updater limitation. For macOS runs, the shared release-note validator also checks the GitHub release body for the required macOS DMG name, unsigned/not-notarized wording, `Open Anyway` instructions, disabled macOS updater note, Apple Silicon + Intel DMG verification wording, and `macOS Conversion Matrix` evidence before any full macOS conversion claim. If the preflight fails, the macOS DMG verification job and the publishing job do not run.
 
+Final security evidence must be structured in `docs/V1_0_5_VALIDATION.md`, not only described in prose. `npm run status:v1.0.5 -- --require-ready` requires the `## Security And Confidentiality Evidence` section to record the Codex Security result, security date, reviewer, scope, confidential-information exposure result and final outcome.
+
 The minimum manual DMG smoke test is:
 
 - mount the final downloaded DMG;

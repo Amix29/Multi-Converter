@@ -59,7 +59,8 @@ const cleanMacSmokeEvidence = cleanMacSmokeEvidenceFromDocs();
 const hasManualCleanMacEvidence = cleanMacSmokeEvidence.complete;
 const hasMacosPublicReleaseEvidence = hasMacosAutomatedReleaseEvidence && hasManualCleanMacEvidence;
 const hasSecurityCheckEvidence = securityCheckEvidenceFromDocs();
-const hasCodexSecurityScanEvidence = /Exhaustive Codex Security subagent scan:\s*(?:success|accepted)/i.test(securityEvidenceSection);
+const codexSecurityEvidence = codexSecurityEvidenceFromDocs();
+const hasCodexSecurityScanEvidence = codexSecurityEvidence.complete;
 const evidenceBlockers = macosEvidenceBlockers();
 
 const checks = [
@@ -106,6 +107,7 @@ const status = {
     missingMacosSidecars,
     macosAutomationEvidence,
     cleanMacSmokeEvidence,
+    codexSecurityEvidence,
   },
 };
 
@@ -171,7 +173,11 @@ function macosEvidenceBlockers() {
     }
   }
   if (hasSecurityCheckEvidence && !hasCodexSecurityScanEvidence) {
-    blockers.push("Exhaustive Codex Security subagent scan is still pending explicit maintainer approval or accepted replacement evidence.");
+    if (/Exhaustive Codex Security subagent scan:\s*(?:success|accepted)/i.test(securityEvidenceSection) && codexSecurityEvidence.missing.length > 0) {
+      blockers.push(`Codex Security evidence is incomplete: ${codexSecurityEvidence.missing.join(", ")}.`);
+    } else {
+      blockers.push("Exhaustive Codex Security subagent scan is still pending explicit maintainer approval or accepted replacement evidence.");
+    }
   }
   return blockers;
 }
@@ -195,6 +201,22 @@ function securityCheckEvidenceFromDocs() {
     /`npm audit --audit-level=moderate`: passed on June 13, 2026 with 0 reported npm vulnerabilities\./.test(validationEvidence) &&
     /Extra tracked-file confidentiality search: passed on June 13, 2026\./.test(validationEvidence)
   );
+}
+
+function codexSecurityEvidenceFromDocs() {
+  const required = [
+    ["Exhaustive Codex Security subagent scan: success or accepted", /Exhaustive Codex Security subagent scan:\s*(?:success|accepted)/i],
+    ["Security date recorded", /^-\s*Security date:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Security reviewer recorded", /^-\s*Security reviewer:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Security scope recorded", /^-\s*Security scope:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Confidential information exposure recorded", /^-\s*Confidential information exposure:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Security outcome recorded", /^-\s*Security outcome:[ \t]+(?!pending\s*$).+\S\s*$/im],
+  ];
+  const missing = required.filter(([, pattern]) => !pattern.test(securityEvidenceSection)).map(([name]) => name);
+  return {
+    complete: missing.length === 0,
+    missing,
+  };
 }
 
 function cleanMacSmokeEvidenceFromDocs() {

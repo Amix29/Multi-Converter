@@ -66,6 +66,17 @@ try {
   assert.equal(untrustedSecurityStatus.status.releaseReady, false, "Codex Security evidence outside the security section must not unlock readiness");
   assert.match(untrustedSecurityStatus.output, /Codex Security/, "untrusted security evidence must keep the security blocker");
 
+  const incompleteSecurityStatus = runStatus(
+    "incomplete-security.md",
+    completedReceipt(currentEvidence).replace(
+      "The exhaustive Codex Security subagent scan is still pending explicit maintainer approval for subagent use. Do not mark the full v1.0.5 goal complete until that scan, or an approved equivalent, is finished and any findings are resolved or explicitly accepted.",
+      "- Exhaustive Codex Security subagent scan: accepted",
+    ),
+    { requireReady: true, expectedStatus: 1, readme: readyReadme(currentReadme) },
+  );
+  assert.equal(incompleteSecurityStatus.status.releaseReady, false, "a bare accepted Codex Security line must not unlock readiness");
+  assert.match(incompleteSecurityStatus.output, /Security date recorded/, "incomplete security evidence must report missing structured fields");
+
   const appleSiliconOnlyStatus = runStatus("apple-silicon-only.md", completedReleaseEvidence(currentEvidence).replace(/^- macOS Conversion Matrix \(Intel\):.*\n/m, ""), {
     requireReady: true,
     expectedStatus: 1,
@@ -164,7 +175,14 @@ function completedReceipt(evidence) {
 function completedReleaseEvidence(evidence) {
   return completedReceipt(finalDmgVerificationEvidence(finalMacosConversionEvidence(evidence))).replace(
     "The exhaustive Codex Security subagent scan is still pending explicit maintainer approval for subagent use. Do not mark the full v1.0.5 goal complete until that scan, or an approved equivalent, is finished and any findings are resolved or explicitly accepted.",
-    "- Exhaustive Codex Security subagent scan: accepted\n- Security reviewer: maintainer-approved fixture",
+    [
+      "- Exhaustive Codex Security subagent scan: accepted",
+      "- Security date: 2026-06-13",
+      "- Security reviewer: maintainer-approved fixture",
+      "- Security scope: tracked repository files, release workflows, release notes, generated asset rules and confidentiality scans",
+      "- Confidential information exposure: none unresolved in fixture",
+      "- Security outcome: findings resolved or explicitly accepted in fixture",
+    ].join("\n"),
   );
 }
 

@@ -50,4 +50,11 @@ Record this receipt only after testing the final downloaded DMG on a clean macOS
 - Extra tracked-file confidentiality search: passed on June 13, 2026. No private test repository reference, local maintainer path, signing-key value, Apple signing credential file name, npm token assignment or private-key block was found in tracked project files outside ignored/generated folders.
 - Local Git configuration was checked and the obsolete private test remote was removed from this machine. This was not a tracked repository change.
 
+- Exhaustive Codex Security subagent scan: pending
+- Security date: pending
+- Security reviewer: pending
+- Security scope: pending
+- Confidential information exposure: pending
+- Security outcome: pending
+
 The exhaustive Codex Security subagent scan is still pending explicit maintainer approval for subagent use. Do not mark the full v1.0.5 goal complete until that scan, or an approved equivalent, is finished and any findings are resolved or explicitly accepted.
