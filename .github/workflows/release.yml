@@ -20,9 +20,40 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  release-preflight:
+    name: Release preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      include_macos: ${{ steps.mode.outputs.include_macos }}
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - id: mode
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.include_macos }}" == "true" ]]; then
+            echo "include_macos=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "include_macos=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Require V1.0.5 macOS release readiness
+        if: ${{ steps.mode.outputs.include_macos == 'true' }}
+        run: npm run status:v1.0.5 -- --require-ready
+
   macos-dmg-verify:
     name: macOS DMG verification
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.include_macos }}
+    needs: release-preflight
+    if: ${{ needs.release-preflight.outputs.include_macos == 'true' }}
     runs-on: macos-latest
     timeout-minutes: 30
     env:
@@ -63,8 +94,10 @@ jobs:
         run: npm run verify:macos-dmg -- --version "${{ steps.version.outputs.version }}" --dmg "$MACOS_DMG_PATH"
 
   windows:
-    needs: macos-dmg-verify
-    if: ${{ always() && (needs.macos-dmg-verify.result == 'success' || needs.macos-dmg-verify.result == 'skipped') }}
+    needs:
+      - release-preflight
+      - macos-dmg-verify
+    if: ${{ always() && needs.release-preflight.result == 'success' && (needs.macos-dmg-verify.result == 'success' || needs.macos-dmg-verify.result == 'skipped') }}
     runs-on: windows-latest
     timeout-minutes: 90
     env:
@@ -178,10 +211,6 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_NOTES_BODY<<$delimiter"
           Add-Content -Path $env:GITHUB_ENV -Value $body
           Add-Content -Path $env:GITHUB_ENV -Value $delimiter
-
-      - name: Require V1.0.5 macOS release readiness
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.include_macos }}
-        run: npm run status:v1.0.5 -- --require-ready
 
       - run: npm run prepare:bundled-engines
       - run: npm run check

@@ -15,6 +15,8 @@ const macosLibvipsRuntimeScript = fs.readFileSync(path.join(root, "scripts", "bu
 const macosLibvipsReleaseInputsScript = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-macos-release-inputs.mjs"), "utf8");
 const windowsCiGateScript = fs.readFileSync(path.join(root, "scripts", "test-windows-ci-gate.mjs"), "utf8");
 const windowsBuildJob = workflowJob(buildWorkflow, "quality-gate");
+const releasePreflightJob = workflowJob(releaseWorkflow, "release-preflight");
+const releaseWindowsJob = workflowJob(releaseWorkflow, "windows");
 const macosBuildJob = workflowJob(buildWorkflow, "macos-code-check");
 const macosHostTestsJob = workflowJob(buildWorkflow, "macos-host-tests");
 const macosEngineStagingJob = workflowJob(macosEngineStagingWorkflow, "stage");
@@ -56,11 +58,19 @@ assert.match(macosHostTestsJob, /npm run clippy:pdfium-wrapper/, "macOS host tes
 assert.doesNotMatch(macosHostTestsJob, /npm run test:macos:host/, "macOS host unit tests must not claim full staged-sidecar validation");
 
 assert.match(releaseWorkflow, /include_macos:/, "release workflow must expose the manual include_macos switch");
+assert.match(releaseWorkflow, /release-preflight:/, "release workflow must run a cheap preflight before release publication");
+assert.match(releasePreflightJob, /runs-on:\s+ubuntu-latest/, "release preflight must avoid macOS runners");
+assert.match(releasePreflightJob, /echo "include_macos=true" >> "\$GITHUB_OUTPUT"/, "release preflight must expose whether macOS publication was requested");
+assert.match(releasePreflightJob, /Require V1\.0\.5 macOS release readiness/, "release preflight must require V1.0.5 readiness before macOS DMG verification");
+assert.match(releasePreflightJob, /npm run status:v1\.0\.5 -- --require-ready/, "release preflight must fail before macOS runner allocation while V1.0.5 is not ready");
 assert.match(releaseWorkflow, /macos-dmg-verify:/, "release workflow must include a macOS DMG verification job");
+assert.match(releaseWorkflow, /macos-dmg-verify:[\s\S]*?needs:\s+release-preflight/, "macOS DMG verification must wait for the cheap preflight");
+assert.match(releaseWorkflow, /needs\.release-preflight\.outputs\.include_macos == 'true'/, "macOS DMG verification must only run when preflight confirms macOS publication");
 assert.match(releaseWorkflow, /runs-on:\s+macos-latest/, "macOS DMG verification must run on a macOS runner");
 assert.match(releaseWorkflow, /npm run verify:macos-dmg -- --version "\$\{\{ steps\.version\.outputs\.version \}\}" --dmg "\$MACOS_DMG_PATH"/, "release workflow must verify the downloaded DMG on macOS");
-assert.match(releaseWorkflow, /needs:\s+macos-dmg-verify/, "Windows release publication must wait for macOS DMG verification when enabled");
-assert.match(releaseWorkflow, /needs\.macos-dmg-verify\.result == 'success' \|\| needs\.macos-dmg-verify\.result == 'skipped'/, "Windows release job must not run after a failed macOS DMG verification");
+assert.match(releaseWindowsJob, /needs:\s*\n\s+- release-preflight\s*\n\s+- macos-dmg-verify/, "Windows release publication must wait for preflight and macOS DMG verification");
+assert.match(releaseWindowsJob, /needs\.release-preflight\.result == 'success'/, "Windows release job must not run after failed preflight");
+assert.match(releaseWindowsJob, /needs\.macos-dmg-verify\.result == 'success' \|\| needs\.macos-dmg-verify\.result == 'skipped'/, "Windows release job must not run after a failed macOS DMG verification");
 assert.match(releaseWorkflow, /id:\s+cargo-audit-cache/, "release workflow must cache the cargo-audit binary");
 assert.match(releaseWorkflow, /cargo install cargo-audit --locked\s*\n\s+if:\s+steps\.cargo-audit-cache\.outputs\.cache-hit != 'true'/, "release workflow must skip cargo-audit installation on cache hits");
 assert.match(releaseWorkflow, /INCLUDE_MACOS:/, "release workflow must pass the include_macos switch to release steps");
@@ -72,8 +82,6 @@ assert.match(releaseWorkflow, /not\\s\+Apple-signed/, "release workflow must val
 assert.match(releaseWorkflow, /macOS\\s\+automatic\\s\+updates\\s\+are\\s\+not\\s\+enabled/, "release workflow must validate macOS updater limitation wording");
 assert.match(releaseWorkflow, /macOS\\s\+DMG\\s\+verification/, "release workflow must validate macOS DMG verification wording");
 assert.match(releaseWorkflow, /this workflow run was not started with include_macos=true/, "release workflow must reject accidental macOS notes in Windows-only runs");
-assert.match(releaseWorkflow, /Require V1\.0\.5 macOS release readiness/, "release workflow must require the V1.0.5 readiness gate before macOS publication");
-assert.match(releaseWorkflow, /npm run status:v1\.0\.5 -- --require-ready/, "release workflow must fail macOS publication while V1.0.5 status is not release-ready");
 
 assert.match(macosEngineStagingWorkflow, /name:\s+macOS Engine Staging/, "macOS engine staging workflow must be clearly named");
 assert.match(macosEngineStagingWorkflow, /workflow_dispatch:/, "macOS engine staging workflow must be manually runnable");
