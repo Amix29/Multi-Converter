@@ -106,6 +106,8 @@ assert.match(macosFfmpegPrepare, /ffprobe-universal-apple-darwin/, "macOS FFmpeg
 assert.match(macosFfmpegPrepare, /smokeTestVersion\(.*"ffmpeg"/s, "macOS FFmpeg preparation must smoke-test FFmpeg");
 assert.match(macosFfmpegPrepare, /smokeTestVersion\(.*"ffprobe"/s, "macOS FFmpeg preparation must smoke-test ffprobe");
 assert.match(macosPdfiumPrepare, /process\.platform !== "darwin"/, "macOS PDFium preparation must refuse non-macOS hosts");
+assert.match(macosPdfiumPrepare, /function githubApiHeaders\(\)/, "macOS PDFium preparation must use authenticated GitHub API headers when a token is available");
+assert.match(macosPdfiumPrepare, /process\.env\.GH_TOKEN/, "macOS PDFium preparation must read the GitHub Actions token from GH_TOKEN");
 assert.match(macosPdfiumPrepare, /pdfium-mac-univ\.tgz/, "macOS PDFium preparation must use the upstream universal PDFium archive");
 assert.match(macosPdfiumPrepare, /aarch64-apple-darwin/, "macOS PDFium wrapper must build for Apple Silicon");
 assert.match(macosPdfiumPrepare, /x86_64-apple-darwin/, "macOS PDFium wrapper must build for Intel");
@@ -120,6 +122,8 @@ assert.match(macosLibreOfficePrepare, /arch:\s+"x86_64"/, "macOS LibreOffice pre
 assert.match(macosLibreOfficePrepare, /path\.join\(sourceDir,\s+input\.arch,\s+"LibreOffice\.app"\)/, "macOS LibreOffice preparation must stage app bundles under the architecture directory");
 assert.match(macosLibreOfficePrepare, /--terminate_after_init/, "macOS LibreOffice preparation must smoke-test headless startup");
 assert.match(macosPandocPrepare, /process\.platform !== "darwin"/, "macOS Pandoc preparation must refuse non-macOS hosts");
+assert.match(macosPandocPrepare, /function githubApiHeaders\(\)/, "macOS Pandoc preparation must use authenticated GitHub API headers when a token is available");
+assert.match(macosPandocPrepare, /process\.env\.GH_TOKEN/, "macOS Pandoc preparation must read the GitHub Actions token from GH_TOKEN");
 assert.match(macosPandocPrepare, /arm64-macOS\\.zip/, "macOS Pandoc preparation must use the official Apple Silicon ZIP");
 assert.match(macosPandocPrepare, /x86_64-macOS\\.zip/, "macOS Pandoc preparation must use the official Intel ZIP");
 assert.match(macosPandocPrepare, /lipo.*-create/s, "macOS Pandoc preparation must create a universal binary with lipo");

@@ -101,9 +101,18 @@ async function download(url, target) {
 }
 
 async function getJson(url) {
-  const response = await fetch(url, { headers: userAgent });
+  const response = await fetch(url, { headers: githubApiHeaders() });
   if (!response.ok) throw new Error(`Request failed (${response.status}): ${url}`);
   return response.json();
+}
+
+function githubApiHeaders() {
+  const token = process.env.GH_TOKEN?.trim() || process.env.GITHUB_TOKEN?.trim();
+  return {
+    ...userAgent,
+    Accept: "application/vnd.github+json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
 }
 
 async function extractZip(archivePath, destination) {

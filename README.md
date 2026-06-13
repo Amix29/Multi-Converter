@@ -40,6 +40,7 @@
 - [Licenses](#licenses)
 - [Legal Notice](#legal-notice)
 - [Development](#development)
+- [Contact](#contact)
 - [Contributing](#contributing)
 - [Code of Conduct](#code-of-conduct)
 - [Security](#security)
@@ -284,6 +285,12 @@ See [tools/ENGINE_PACKAGING.md](tools/ENGINE_PACKAGING.md) and [docs/THIRD_PARTY
 For the platform test split, see [docs/TESTING.md](docs/TESTING.md).
 
 For repository discoverability topics, see [docs/GITHUB_TOPICS.md](docs/GITHUB_TOPICS.md).
+
+---
+
+## Contact
+
+For general questions, feedback or partnership requests, contact [amixdigital0@gmail.com](mailto:amixdigital0@gmail.com).
 
 ---
 
