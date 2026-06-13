@@ -96,7 +96,7 @@ async function packageEngine(config, engine, options, workDir) {
   const stageDir = path.join(workDir, `${engine.engineId}-${engine.version}`);
   await fs.rm(stageDir, { recursive: true, force: true });
   await fs.mkdir(stageDir, { recursive: true });
-  await copyTreeSafe(sourceDir, stageDir);
+  await copyTreeSafe(sourceDir, stageDir, sourceDir);
 
   const licenseFiles = [];
   for (const relative of engine.licenseFiles) {
@@ -452,16 +452,31 @@ function validateEngineConfig(engine) {
   }
 }
 
-async function copyTreeSafe(sourceDir, targetDir) {
+async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir) {
+  const resolvedSourceRoot = path.resolve(sourceRoot);
   for (const entry of await fs.readdir(sourceDir, { withFileTypes: true })) {
     const relative = entry.name;
     normalizeZipPath(relative);
     const source = path.join(sourceDir, relative);
     const target = path.join(targetDir, relative);
-    if (entry.isSymbolicLink()) throw new Error(`Lien symbolique refuse: ${source}`);
-    if (entry.isDirectory()) {
+    if (entry.isSymbolicLink()) {
+      const linkTarget = await fs.readlink(source);
+      if (!linkTarget || linkTarget.includes("\0") || path.isAbsolute(linkTarget)) {
+        throw new Error(`Lien symbolique non relatif refuse: ${source}`);
+      }
+      const resolvedLinkTarget = path.resolve(path.dirname(source), linkTarget);
+      if (resolvedLinkTarget !== resolvedSourceRoot && !resolvedLinkTarget.startsWith(`${resolvedSourceRoot}${path.sep}`)) {
+        throw new Error(`Lien symbolique hors source refuse: ${source}`);
+      }
+      const linkStat = await fs.lstat(resolvedLinkTarget).catch(() => null);
+      if (!linkStat) {
+        throw new Error(`Lien symbolique casse refuse: ${source}`);
+      }
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.symlink(linkTarget, target);
+    } else if (entry.isDirectory()) {
       await fs.mkdir(target, { recursive: true });
-      await copyTreeSafe(source, target);
+      await copyTreeSafe(source, target, resolvedSourceRoot);
     } else if (entry.isFile()) {
       await fs.mkdir(path.dirname(target), { recursive: true });
       await fs.copyFile(source, target);
@@ -483,7 +498,7 @@ function canCheckExecutableBits() {
 async function createZip(sourceDir, archivePath) {
   if (process.platform !== "win32") {
     await fs.rm(archivePath, { force: true });
-    const result = spawnSync("zip", ["-qr", archivePath, "."], {
+    const result = spawnSync("zip", ["-qry", archivePath, "."], {
       cwd: sourceDir,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],

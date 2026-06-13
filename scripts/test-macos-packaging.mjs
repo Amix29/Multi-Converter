@@ -231,6 +231,11 @@ assert.match(convertersRust, /fn sidecar_test_names\(stem: &str\) -> Vec<String>
 assert.match(convertersRust, /format!\("\{stem\}-universal-apple-darwin"\)/, "conversion tests must prefer universal macOS sidecars");
 assert.match(packageScript, /platform !== "windows-x64" && engine\.binaryPaths\.includes\(relative\)/, "engine packaging must require executable bits for non-Windows binaries");
 assert.match(packageScript, /canCheckExecutableBits\(\)/, "engine packaging must gate executable-bit checks by host capability");
+assert.match(packageScript, /Lien symbolique non relatif refuse/, "engine packaging must reject absolute symbolic links");
+assert.match(packageScript, /Lien symbolique hors source refuse/, "engine packaging must reject symbolic links that escape the source tree");
+assert.match(packageScript, /Lien symbolique casse refuse/, "engine packaging must reject broken symbolic links");
+assert.match(packageScript, /fs\.symlink\(linkTarget, target\)/, "engine packaging must preserve safe internal symbolic links for macOS app bundles");
+assert.match(packageScript, /\["-qry", archivePath, "\."\]/, "engine packaging must store Unix symbolic links in generated ZIP archives");
 assert.match(packageScript, /ffmpeg-8\.1\.1-macos-universal\.zip/, "engine packaging validation must include a macOS universal fixture");
 
 const hasMacosAdvancedEngines = (enginesManifest.engines ?? []).some((engine) => engine.platform === "macos-universal" && engine.mode === "advanced");
