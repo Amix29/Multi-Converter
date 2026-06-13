@@ -37,6 +37,8 @@ const macosAutomationEvidence = macosAutomationEvidenceFromDocs();
 const hasMacosAutomatedReleaseEvidence = Object.values(macosAutomationEvidence).every(Boolean);
 const hasManualCleanMacEvidence = /Manual clean-Mac smoke testing: success/i.test(validationEvidence);
 const hasMacosPublicReleaseEvidence = hasMacosAutomatedReleaseEvidence && hasManualCleanMacEvidence;
+const hasSecurityCheckEvidence = securityCheckEvidenceFromDocs();
+const hasCodexSecurityScanEvidence = /Exhaustive Codex Security subagent scan:\s*(?:success|accepted)/i.test(validationEvidence);
 const evidenceBlockers = macosEvidenceBlockers();
 
 const checks = [
@@ -54,6 +56,7 @@ const checks = [
   check("production config does not expose broad Tauri env variables", packageJson.scripts?.check?.includes("test:production-config") && /must not expose broad TAURI_/.test(productionConfigTest)),
   check("secret leak guard is part of the local quality gate", packageJson.scripts?.check?.includes("test:secret-leaks") && /Potential secret leak detected/.test(secretLeakTest)),
   check("v1.0.5 validation evidence records macOS CI runs", hasMacosAutomatedReleaseEvidence),
+  check("v1.0.5 validation evidence records security checks", hasSecurityCheckEvidence),
   check("testing docs warn static checks do not prove macOS conversions", /They do not prove that macOS conversions work\./.test(testingDocs)),
   check("macOS checklist defines the Mac-only handoff boundary", /## Mac Handoff Readiness/.test(macosChecklist) && /macOS-only work/.test(macosChecklist)),
   check("macOS checklist requires real conversion matrix before full coverage claims", /macOS Conversion Matrix/.test(macosChecklist) && /all macOS conversions pass/.test(macosChecklist)),
@@ -72,6 +75,8 @@ const status = {
     blockerCount: evidenceBlockers.length,
     hasMacosAutomatedReleaseEvidence,
     hasManualCleanMacEvidence,
+    hasSecurityCheckEvidence,
+    hasCodexSecurityScanEvidence,
     missingMacosAdvancedEngines,
     missingMacosSidecars,
     macosAutomationEvidence,
@@ -122,6 +127,9 @@ function macosEvidenceBlockers() {
   if (hasMacosAutomatedReleaseEvidence && !hasManualCleanMacEvidence) {
     blockers.push("Manual clean-Mac Gatekeeper/install smoke testing is still required before a public macOS release claim.");
   }
+  if (hasSecurityCheckEvidence && !hasCodexSecurityScanEvidence) {
+    blockers.push("Exhaustive Codex Security subagent scan is still pending explicit maintainer approval or accepted replacement evidence.");
+  }
   return blockers;
 }
 
@@ -132,6 +140,15 @@ function macosAutomationEvidenceFromDocs() {
     conversionMatrix: /macOS Conversion Matrix:\s*run `27464257789`, success/i.test(validationEvidence),
     dmgBuild: /macOS DMG Build:\s*run `27465964283`, success/i.test(validationEvidence) && validationEvidence.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`),
   };
+}
+
+function securityCheckEvidenceFromDocs() {
+  return (
+    /`npm run test:secret-leaks`: passed on June 13, 2026\./.test(validationEvidence) &&
+    /`npm run test:production-config`: passed on June 13, 2026\./.test(validationEvidence) &&
+    /`npm audit --audit-level=moderate`: passed on June 13, 2026 with 0 reported npm vulnerabilities\./.test(validationEvidence) &&
+    /Extra tracked-file confidentiality search: passed on June 13, 2026\./.test(validationEvidence)
+  );
 }
 
 function readmeMacosStatusMatchesEvidence() {
