@@ -460,6 +460,7 @@ async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir) {
     const source = path.join(sourceDir, relative);
     const target = path.join(targetDir, relative);
     if (entry.isSymbolicLink()) {
+      const isFrameworkLink = isInsideFramework(source);
       const linkTarget = await fs.readlink(source);
       const safeLinkTarget = normalizeSafeSymlinkTarget(source, linkTarget);
       if (!safeLinkTarget) {
@@ -475,7 +476,9 @@ async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir) {
           console.warn(`Lien symbolique d'en-tete de framework ignore: ${source}`);
           continue;
         }
-        throw new Error(`Lien symbolique casse refuse: ${source}`);
+        if (!isFrameworkLink) {
+          throw new Error(`Lien symbolique casse refuse: ${source}`);
+        }
       }
       await fs.mkdir(path.dirname(target), { recursive: true });
       await fs.symlink(safeLinkTarget, target);
@@ -496,7 +499,7 @@ function normalizeSafeSymlinkTarget(source, linkTarget) {
   if (!path.isAbsolute(linkTarget)) return linkTarget;
 
   const normalizedAbsoluteTarget = linkTarget.replaceAll("\\", "/");
-  const frameworkName = source.split(path.sep).find((part) => part.endsWith(".framework"));
+  const frameworkName = frameworkNameFor(source);
   if (frameworkName) {
     const frameworkMarker = `/${frameworkName}/`;
     const frameworkIndex = normalizedAbsoluteTarget.indexOf(frameworkMarker);
@@ -511,7 +514,15 @@ function normalizeSafeSymlinkTarget(source, linkTarget) {
 function shouldSkipBrokenFrameworkHeaderSymlink(source) {
   const name = path.basename(source);
   return (name === "Headers" || name === "PrivateHeaders")
-    && source.split(path.sep).some((part) => part.endsWith(".framework"));
+    && isInsideFramework(source);
+}
+
+function isInsideFramework(source) {
+  return Boolean(frameworkNameFor(source));
+}
+
+function frameworkNameFor(source) {
+  return source.split(path.sep).find((part) => part.endsWith(".framework"));
 }
 
 function isExecutableRequired(config, engine, relative) {

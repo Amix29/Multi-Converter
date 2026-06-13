@@ -237,6 +237,7 @@ assert.match(packageScript, /Lien symbolique casse refuse/, "engine packaging mu
 assert.match(packageScript, /frameworkMarker[\s\S]*frameworkIndex[\s\S]*normalizedAbsoluteTarget\.slice/, "engine packaging must normalize macOS framework-rooted symbolic links");
 assert.match(packageScript, /fs\.symlink\(safeLinkTarget, target\)/, "engine packaging must preserve safe internal symbolic links for macOS app bundles");
 assert.match(packageScript, /shouldSkipBrokenFrameworkHeaderSymlink/, "engine packaging may skip broken framework header symlinks without accepting broken runtime links");
+assert.match(packageScript, /if \(!isFrameworkLink\)[\s\S]*Lien symbolique casse refuse/, "engine packaging must still reject broken non-framework symbolic links");
 assert.match(packageScript, /\["-qry", archivePath, "\."\]/, "engine packaging must store Unix symbolic links in generated ZIP archives");
 assert.match(packageScript, /ffmpeg-8\.1\.1-macos-universal\.zip/, "engine packaging validation must include a macOS universal fixture");
 
