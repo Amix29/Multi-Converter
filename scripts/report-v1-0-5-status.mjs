@@ -21,6 +21,7 @@ const enginesManifest = readJson("src-tauri/engines-manifest.json");
 const readme = readText("README.md");
 const testingDocs = readText("docs/TESTING.md");
 const macosChecklist = readText("docs/RELEASE_CHECKLIST_MACOS.md");
+const validationEvidence = readOptionalText("docs/V1_0_5_VALIDATION.md");
 const releaseValidator = readText("scripts/validate-release-assets.mjs");
 const windowsGate = readText("scripts/test-windows-ci-gate.mjs");
 const uiLayoutTest = readText("scripts/test-ui-layout.mjs");
@@ -32,8 +33,11 @@ const macosAdvancedEngines = (enginesManifest.engines ?? []).filter((engine) => 
 const macosAdvancedEngineIds = new Set(macosAdvancedEngines.map((engine) => engine.id));
 const missingMacosAdvancedEngines = requiredAdvancedEngines.filter((id) => !macosAdvancedEngineIds.has(id));
 const missingMacosSidecars = requiredMacosSidecars.filter((name) => !fs.existsSync(path.join(root, "src-tauri", "binaries", name)));
+const macosAutomationEvidence = macosAutomationEvidenceFromDocs();
+const hasMacosAutomatedReleaseEvidence = Object.values(macosAutomationEvidence).every(Boolean);
+const hasManualCleanMacEvidence = /Manual clean-Mac smoke testing: success/i.test(validationEvidence);
+const hasMacosPublicReleaseEvidence = hasMacosAutomatedReleaseEvidence && hasManualCleanMacEvidence;
 const evidenceBlockers = macosEvidenceBlockers();
-const hasMacosReleaseEvidence = evidenceBlockers.length === 0;
 
 const checks = [
   check("version is 1.0.5", packageJson.version === "1.0.5"),
@@ -49,6 +53,7 @@ const checks = [
   check("release validator guards macOS conversion coverage claims", /claimsFullMacosConversionCoverage/.test(releaseValidator)),
   check("production config does not expose broad Tauri env variables", packageJson.scripts?.check?.includes("test:production-config") && /must not expose broad TAURI_/.test(productionConfigTest)),
   check("secret leak guard is part of the local quality gate", packageJson.scripts?.check?.includes("test:secret-leaks") && /Potential secret leak detected/.test(secretLeakTest)),
+  check("v1.0.5 validation evidence records macOS CI runs", hasMacosAutomatedReleaseEvidence),
   check("testing docs warn static checks do not prove macOS conversions", /They do not prove that macOS conversions work\./.test(testingDocs)),
   check("macOS checklist defines the Mac-only handoff boundary", /## Mac Handoff Readiness/.test(macosChecklist) && /macOS-only work/.test(macosChecklist)),
   check("macOS checklist requires real conversion matrix before full coverage claims", /macOS Conversion Matrix/.test(macosChecklist) && /all macOS conversions pass/.test(macosChecklist)),
@@ -65,9 +70,11 @@ const status = {
     passedChecks: checks.length - failedChecks.length,
     totalChecks: checks.length,
     blockerCount: evidenceBlockers.length,
-    hasMacosReleaseEvidence,
+    hasMacosAutomatedReleaseEvidence,
+    hasManualCleanMacEvidence,
     missingMacosAdvancedEngines,
     missingMacosSidecars,
+    macosAutomationEvidence,
   },
 };
 
@@ -92,23 +99,43 @@ function check(name, passed) {
 
 function macosEvidenceBlockers() {
   const blockers = [];
-  if (process.platform !== "darwin") {
-    blockers.push("macOS universal DMG build and verification still require a real macOS host.");
+  if (!hasMacosAutomatedReleaseEvidence) {
+    if (process.platform !== "darwin") {
+      blockers.push("macOS universal DMG build and verification still require a real macOS host or successful macOS GitHub Actions evidence.");
+    }
+    if (!macosAutomationEvidence.engineStaging && missingMacosSidecars.length > 0) {
+      blockers.push(`Missing real macOS FFmpeg/ffprobe sidecars or staging evidence: ${missingMacosSidecars.join(", ")}.`);
+    }
+    if (!macosAutomationEvidence.engineStaging && missingMacosAdvancedEngines.length > 0) {
+      blockers.push(`Missing reviewed macos-universal advanced engines or staging evidence: ${missingMacosAdvancedEngines.join(", ")}.`);
+    }
+    if (!macosAutomationEvidence.conversionMatrix) {
+      blockers.push("macOS Conversion Matrix success evidence is missing.");
+    }
+    if (!macosAutomationEvidence.dmgBuild) {
+      blockers.push("macOS universal DMG build and verification success evidence is missing.");
+    }
   }
-  if (missingMacosSidecars.length > 0) {
-    blockers.push(`Missing real macOS FFmpeg/ffprobe sidecars: ${missingMacosSidecars.join(", ")}.`);
-  }
-  if (missingMacosAdvancedEngines.length > 0) {
-    blockers.push(`Missing reviewed macos-universal advanced engines in src-tauri/engines-manifest.json: ${missingMacosAdvancedEngines.join(", ")}.`);
-  }
-  if (missingMacosAdvancedEngines.length === 0 && !macosAdvancedEngines.every((engine) => /^[a-f0-9]{64}$/i.test(String(engine.sha256 ?? "")))) {
+  if (!macosAutomationEvidence.engineStaging && missingMacosAdvancedEngines.length === 0 && !macosAdvancedEngines.every((engine) => /^[a-f0-9]{64}$/i.test(String(engine.sha256 ?? "")))) {
     blockers.push("One or more macos-universal advanced engines has no pinned SHA-256 checksum.");
+  }
+  if (hasMacosAutomatedReleaseEvidence && !hasManualCleanMacEvidence) {
+    blockers.push("Manual clean-Mac Gatekeeper/install smoke testing is still required before a public macOS release claim.");
   }
   return blockers;
 }
 
+function macosAutomationEvidenceFromDocs() {
+  return {
+    libvipsRuntime: /macOS libvips Runtime:\s*run `27459737669`, success/i.test(validationEvidence),
+    engineStaging: /macOS Engine Staging:\s*run `27463128979`, success/i.test(validationEvidence),
+    conversionMatrix: /macOS Conversion Matrix:\s*run `27464257789`, success/i.test(validationEvidence),
+    dmgBuild: /macOS DMG Build:\s*run `27465964283`, success/i.test(validationEvidence) && validationEvidence.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`),
+  };
+}
+
 function readmeMacosStatusMatchesEvidence() {
-  if (!hasMacosReleaseEvidence) {
+  if (!hasMacosPublicReleaseEvidence) {
     return /\|\s*.*macOS\s*\|\s*.*In development for v1\.0\.5\s*\|/.test(readme);
   }
   return (
@@ -119,6 +146,11 @@ function readmeMacosStatusMatchesEvidence() {
 
 function readText(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), "utf8");
+}
+
+function readOptionalText(relativePath) {
+  const fullPath = path.join(root, relativePath);
+  return fs.existsSync(fullPath) ? fs.readFileSync(fullPath, "utf8") : "";
 }
 
 function readJson(relativePath) {

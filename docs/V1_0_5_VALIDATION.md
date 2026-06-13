@@ -1,0 +1,15 @@
+# Multi-Converter v1.0.5 Validation Evidence
+
+This file records validation evidence for the in-progress v1.0.5 release. It is not a public release approval by itself.
+
+## macOS Automated Evidence
+
+- macOS libvips Runtime: run `27459737669`, success. Produced `libvips-macos-aarch64` and `libvips-macos-x86_64` artifacts.
+- macOS Engine Staging: run `27463128979`, success. Produced the `macos-engine-assets` artifact with FFmpeg, ffprobe, PDFium, LibreOffice, Pandoc and libvips staged for `macos-universal`.
+- macOS Conversion Matrix: run `27464257789`, success. Passed the strict macOS conversion matrix for the conversions exposed on macOS with the staged engine set. AMR output is intentionally hidden on macOS because this FFmpeg build does not include the OpenCORE AMR encoder.
+- macOS DMG Build: run `27465964283`, success. Built, mounted and verified `Multi-Converter_1.0.5_macos-universal.dmg` on `macos-latest`, then uploaded it as a workflow artifact.
+
+## Remaining Release Evidence
+
+- Manual clean-Mac smoke testing is still required before a public macOS release claim: mount DMG, drag to Applications, approve the unsigned/not-notarized first launch through `System Settings > Privacy & Security > Open Anyway`, confirm second launch, file selection, one FFmpeg media conversion, and one document/PDF/image path when those engines are included.
+- The public release body still needs to state that the macOS build is not Apple-signed and not notarized, that macOS automatic updates are not enabled for the first DMG workflow, and how to open the app through `Open Anyway`.

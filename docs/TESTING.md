@@ -200,7 +200,9 @@ For a local readiness snapshot that does not overclaim macOS support, run:
 npm run status:v1.0.5
 ```
 
-The command writes `tmp/v1.0.5-status.json`. In the current preparation state, `releaseReady` should remain false because the real macOS DMG and strict macOS conversion matrix have not been verified yet. When those final proofs exist, the same audit can report `releaseReady: true` instead of blocking that state.
+The command writes `tmp/v1.0.5-status.json`. In the current preparation state, `releaseReady` should remain false because the macOS automation evidence has passed, but the final clean-Mac Gatekeeper/install smoke test has not been recorded yet. When that final proof exists, the same audit can report `releaseReady: true` instead of blocking that state.
+
+Current v1.0.5 macOS automation evidence is recorded in `docs/V1_0_5_VALIDATION.md`. It covers macOS engine staging, the macOS Conversion Matrix, and the verified universal DMG artifact. Do not convert that evidence into a public macOS release claim until the manual clean-Mac smoke test is complete.
 
 The manual GitHub `macOS DMG Build` workflow can build and verify the universal DMG on `macos-latest`. Use it for test-repository validation before copying the verified artifact into a public release.
 
