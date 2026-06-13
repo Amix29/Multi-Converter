@@ -1,6 +1,14 @@
 name: macOS Conversion Matrix
 
 on:
+  push:
+    branches:
+      - codex/test
+    paths:
+      - ".github/workflows/macos-conversions.yml"
+      - "scripts/prepare-macos-engine-release-assets.mjs"
+      - "scripts/test-macos-conversions.mjs"
+      - "scripts/test-github-workflows.mjs"
   workflow_dispatch:
     inputs:
       sidecar_release_tag:
@@ -30,6 +38,7 @@ concurrency:
 jobs:
   macos-conversions:
     name: Real macOS conversion matrix
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.MC_ENABLE_MACOS_CONVERSIONS == '1' }}
     runs-on: macos-latest
     timeout-minutes: 180
     env:
@@ -38,6 +47,9 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SIDECAR_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_release_tag || '' }}
+      ENGINE_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_release_tag || '' }}
+      ENGINE_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_MACOS_ENGINE_STAGING_RUN_ID || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -79,19 +91,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -n "${{ inputs.engine_staging_run_id }}" && ( -n "${{ inputs.sidecar_release_tag }}" || -n "${{ inputs.engine_release_tag }}" ) ]]; then
+          if [[ -n "$ENGINE_STAGING_RUN_ID" && ( -n "$SIDECAR_RELEASE_TAG" || -n "$ENGINE_RELEASE_TAG" ) ]]; then
             echo "Use either engine_staging_run_id or release tags, not both." >&2
             exit 1
           fi
 
       - name: Download staged macOS assets from a workflow artifact
-        if: ${{ inputs.engine_staging_run_id != '' }}
+        if: ${{ env.ENGINE_STAGING_RUN_ID != '' }}
         shell: bash
         run: |
           set -euo pipefail
           asset_dir="$RUNNER_TEMP/mc-macos-engine-assets"
           mkdir -p "$asset_dir" src-tauri/binaries
-          gh run download "${{ inputs.engine_staging_run_id }}" --repo "$GITHUB_REPOSITORY" --name macos-engine-assets --dir "$asset_dir"
+          gh run download "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --name macos-engine-assets --dir "$asset_dir"
           for asset in \
             ffmpeg-aarch64-apple-darwin \
             ffmpeg-x86_64-apple-darwin \
@@ -105,7 +117,7 @@ jobs:
           node scripts/prepare-macos-engine-release-assets.mjs --from-local-assets --asset-dir "$asset_dir"
 
       - name: Download staged macOS sidecars from a release
-        if: ${{ inputs.sidecar_release_tag != '' }}
+        if: ${{ env.SIDECAR_RELEASE_TAG != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -116,13 +128,13 @@ jobs:
             ffprobe-aarch64-apple-darwin \
             ffprobe-x86_64-apple-darwin
           do
-            gh release download "${{ inputs.sidecar_release_tag }}" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries
+            gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries
           done
           chmod +x src-tauri/binaries/*-apple-darwin
 
       - name: Download staged macOS engine archives from a release
-        if: ${{ inputs.engine_release_tag != '' }}
-        run: node scripts/prepare-macos-engine-release-assets.mjs --tag "${{ inputs.engine_release_tag }}" --repo "$GITHUB_REPOSITORY"
+        if: ${{ env.ENGINE_RELEASE_TAG != '' }}
+        run: node scripts/prepare-macos-engine-release-assets.mjs --tag "$ENGINE_RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
 
       - name: Run strict macOS conversion validation
         run: npm run test:macos:conversions

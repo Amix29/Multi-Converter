@@ -122,6 +122,7 @@ Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conv
 - Provide `sidecar_release_tag` when the real macOS FFmpeg/ffprobe sidecars live on a test release.
 - Provide `engine_release_tag` when the macOS `engines-manifest.json` and engine ZIP archives live on a test release.
 - Prefer `engine_staging_run_id` from a successful `macOS Engine Staging` run when testing from `codex/test`. This downloads the private workflow artifact and avoids publishing temporary engine assets as a GitHub prerelease.
+- On `codex/test`, push runs require `MC_ENABLE_MACOS_CONVERSIONS=1` and read the staging artifact run from `MC_MACOS_ENGINE_STAGING_RUN_ID`.
 - Do not combine `engine_staging_run_id` with `sidecar_release_tag` or `engine_release_tag` in the same run.
 - The workflow runs `npm run test:macos:conversions` on `macos-latest`.
 - The workflow is expected to fail until all required `macos-universal` advanced engine entries exist in `src-tauri/engines-manifest.json` and their archives download, validate and run.
@@ -148,6 +149,7 @@ Use the manual `macOS DMG Build` workflow when a Mac runner should build and ver
 - If sidecars are stored on a test release, set `sidecar_release_tag` to the release tag that contains `ffmpeg-aarch64-apple-darwin`, `ffmpeg-x86_64-apple-darwin`, `ffprobe-aarch64-apple-darwin` and `ffprobe-x86_64-apple-darwin`.
 - If macOS engine archives are stored on a test release, set `engine_release_tag` to the release tag that contains `engines-manifest.json` plus every ZIP referenced by that manifest. The workflow downloads and verifies every referenced macOS ZIP, but writes only advanced engines into `src-tauri/engines-manifest.json`; FFmpeg and ffprobe stay Tauri sidecars.
 - Prefer `engine_staging_run_id` from a successful `macOS Engine Staging` run for private `codex/test` DMG validation. The workflow will download the staged sidecars, engine manifest and engine archives from the `macos-engine-assets` workflow artifact.
+- On `codex/test`, push runs require `MC_ENABLE_MACOS_DMG=1` and read the staging artifact run from `MC_MACOS_ENGINE_STAGING_RUN_ID`.
 - Do not combine `engine_staging_run_id` with release-tag inputs in the same run.
 - The workflow prepares `macos-universal` engines, runs `npm run test:macos:host`, builds `npm run tauri:build:macos`, renames the output to `Multi-Converter_X.Y.Z_macos-universal.dmg`, verifies it with `npm run verify:macos-dmg`, then uploads the verified DMG as a workflow artifact.
 - A failed workflow is not a release blocker by itself until the failure is reviewed. Common expected failures are missing staged sidecars, missing executable bits or a DMG that still contains Windows-only bundled engines.

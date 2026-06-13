@@ -129,10 +129,13 @@ assert.match(macosLibvipsRuntimeJob, /gh release upload/, "macOS libvips runtime
 
 assert.match(macosDmgWorkflow, /name:\s+macOS DMG Build/, "macOS DMG workflow must be clearly named");
 assert.match(macosDmgWorkflow, /workflow_dispatch:/, "macOS DMG workflow must be manually runnable");
+assert.match(macosDmgWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS DMG workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosDmgWorkflow, /sidecar_release_tag:/, "macOS DMG workflow must allow staged sidecars from a release tag");
 assert.match(macosDmgWorkflow, /engine_release_tag:/, "macOS DMG workflow must allow staged engine archives from a release tag");
 assert.match(macosDmgWorkflow, /engine_staging_run_id:/, "macOS DMG workflow must allow staged engines from a workflow artifact");
 assert.match(macosDmgWorkflow, /permissions:[\s\S]*?actions:\s+read/, "macOS DMG workflow must be able to download staging workflow artifacts");
+assert.match(macosDmgBuildJob, /vars\.MC_ENABLE_MACOS_DMG == '1'/, "codex/test macOS DMG push runs must require an explicit repository variable gate");
+assert.match(macosDmgBuildJob, /vars\.MC_MACOS_ENGINE_STAGING_RUN_ID/, "codex/test macOS DMG push runs must read the staging run ID from a repository variable");
 assert.match(macosDmgBuildJob, /runs-on:\s+macos-latest/, "macOS DMG build must run on macOS");
 assert.match(macosDmgBuildJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS DMG build must prepare macos-universal engines");
 assert.doesNotMatch(macosDmgBuildJob, /CARGO_TARGET_DIR:\s+\$\{\{\s*runner\.temp/, "macOS DMG job env must not use runner context before it is available");
@@ -140,7 +143,7 @@ assert.match(macosDmgBuildJob, /CARGO_TARGET_DIR=\$RUNNER_TEMP\/mc-cargo-target-
 assert.match(macosDmgBuildJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS DMG build must install both Darwin Rust targets");
 assert.match(macosDmgBuildJob, /Download staged macOS engine archives from a release/, "macOS DMG build must support staged macOS engine release assets");
 assert.match(macosDmgBuildJob, /Download staged macOS assets from a workflow artifact/, "macOS DMG build must support staged macOS engine workflow artifacts");
-assert.match(macosDmgBuildJob, /gh run download "\$\{\{ inputs\.engine_staging_run_id \}\}"[\s\S]*--name macos-engine-assets/, "macOS DMG build must download the macOS engine staging artifact");
+assert.match(macosDmgBuildJob, /gh run download "\$ENGINE_STAGING_RUN_ID"[\s\S]*--name macos-engine-assets/, "macOS DMG build must download the macOS engine staging artifact");
 assert.match(macosDmgBuildJob, /--from-local-assets --asset-dir "\$asset_dir"/, "macOS DMG build must stage engine artifacts without a public release");
 assert.match(macosDmgBuildJob, /prepare-macos-engine-release-assets\.mjs/, "macOS DMG build must use the staged engine release helper");
 assert.match(macosDmgBuildJob, /npm run prepare:bundled-engines/, "macOS DMG build must prepare staged sidecars and engines");
@@ -153,10 +156,13 @@ assert.match(macosDmgBuildJob, /actions\/upload-artifact@v4/, "macOS DMG build m
 
 assert.match(macosConversionsWorkflow, /name:\s+macOS Conversion Matrix/, "macOS conversion workflow must be clearly named");
 assert.match(macosConversionsWorkflow, /workflow_dispatch:/, "macOS conversion workflow must be manually runnable");
+assert.match(macosConversionsWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS conversion workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosConversionsWorkflow, /sidecar_release_tag:/, "macOS conversion workflow must allow staged real sidecars from a release tag");
 assert.match(macosConversionsWorkflow, /engine_release_tag:/, "macOS conversion workflow must allow staged engine archives from a release tag");
 assert.match(macosConversionsWorkflow, /engine_staging_run_id:/, "macOS conversion workflow must allow staged engines from a workflow artifact");
 assert.match(macosConversionsWorkflow, /permissions:[\s\S]*?actions:\s+read/, "macOS conversion workflow must be able to download staging workflow artifacts");
+assert.match(macosConversionsJob, /vars\.MC_ENABLE_MACOS_CONVERSIONS == '1'/, "codex/test macOS conversion push runs must require an explicit repository variable gate");
+assert.match(macosConversionsJob, /vars\.MC_MACOS_ENGINE_STAGING_RUN_ID/, "codex/test macOS conversion push runs must read the staging run ID from a repository variable");
 assert.match(macosConversionsJob, /runs-on:\s+macos-latest/, "macOS conversion matrix must run on a macOS runner");
 assert.match(macosConversionsJob, /timeout-minutes:\s+180/, "macOS conversion matrix must allow enough time for real engine downloads and conversions");
 assert.match(macosConversionsJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS conversion matrix must validate macos-universal engines");
@@ -164,7 +170,7 @@ assert.doesNotMatch(macosConversionsJob, /prepare-tauri-ci-sidecars/, "macOS con
 assert.match(macosConversionsJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS conversion matrix must install both Darwin Rust targets");
 assert.match(macosConversionsJob, /Download staged macOS engine archives from a release/, "macOS conversion matrix must support staged macOS engine release assets");
 assert.match(macosConversionsJob, /Download staged macOS assets from a workflow artifact/, "macOS conversion matrix must support staged macOS engine workflow artifacts");
-assert.match(macosConversionsJob, /gh run download "\$\{\{ inputs\.engine_staging_run_id \}\}"[\s\S]*--name macos-engine-assets/, "macOS conversion matrix must download the macOS engine staging artifact");
+assert.match(macosConversionsJob, /gh run download "\$ENGINE_STAGING_RUN_ID"[\s\S]*--name macos-engine-assets/, "macOS conversion matrix must download the macOS engine staging artifact");
 assert.match(macosConversionsJob, /--from-local-assets --asset-dir "\$asset_dir"/, "macOS conversion matrix must stage engine artifacts without a public release");
 assert.match(macosConversionsJob, /prepare-macos-engine-release-assets\.mjs/, "macOS conversion matrix must use the staged engine release helper");
 assert.match(macosConversionsJob, /npm run test:macos:conversions/, "macOS conversion matrix must run the strict real conversion gate");
