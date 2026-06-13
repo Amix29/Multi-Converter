@@ -69,7 +69,7 @@ The manual `macOS libvips Runtime` workflow can build those two portable input a
 - Apple Silicon runs on `macos-latest`.
 - Intel runs on `macos-15-intel`.
 - The workflow installs `vips`, copies the runtime, rewrites non-system dynamic links with `install_name_tool`, rejects remaining absolute package-manager links, smoke-tests `vips copy`, then uploads `libvips-macos-aarch64.tar.gz` and `libvips-macos-x86_64.tar.gz`.
-- On `codex/test`, pushes that touch the workflow or runtime builder run this workflow and produce GitHub Actions artifacts without creating a release.
+- On `codex/test`, pushes that touch the workflow or runtime builder run this workflow only when `MC_ENABLE_MACOS_LIBVIPS_RUNTIME=1` is configured as a repository variable. Leave it disabled for normal docs/status/script work to conserve GitHub Actions minutes.
 - Prefer passing the successful workflow run ID as `libvips_runtime_run_id` for `macOS Engine Staging`.
 - Use `output_release_tag` only when a maintainer intentionally wants a publicly visible prerelease tag. In that case, use the same tag as the `libvips_release_tag` input for `macOS Engine Staging`.
 - Treat the generated notices as staging evidence first. Review copied dependency licenses before a public release.

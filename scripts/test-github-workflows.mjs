@@ -23,6 +23,7 @@ const macosDmgBuildJob = workflowJob(macosDmgWorkflow, "build");
 const macosConversionsJob = workflowJob(macosConversionsWorkflow, "macos-conversions");
 
 assert.match(buildWorkflow, /quality-gate:\s*\n\s+name:\s+Windows x64 quality gate/, "build workflow must keep the Windows job clearly named");
+assert.match(buildWorkflow, /paths-ignore:\s*\n\s+- "\*\*\/\*\.md"\s*\n\s+- "docs\/\*\*"/, "build workflow push runs must skip docs-only changes to conserve GitHub Actions minutes");
 assert.match(windowsBuildJob, /timeout-minutes:\s+120/, "Windows quality gate must allow enough time for conversion tests and the full Tauri build");
 assert.match(windowsBuildJob, /id:\s+cargo-audit-cache/, "Windows CI must cache the cargo-audit binary");
 assert.match(windowsBuildJob, /~\/\.cargo\/bin\/cargo-audit\.exe/, "Windows CI cargo-audit cache must target the installed binary");
@@ -116,9 +117,11 @@ assert.match(macosEngineStagingJob, /gh release upload/, "macOS engine staging m
 
 assert.match(macosLibvipsRuntimeWorkflow, /name:\s+macOS libvips Runtime/, "macOS libvips runtime workflow must be clearly named");
 assert.match(macosLibvipsRuntimeWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS libvips runtime workflow must be push-runnable from the persistent codex/test branch");
+assert.doesNotMatch(macosLibvipsRuntimeWorkflow, /-\s+"package(?:-lock)?\.json"/, "macOS libvips runtime push trigger must not run for unrelated package metadata changes");
 assert.match(macosLibvipsRuntimeWorkflow, /workflow_dispatch:/, "macOS libvips runtime workflow must be manually runnable");
 assert.match(macosLibvipsRuntimeWorkflow, /arch:\s*\n\s+description:\s+"Runtime architecture to build"/, "macOS libvips runtime workflow must allow architecture-scoped retries");
 assert.match(macosLibvipsRuntimeWorkflow, /permissions:\s*\n\s+contents:\s+write/, "macOS libvips runtime workflow must be able to upload optional test release assets");
+assert.match(macosLibvipsRuntimeJob, /vars\.MC_ENABLE_MACOS_LIBVIPS_RUNTIME == '1'/, "codex/test macOS libvips runtime push runs must require an explicit repository variable gate");
 assert.match(macosLibvipsRuntimeJob, /fromJSON\(\(github\.event_name != 'workflow_dispatch' \|\| inputs\.arch == 'both'\)/, "macOS libvips runtime matrix must default push runs to both architectures before runner allocation");
 assert.match(macosLibvipsRuntimeJob, /"arch":"aarch64","runner":"macos-latest"/, "macOS libvips runtime must build Apple Silicon on an arm64 macOS runner");
 assert.match(macosLibvipsRuntimeJob, /"arch":"x86_64","runner":"macos-15-intel"/, "macOS libvips runtime must build Intel on an Intel macOS runner");

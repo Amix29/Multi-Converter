@@ -97,6 +97,8 @@ The GitHub `Build` workflow runs a `macOS code check` job on `macos-latest` for 
 - `aarch64-apple-darwin`
 - `x86_64-apple-darwin`
 
+Pushes that modify only Markdown/docs files skip the full `Build` workflow to conserve GitHub Actions minutes. Use `workflow_dispatch` when a maintainer intentionally wants the full build after a docs-only change.
+
 That job intentionally runs code and contract checks that do not require unreleased local engine binaries:
 
 ```bash
@@ -153,7 +155,7 @@ At the current V1.0.5 preparation stage this strict gate is expected to fail unt
 
 Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Silicon and Intel archives plus SHA-256 checksums. A source may be one combined archive containing both `ffmpeg` and `ffprobe`, or separate `FFMPEG_MACOS_*` and `FFPROBE_MACOS_*` archives with separate SHA-256 values. Use `npm run prepare:libvips-engine:macos` only with two already-portable libvips runtime trees. These scripts are strict packaging gates; they are not CI placeholders and should fail when the inputs are missing, unpinned or still linked to machine-local package manager paths.
 
-The `macOS libvips Runtime` workflow builds native Homebrew-derived libvips runtime archives on Apple Silicon and Intel runners, rewrites their dynamic links to portable `@rpath` links, smoke-tests the native `vips copy` path, and uploads the two archives as GitHub Actions artifacts. On the persistent `codex/test` branch it is also push-runnable when the workflow or runtime builder changes, so libvips portability can be tested before those workflow files are merged to `main`. Its `arch` input can retry one architecture, but complete macOS validation still requires both archives.
+The `macOS libvips Runtime` workflow builds native Homebrew-derived libvips runtime archives on Apple Silicon and Intel runners, rewrites their dynamic links to portable `@rpath` links, smoke-tests the native `vips copy` path, and uploads the two archives as GitHub Actions artifacts. On the persistent `codex/test` branch it is also push-runnable when the workflow or runtime builder changes and the `MC_ENABLE_MACOS_LIBVIPS_RUNTIME` repository variable is set to `1`, so libvips portability can be tested before those workflow files are merged to `main`. Leave that variable disabled for ordinary docs/status/package-metadata changes to avoid spending macOS runner minutes. Its `arch` input can retry one architecture, but complete macOS validation still requires both archives.
 
 Do not set `output_release_tag` unless a maintainer intentionally wants a public prerelease tag to receive those runtime archives. Prefer passing the successful `macOS libvips Runtime` run ID as `libvips_runtime_run_id` to `macOS Engine Staging`; that keeps the handoff inside GitHub Actions artifacts. When a reviewed test release tag is used instead, pass it as `libvips_release_tag` for the engine staging workflow after reviewing dependency licenses.
 

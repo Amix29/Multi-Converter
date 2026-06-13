@@ -7,8 +7,6 @@ on:
     paths:
       - ".github/workflows/macos-libvips-runtime.yml"
       - "scripts/build-libvips-macos-runtime.mjs"
-      - "package.json"
-      - "package-lock.json"
   workflow_dispatch:
     inputs:
       output_release_tag:
@@ -36,6 +34,7 @@ concurrency:
 jobs:
   build:
     name: Build libvips runtime (${{ matrix.arch }})
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.MC_ENABLE_MACOS_LIBVIPS_RUNTIME == '1' }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
     strategy:
