@@ -231,16 +231,19 @@ function readmeMacosStatusMatchesEvidence() {
   if (!hasMacosPublicReleaseEvidence) {
     return /\|\s*.*macOS\s*\|\s*.*In development for v1\.0\.5\s*\|/.test(readme);
   }
+  const macosInstallSection = markdownSection(readme, "macOS Installation");
   return (
     /\|\s*.*macOS\s*\|\s*.*Available\s*\|/.test(readme) &&
-    readme.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`) &&
-    /not\s+Apple-signed/i.test(readme) &&
-    /not\s+notarized/i.test(readme) &&
-    readme.includes("System Settings") &&
-    readme.includes("Open Anyway") &&
-    readme.includes("Privacy & Security") &&
-    /confirm\s+`?Open`?/i.test(readme) &&
-    /macOS\s+automatic\s+updates\s+are\s+not\s+enabled/i.test(readme)
+    macosInstallSection.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`) &&
+    /Apple\s+Silicon/i.test(macosInstallSection) &&
+    /Intel/i.test(macosInstallSection) &&
+    /not\s+Apple-signed/i.test(macosInstallSection) &&
+    /not\s+notarized/i.test(macosInstallSection) &&
+    macosInstallSection.includes("System Settings") &&
+    macosInstallSection.includes("Open Anyway") &&
+    macosInstallSection.includes("Privacy & Security") &&
+    /confirm\s+`?Open`?/i.test(macosInstallSection) &&
+    /macOS\s+automatic\s+updates\s+are\s+not\s+enabled/i.test(macosInstallSection)
   );
 }
 

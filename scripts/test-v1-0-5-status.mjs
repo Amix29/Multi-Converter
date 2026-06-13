@@ -98,6 +98,14 @@ try {
   assert.equal(incompleteReadmeInstallNotesStatus.status.releaseReady, false, "macOS release readiness must require the full System Settings install path");
   assert.match(incompleteReadmeInstallNotesStatus.output, /README macOS status matches available release evidence/, "incomplete README install notes must fail the README evidence check");
 
+  const missingReadmeArchitectureStatus = runStatus("missing-readme-architectures.md", completedReleaseEvidence(currentEvidence), {
+    requireReady: true,
+    expectedStatus: 1,
+    readme: readyReadme(currentReadme).replace(" for Apple Silicon and Intel Macs", ""),
+  });
+  assert.equal(missingReadmeArchitectureStatus.status.releaseReady, false, "macOS release readiness must require Apple Silicon and Intel README wording");
+  assert.match(missingReadmeArchitectureStatus.output, /README macOS status matches available release evidence/, "missing README architecture wording must fail the README evidence check");
+
   const readyStatus = runStatus("ready.md", completedReleaseEvidence(currentEvidence), { requireReady: true, readme: readyReadme(currentReadme) });
   assert.equal(readyStatus.releaseReady, true, "complete clean-Mac and accepted security evidence must satisfy require-ready mode");
 } finally {
@@ -179,7 +187,7 @@ function readyReadme(readme) {
 
 ## macOS Installation
 
-Download \`Multi-Converter_1.0.5_macos-universal.dmg\`. This macOS build is not Apple-signed and not notarized. After the first launch warning, open \`System Settings > Privacy & Security\`, choose \`Open Anyway\`, then confirm \`Open\`.
+Download \`Multi-Converter_1.0.5_macos-universal.dmg\` for Apple Silicon and Intel Macs. This macOS build is not Apple-signed and not notarized. After the first launch warning, open \`System Settings > Privacy & Security\`, choose \`Open Anyway\`, then confirm \`Open\`.
 
 macOS automatic updates are not enabled for this first DMG workflow. Download future macOS versions manually until macOS updater artifacts are enabled and tested.
 `;
