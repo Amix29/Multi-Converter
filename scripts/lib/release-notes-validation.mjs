@@ -101,6 +101,9 @@ export function validateReleaseNotes({ body, version, includeMacos = false, minL
   if (!macosDmgVerificationPassed || macosDmgVerificationFailed) {
     errors.push("Release notes must mention that the macOS DMG was verified on macOS.");
   }
+  if (!/Apple\s+Silicon/i.test(notesBody) || !/Intel/i.test(notesBody)) {
+    errors.push("Release notes must mention that the macOS DMG was verified for Apple Silicon and Intel.");
+  }
   if (claimsFullMacosConversionCoverage(notesBody) && !/macOS\s+Conversion\s+Matrix/i.test(notesBody)) {
     errors.push("Release notes must mention the macOS Conversion Matrix before claiming full macOS conversion coverage.");
   }

@@ -44,7 +44,7 @@ const notes = [
   "",
   "## Validation",
   "",
-  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed in this test fixture.",
+  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon and Intel in this test fixture.",
 ].join("\n");
 const notesWithoutMacosWarning = [
   `# Multi-Converter v${version}`,
@@ -72,6 +72,7 @@ const notesWithFailedMacosDmgVerification = notes.replace(
   "macOS DMG verification passed",
   "macOS DMG verification failed",
 );
+const notesWithoutMacosDmgArchitectures = notes.replace(" on Apple Silicon and Intel", "");
 const notesWithUnsupportedMacosConversionClaim = [
   `# Multi-Converter v${version}`,
   "",
@@ -88,10 +89,10 @@ const notesWithUnsupportedMacosConversionClaim = [
   "",
   "## Validation",
   "",
-  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed in this test fixture.",
+  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon and Intel in this test fixture.",
 ].join("\n");
 const notesWithUnsupportedMacosConversionArchitectureClaim = notesWithUnsupportedMacosConversionClaim.replace(
-  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed in this test fixture.",
+  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon and Intel in this test fixture.",
   "- Release asset validation, updater metadata validation, naming checks, macOS Conversion Matrix and macOS DMG verification passed in this test fixture.",
 );
 
@@ -131,6 +132,10 @@ try {
   const macosNotesWithFailedDmgVerificationPath = path.join(preparedDmgDir, "macos-notes-with-failed-dmg-verification.md");
   fs.writeFileSync(macosNotesWithFailedDmgVerificationPath, notesWithFailedMacosDmgVerification);
   runReleaseNotesValidatorFails(macosNotesWithFailedDmgVerificationPath, true, "verified on macOS");
+
+  const macosNotesWithoutDmgArchitecturesPath = path.join(preparedDmgDir, "macos-notes-without-dmg-architectures.md");
+  fs.writeFileSync(macosNotesWithoutDmgArchitecturesPath, notesWithoutMacosDmgArchitectures);
+  runReleaseNotesValidatorFails(macosNotesWithoutDmgArchitecturesPath, true, "Apple Silicon and Intel");
 
   writeWindowsAssets(allDir, notes);
   fs.writeFileSync(path.join(allDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");

@@ -84,6 +84,7 @@ assert.match(releaseNotesValidationLibrary, /confirm\\s\+\`\?Open/, "shared rele
 assert.match(releaseNotesValidationLibrary, /macOS\\s\+automatic\\s\+updates\\s\+are\\s\+not\\s\+enabled/, "shared release-note validation must validate disabled macOS updater wording before DMG verification");
 assert.match(releaseNotesValidationLibrary, /macOS\\s\+DMG\\s\+verification\\s\+\(\?:passed\|succeeded\|completed\)/, "shared release-note validation must require positive macOS DMG verification wording before DMG verification");
 assert.match(releaseNotesValidationLibrary, /macOS\\s\+DMG\\s\+verification\\s\+\(\?:failed\|did\\s\+not\\s\+pass\|not\\s\+completed\)/, "shared release-note validation must reject failed macOS DMG verification wording");
+assert.match(releaseNotesValidationLibrary, /macOS DMG was verified for Apple Silicon and Intel/, "shared release-note validation must require two-architecture DMG verification wording");
 assert.match(releasePreflightJob, /Require V1\.0\.5 macOS release readiness/, "release preflight must require V1.0.5 readiness before macOS DMG verification");
 assert.match(releasePreflightJob, /npm run status:v1\.0\.5 -- --require-ready/, "release preflight must fail before macOS runner allocation while V1.0.5 is not ready");
 assert.match(releaseWorkflow, /macos-dmg-verify:/, "release workflow must include a macOS DMG verification job");

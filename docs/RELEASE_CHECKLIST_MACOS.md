@@ -209,7 +209,7 @@ If the build is not Apple-signed and not notarized, say that plainly and include
 
 Also state that automatic updates for macOS are not enabled in this first DMG workflow if `latest.json` still contains only Windows updater platforms.
 
-In `## Validation`, mention that the macOS DMG was verified on macOS, either manually or through the `macOS DMG verification` workflow job.
+In `## Validation`, mention that the macOS DMG was verified on Apple Silicon and Intel, either manually or through the `macOS DMG verification` workflow jobs.
 
 Do not claim that all macOS conversions pass unless the same release also passed `npm run test:macos:conversions` on both Apple Silicon and Intel, or the manual `macOS Conversion Matrix` workflow with the final staged sidecars and engine archives. If release notes make that full-coverage claim, they must mention the `macOS Conversion Matrix`, Apple Silicon and Intel.
 
