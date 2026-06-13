@@ -26,6 +26,7 @@ const testingDocs = readText("docs/TESTING.md");
 const macosChecklist = readText("docs/RELEASE_CHECKLIST_MACOS.md");
 const validationEvidence = readOptionalText(validationEvidencePath);
 const cleanMacSmokeReceipt = markdownSection(validationEvidence, "Manual Clean-Mac Smoke Test Receipt");
+const securityEvidenceSection = markdownSection(validationEvidence, "Security And Confidentiality Evidence");
 const releaseNotesValidator = readText("scripts/lib/release-notes-validation.mjs");
 const windowsGate = readText("scripts/test-windows-ci-gate.mjs");
 const uiLayoutTest = readText("scripts/test-ui-layout.mjs");
@@ -43,7 +44,7 @@ const cleanMacSmokeEvidence = cleanMacSmokeEvidenceFromDocs();
 const hasManualCleanMacEvidence = cleanMacSmokeEvidence.complete;
 const hasMacosPublicReleaseEvidence = hasMacosAutomatedReleaseEvidence && hasManualCleanMacEvidence;
 const hasSecurityCheckEvidence = securityCheckEvidenceFromDocs();
-const hasCodexSecurityScanEvidence = /Exhaustive Codex Security subagent scan:\s*(?:success|accepted)/i.test(validationEvidence);
+const hasCodexSecurityScanEvidence = /Exhaustive Codex Security subagent scan:\s*(?:success|accepted)/i.test(securityEvidenceSection);
 const evidenceBlockers = macosEvidenceBlockers();
 
 const checks = [
@@ -173,7 +174,13 @@ function cleanMacSmokeEvidenceFromDocs() {
   const expectedDmg = `Multi-Converter_${packageJson.version}_macos-universal.dmg`;
   const required = [
     ["Manual clean-Mac smoke testing: success", /Manual clean-Mac smoke testing:\s*success/i],
+    ["Date recorded", /^-\s*Date:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Tester recorded", /^-\s*Tester:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["macOS version recorded", /^-\s*macOS version:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Mac model recorded", /^-\s*Mac model:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Architecture tested recorded", /^-\s*Architecture tested:[ \t]+(?!pending\s*$).+\S\s*$/im],
     [`DMG: ${expectedDmg}`, new RegExp(`DMG:\\s*${escapeRegExp(expectedDmg)}\\b`, "i")],
+    ["DMG source recorded", /^-\s*DMG source:[ \t]+(?!pending\s*$).+\S\s*$/im],
     ["Mounted final downloaded DMG: yes", /Mounted final downloaded DMG:\s*yes/i],
     ["Dragged app to Applications: yes", /Dragged app to Applications:\s*yes/i],
     ["Unsigned/not-notarized first launch warning verified: yes", /Unsigned\/not-notarized first launch warning verified:\s*yes/i],

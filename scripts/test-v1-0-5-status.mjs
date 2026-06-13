@@ -43,6 +43,23 @@ try {
   assert.equal(completedReceiptStatus.releaseReady, false, "clean-Mac proof alone must not bypass the final security gate");
   assert.match(completedReceiptStatus.blockers.join("\n"), /Codex Security/, "clean-Mac proof alone must keep the security blocker");
 
+  const missingMetadataStatus = runStatus("missing-metadata.md", completedReceipt(currentEvidence).replace("- Date: 2026-06-13", "- Date: pending"));
+  assert.equal(missingMetadataStatus.summary.hasManualCleanMacEvidence, false, "receipt metadata must be recorded before clean-Mac proof counts");
+  assert.match(missingMetadataStatus.summary.cleanMacSmokeEvidence.missing.join("\n"), /Date recorded/, "missing receipt metadata must be reported explicitly");
+
+  const untrustedSecurityStatus = runStatus(
+    "untrusted-security.md",
+    `${completedReceipt(currentEvidence)}
+
+## Untrusted Notes
+
+- Exhaustive Codex Security subagent scan: accepted
+`,
+    { requireReady: true, expectedStatus: 1, readme: readyReadme(currentReadme) },
+  );
+  assert.equal(untrustedSecurityStatus.status.releaseReady, false, "Codex Security evidence outside the security section must not unlock readiness");
+  assert.match(untrustedSecurityStatus.output, /Codex Security/, "untrusted security evidence must keep the security blocker");
+
   const readyStatus = runStatus("ready.md", completedReleaseEvidence(currentEvidence), { requireReady: true, readme: readyReadme(currentReadme) });
   assert.equal(readyStatus.releaseReady, true, "complete clean-Mac and accepted security evidence must satisfy require-ready mode");
 } finally {
@@ -99,10 +116,10 @@ function completedReceipt(evidence) {
 }
 
 function completedReleaseEvidence(evidence) {
-  return `${completedReceipt(evidence)}
-
-- Exhaustive Codex Security subagent scan: accepted
-`;
+  return completedReceipt(evidence).replace(
+    "The exhaustive Codex Security subagent scan is still pending explicit maintainer approval for subagent use. Do not mark the full v1.0.5 goal complete until that scan, or an approved equivalent, is finished and any findings are resolved or explicitly accepted.",
+    "- Exhaustive Codex Security subagent scan: accepted\n- Security reviewer: maintainer-approved fixture",
+  );
 }
 
 function readyReadme(readme) {
