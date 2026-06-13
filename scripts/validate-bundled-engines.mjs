@@ -19,7 +19,7 @@ if (platform === "unsupported") {
 }
 
 for (const item of baseBinaries) {
-  if (item.smoke === false) validateFile(item.id, item.filePath);
+  if (item.smoke === false) validateFile(item.id, item.filePath, { executable: true });
   else validateExecutable(item.id, item.filePath, item.args, item.expectedText);
 }
 
@@ -27,7 +27,7 @@ for (const engine of bundledAdvancedEngines(manifest)) {
   const engineRoot = path.join(root, "src-tauri", "bundled-engines", engine.id, engine.version);
   validateEngineMetadata(engineRoot, engine);
   for (const relative of engine.binaryPaths ?? []) {
-    validateFile(engine.id, path.join(engineRoot, normalizeArchivePath(relative)));
+    validateFile(engine.id, path.join(engineRoot, normalizeArchivePath(relative)), { executable: platform !== "windows-x64" });
   }
   validateEngineSmoke(engineRoot, engine);
 }
@@ -148,7 +148,7 @@ function executableScore(filePath) {
 }
 
 function validateExecutable(id, filePath, args, expectedText, cwd = path.dirname(filePath)) {
-  if (!validateFile(id, filePath)) return;
+  if (!validateFile(id, filePath, { executable: platform !== "windows-x64" })) return;
   if (skipExecutableSmoke) return;
   const result = spawnSync(filePath, args, {
     cwd,
@@ -169,7 +169,7 @@ function validateExecutable(id, filePath, args, expectedText, cwd = path.dirname
   }
 }
 
-function validateFile(id, filePath) {
+function validateFile(id, filePath, options = {}) {
   if (!fs.existsSync(filePath)) {
     errors.push(`${id}: fichier absent (${path.relative(root, filePath)})`);
     return false;
@@ -179,7 +179,7 @@ function validateFile(id, filePath) {
     errors.push(`${id}: fichier vide ou invalide (${path.relative(root, filePath)})`);
     return false;
   }
-  if (platform !== "windows-x64" && (stat.mode & 0o111) === 0) {
+  if (options.executable && (stat.mode & 0o111) === 0) {
     errors.push(`${id}: fichier non executable (${path.relative(root, filePath)})`);
     return false;
   }

@@ -223,6 +223,8 @@ assert.match(prepareScript, /spawnSync\("lipo", \["-create"/, "macOS preparation
 assert.match(prepareScript, /async function pruneBundledEngines\(expectedEngines\)/, "macOS preparation must prune stale bundled engines before packaging");
 assert.match(prepareScript, /Refusing to remove path outside bundled engines/, "stale engine pruning must guard recursive removals");
 assert.match(validateScript, /function validateNoStaleBundledEngines\(value\)/, "bundled engine validation must reject stale platform resources");
+assert.match(validateScript, /validateFile\(engine\.id,[\s\S]*executable:\s*platform !== "windows-x64"/, "bundled engine validation must require executable bits only for declared binary paths");
+assert.match(validateScript, /function validateFile\(id, filePath, options = \{\}\)/, "bundled engine validation must allow non-executable metadata, license and notice files");
 assert.match(enginesRust, /fn universal_binary_name\(stem: &str\) -> String/, "runtime must resolve universal macOS sidecar names");
 assert.match(enginesRust, /resource_dir\.join\(&universal_binary_name\)/, "runtime must check bundled universal sidecars");
 assert.match(enginesRust, /resource_dir\.join\("binaries"\)\.join\(&universal_binary_name\)/, "runtime must check resource-directory universal sidecars");
