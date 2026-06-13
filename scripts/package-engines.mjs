@@ -526,6 +526,12 @@ function normalizeSafeSymlinkTarget(source, linkTarget) {
       return relativeSymlinkTarget(path.dirname(source), target);
     }
   }
+
+  const sameDirectoryTarget = path.basename(normalizedAbsoluteTarget);
+  const sourceName = path.basename(source);
+  if (sameDirectoryTarget && (sourceName.endsWith(".dylib") || sameDirectoryTarget.endsWith(".dylib"))) {
+    return sameDirectoryTarget;
+  }
   return null;
 }
 
