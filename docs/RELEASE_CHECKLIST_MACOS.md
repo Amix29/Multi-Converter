@@ -54,7 +54,7 @@ For FFmpeg/ffprobe, set maintainer-approved Apple Silicon and Intel archive inpu
 npm run prepare:ffmpeg-engine:macos
 ```
 
-The FFmpeg script intentionally refuses to choose a third-party binary provider automatically. It must create and verify `ffmpeg-universal-apple-darwin` and `ffprobe-universal-apple-darwin` before a DMG build can be considered.
+Each architecture may use either one combined archive that contains both `ffmpeg` and `ffprobe`, or separate `FFMPEG_MACOS_*` and `FFPROBE_MACOS_*` archive URLs/files with separate checksums. The FFmpeg script intentionally refuses to choose a third-party binary provider automatically. It must create and verify `ffmpeg-universal-apple-darwin` and `ffprobe-universal-apple-darwin` before a DMG build can be considered.
 
 For libvips, prepare two portable runtime trees first, set `LIBVIPS_MACOS_AARCH64_SOURCE_DIR` and `LIBVIPS_MACOS_X86_64_SOURCE_DIR`, then run:
 
@@ -129,7 +129,7 @@ Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conv
 
 Use the manual `macOS Engine Staging` workflow to create the test assets consumed by the conversion and DMG workflows.
 
-- Provide maintainer-approved FFmpeg/ffprobe Apple Silicon and Intel archive URLs plus SHA-256 checksums.
+- Provide maintainer-approved FFmpeg/ffprobe Apple Silicon and Intel archive URLs plus SHA-256 checksums. If `ffmpeg` and `ffprobe` are published as separate archives, provide the optional `ffprobe_*` URL/checksum inputs too.
 - Provide either `libvips_runtime_run_id` from a successful `macOS libvips Runtime` run, or a `libvips_release_tag` that contains portable Apple Silicon and Intel libvips runtime archives. Those archives must contain a `bin/vips` runtime root and bundled non-system dependencies.
 - The workflow prepares FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips on `macos-latest`, packages `tools/engine-packages.macos.config.json`, uploads a `macos-engine-assets` workflow artifact, and optionally uploads the same assets to `output_release_tag`.
 - On the public main repository, any `output_release_tag` creates publicly visible prerelease assets. Leave it empty unless a maintainer intentionally wants that public test tag.

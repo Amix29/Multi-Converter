@@ -20,6 +20,9 @@ const archInputs = [
     archiveEnv: "FFMPEG_MACOS_AARCH64_ARCHIVE",
     urlEnv: "FFMPEG_MACOS_AARCH64_ARCHIVE_URL",
     shaEnv: "FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256",
+    ffprobeArchiveEnv: "FFPROBE_MACOS_AARCH64_ARCHIVE",
+    ffprobeUrlEnv: "FFPROBE_MACOS_AARCH64_ARCHIVE_URL",
+    ffprobeShaEnv: "FFPROBE_MACOS_AARCH64_ARCHIVE_SHA256",
   },
   {
     arch: "x86_64",
@@ -28,6 +31,9 @@ const archInputs = [
     archiveEnv: "FFMPEG_MACOS_X86_64_ARCHIVE",
     urlEnv: "FFMPEG_MACOS_X86_64_ARCHIVE_URL",
     shaEnv: "FFMPEG_MACOS_X86_64_ARCHIVE_SHA256",
+    ffprobeArchiveEnv: "FFPROBE_MACOS_X86_64_ARCHIVE",
+    ffprobeUrlEnv: "FFPROBE_MACOS_X86_64_ARCHIVE_URL",
+    ffprobeShaEnv: "FFPROBE_MACOS_X86_64_ARCHIVE_SHA256",
   },
 ];
 
@@ -43,14 +49,22 @@ await fs.mkdir(extracts, { recursive: true });
 const prepared = [];
 for (const input of archInputs) {
   const source = readPinnedSource(input);
-  const archive = await materializeArchive(source, input.arch);
+  const ffprobeSource = readOptionalFfprobeSource(input);
+  const archive = await materializeArchive(source, input.arch, "ffmpeg");
   const extractDir = path.join(extracts, `ffmpeg-macos-${input.arch}`);
   await extractArchive(archive, extractDir);
+  const ffprobeExtractDir = ffprobeSource
+    ? path.join(extracts, `ffprobe-macos-${input.arch}`)
+    : extractDir;
+  if (ffprobeSource) {
+    const ffprobeArchive = await materializeArchive(ffprobeSource, input.arch, "ffprobe");
+    await extractArchive(ffprobeArchive, ffprobeExtractDir);
+  }
 
   const ffmpeg = await findExecutable(extractDir, "ffmpeg");
-  const ffprobe = await findExecutable(extractDir, "ffprobe");
+  const ffprobe = await findExecutable(ffprobeExtractDir, "ffprobe");
   if (!ffmpeg || !ffprobe) {
-    throw new Error(`${input.arch}: archive must contain both ffmpeg and ffprobe executables.`);
+    throw new Error(`${input.arch}: configured archives must contain both ffmpeg and ffprobe executables.`);
   }
 
   run("lipo", [ffmpeg, "-verify_arch", input.lipoArch]);
@@ -61,7 +75,9 @@ for (const input of archInputs) {
   prepared.push({
     ...input,
     source,
+    ffprobeSource,
     extractDir,
+    ffprobeExtractDir,
     ffmpeg,
     ffprobe,
   });
@@ -107,18 +123,32 @@ function readPinnedSource(input) {
   return { archivePath, url, sha256: sha256.toLowerCase() };
 }
 
-async function materializeArchive(source, arch) {
+function readOptionalFfprobeSource(input) {
+  const archivePath = process.env[input.ffprobeArchiveEnv]?.trim();
+  const url = process.env[input.ffprobeUrlEnv]?.trim();
+  const sha256 = process.env[input.ffprobeShaEnv]?.trim();
+  if (!archivePath && !url && !sha256) return null;
+  if (!archivePath && !url) {
+    throw new Error(`${input.arch}: set either ${input.ffprobeArchiveEnv} or ${input.ffprobeUrlEnv} when using a separate ffprobe archive.`);
+  }
+  if (!/^[a-f0-9]{64}$/i.test(sha256 ?? "")) {
+    throw new Error(`${input.arch}: ${input.ffprobeShaEnv} must contain a 64-character SHA-256 checksum when using a separate ffprobe archive.`);
+  }
+  return { archivePath, url, sha256: sha256.toLowerCase() };
+}
+
+async function materializeArchive(source, arch, stem) {
   if (source.archivePath) {
     const resolved = path.resolve(source.archivePath);
-    await verifySha256(resolved, source.sha256, `${arch} local archive`);
+    await verifySha256(resolved, source.sha256, `${arch} ${stem} local archive`);
     return resolved;
   }
 
   const parsed = new URL(source.url);
-  const archiveName = path.basename(parsed.pathname) || `ffmpeg-macos-${arch}.archive`;
-  const target = path.join(downloads, archiveName);
+  const archiveName = path.basename(parsed.pathname) || `${stem}-macos-${arch}.archive`;
+  const target = path.join(downloads, `${stem}-${arch}-${archiveName}`);
   try {
-    await verifySha256(target, source.sha256, `${arch} cached archive`);
+    await verifySha256(target, source.sha256, `${arch} ${stem} cached archive`);
     return target;
   } catch {
     // Download below.
@@ -129,7 +159,7 @@ async function materializeArchive(source, arch) {
     throw new Error(`${arch}: download failed (${response.status}) for ${source.url}`);
   }
   await pipeline(response.body, createWriteStream(target));
-  await verifySha256(target, source.sha256, `${arch} downloaded archive`);
+  await verifySha256(target, source.sha256, `${arch} ${stem} downloaded archive`);
   return target;
 }
 
@@ -180,7 +210,7 @@ async function createUniversal(stem) {
 async function stageNotices(items) {
   const license = process.env.FFMPEG_MACOS_LICENSE_FILE?.trim()
     ? path.resolve(process.env.FFMPEG_MACOS_LICENSE_FILE)
-    : await findAny(items[0].extractDir, ["LICENSE.txt", "LICENSE.md", "LICENSE", "COPYING", "COPYING.GPLv3", "COPYING.LGPLv3"]);
+    : await findAny(extractDirs(items), ["LICENSE.txt", "LICENSE.md", "LICENSE", "COPYING", "COPYING.GPLv3", "COPYING.LGPLv3"]);
   if (!license) {
     throw new Error("FFmpeg license file is missing. Set FFMPEG_MACOS_LICENSE_FILE or include a license file in the archive.");
   }
@@ -189,10 +219,13 @@ async function stageNotices(items) {
 
   const notice = process.env.FFMPEG_MACOS_NOTICES_FILE?.trim()
     ? path.resolve(process.env.FFMPEG_MACOS_NOTICES_FILE)
-    : await findAny(items[0].extractDir, ["README.txt", "README.md", "README", "RELEASE_NOTES", "NOTICE"]);
+    : await findAny(extractDirs(items), ["README.txt", "README.md", "README", "RELEASE_NOTES", "NOTICE"]);
   const noticeText = [
     "FFmpeg/ffprobe macOS universal package",
-    ...items.map((item) => `${item.arch} source: ${item.source.url ?? item.source.archivePath}`),
+    ...items.flatMap((item) => [
+      `${item.arch} ffmpeg source: ${item.source.url ?? item.source.archivePath}`,
+      `${item.arch} ffprobe source: ${item.ffprobeSource?.url ?? item.ffprobeSource?.archivePath ?? item.source.url ?? item.source.archivePath}`,
+    ]),
     `Expected version: ${expectedVersion}`,
     "",
     "FFmpeg provides source code but does not publish official macOS binaries.",
@@ -213,12 +246,16 @@ async function stageNotices(items) {
   }
 }
 
+function extractDirs(items) {
+  return [...new Set(items.flatMap((item) => [item.extractDir, item.ffprobeExtractDir]))];
+}
+
 async function copyLicenseTo(engineId, source) {
   const target = path.join(platformRoot, engineId, "licenses", "LICENSE.txt");
   await fs.copyFile(source, target);
 }
 
-async function findAny(dir, names) {
+async function findAny(dirs, names) {
   const lower = new Set(names.map((name) => name.toLowerCase()));
   const matches = [];
   async function walk(current) {
@@ -228,7 +265,9 @@ async function findAny(dir, names) {
       else if (entry.isFile() && lower.has(entry.name.toLowerCase())) matches.push(fullPath);
     }
   }
-  await walk(dir);
+  for (const dir of Array.isArray(dirs) ? dirs : [dirs]) {
+    await walk(dir);
+  }
   return matches[0] ?? null;
 }
 

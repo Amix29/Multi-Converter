@@ -92,6 +92,12 @@ assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_AARCH64_ARCHIVE_URL/, "macOS FFmp
 assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_X86_64_ARCHIVE_URL/, "macOS FFmpeg preparation must accept an Intel source URL");
 assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256/, "macOS FFmpeg preparation must require a pinned Apple Silicon archive checksum");
 assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_X86_64_ARCHIVE_SHA256/, "macOS FFmpeg preparation must require a pinned Intel archive checksum");
+assert.match(macosFfmpegPrepare, /FFPROBE_MACOS_AARCH64_ARCHIVE_URL/, "macOS FFmpeg preparation must accept a separate Apple Silicon ffprobe archive URL");
+assert.match(macosFfmpegPrepare, /FFPROBE_MACOS_X86_64_ARCHIVE_URL/, "macOS FFmpeg preparation must accept a separate Intel ffprobe archive URL");
+assert.match(macosFfmpegPrepare, /FFPROBE_MACOS_AARCH64_ARCHIVE_SHA256/, "macOS FFmpeg preparation must require a pinned Apple Silicon ffprobe checksum when ffprobe is separate");
+assert.match(macosFfmpegPrepare, /FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "macOS FFmpeg preparation must require a pinned Intel ffprobe checksum when ffprobe is separate");
+assert.match(macosFfmpegPrepare, /readOptionalFfprobeSource/, "macOS FFmpeg preparation must support separate ffprobe archives");
+assert.match(macosFfmpegPrepare, /ffprobeExtractDir/, "macOS FFmpeg preparation must extract separate ffprobe archives independently");
 assert.match(macosFfmpegPrepare, /does not choose a third-party FFmpeg binary provider automatically/, "macOS FFmpeg preparation must not pick a third-party binary provider silently");
 assert.match(macosFfmpegPrepare, /expectedVersion.*"8\.1\.1"/, "macOS FFmpeg preparation must default to the configured FFmpeg version");
 assert.match(macosFfmpegPrepare, /lipo.*-create/s, "macOS FFmpeg preparation must create universal sidecars with lipo");

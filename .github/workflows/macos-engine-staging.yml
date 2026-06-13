@@ -13,16 +13,36 @@ on:
         required: true
         type: string
       ffmpeg_aarch64_archive_sha256:
-        description: "SHA-256 for the Apple Silicon FFmpeg archive"
+        description: "SHA-256 for the Apple Silicon FFmpeg or combined FFmpeg/ffprobe archive"
         required: true
         type: string
+      ffprobe_aarch64_archive_url:
+        description: "Optional maintainer-approved Apple Silicon FFprobe archive URL when FFprobe is separate"
+        required: false
+        default: ""
+        type: string
+      ffprobe_aarch64_archive_sha256:
+        description: "SHA-256 for the separate Apple Silicon FFprobe archive"
+        required: false
+        default: ""
+        type: string
       ffmpeg_x86_64_archive_url:
-        description: "Maintainer-approved Intel FFmpeg archive URL"
+        description: "Maintainer-approved Intel FFmpeg or combined FFmpeg/ffprobe archive URL"
         required: true
         type: string
       ffmpeg_x86_64_archive_sha256:
-        description: "SHA-256 for the Intel FFmpeg archive"
+        description: "SHA-256 for the Intel FFmpeg or combined FFmpeg/ffprobe archive"
         required: true
+        type: string
+      ffprobe_x86_64_archive_url:
+        description: "Optional maintainer-approved Intel FFprobe archive URL when FFprobe is separate"
+        required: false
+        default: ""
+        type: string
+      ffprobe_x86_64_archive_sha256:
+        description: "SHA-256 for the separate Intel FFprobe archive"
+        required: false
+        default: ""
         type: string
       libvips_release_tag:
         description: "Release tag containing portable libvips macOS runtime archives"
@@ -66,8 +86,12 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       FFMPEG_MACOS_AARCH64_ARCHIVE_URL: ${{ inputs.ffmpeg_aarch64_archive_url }}
       FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256: ${{ inputs.ffmpeg_aarch64_archive_sha256 }}
+      FFPROBE_MACOS_AARCH64_ARCHIVE_URL: ${{ inputs.ffprobe_aarch64_archive_url }}
+      FFPROBE_MACOS_AARCH64_ARCHIVE_SHA256: ${{ inputs.ffprobe_aarch64_archive_sha256 }}
       FFMPEG_MACOS_X86_64_ARCHIVE_URL: ${{ inputs.ffmpeg_x86_64_archive_url }}
       FFMPEG_MACOS_X86_64_ARCHIVE_SHA256: ${{ inputs.ffmpeg_x86_64_archive_sha256 }}
+      FFPROBE_MACOS_X86_64_ARCHIVE_URL: ${{ inputs.ffprobe_x86_64_archive_url }}
+      FFPROBE_MACOS_X86_64_ARCHIVE_SHA256: ${{ inputs.ffprobe_x86_64_archive_sha256 }}
     steps:
       - uses: actions/checkout@v4
         with:
