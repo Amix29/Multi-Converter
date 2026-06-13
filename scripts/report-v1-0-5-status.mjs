@@ -184,9 +184,9 @@ function macosEvidenceBlockers() {
 
 function macosAutomationEvidenceFromDocs() {
   return {
-    libvipsRuntime: /macOS libvips Runtime:\s*run `27459737669`, success/i.test(validationEvidence),
-    engineStaging: /macOS Engine Staging:\s*run `27463128979`, success/i.test(validationEvidence),
-    conversionMatrixSingleRunner: /macOS Conversion Matrix \(single macOS runner\):\s*run `27464257789`, success/i.test(validationEvidence),
+    libvipsRuntime: /macOS libvips Runtime:\s*run `\d+`, success/i.test(validationEvidence),
+    engineStaging: /macOS Engine Staging:\s*run `\d+`, success/i.test(validationEvidence),
+    conversionMatrixSingleRunner: /macOS Conversion Matrix \(single macOS runner\):\s*run `\d+`, success/i.test(validationEvidence),
     conversionMatrixAppleSilicon: /macOS Conversion Matrix \(Apple Silicon\):\s*run `\d+`, success/i.test(validationEvidence),
     conversionMatrixIntel: /macOS Conversion Matrix \(Intel\):\s*run `\d+`, success/i.test(validationEvidence),
     dmgBuildAppleSilicon: /macOS DMG Build \(Apple Silicon\):\s*run `\d+`, success/i.test(validationEvidence) && validationEvidence.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`),

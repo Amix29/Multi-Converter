@@ -44,7 +44,7 @@ If another task remains possible from Windows/Linux, finish it before treating t
 
 All executable files must keep executable permissions. `npm run prepare:bundled-engines` creates the `*-universal-apple-darwin` sidecars with `lipo` on macOS from the Apple Silicon and Intel inputs. Do not create or edit these inside the generated `.app`.
 
-Current V1.0.5 preparation state: advanced bundled engines are still declared for `windows-x64` only. Do not claim PDFium, LibreOffice, Pandoc or libvips support on macOS until reviewed `macos-universal` manifest entries and engine archives exist and pass validation.
+Current V1.0.5 preparation state: advanced bundled engines are still declared for `windows-x64` only in the committed embedded manifest, while the release workflows stage reviewed `macos-universal` entries for macOS validation. Those staged FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips assets have passed `macOS Engine Staging`, the two-architecture `macOS Conversion Matrix`, and the universal DMG verification workflow on `codex/test`. Do not treat that as public release approval until the manual clean-Mac smoke test and final security evidence are recorded.
 
 `npm run prepare:macos-upstream-engines` can stage the reviewed upstream macOS candidates for PDFium, LibreOffice and Pandoc on a real Mac. It does not prepare FFmpeg/ffprobe or libvips.
 
