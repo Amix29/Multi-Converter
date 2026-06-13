@@ -91,7 +91,7 @@
 | 🎬 Video | MP4/M4V, MKV, WebM, MOV, AVI, WMV, 3GP/3G2, MTS/M2TS, MPEG-2/MPG/MPEG, OGV |
 
 > **Note**
-> Some formats may be recognized without supporting every possible conversion to every other format. The options shown in the app depend on the source file and the available engines.
+> Some formats may be recognized without supporting every possible conversion to every other format. The options shown in the app depend on the source file and the available engines. AMR output is currently Windows-only because the staged macOS FFmpeg build does not include the OpenCORE AMR encoder.
 
 ---
 

@@ -2814,13 +2814,9 @@ mod tests {
     #[test]
     #[ignore = "full conversion matrix is run by npm run test:conversions"]
     fn conversion_matrix_all_ffmpeg_audio_targets_probe() {
-        let source_formats = [
-            "mp3", "m4a", "flac", "wav", "ogg", "wma", "opus", "aiff", "alac", "ac3", "mp2", "amr",
-            "au", "caf",
-        ];
         let dir = tempfile::tempdir().unwrap();
 
-        for source_format in source_formats {
+        for source_format in ffmpeg_audio_test_sources() {
             let input = dir.path().join(format!(
                 "source-{}.{}",
                 source_format,
@@ -2925,6 +2921,20 @@ mod tests {
         args.push(path.to_string_lossy().to_string());
 
         run_ffmpeg_args(&args, &format!("fixture audio {source_format}"));
+    }
+
+    fn ffmpeg_audio_test_sources() -> Vec<&'static str> {
+        [
+            "mp3", "m4a", "flac", "wav", "ogg", "wma", "opus", "aiff", "alac", "ac3", "mp2", "amr",
+            "au", "caf",
+        ]
+        .into_iter()
+        .filter(|source_format| {
+            crate::registry::get_targets_for_extension(source_format)
+                .into_iter()
+                .any(|target| target.engine == "ffmpeg" && target.category_id == "audio")
+        })
+        .collect()
     }
 
     fn generate_video_fixture(path: &Path, source_format: &str) {

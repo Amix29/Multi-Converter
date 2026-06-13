@@ -79,6 +79,8 @@ The manual `macOS libvips Runtime` workflow can build those two portable input a
 
 Before saying "all macOS conversions pass", run the manual GitHub `macOS Conversion Matrix` workflow or run `npm run test:macos:conversions` on a real Mac with the same staged inputs. This strict gate must not use `scripts/prepare-tauri-ci-sidecars.mjs`; it requires real macOS FFmpeg/ffprobe sidecars and `macos-universal` PDFium, LibreOffice, Pandoc and libvips engine archives.
 
+The current staged macOS FFmpeg build does not include the OpenCORE AMR encoder. AMR output must stay hidden on macOS and must be documented as a macOS limitation until a reviewed FFmpeg build with `libopencore_amrnb` passes `macOS Conversion Matrix`.
+
 ## Suggested Commands
 
 ```bash

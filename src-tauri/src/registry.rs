@@ -155,6 +155,19 @@ const INTEGRATED_DOCUMENT_TARGETS: &[&str] = &[
     "txt", "pdf", "docx", "odt", "rtf", "html", "md", "epub", "xml", "csv", "json",
 ];
 const PDF_TEXT_TARGETS: &[&str] = &["txt", "md", "html", "csv", "json", "xml"];
+#[cfg(target_os = "macos")]
+const FFMPEG_AUDIO_FORMATS: &[&str] = &[
+    "mp3", "m4a", "flac", "wav", "ogg", "wma", "opus", "aiff", "alac", "ac3", "mp2", "au",
+    "caf",
+];
+#[cfg(not(target_os = "macos"))]
+const FFMPEG_AUDIO_FORMATS: &[&str] = &[
+    "mp3", "m4a", "flac", "wav", "ogg", "wma", "opus", "aiff", "alac", "ac3", "mp2", "amr",
+    "au", "caf",
+];
+const FFMPEG_VIDEO_FORMATS: &[&str] = &[
+    "mp4", "mkv", "webm", "mov", "avi", "wmv", "3gp", "mts", "mpeg2", "ogv",
+];
 
 pub fn formats() -> Vec<Format> {
     CATEGORIES
@@ -281,16 +294,8 @@ fn make_pdf_page_archive_target(target: &Format, engine: &str) -> TargetFormat {
 }
 
 pub fn get_engine(source: &Format, target: &Format) -> &'static str {
-    let ffmpeg_audio = [
-        "mp3", "m4a", "flac", "wav", "ogg", "wma", "opus", "aiff", "alac", "ac3", "mp2", "amr",
-        "au", "caf",
-    ];
-    let ffmpeg_video = [
-        "mp4", "mkv", "webm", "mov", "avi", "wmv", "3gp", "mts", "mpeg2", "ogv",
-    ];
-
     if source.id == "gif" && target.category_id == "video" {
-        return if ffmpeg_video.contains(&target.id) {
+        return if FFMPEG_VIDEO_FORMATS.contains(&target.id) {
             "ffmpeg"
         } else {
             "external"
@@ -300,21 +305,27 @@ pub fn get_engine(source: &Format, target: &Format) -> &'static str {
         return "pdfium";
     }
     if source.category_id == "audio" && target.category_id == "audio" {
-        return if ffmpeg_audio.contains(&source.id) && ffmpeg_audio.contains(&target.id) {
+        return if FFMPEG_AUDIO_FORMATS.contains(&source.id)
+            && FFMPEG_AUDIO_FORMATS.contains(&target.id)
+        {
             "ffmpeg"
         } else {
             "external"
         };
     }
     if source.category_id == "video" && target.category_id == "video" {
-        return if ffmpeg_video.contains(&source.id) && ffmpeg_video.contains(&target.id) {
+        return if FFMPEG_VIDEO_FORMATS.contains(&source.id)
+            && FFMPEG_VIDEO_FORMATS.contains(&target.id)
+        {
             "ffmpeg"
         } else {
             "external"
         };
     }
     if source.category_id == "video" && target.category_id == "audio" {
-        return if ffmpeg_video.contains(&source.id) && ffmpeg_audio.contains(&target.id) {
+        return if FFMPEG_VIDEO_FORMATS.contains(&source.id)
+            && FFMPEG_AUDIO_FORMATS.contains(&target.id)
+        {
             "ffmpeg"
         } else {
             "external"
@@ -519,6 +530,23 @@ mod tests {
                 .iter()
                 .any(|target| target.format == "mp3" && target.engine == "ffmpeg")
         );
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn macos_hides_amr_until_bundled_ffmpeg_supports_opencore() {
+        assert!(get_targets_for_extension("amr").is_empty());
+        assert!(!get_targets_for_extension("wav")
+            .iter()
+            .any(|target| target.format == "amr"));
+    }
+
+    #[test]
+    #[cfg(not(target_os = "macos"))]
+    fn non_macos_keeps_amr_targets() {
+        assert!(get_targets_for_extension("wav")
+            .iter()
+            .any(|target| target.format == "amr" && target.engine == "ffmpeg"));
     }
 
     #[test]
