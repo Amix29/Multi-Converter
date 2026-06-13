@@ -692,7 +692,7 @@ fn audio_args(target_format: &str) -> Result<Vec<&'static str>> {
             "-vn", "-ar", "44100", "-ac", "2", "-codec:a", "mp2", "-b:a", "192k",
         ],
         "amr" => vec![
-            "-vn", "-ar", "8000", "-ac", "1", "-codec:a", "amr_nb", "-f", "amr",
+            "-vn", "-ar", "8000", "-ac", "1", "-codec:a", "libopencore_amrnb", "-f", "amr",
         ],
         "au" => vec!["-vn", "-codec:a", "pcm_s16be", "-f", "au"],
         "caf" => vec!["-vn", "-codec:a", "pcm_s16be", "-f", "caf"],

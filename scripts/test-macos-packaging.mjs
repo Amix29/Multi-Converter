@@ -231,6 +231,7 @@ assert.match(enginesRust, /resource_dir\.join\("binaries"\)\.join\(&universal_bi
 assert.match(enginesRust, /manifest_binaries_dir\.join\(&universal_binary_name\)/, "runtime must check source-tree universal sidecars for macOS dev and tests");
 assert.match(convertersRust, /fn sidecar_test_names\(stem: &str\) -> Vec<String>/, "conversion tests must resolve sidecars by platform");
 assert.match(convertersRust, /format!\("\{stem\}-universal-apple-darwin"\)/, "conversion tests must prefer universal macOS sidecars");
+assert.match(convertersRust, /libopencore_amrnb/, "AMR conversion must use FFmpeg's libopencore AMR-NB encoder name");
 assert.match(packageScript, /platform !== "windows-x64" && engine\.binaryPaths\.includes\(relative\)/, "engine packaging must require executable bits for non-Windows binaries");
 assert.match(packageScript, /canCheckExecutableBits\(\)/, "engine packaging must gate executable-bit checks by host capability");
 assert.match(packageScript, /Lien symbolique non relatif refuse/, "engine packaging must reject absolute symbolic links");
