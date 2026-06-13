@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { validateReleaseNotes } from "./lib/release-notes-validation.mjs";
 
 const args = parseArgs(process.argv.slice(2));
 const version = args.version ?? readPackageVersion();
@@ -11,6 +12,7 @@ const bundleDir = path.resolve(
 );
 const outDir = path.resolve(args.dir ?? path.join(os.tmpdir(), "mc-release-assets", tag));
 const notes = readReleaseNotes(args).trim();
+const includeMacos = Boolean(args.macosDmg);
 
 if (!version.match(/^\d+\.\d+\.\d+$/)) fail(`Invalid version "${version}". Expected X.Y.Z.`);
 if (tag !== `v${version}`) fail(`Tag "${tag}" does not match version "${version}". Expected v${version}.`);
@@ -22,7 +24,8 @@ const signaturePath = path.join(bundleDir, `${versionedInstaller}.sig`);
 
 if (!fs.existsSync(installerPath)) fail(`Missing NSIS installer: ${installerPath}`);
 if (!fs.existsSync(signaturePath)) fail(`Missing updater signature: ${signaturePath}`);
-if (notes.length < 200) fail("Release notes are missing or unexpectedly short.");
+const notesValidation = validateReleaseNotes({ body: notes, version, includeMacos, minLength: 200 });
+if (!notesValidation.ok) fail(notesValidation.errors.join("\n"));
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });

@@ -104,6 +104,7 @@ const allUnsupportedMacosConversionClaimDir = fs.mkdtempSync(path.join(os.tmpdir
 const preparedBundleDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-bundle-"));
 const preparedOutputDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-output-"));
 const preparedDmgDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-dmg-"));
+const preparedBadNotesDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-bad-notes-"));
 
 try {
   writeWindowsAssets(windowsDir);
@@ -170,6 +171,14 @@ try {
   );
   assert.ok(!fs.existsSync(path.join(preparedOutputDir, "stale.log")), "prepare-release-assets must clean stale files from the output directory");
   runValidator(preparedOutputDir, "all");
+
+  runPrepareFails(
+    preparedBundleDir,
+    preparedBadNotesDir,
+    notesWithoutMacosWarning,
+    path.join(preparedDmgDir, "source.dmg"),
+    "not Apple-signed",
+  );
 } finally {
   for (const dir of [
     windowsDir,
@@ -185,6 +194,7 @@ try {
     preparedBundleDir,
     preparedOutputDir,
     preparedDmgDir,
+    preparedBadNotesDir,
   ]) {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -308,30 +318,39 @@ function writeBundleFixture(dir) {
 }
 
 function runPrepare(bundleDir, outDir, releaseNotes, macosDmg) {
-  const result = spawnSync(
-    process.execPath,
-    [
-      "scripts/prepare-release-assets.mjs",
-      "--version",
-      version,
-      "--bundle-dir",
-      bundleDir,
-      "--dir",
-      outDir,
-      "--notes-env",
-      "MC_TEST_RELEASE_NOTES",
-      "--macos-dmg",
-      macosDmg,
-    ],
-    {
-      cwd: root,
-      env: { ...process.env, MC_TEST_RELEASE_NOTES: releaseNotes },
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-      windowsHide: true,
-    },
-  );
+  const result = runPrepareProcess(bundleDir, outDir, releaseNotes, macosDmg);
   assert.equal(result.status, 0, result.stderr || result.stdout);
+}
+
+function runPrepareFails(bundleDir, outDir, releaseNotes, macosDmg, expectedMessage) {
+  const result = runPrepareProcess(bundleDir, outDir, releaseNotes, macosDmg);
+  assert.notEqual(result.status, 0, "prepare-release-assets unexpectedly passed");
+  const output = `${result.stderr}\n${result.stdout}`;
+  assert.match(output, new RegExp(expectedMessage.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), output);
+}
+
+function runPrepareProcess(bundleDir, outDir, releaseNotes, macosDmg) {
+  const args = [
+    "scripts/prepare-release-assets.mjs",
+    "--version",
+    version,
+    "--bundle-dir",
+    bundleDir,
+    "--dir",
+    outDir,
+    "--notes-env",
+    "MC_TEST_RELEASE_NOTES",
+  ];
+  if (macosDmg) {
+    args.push("--macos-dmg", macosDmg);
+  }
+  return spawnSync(process.execPath, args, {
+    cwd: root,
+    env: { ...process.env, MC_TEST_RELEASE_NOTES: releaseNotes },
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
 }
 
 function sha256(value) {
