@@ -8,6 +8,7 @@ const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
 const securityPolicy = fs.readFileSync(path.join(root, "SECURITY.md"), "utf8");
 const githubTopics = fs.readFileSync(path.join(root, "docs", "GITHUB_TOPICS.md"), "utf8");
 const testingDocs = fs.readFileSync(path.join(root, "docs", "TESTING.md"), "utf8");
+const secretLeakScript = fs.readFileSync(path.join(root, "scripts", "test-secret-leaks.mjs"), "utf8");
 const keywords = new Set(packageJson.keywords ?? []);
 const topics = new Set(
   (githubTopics.match(/```text\s+([\s\S]*?)```/)?.[1] ?? "")
@@ -103,5 +104,9 @@ assert.match(testingDocs, /npm run test:secret-leaks/, "testing docs must docume
 assert.match(testingDocs, /npm run test:production-config/, "testing docs must document the production config test");
 assert.match(testingDocs, /current preparation state[\s\S]*`releaseReady` should remain false/, "testing docs must state that current V1.0.5 readiness remains false until real macOS validation");
 assert.match(testingDocs, /same audit can report `releaseReady: true`/, "testing docs must allow the status audit to pass once final macOS proof exists");
+assert.match(secretLeakScript, /private test repository reference/, "secret leak scan must reject private test repository references");
+assert.match(secretLeakScript, /maintainer local Windows path/, "secret leak scan must reject maintainer-local Windows paths");
+assert.match(secretLeakScript, /AuthKey_/, "secret leak scan must reject Apple signing private key filenames");
+assert.match(secretLeakScript, /TAURI_SIGNING_PRIVATE_KEY/, "secret leak scan must reject accidental Tauri signing key values");
 
 console.log("Repository metadata tests passed.");

@@ -9,13 +9,16 @@ const ignoredPaths = new Set([
   "package-lock.json",
 ]);
 const ignoredPrefixes = [
-  ".github/",
   "docs/screenshots/",
   "src-tauri/icons/",
   "src-tauri/installer-assets/",
 ];
 const maxTextFileBytes = 2 * 1024 * 1024;
 const patterns = [
+  ["private test repository reference", new RegExp(`\\b(?:Amix29/)?Multi-Converter-Test-${"Prive"}\\b`, "gi")],
+  ["private test repository slug", new RegExp(`\\btest-${"prive"}\\b`, "gi")],
+  ["maintainer local Windows path", /\b[A-Z]:[\\/]+Users[\\/]+ryadb[\\/]+/gi],
+  ["Apple signing private key filename", /\bAuthKey_[A-Z0-9]{10}\.p8\b/g],
   ["private key block", /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----/g],
   ["GitHub token", /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,}\b/g],
   ["GitHub fine-grained token", /\bgithub_pat_[A-Za-z0-9_]{20,}\b/g],
@@ -24,7 +27,7 @@ const patterns = [
   ["Google API key", /\bAIza[A-Za-z0-9_-]{35}\b/g],
   ["Slack token", /\bxox[baprs]-[A-Za-z0-9-]{20,}\b/g],
   ["Tauri signing secret value", /\bTAURI_SIGNING_PRIVATE_KEY(?:_PASSWORD)?\s*[:=]\s*["']?[A-Za-z0-9+/=_-]{32,}/g],
-  ["Apple credential value", /\bAPPLE_(?:API_KEY|API_ISSUER|ID|PASSWORD|TEAM_ID)\s*[:=]\s*["'][^"']{16,}/g],
+  ["Apple credential value", /\bAPPLE_(?:API_KEY|API_ISSUER|ID|PASSWORD|TEAM_ID)\s*[:=]\s*["']?[A-Za-z0-9@._+/=-]{16,}/g],
 ];
 
 const files = gitTrackedFiles();

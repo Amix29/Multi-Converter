@@ -41,6 +41,7 @@ Record this receipt only after testing the final downloaded DMG on a clean macOS
 ## Security And Confidentiality Evidence
 
 - `npm run test:secret-leaks`: passed on June 13, 2026.
+- The tracked-file secret scan now includes GitHub workflow files, private test repository references, maintainer-local Windows paths, Apple signing key filenames and accidental Apple/Tauri signing secret values.
 - `npm run test:production-config`: passed on June 13, 2026.
 - `npm audit --audit-level=moderate`: passed on June 13, 2026 with 0 reported npm vulnerabilities.
 - `cargo audit --file src-tauri/Cargo.lock`: completed on June 13, 2026. It reported the expected allowed warnings already documented for the current Tauri/Linux GTK-related dependency stack, plus unmaintained transitive crates; no new secret exposure was found by this command.
