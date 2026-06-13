@@ -471,6 +471,10 @@ async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir) {
       }
       const linkStat = await fs.lstat(resolvedLinkTarget).catch(() => null);
       if (!linkStat) {
+        if (shouldSkipBrokenFrameworkHeaderSymlink(source)) {
+          console.warn(`Lien symbolique d'en-tete de framework ignore: ${source}`);
+          continue;
+        }
         throw new Error(`Lien symbolique casse refuse: ${source}`);
       }
       await fs.mkdir(path.dirname(target), { recursive: true });
@@ -497,6 +501,12 @@ function normalizeSafeSymlinkTarget(source, linkTarget) {
     return normalizedAbsoluteTarget.replace(/^\/+/, "");
   }
   return null;
+}
+
+function shouldSkipBrokenFrameworkHeaderSymlink(source) {
+  const name = path.basename(source);
+  return (name === "Headers" || name === "PrivateHeaders")
+    && source.split(path.sep).some((part) => part.endsWith(".framework"));
 }
 
 function isExecutableRequired(config, engine, relative) {
