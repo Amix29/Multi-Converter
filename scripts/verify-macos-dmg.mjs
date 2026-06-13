@@ -95,7 +95,7 @@ function verifyBundledEngines(appPath) {
   const files = findFiles(enginesDir, () => true, { maxDepth: 32 });
   if (!files.length) return;
 
-  const windowsOnly = files.find((filePath) => /\.(bat|cmd|dll|exe|msi|ps1)$/i.test(filePath));
+  const windowsOnly = files.find((filePath) => isUnexpectedWindowsOnlyResource(appPath, filePath));
   if (windowsOnly) {
     fail(`Windows-only bundled engine resource found in macOS app bundle: ${path.relative(appPath, windowsOnly)}`);
   }
@@ -121,6 +121,15 @@ function verifyBundledEngines(appPath) {
       }
     }
   }
+}
+
+function isUnexpectedWindowsOnlyResource(appPath, filePath) {
+  if (!/\.(bat|cmd|dll|exe|msi|ps1)$/i.test(filePath)) return false;
+  const relativePath = path.relative(appPath, filePath).replaceAll(path.sep, "/");
+  if (/^Contents\/Resources\/engines\/libreoffice\/compatible\/[^/]+\/LibreOffice\.app\/Contents\/Frameworks\/LibreOfficePython\.framework\/Versions\/[^/]+\/lib\/python[^/]+\/ctypes\/macholib\/fetch_macholib\.bat$/i.test(relativePath)) {
+    return false;
+  }
+  return true;
 }
 
 function hasArchitectures(filePath, ...architectures) {
