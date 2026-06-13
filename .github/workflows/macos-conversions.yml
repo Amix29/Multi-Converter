@@ -11,6 +11,8 @@ on:
       - "scripts/test-macos-host.mjs"
       - "scripts/test-macos-conversions.mjs"
       - "scripts/test-github-workflows.mjs"
+      - "src-tauri/src/converters.rs"
+      - "src-tauri/src/registry.rs"
   workflow_dispatch:
     inputs:
       sidecar_release_tag:

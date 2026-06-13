@@ -159,6 +159,7 @@ assert.match(macosConversionsWorkflow, /name:\s+macOS Conversion Matrix/, "macOS
 assert.match(macosConversionsWorkflow, /workflow_dispatch:/, "macOS conversion workflow must be manually runnable");
 assert.match(macosConversionsWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS conversion workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosConversionsWorkflow, /scripts\/validate-bundled-engines\.mjs/, "macOS conversion push paths must include bundled-engine validation changes");
+assert.match(macosConversionsWorkflow, /src-tauri\/src\/converters\.rs/, "macOS conversion push paths must include converter changes");
 assert.match(macosConversionsWorkflow, /sidecar_release_tag:/, "macOS conversion workflow must allow staged real sidecars from a release tag");
 assert.match(macosConversionsWorkflow, /engine_release_tag:/, "macOS conversion workflow must allow staged engine archives from a release tag");
 assert.match(macosConversionsWorkflow, /engine_staging_run_id:/, "macOS conversion workflow must allow staged engines from a workflow artifact");
