@@ -186,6 +186,8 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$TMPDIR/mc-release-ass
 
 After the test passes, record the result in `docs/V1_0_5_VALIDATION.md` under `## Manual Clean-Mac Smoke Test Receipt`. Do not change `Manual clean-Mac smoke testing` to `success` unless every required smoke-test line is `yes` for the final downloaded DMG:
 
+- `Architecture tested` must name Apple Silicon or Intel
+- `DMG source` must identify the final downloaded GitHub release DMG
 - `Mounted final downloaded DMG`
 - `Dragged app to Applications`
 - `Unsigned/not-notarized first launch warning verified`

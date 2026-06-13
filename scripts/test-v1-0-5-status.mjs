@@ -53,6 +53,14 @@ try {
   assert.equal(missingMetadataStatus.summary.hasManualCleanMacEvidence, false, "receipt metadata must be recorded before clean-Mac proof counts");
   assert.match(missingMetadataStatus.summary.cleanMacSmokeEvidence.missing.join("\n"), /Date recorded/, "missing receipt metadata must be reported explicitly");
 
+  const vagueArchitectureStatus = runStatus("vague-architecture.md", completedReceipt(currentEvidence).replace("- Architecture tested: Apple Silicon", "- Architecture tested: clean test machine"));
+  assert.equal(vagueArchitectureStatus.summary.hasManualCleanMacEvidence, false, "clean-Mac proof must name Apple Silicon or Intel");
+  assert.match(vagueArchitectureStatus.summary.cleanMacSmokeEvidence.missing.join("\n"), /Architecture tested records Apple Silicon or Intel/, "vague architecture evidence must be reported explicitly");
+
+  const localDmgSourceStatus = runStatus("local-dmg-source.md", completedReceipt(currentEvidence).replace("- DMG source: final downloaded GitHub release asset", "- DMG source: local workflow artifact"));
+  assert.equal(localDmgSourceStatus.summary.hasManualCleanMacEvidence, false, "clean-Mac proof must use the final downloaded release DMG");
+  assert.match(localDmgSourceStatus.summary.cleanMacSmokeEvidence.missing.join("\n"), /Final downloaded GitHub release DMG source recorded/, "local DMG source evidence must be reported explicitly");
+
   const untrustedSecurityStatus = runStatus(
     "untrusted-security.md",
     `${completedReceipt(currentEvidence)}
