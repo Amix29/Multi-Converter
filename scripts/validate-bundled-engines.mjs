@@ -29,6 +29,7 @@ for (const engine of bundledAdvancedEngines(manifest)) {
   for (const relative of engine.binaryPaths ?? []) {
     validateFile(engine.id, path.join(engineRoot, normalizeArchivePath(relative)), { executable: platform !== "windows-x64" });
   }
+  validateNoBrokenSymlinks(engineRoot, engine);
   validateEngineSmoke(engineRoot, engine);
 }
 
@@ -72,6 +73,22 @@ function validateNoStaleBundledEngines(value) {
         errors.push(`moteur embarque hors plateforme pour ${platform} (${path.relative(root, versionPath)})`);
       }
     }
+  }
+}
+
+function validateNoBrokenSymlinks(engineRoot, engine) {
+  if (platform === "windows-x64") return;
+
+  const broken = [];
+  walkEntries(engineRoot, (filePath, entry) => {
+    if (!entry.isSymbolicLink()) return;
+    if (!fs.existsSync(filePath)) {
+      broken.push(path.relative(root, filePath));
+    }
+  });
+
+  if (broken.length) {
+    errors.push(`${engine.id}: lien symbolique casse (${broken[0]})`);
   }
 }
 
@@ -205,6 +222,17 @@ function validateFile(id, filePath, options = {}) {
     return false;
   }
   return true;
+}
+
+function walkEntries(startDir, visit) {
+  const entries = fs.readdirSync(startDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const full = path.join(startDir, entry.name);
+    visit(full, entry);
+    if (entry.isDirectory()) {
+      walkEntries(full, visit);
+    }
+  }
 }
 
 function normalizeArchivePath(relative) {

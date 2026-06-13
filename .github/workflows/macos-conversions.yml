@@ -94,9 +94,7 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: src-tauri/bundled-engines
-          key: ${{ runner.os }}-macos-conversions-bundled-engines-${{ hashFiles('src-tauri/engines-manifest.json') }}
-          restore-keys: |
-            ${{ runner.os }}-macos-conversions-bundled-engines-
+          key: ${{ runner.os }}-macos-conversions-bundled-engines-${{ env.ENGINE_STAGING_RUN_ID || env.ENGINE_RELEASE_TAG || 'embedded-manifest' }}-${{ hashFiles('src-tauri/engines-manifest.json') }}
 
       - run: npm ci
 

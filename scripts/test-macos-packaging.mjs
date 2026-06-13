@@ -222,7 +222,9 @@ for (const name of ["ffmpeg", "ffprobe"]) {
 assert.match(prepareScript, /spawnSync\("lipo", \["-create"/, "macOS preparation must create universal sidecars with lipo");
 assert.match(prepareScript, /async function pruneBundledEngines\(expectedEngines\)/, "macOS preparation must prune stale bundled engines before packaging");
 assert.match(prepareScript, /Refusing to remove path outside bundled engines/, "stale engine pruning must guard recursive removals");
+assert.match(prepareScript, /assertNoBrokenSymlinksForNonWindowsEngine/, "macOS preparation must reject stale bundled engines with broken symbolic links");
 assert.match(validateScript, /function validateNoStaleBundledEngines\(value\)/, "bundled engine validation must reject stale platform resources");
+assert.match(validateScript, /function validateNoBrokenSymlinks\(engineRoot, engine\)/, "bundled engine validation must reject broken symbolic links before Tauri packaging");
 assert.match(validateScript, /validateFile\(engine\.id,[\s\S]*executable:\s*platform !== "windows-x64"/, "bundled engine validation must require executable bits only for declared binary paths");
 assert.match(validateScript, /function validateFile\(id, filePath, options = \{\}\)/, "bundled engine validation must allow non-executable metadata, license and notice files");
 assert.match(validateScript, /function architectureScore\(filePath\)/, "bundled engine validation must score macOS executable candidates by architecture");

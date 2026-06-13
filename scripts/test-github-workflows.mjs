@@ -223,6 +223,8 @@ assert.match(macosConversionsJob, /runs-on:\s+\$\{\{\s*matrix\.runner\s*\}\}/, "
 assert.match(macosConversionsJob, /timeout-minutes:\s+180/, "macOS conversion matrix must allow enough time for real engine downloads and conversions");
 assert.match(macosConversionsJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS conversion matrix must validate macos-universal engines");
 assert.match(macosConversionsJob, /MACOS_CONVERSION_ARCH:\s+\$\{\{\s*matrix\.arch\s*\}\}/, "macOS conversion matrix must expose the tested architecture to logs and subprocesses");
+assert.match(macosConversionsJob, /macos-conversions-bundled-engines-\$\{\{\s*env\.ENGINE_STAGING_RUN_ID \|\| env\.ENGINE_RELEASE_TAG \|\| 'embedded-manifest'\s*\}\}/, "macOS conversion matrix bundled-engine cache must be keyed by the staged engine source");
+assert.doesNotMatch(macosConversionsJob, /restore-keys:\s*\|\r?\n\s+\$\{\{\s*runner\.os\s*\}\}-macos-conversions-bundled-engines-/, "macOS conversion matrix must not restore stale bundled-engine caches across staging runs");
 assert.doesNotMatch(macosConversionsJob, /prepare-tauri-ci-sidecars/, "macOS conversion matrix must never use compile-only placeholder sidecars");
 assert.match(macosConversionsJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS conversion matrix must install both Darwin Rust targets");
 assert.match(macosConversionsJob, /Download staged macOS engine archives from a release/, "macOS conversion matrix must support staged macOS engine release assets");

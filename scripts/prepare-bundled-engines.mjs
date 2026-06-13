@@ -145,6 +145,7 @@ async function prepareBundledEngine(engine) {
   await fs.mkdir(path.dirname(targetRoot), { recursive: true });
   await fs.cp(extractDir, targetRoot, { recursive: true, force: true });
   await ensureEngineExecutables(targetRoot, engine);
+  await assertNoBrokenSymlinksForNonWindowsEngine(targetRoot, engine);
 
   if (!(await bundledEngineLooksCurrent(targetRoot, engine))) {
     throw new Error(`${engine.id}: le moteur embarque prepare est incomplet.`);
@@ -260,6 +261,7 @@ async function bundledEngineLooksCurrent(rootDir, engine) {
     await verifyPackageMetadata(rootDir, engine);
     await verifyExpectedFiles(rootDir, engine);
     await assertNoWindowsOnlyResourcesForNonWindowsEngine(rootDir, engine);
+    await assertNoBrokenSymlinksForNonWindowsEngine(rootDir, engine);
     return true;
   } catch {
     return false;
@@ -413,6 +415,23 @@ async function assertNoWindowsOnlyResourcesForNonWindowsEngine(rootDir, engine) 
   }
 }
 
+async function assertNoBrokenSymlinksForNonWindowsEngine(rootDir, engine) {
+  if (platform === "windows-x64") return;
+
+  const broken = [];
+  await walkEntries(rootDir, async (filePath, entry) => {
+    if (!entry.isSymbolicLink()) return;
+    const stat = await fs.stat(filePath).catch(() => null);
+    if (!stat) {
+      broken.push(path.relative(rootDir, filePath).replaceAll(path.sep, "/"));
+    }
+  });
+
+  if (broken.length) {
+    throw new Error(`${engine.id}: lien symbolique casse dans le moteur ${platform}: ${broken[0]}`);
+  }
+}
+
 async function walkFiles(startDir, visit) {
   const entries = await fs.readdir(startDir, { withFileTypes: true }).catch(() => []);
   for (const entry of entries) {
@@ -421,6 +440,17 @@ async function walkFiles(startDir, visit) {
       await walkFiles(full, visit);
     } else if (entry.isFile()) {
       await visit(full);
+    }
+  }
+}
+
+async function walkEntries(startDir, visit) {
+  const entries = await fs.readdir(startDir, { withFileTypes: true }).catch(() => []);
+  for (const entry of entries) {
+    const full = path.join(startDir, entry.name);
+    await visit(full, entry);
+    if (entry.isDirectory()) {
+      await walkEntries(full, visit);
     }
   }
 }
