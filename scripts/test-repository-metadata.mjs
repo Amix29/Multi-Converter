@@ -8,6 +8,7 @@ const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
 const securityPolicy = fs.readFileSync(path.join(root, "SECURITY.md"), "utf8");
 const githubTopics = fs.readFileSync(path.join(root, "docs", "GITHUB_TOPICS.md"), "utf8");
 const testingDocs = fs.readFileSync(path.join(root, "docs", "TESTING.md"), "utf8");
+const macosChecklist = fs.readFileSync(path.join(root, "docs", "RELEASE_CHECKLIST_MACOS.md"), "utf8");
 const secretLeakScript = fs.readFileSync(path.join(root, "scripts", "test-secret-leaks.mjs"), "utf8");
 const keywords = new Set(packageJson.keywords ?? []);
 const topics = new Set(
@@ -104,6 +105,10 @@ assert.match(testingDocs, /npm run test:secret-leaks/, "testing docs must docume
 assert.match(testingDocs, /npm run test:production-config/, "testing docs must document the production config test");
 assert.match(testingDocs, /current preparation state[\s\S]*`releaseReady` should remain false/, "testing docs must state that current V1.0.5 readiness remains false until real macOS validation");
 assert.match(testingDocs, /same audit can report `releaseReady: true`/, "testing docs must allow the status audit to pass once final macOS proof exists");
+assert.match(testingDocs, /strict GitHub `macOS Conversion Matrix` has passed[\s\S]*docs\/V1_0_5_VALIDATION\.md/, "testing docs must reflect current macOS automation evidence");
+assert.doesNotMatch(testingDocs, /strict gate is expected to fail until real macOS sidecars/i, "testing docs must not describe the current macOS conversion matrix as still waiting on staged engines");
+assert.match(macosChecklist, /workflow must fail if any required `macos-universal` advanced engine entry is missing/, "macOS checklist must describe missing engines as a failure condition, not as the current expected state");
+assert.doesNotMatch(macosChecklist, /workflow is expected to fail until all required `macos-universal` advanced engine entries exist/i, "macOS checklist must not say the conversion matrix is still expected to fail");
 assert.match(secretLeakScript, /private test repository reference/, "secret leak scan must reject private test repository references");
 assert.match(secretLeakScript, /maintainer local Windows path/, "secret leak scan must reject maintainer-local Windows paths");
 assert.match(secretLeakScript, /AuthKey_/, "secret leak scan must reject Apple signing private key filenames");

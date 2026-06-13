@@ -127,7 +127,7 @@ Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conv
 - On `codex/test`, push runs require `MC_ENABLE_MACOS_CONVERSIONS=1` and read the staging artifact run from `MC_MACOS_ENGINE_STAGING_RUN_ID`.
 - Do not combine `engine_staging_run_id` with `sidecar_release_tag` or `engine_release_tag` in the same run.
 - The workflow runs `npm run test:macos:conversions` on `macos-latest`.
-- The workflow is expected to fail until all required `macos-universal` advanced engine entries exist in `src-tauri/engines-manifest.json` and their archives download, validate and run.
+- The workflow must fail if any required `macos-universal` advanced engine entry is missing from `src-tauri/engines-manifest.json`, or if any referenced archive cannot download, validate or run.
 - A passing `macOS Conversion Matrix` run is required before release notes or status updates can say that all macOS conversions were tested.
 
 ## GitHub Actions Engine Staging

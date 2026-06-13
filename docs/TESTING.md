@@ -151,7 +151,7 @@ npm run test:pdfium-wrapper
 npm run test:conversions
 ```
 
-At the current V1.0.5 preparation stage this strict gate is expected to fail until real macOS sidecars and all `macos-universal` advanced engine archives are staged and declared in `src-tauri/engines-manifest.json`. That failure is intentional. It prevents release notes or status updates from saying "all macOS conversions pass" before the real conversion stack exists on macOS.
+For v1.0.5, the strict GitHub `macOS Conversion Matrix` has passed with staged real macOS sidecars and `macos-universal` advanced engine archives; the run ID is recorded in `docs/V1_0_5_VALIDATION.md`. Rerun it after any conversion, sidecar, engine, manifest or packaging change before making a new macOS conversion claim. If the real macOS stack is missing or incomplete, this gate must fail instead of allowing release notes or status updates to say that all macOS conversions were tested.
 
 Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Silicon and Intel archives plus SHA-256 checksums. A source may be one combined archive containing both `ffmpeg` and `ffprobe`, or separate `FFMPEG_MACOS_*` and `FFPROBE_MACOS_*` archives with separate SHA-256 values. Use `npm run prepare:libvips-engine:macos` only with two already-portable libvips runtime trees. These scripts are strict packaging gates; they are not CI placeholders and should fail when the inputs are missing, unpinned or still linked to machine-local package manager paths.
 
