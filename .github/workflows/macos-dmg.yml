@@ -8,6 +8,9 @@ on:
       - ".github/workflows/macos-dmg.yml"
       - "scripts/prepare-macos-engine-release-assets.mjs"
       - "scripts/prepare-macos-dmg-artifact.mjs"
+      - "scripts/validate-bundled-engines.mjs"
+      - "scripts/test-macos-host.mjs"
+      - "scripts/test-macos-packaging.mjs"
       - "scripts/verify-macos-dmg.mjs"
       - "scripts/test-github-workflows.mjs"
   workflow_dispatch:

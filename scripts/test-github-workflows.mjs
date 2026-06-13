@@ -130,6 +130,7 @@ assert.match(macosLibvipsRuntimeJob, /gh release upload/, "macOS libvips runtime
 assert.match(macosDmgWorkflow, /name:\s+macOS DMG Build/, "macOS DMG workflow must be clearly named");
 assert.match(macosDmgWorkflow, /workflow_dispatch:/, "macOS DMG workflow must be manually runnable");
 assert.match(macosDmgWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS DMG workflow must be push-runnable from the persistent codex/test branch");
+assert.match(macosDmgWorkflow, /scripts\/validate-bundled-engines\.mjs/, "macOS DMG push paths must include bundled-engine validation changes");
 assert.match(macosDmgWorkflow, /sidecar_release_tag:/, "macOS DMG workflow must allow staged sidecars from a release tag");
 assert.match(macosDmgWorkflow, /engine_release_tag:/, "macOS DMG workflow must allow staged engine archives from a release tag");
 assert.match(macosDmgWorkflow, /engine_staging_run_id:/, "macOS DMG workflow must allow staged engines from a workflow artifact");
@@ -157,6 +158,7 @@ assert.match(macosDmgBuildJob, /actions\/upload-artifact@v4/, "macOS DMG build m
 assert.match(macosConversionsWorkflow, /name:\s+macOS Conversion Matrix/, "macOS conversion workflow must be clearly named");
 assert.match(macosConversionsWorkflow, /workflow_dispatch:/, "macOS conversion workflow must be manually runnable");
 assert.match(macosConversionsWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS conversion workflow must be push-runnable from the persistent codex/test branch");
+assert.match(macosConversionsWorkflow, /scripts\/validate-bundled-engines\.mjs/, "macOS conversion push paths must include bundled-engine validation changes");
 assert.match(macosConversionsWorkflow, /sidecar_release_tag:/, "macOS conversion workflow must allow staged real sidecars from a release tag");
 assert.match(macosConversionsWorkflow, /engine_release_tag:/, "macOS conversion workflow must allow staged engine archives from a release tag");
 assert.match(macosConversionsWorkflow, /engine_staging_run_id:/, "macOS conversion workflow must allow staged engines from a workflow artifact");
