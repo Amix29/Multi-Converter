@@ -12,6 +12,8 @@ const currentReadme = fs.readFileSync(path.join(root, "README.md"), "utf8");
 try {
   const currentStatus = runStatus("current.md", currentEvidence, { assertMode: true });
   assert.equal(currentStatus.summary.hasManualCleanMacEvidence, false, "current pending receipt must not count as clean-Mac proof");
+  assert.equal(currentStatus.summary.hasMacosTwoArchitectureConversionEvidence, false, "current single-run macOS conversion evidence must not count as two-architecture proof");
+  assert.match(currentStatus.blockers.join("\n"), /Apple Silicon and Intel/, "current status must require both Apple Silicon and Intel conversion evidence");
   assert.match(currentStatus.blockers.join("\n"), /Manual clean-Mac Gatekeeper\/install smoke testing/, "current status must keep the clean-Mac blocker");
   const currentReadyGate = runStatus("current-require-ready.md", currentEvidence, { requireReady: true, expectedStatus: 1 });
   assert.equal(currentReadyGate.status.releaseReady, false, "require-ready fixture must still write the failing status JSON");
@@ -40,7 +42,8 @@ try {
   const completedReceiptStatus = runStatus("completed-receipt.md", completedReceipt(currentEvidence));
   assert.equal(completedReceiptStatus.summary.hasManualCleanMacEvidence, true, "a complete receipt section must count as clean-Mac proof");
   assert.equal(completedReceiptStatus.summary.cleanMacSmokeEvidence.missing.length, 0, "complete receipt should not report missing smoke-test fields");
-  assert.equal(completedReceiptStatus.releaseReady, false, "clean-Mac proof alone must not bypass the final security gate");
+  assert.equal(completedReceiptStatus.releaseReady, false, "clean-Mac proof alone must not bypass final conversion and security gates");
+  assert.match(completedReceiptStatus.blockers.join("\n"), /Conversion Matrix/, "clean-Mac proof alone must keep the two-architecture conversion blocker");
   assert.match(completedReceiptStatus.blockers.join("\n"), /Codex Security/, "clean-Mac proof alone must keep the security blocker");
 
   const missingMetadataStatus = runStatus("missing-metadata.md", completedReceipt(currentEvidence).replace("- Date: 2026-06-13", "- Date: pending"));
@@ -59,6 +62,14 @@ try {
   );
   assert.equal(untrustedSecurityStatus.status.releaseReady, false, "Codex Security evidence outside the security section must not unlock readiness");
   assert.match(untrustedSecurityStatus.output, /Codex Security/, "untrusted security evidence must keep the security blocker");
+
+  const appleSiliconOnlyStatus = runStatus("apple-silicon-only.md", completedReleaseEvidence(currentEvidence).replace(/^- macOS Conversion Matrix \(Intel\):.*\n/m, ""), {
+    requireReady: true,
+    expectedStatus: 1,
+    readme: readyReadme(currentReadme),
+  });
+  assert.equal(appleSiliconOnlyStatus.status.releaseReady, false, "Apple Silicon-only conversion proof must not unlock universal macOS readiness");
+  assert.match(appleSiliconOnlyStatus.output, /Intel/, "missing Intel conversion evidence must be reported explicitly");
 
   const missingReadmeInstallNotesStatus = runStatus("missing-readme-install-notes.md", completedReleaseEvidence(currentEvidence), {
     requireReady: true,
@@ -132,9 +143,16 @@ function completedReceipt(evidence) {
 }
 
 function completedReleaseEvidence(evidence) {
-  return completedReceipt(evidence).replace(
+  return completedReceipt(finalMacosConversionEvidence(evidence)).replace(
     "The exhaustive Codex Security subagent scan is still pending explicit maintainer approval for subagent use. Do not mark the full v1.0.5 goal complete until that scan, or an approved equivalent, is finished and any findings are resolved or explicitly accepted.",
     "- Exhaustive Codex Security subagent scan: accepted\n- Security reviewer: maintainer-approved fixture",
+  );
+}
+
+function finalMacosConversionEvidence(evidence) {
+  return evidence.replace(
+    /^- macOS Conversion Matrix \(single macOS runner\):.*$/m,
+    "- macOS Conversion Matrix (Apple Silicon): run `9990001`, success. Passed the strict macOS conversion matrix for the conversions exposed on macOS with the staged engine set.\n- macOS Conversion Matrix (Intel): run `9990002`, success. Passed the strict macOS conversion matrix for the conversions exposed on macOS with the staged engine set.",
   );
 }
 

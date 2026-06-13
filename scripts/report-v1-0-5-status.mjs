@@ -39,7 +39,19 @@ const macosAdvancedEngineIds = new Set(macosAdvancedEngines.map((engine) => engi
 const missingMacosAdvancedEngines = requiredAdvancedEngines.filter((id) => !macosAdvancedEngineIds.has(id));
 const missingMacosSidecars = requiredMacosSidecars.filter((name) => !fs.existsSync(path.join(root, "src-tauri", "binaries", name)));
 const macosAutomationEvidence = macosAutomationEvidenceFromDocs();
-const hasMacosAutomatedReleaseEvidence = Object.values(macosAutomationEvidence).every(Boolean);
+const hasMacosTwoArchitectureConversionEvidence =
+  macosAutomationEvidence.conversionMatrixAppleSilicon &&
+  macosAutomationEvidence.conversionMatrixIntel;
+const hasMacosAutomatedBaselineEvidence =
+  macosAutomationEvidence.libvipsRuntime &&
+  macosAutomationEvidence.engineStaging &&
+  (macosAutomationEvidence.conversionMatrixSingleRunner || hasMacosTwoArchitectureConversionEvidence) &&
+  macosAutomationEvidence.dmgBuild;
+const hasMacosAutomatedReleaseEvidence =
+  macosAutomationEvidence.libvipsRuntime &&
+  macosAutomationEvidence.engineStaging &&
+  hasMacosTwoArchitectureConversionEvidence &&
+  macosAutomationEvidence.dmgBuild;
 const cleanMacSmokeEvidence = cleanMacSmokeEvidenceFromDocs();
 const hasManualCleanMacEvidence = cleanMacSmokeEvidence.complete;
 const hasMacosPublicReleaseEvidence = hasMacosAutomatedReleaseEvidence && hasManualCleanMacEvidence;
@@ -61,7 +73,7 @@ const checks = [
   check("release validator guards macOS conversion coverage claims", /claimsFullMacosConversionCoverage/.test(releaseNotesValidator)),
   check("production config does not expose broad Tauri env variables", packageJson.scripts?.check?.includes("test:production-config") && /must not expose broad TAURI_/.test(productionConfigTest)),
   check("secret leak guard is part of the local quality gate", packageJson.scripts?.check?.includes("test:secret-leaks") && /Potential secret leak detected/.test(secretLeakTest)),
-  check("v1.0.5 validation evidence records macOS CI runs", hasMacosAutomatedReleaseEvidence),
+  check("v1.0.5 validation evidence records macOS CI runs", hasMacosAutomatedBaselineEvidence),
   check("v1.0.5 validation evidence records security checks", hasSecurityCheckEvidence),
   check("v1.0.5 validation evidence includes a structured clean-Mac smoke receipt", cleanMacSmokeReceipt.length > 0 && /Mounted final downloaded DMG/.test(cleanMacSmokeReceipt) && /Opened through System Settings > Privacy & Security > Open Anyway/.test(cleanMacSmokeReceipt)),
   check("testing docs warn static checks do not prove macOS conversions", /They do not prove that macOS conversions work\./.test(testingDocs)),
@@ -81,6 +93,8 @@ const status = {
     totalChecks: checks.length,
     blockerCount: evidenceBlockers.length,
     hasMacosAutomatedReleaseEvidence,
+    hasMacosAutomatedBaselineEvidence,
+    hasMacosTwoArchitectureConversionEvidence,
     hasManualCleanMacEvidence,
     hasSecurityCheckEvidence,
     hasCodexSecurityScanEvidence,
@@ -120,7 +134,7 @@ function check(name, passed) {
 function macosEvidenceBlockers() {
   const blockers = [];
   if (!hasMacosAutomatedReleaseEvidence) {
-    if (process.platform !== "darwin") {
+    if (!macosAutomationEvidence.dmgBuild && process.platform !== "darwin") {
       blockers.push("macOS universal DMG build and verification still require a real macOS host or successful macOS GitHub Actions evidence.");
     }
     if (!macosAutomationEvidence.engineStaging && missingMacosSidecars.length > 0) {
@@ -129,8 +143,11 @@ function macosEvidenceBlockers() {
     if (!macosAutomationEvidence.engineStaging && missingMacosAdvancedEngines.length > 0) {
       blockers.push(`Missing reviewed macos-universal advanced engines or staging evidence: ${missingMacosAdvancedEngines.join(", ")}.`);
     }
-    if (!macosAutomationEvidence.conversionMatrix) {
-      blockers.push("macOS Conversion Matrix success evidence is missing.");
+    if (!hasMacosTwoArchitectureConversionEvidence) {
+      const missingArchitectures = [];
+      if (!macosAutomationEvidence.conversionMatrixAppleSilicon) missingArchitectures.push("Apple Silicon");
+      if (!macosAutomationEvidence.conversionMatrixIntel) missingArchitectures.push("Intel");
+      blockers.push(`macOS Conversion Matrix success evidence is missing for ${missingArchitectures.join(" and ")}.`);
     }
     if (!macosAutomationEvidence.dmgBuild) {
       blockers.push("macOS universal DMG build and verification success evidence is missing.");
@@ -139,7 +156,7 @@ function macosEvidenceBlockers() {
   if (!macosAutomationEvidence.engineStaging && missingMacosAdvancedEngines.length === 0 && !macosAdvancedEngines.every((engine) => /^[a-f0-9]{64}$/i.test(String(engine.sha256 ?? "")))) {
     blockers.push("One or more macos-universal advanced engines has no pinned SHA-256 checksum.");
   }
-  if (hasMacosAutomatedReleaseEvidence && !hasManualCleanMacEvidence) {
+  if (hasMacosAutomatedBaselineEvidence && !hasManualCleanMacEvidence) {
     if (/Manual clean-Mac smoke testing:\s*success/i.test(cleanMacSmokeReceipt) && cleanMacSmokeEvidence.missing.length > 0) {
       blockers.push(`Manual clean-Mac smoke receipt is incomplete: ${cleanMacSmokeEvidence.missing.join(", ")}.`);
     } else {
@@ -156,7 +173,9 @@ function macosAutomationEvidenceFromDocs() {
   return {
     libvipsRuntime: /macOS libvips Runtime:\s*run `27459737669`, success/i.test(validationEvidence),
     engineStaging: /macOS Engine Staging:\s*run `27463128979`, success/i.test(validationEvidence),
-    conversionMatrix: /macOS Conversion Matrix:\s*run `27464257789`, success/i.test(validationEvidence),
+    conversionMatrixSingleRunner: /macOS Conversion Matrix \(single macOS runner\):\s*run `27464257789`, success/i.test(validationEvidence),
+    conversionMatrixAppleSilicon: /macOS Conversion Matrix \(Apple Silicon\):\s*run `\d+`, success/i.test(validationEvidence),
+    conversionMatrixIntel: /macOS Conversion Matrix \(Intel\):\s*run `\d+`, success/i.test(validationEvidence),
     dmgBuild: /macOS DMG Build:\s*run `27465964283`, success/i.test(validationEvidence) && validationEvidence.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`),
   };
 }

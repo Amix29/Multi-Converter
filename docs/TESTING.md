@@ -136,7 +136,7 @@ This job proves the Rust unit tests run on a real macOS runner and that the PDFi
 
 Do not claim that all macOS conversions work from the `macOS code check` or `macOS host unit tests` jobs. Those jobs are compile/unit gates only.
 
-Full macOS conversion validation is the manual `macOS Conversion Matrix` workflow. It runs on `macos-latest`, refuses CI placeholder sidecars, requires real Apple Silicon and Intel FFmpeg/ffprobe sidecars, requires `macos-universal` manifest entries for PDFium, LibreOffice, Pandoc and libvips, prepares the bundled engines, runs real macOS host validation, runs the PDFium wrapper runtime tests with a macOS PDFium library, and then runs:
+Full macOS conversion validation is the manual `macOS Conversion Matrix` workflow. It runs as a two-architecture matrix on Apple Silicon (`macos-latest`) and Intel (`macos-15-intel`), refuses CI placeholder sidecars, requires real Apple Silicon and Intel FFmpeg/ffprobe sidecars, requires `macos-universal` manifest entries for PDFium, LibreOffice, Pandoc and libvips, prepares the bundled engines, runs real macOS host validation, runs the PDFium wrapper runtime tests with a macOS PDFium library, and then runs:
 
 ```bash
 npm run test:macos:conversions
@@ -151,7 +151,7 @@ npm run test:pdfium-wrapper
 npm run test:conversions
 ```
 
-For v1.0.5, the strict GitHub `macOS Conversion Matrix` has passed with staged real macOS sidecars and `macos-universal` advanced engine archives; the run ID is recorded in `docs/V1_0_5_VALIDATION.md`. Rerun it after any conversion, sidecar, engine, manifest or packaging change before making a new macOS conversion claim. If the real macOS stack is missing or incomplete, this gate must fail instead of allowing release notes or status updates to say that all macOS conversions were tested.
+For v1.0.5, a single-run macOS conversion evidence pass is recorded in `docs/V1_0_5_VALIDATION.md`, but it is not enough for final v1.0.5 readiness. The final gate is the two-architecture `macOS Conversion Matrix` with staged real macOS sidecars and `macos-universal` advanced engine archives passing on both Apple Silicon and Intel. Rerun it after any conversion, sidecar, engine, manifest or packaging change before making a new macOS conversion claim. If the real macOS stack is missing or incomplete, this gate must fail instead of allowing release notes or status updates to say that all macOS conversions were tested.
 
 Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Silicon and Intel archives plus SHA-256 checksums. A source may be one combined archive containing both `ffmpeg` and `ffprobe`, or separate `FFMPEG_MACOS_*` and `FFPROBE_MACOS_*` archives with separate SHA-256 values. Use `npm run prepare:libvips-engine:macos` only with two already-portable libvips runtime trees. These scripts are strict packaging gates; they are not CI placeholders and should fail when the inputs are missing, unpinned or still linked to machine-local package manager paths.
 
@@ -202,9 +202,9 @@ For a local readiness snapshot that does not overclaim macOS support, run:
 npm run status:v1.0.5
 ```
 
-The command writes `tmp/v1.0.5-status.json`. In the current preparation state, `releaseReady` should remain false because the macOS automation evidence has passed, but the final clean-Mac Gatekeeper/install smoke test has not been recorded yet. When that final proof exists, the same audit can report `releaseReady: true` instead of blocking that state.
+The command writes `tmp/v1.0.5-status.json`. In the current preparation state, `releaseReady` should remain false because the final two-architecture macOS conversion matrix, the clean-Mac Gatekeeper/install smoke test and the final security approval have not all been recorded yet. When those final proofs exist, the same audit can report `releaseReady: true` instead of blocking that state.
 
-Current v1.0.5 macOS automation evidence is recorded in `docs/V1_0_5_VALIDATION.md`. It covers macOS engine staging, the macOS Conversion Matrix, and the verified universal DMG artifact. Do not convert that evidence into a public macOS release claim until the manual clean-Mac smoke test is complete.
+Current v1.0.5 macOS automation evidence is recorded in `docs/V1_0_5_VALIDATION.md`. It covers macOS engine staging, a single-run macOS conversion matrix, and the verified universal DMG artifact. Do not convert that evidence into a public macOS release claim until the two-architecture matrix and the manual clean-Mac smoke test are complete.
 
 The clean-Mac smoke test must be recorded in `docs/V1_0_5_VALIDATION.md` under `## Manual Clean-Mac Smoke Test Receipt`. `npm run status:v1.0.5` requires the receipt to name `Multi-Converter_1.0.5_macos-universal.dmg`, mark the test as `success`, and record `yes` for the DMG mount, Applications install, unsigned/not-notarized first-launch warning, `Open Anyway` path, second launch, file selection, FFmpeg media conversion, document/PDF/image advanced conversion, and updater metadata behavior.
 
@@ -220,7 +220,7 @@ For macOS publication, the same preflight also runs:
 npm run status:v1.0.5 -- --require-ready
 ```
 
-That gate intentionally fails until the clean-Mac smoke-test receipt and final Codex Security scan or accepted replacement evidence are recorded, and the README macOS row has been updated from "In development" to the final public DMG. For macOS runs, the shared release-note validator also checks the GitHub release body for the required macOS DMG name, unsigned/not-notarized wording, `Open Anyway` instructions, disabled macOS updater note, macOS verification wording, and `macOS Conversion Matrix` evidence before any full macOS conversion claim. If the preflight fails, the macOS DMG verification job and the publishing job do not run.
+That gate intentionally fails until the two-architecture macOS conversion matrix, the clean-Mac smoke-test receipt and final Codex Security scan or accepted replacement evidence are recorded, and the README macOS row has been updated from "In development" to the final public DMG. For macOS runs, the shared release-note validator also checks the GitHub release body for the required macOS DMG name, unsigned/not-notarized wording, `Open Anyway` instructions, disabled macOS updater note, macOS verification wording, and `macOS Conversion Matrix` evidence before any full macOS conversion claim. If the preflight fails, the macOS DMG verification job and the publishing job do not run.
 
 The minimum manual DMG smoke test is:
 

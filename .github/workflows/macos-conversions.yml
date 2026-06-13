@@ -42,15 +42,26 @@ concurrency:
 
 jobs:
   macos-conversions:
-    name: Real macOS conversion matrix
+    name: Real macOS conversion matrix (${{ matrix.arch_label }})
     if: ${{ github.event_name == 'workflow_dispatch' || vars.MC_ENABLE_MACOS_CONVERSIONS == '1' }}
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64
+            arch_label: Apple Silicon
+            runner: macos-latest
+          - arch: x86_64
+            arch_label: Intel
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 180
     env:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
+      MACOS_CONVERSION_ARCH: ${{ matrix.arch }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SIDECAR_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_release_tag || '' }}
       ENGINE_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_release_tag || '' }}

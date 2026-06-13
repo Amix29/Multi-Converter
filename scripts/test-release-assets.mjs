@@ -90,6 +90,10 @@ const notesWithUnsupportedMacosConversionClaim = [
   "",
   "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed in this test fixture.",
 ].join("\n");
+const notesWithUnsupportedMacosConversionArchitectureClaim = notesWithUnsupportedMacosConversionClaim.replace(
+  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed in this test fixture.",
+  "- Release asset validation, updater metadata validation, naming checks, macOS Conversion Matrix and macOS DMG verification passed in this test fixture.",
+);
 
 const windowsDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-windows-"));
 const allDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-"));
@@ -101,6 +105,7 @@ const allDarwinUpdaterDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all
 const allMissingDmgDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-missing-dmg-"));
 const allMissingMacosValidationDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-missing-macos-validation-"));
 const allUnsupportedMacosConversionClaimDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-unsupported-macos-conversion-claim-"));
+const allUnsupportedMacosConversionArchitectureClaimDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-all-unsupported-macos-conversion-architecture-claim-"));
 const preparedBundleDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-bundle-"));
 const preparedOutputDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-output-"));
 const preparedDmgDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-prepare-dmg-"));
@@ -159,6 +164,10 @@ try {
   writeWindowsAssets(allUnsupportedMacosConversionClaimDir, notesWithUnsupportedMacosConversionClaim);
   fs.writeFileSync(path.join(allUnsupportedMacosConversionClaimDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");
   runValidatorFails(allUnsupportedMacosConversionClaimDir, "all", "macOS Conversion Matrix");
+
+  writeWindowsAssets(allUnsupportedMacosConversionArchitectureClaimDir, notesWithUnsupportedMacosConversionArchitectureClaim);
+  fs.writeFileSync(path.join(allUnsupportedMacosConversionArchitectureClaimDir, `Multi-Converter_${version}_macos-universal.dmg`), "fake dmg\n");
+  runValidatorFails(allUnsupportedMacosConversionArchitectureClaimDir, "all", "Apple Silicon and Intel");
 
   writeBundleFixture(preparedBundleDir);
   fs.writeFileSync(path.join(preparedDmgDir, "source.dmg"), "fake dmg\n");

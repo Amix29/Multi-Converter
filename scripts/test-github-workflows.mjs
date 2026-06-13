@@ -202,9 +202,14 @@ assert.match(macosConversionsWorkflow, /engine_staging_run_id:/, "macOS conversi
 assert.match(macosConversionsWorkflow, /permissions:[\s\S]*?actions:\s+read/, "macOS conversion workflow must be able to download staging workflow artifacts");
 assert.match(macosConversionsJob, /vars\.MC_ENABLE_MACOS_CONVERSIONS == '1'/, "codex/test macOS conversion push runs must require an explicit repository variable gate");
 assert.match(macosConversionsJob, /vars\.MC_MACOS_ENGINE_STAGING_RUN_ID/, "codex/test macOS conversion push runs must read the staging run ID from a repository variable");
-assert.match(macosConversionsJob, /runs-on:\s+macos-latest/, "macOS conversion matrix must run on a macOS runner");
+assert.match(macosConversionsJob, /name:\s+Real macOS conversion matrix \(\$\{\{\s*matrix\.arch_label\s*\}\}\)/, "macOS conversion job name must identify the tested architecture");
+assert.match(macosConversionsJob, /strategy:[\s\S]*?fail-fast:\s+false/, "macOS conversion matrix must keep architecture results independent");
+assert.match(macosConversionsJob, /arch:\s+aarch64[\s\S]*?arch_label:\s+Apple Silicon[\s\S]*?runner:\s+macos-latest/, "macOS conversion matrix must run on an Apple Silicon macOS runner");
+assert.match(macosConversionsJob, /arch:\s+x86_64[\s\S]*?arch_label:\s+Intel[\s\S]*?runner:\s+macos-15-intel/, "macOS conversion matrix must run on an Intel macOS runner");
+assert.match(macosConversionsJob, /runs-on:\s+\$\{\{\s*matrix\.runner\s*\}\}/, "macOS conversion matrix must use the runner selected by the architecture matrix");
 assert.match(macosConversionsJob, /timeout-minutes:\s+180/, "macOS conversion matrix must allow enough time for real engine downloads and conversions");
 assert.match(macosConversionsJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS conversion matrix must validate macos-universal engines");
+assert.match(macosConversionsJob, /MACOS_CONVERSION_ARCH:\s+\$\{\{\s*matrix\.arch\s*\}\}/, "macOS conversion matrix must expose the tested architecture to logs and subprocesses");
 assert.doesNotMatch(macosConversionsJob, /prepare-tauri-ci-sidecars/, "macOS conversion matrix must never use compile-only placeholder sidecars");
 assert.match(macosConversionsJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS conversion matrix must install both Darwin Rust targets");
 assert.match(macosConversionsJob, /Download staged macOS engine archives from a release/, "macOS conversion matrix must support staged macOS engine release assets");

@@ -104,6 +104,9 @@ export function validateReleaseNotes({ body, version, includeMacos = false, minL
   if (claimsFullMacosConversionCoverage(notesBody) && !/macOS\s+Conversion\s+Matrix/i.test(notesBody)) {
     errors.push("Release notes must mention the macOS Conversion Matrix before claiming full macOS conversion coverage.");
   }
+  if (claimsFullMacosConversionCoverage(notesBody) && (!/Apple\s+Silicon/i.test(notesBody) || !/Intel/i.test(notesBody))) {
+    errors.push("Release notes must mention Apple Silicon and Intel before claiming full macOS conversion coverage.");
+  }
 
   return { ok: errors.length === 0, errors, notesBody };
 }
