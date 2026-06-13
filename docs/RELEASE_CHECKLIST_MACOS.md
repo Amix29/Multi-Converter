@@ -70,6 +70,7 @@ The manual `macOS libvips Runtime` workflow can build those two portable input a
 - Intel runs on `macos-15-intel`.
 - The workflow installs `vips`, copies the runtime, rewrites non-system dynamic links with `install_name_tool`, rejects remaining absolute package-manager links, smoke-tests `vips copy`, then uploads `libvips-macos-aarch64.tar.gz` and `libvips-macos-x86_64.tar.gz`.
 - On `codex/test`, pushes that touch the workflow or runtime builder run this workflow and produce GitHub Actions artifacts without creating a release.
+- Prefer passing the successful workflow run ID as `libvips_runtime_run_id` for `macOS Engine Staging`.
 - Use `output_release_tag` only when a maintainer intentionally wants a publicly visible prerelease tag. In that case, use the same tag as the `libvips_release_tag` input for `macOS Engine Staging`.
 - Treat the generated notices as staging evidence first. Review copied dependency licenses before a public release.
 - The workflow has an `arch` input for targeted retries. A public macOS release still requires successful `aarch64` and `x86_64` runtime archives.
@@ -129,7 +130,7 @@ Use the manual `macOS Conversion Matrix` workflow when the goal is to prove conv
 Use the manual `macOS Engine Staging` workflow to create the test assets consumed by the conversion and DMG workflows.
 
 - Provide maintainer-approved FFmpeg/ffprobe Apple Silicon and Intel archive URLs plus SHA-256 checksums.
-- Provide a `libvips_release_tag` that contains portable Apple Silicon and Intel libvips runtime archives, preferably produced by `macOS libvips Runtime`. Those archives must contain a `bin/vips` runtime root and bundled non-system dependencies.
+- Provide either `libvips_runtime_run_id` from a successful `macOS libvips Runtime` run, or a `libvips_release_tag` that contains portable Apple Silicon and Intel libvips runtime archives. Those archives must contain a `bin/vips` runtime root and bundled non-system dependencies.
 - The workflow prepares FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips on `macos-latest`, packages `tools/engine-packages.macos.config.json`, uploads a `macos-engine-assets` workflow artifact, and optionally uploads the same assets to `output_release_tag`.
 - On the public main repository, any `output_release_tag` creates publicly visible prerelease assets. Leave it empty unless a maintainer intentionally wants that public test tag.
 - If `output_release_tag` is set, use that same tag as both `sidecar_release_tag` and `engine_release_tag` for `macOS Conversion Matrix` and `macOS DMG Build`.

@@ -26,7 +26,13 @@ on:
         type: string
       libvips_release_tag:
         description: "Release tag containing portable libvips macOS runtime archives"
-        required: true
+        required: false
+        default: ""
+        type: string
+      libvips_runtime_run_id:
+        description: "Optional macOS libvips Runtime workflow run ID containing portable runtime artifacts"
+        required: false
+        default: ""
         type: string
       libvips_aarch64_asset:
         description: "Apple Silicon libvips portable archive asset name"
@@ -40,6 +46,7 @@ on:
         type: string
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -97,7 +104,40 @@ jobs:
       - name: Prepare upstream advanced engines
         run: npm run prepare:macos-upstream-engines
 
-      - name: Download portable libvips inputs
+      - name: Validate libvips input source
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_tag="${{ inputs.libvips_release_tag }}"
+          run_id="${{ inputs.libvips_runtime_run_id }}"
+          if [[ -n "$release_tag" && -n "$run_id" ]]; then
+            echo "Provide only one libvips input source: libvips_release_tag or libvips_runtime_run_id." >&2
+            exit 1
+          fi
+          if [[ -z "$release_tag" && -z "$run_id" ]]; then
+            echo "Provide libvips_runtime_run_id from a successful macOS libvips Runtime run, or libvips_release_tag from an intentional test release." >&2
+            exit 1
+          fi
+
+      - name: Download portable libvips inputs from workflow artifacts
+        if: ${{ inputs.libvips_runtime_run_id != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact_dir="$RUNNER_TEMP/mc-libvips-runtime-artifacts"
+          mkdir -p "$artifact_dir/aarch64" "$artifact_dir/x86_64"
+          gh run download "${{ inputs.libvips_runtime_run_id }}" --repo "$GITHUB_REPOSITORY" --name libvips-macos-aarch64 --dir "$artifact_dir/aarch64"
+          gh run download "${{ inputs.libvips_runtime_run_id }}" --repo "$GITHUB_REPOSITORY" --name libvips-macos-x86_64 --dir "$artifact_dir/x86_64"
+          aarch64_archive="$(find "$artifact_dir/aarch64" -type f -name 'libvips-macos-aarch64.tar.gz' -print -quit)"
+          x86_64_archive="$(find "$artifact_dir/x86_64" -type f -name 'libvips-macos-x86_64.tar.gz' -print -quit)"
+          test -n "$aarch64_archive"
+          test -n "$x86_64_archive"
+          npm run prepare:libvips-macos-release-inputs -- \
+            --aarch64-archive "$aarch64_archive" \
+            --x86_64-archive "$x86_64_archive"
+
+      - name: Download portable libvips inputs from a release
+        if: ${{ inputs.libvips_runtime_run_id == '' }}
         run: >
           npm run prepare:libvips-macos-release-inputs -- --tag "${{ inputs.libvips_release_tag }}"
           --repo "$GITHUB_REPOSITORY"

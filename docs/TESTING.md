@@ -155,7 +155,7 @@ Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Si
 
 The `macOS libvips Runtime` workflow builds native Homebrew-derived libvips runtime archives on Apple Silicon and Intel runners, rewrites their dynamic links to portable `@rpath` links, smoke-tests the native `vips copy` path, and uploads the two archives as GitHub Actions artifacts. On the persistent `codex/test` branch it is also push-runnable when the workflow or runtime builder changes, so libvips portability can be tested before those workflow files are merged to `main`. Its `arch` input can retry one architecture, but complete macOS validation still requires both archives.
 
-Do not set `output_release_tag` unless a maintainer intentionally wants a public prerelease tag to receive those runtime archives. When a reviewed test release tag is used, pass it as `libvips_release_tag` for the engine staging workflow after reviewing dependency licenses.
+Do not set `output_release_tag` unless a maintainer intentionally wants a public prerelease tag to receive those runtime archives. Prefer passing the successful `macOS libvips Runtime` run ID as `libvips_runtime_run_id` to `macOS Engine Staging`; that keeps the handoff inside GitHub Actions artifacts. When a reviewed test release tag is used instead, pass it as `libvips_release_tag` for the engine staging workflow after reviewing dependency licenses.
 
 When GitHub Actions minutes are unavailable, use a real Mac or self-hosted macOS runner instead. After collecting both libvips runtime archives and both FFmpeg archives/checksums, run local staging on macOS:
 
@@ -170,7 +170,7 @@ This command prepares FFmpeg/ffprobe from the configured `FFMPEG_MACOS_*` archiv
 
 For GitHub Actions validation with staged release inputs, upload real sidecars to the tag passed as `sidecar_release_tag`, and upload `engines-manifest.json` plus the referenced macOS engine ZIPs to the tag passed as `engine_release_tag`. The workflows download those assets with `gh release download`, verify their SHA-256 checksums, write only advanced macOS engines into the embedded manifest, then seed `engine-sources/.bundled-engine-cache` so release assets can be tested without relying on public unauthenticated download URLs.
 
-The manual `macOS Engine Staging` workflow can produce that test release when `output_release_tag` is intentionally provided. It still requires explicit FFmpeg archive URLs/checksums and a `libvips_release_tag`; it does not select FFmpeg sources automatically.
+The manual `macOS Engine Staging` workflow can produce that test release when `output_release_tag` is intentionally provided. It still requires explicit FFmpeg archive URLs/checksums and either `libvips_runtime_run_id` or `libvips_release_tag`; it does not select FFmpeg sources automatically.
 
 Before building a DMG on macOS, also run:
 
