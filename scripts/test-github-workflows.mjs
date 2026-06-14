@@ -107,9 +107,11 @@ assert.match(linuxAppImageWorkflow, /vars\.MC_LINUX_ENGINE_STAGING_RUN_ID/, "cod
 assert.match(linuxAppImageBuildJob, /runs-on:\s+ubuntu-22\.04/, "Linux AppImage build must run on the supported Linux baseline");
 assert.match(linuxAppImageBuildJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+linux-x64/, "Linux AppImage build must prepare Linux engines");
 assert.match(linuxAppImageBuildJob, /MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES:\s+1/, "Linux AppImage build must require advanced Linux engines");
+assert.match(linuxAppImageBuildJob, /APPIMAGE_EXTRACT_AND_RUN:\s+1/, "Linux AppImage build must allow linuxdeploy AppImages to run in CI without FUSE mounting");
 assert.match(linuxAppImageBuildJob, /libwebkit2gtk-4\.1-dev/, "Linux AppImage build must install WebKitGTK 4.1 development dependencies");
 assert.match(linuxAppImageBuildJob, /pkg-config/, "Linux AppImage build must install pkg-config for native Linux crates");
 assert.match(linuxAppImageBuildJob, /libdbus-1-dev/, "Linux AppImage build must install DBus development headers");
+assert.match(linuxAppImageBuildJob, /libfuse2/, "Linux AppImage build must install FUSE compatibility for AppImage packaging tools");
 assert.match(linuxAppImageBuildJob, /patchelf\s+\\\s+unzip/, "Linux AppImage build must install unzip for ZIP-based advanced engine extraction");
 assert.match(linuxAppImageBuildJob, /npm run test:linux:environment/, "Linux AppImage build must preflight the Linux build environment");
 assert.match(linuxAppImageBuildJob, /Use either sidecar_release_tag or sidecar_staging_run_id, not both/, "Linux AppImage build must reject ambiguous sidecar staging inputs");

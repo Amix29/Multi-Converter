@@ -78,6 +78,7 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_ENGINE_PLATFORM: linux-x64
       MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES: 1
+      APPIMAGE_EXTRACT_AND_RUN: 1
       SIDECAR_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_release_tag || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_SIDECAR_RELEASE_TAG || '' }}
       SIDECAR_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_SIDECAR_STAGING_RUN_ID || '' }}
       ENGINE_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_release_tag || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_ENGINE_RELEASE_TAG || '' }}
@@ -110,6 +111,7 @@ jobs:
             librsvg2-dev \
             build-essential \
             pkg-config \
+            libfuse2 \
             patchelf \
             unzip
 
