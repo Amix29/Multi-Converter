@@ -138,7 +138,7 @@ async function prepareBundledEngine(engine) {
   const archive = path.join(cacheDir, `${engine.id}-${engine.version}.zip`);
   await downloadVerified(engine.downloadUrl, archive, engine.sha256, engine.id);
   const extractDir = path.join(cacheDir, `${engine.id}-${engine.version}-extract`);
-  await extractArchive(archive, extractDir);
+  await extractArchive(archive, extractDir, engine.archiveType);
   await pruneWindowsOnlyResourcesForNonWindowsEngine(extractDir, engine);
   await verifyPackageMetadata(extractDir, engine);
   await verifyExpectedFiles(extractDir, engine);
