@@ -91,7 +91,7 @@ jobs:
       - name: Install Linux extraction and smoke-test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y unzip tar zip
+          sudo apt-get install -y unzip tar xz-utils zip
 
       - name: Validate Linux engine source inputs
         shell: bash

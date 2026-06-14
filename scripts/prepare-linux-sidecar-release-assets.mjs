@@ -122,9 +122,7 @@ async function extractArchive(archivePath, destination, originalSource) {
   await fs.rm(destination, { recursive: true, force: true });
   await fs.mkdir(destination, { recursive: true });
   const lower = String(originalSource).split(/[?#]/, 1)[0].toLowerCase();
-  const command = lower.endsWith(".zip")
-    ? extractZipCommand(archivePath, destination)
-    : ["tar", ["-xf", archivePath, "-C", destination]];
+  const command = extractArchiveCommand(lower, archivePath, destination);
   const result = spawnSync(command[0], command[1], {
     cwd: root,
     encoding: "utf8",
@@ -133,6 +131,13 @@ async function extractArchive(archivePath, destination, originalSource) {
   if (result.status !== 0) {
     fail(`Linux sidecar archive extraction failed: ${result.stderr || result.stdout || archivePath}`);
   }
+}
+
+function extractArchiveCommand(lowerSource, archivePath, destination) {
+  if (lowerSource.endsWith(".zip")) return extractZipCommand(archivePath, destination);
+  if (lowerSource.endsWith(".tar.xz")) return ["tar", ["-xJf", archivePath, "-C", destination]];
+  if (lowerSource.endsWith(".tar.gz") || lowerSource.endsWith(".tgz")) return ["tar", ["-xzf", archivePath, "-C", destination]];
+  fail(`Unsupported Linux sidecar archive format: ${lowerSource}`);
 }
 
 function extractZipCommand(archivePath, destination) {

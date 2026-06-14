@@ -138,7 +138,7 @@ assert.match(linuxEngineStagingWorkflow, /pandoc_archive_url:/, "Linux engine st
 assert.match(linuxEngineStagingWorkflow, /libvips_archive_url:/, "Linux engine staging workflow must require a libvips input archive");
 assert.match(linuxEngineStagingJob, /runs-on:\s+ubuntu-22\.04/, "Linux engine staging must run on the supported Ubuntu baseline");
 assert.match(linuxEngineStagingJob, /vars\.MC_ENABLE_LINUX_ENGINE_STAGING == '1'/, "codex/test Linux engine staging push runs must require an explicit repository variable gate");
-assert.match(linuxEngineStagingJob, /sudo apt-get install -y unzip tar zip/, "Linux engine staging must install zip because package-engines creates Linux engine archives with the zip CLI");
+assert.match(linuxEngineStagingJob, /sudo apt-get install -y unzip tar xz-utils zip/, "Linux engine staging must install zip and xz extraction tools for Linux engine archives");
 assert.match(linuxEngineStagingJob, /MC_PDFIUM_LINUX_X64_ARCHIVE/, "Linux engine staging must accept PDFium archive variables");
 assert.match(linuxEngineStagingJob, /MC_LIBREOFFICE_LINUX_X64_ARCHIVE/, "Linux engine staging must accept LibreOffice archive variables");
 assert.match(linuxEngineStagingJob, /MC_PANDOC_LINUX_X64_ARCHIVE/, "Linux engine staging must accept Pandoc archive variables");
@@ -158,6 +158,7 @@ assert.match(linuxSidecarStagingWorkflow, /scripts\/lib\/elf\.mjs/, "Linux sidec
 assert.match(linuxSidecarStagingWorkflow, /scripts\/lib\/ffmpeg-version\.mjs/, "Linux sidecar staging workflow push paths must include the shared FFmpeg version contract helper");
 assert.match(linuxSidecarStagingJob, /runs-on:\s+ubuntu-22\.04/, "Linux sidecar staging must run on the supported Ubuntu baseline");
 assert.match(linuxSidecarStagingJob, /vars\.MC_ENABLE_LINUX_SIDECAR_STAGING == '1'/, "codex/test Linux sidecar staging push runs must require an explicit repository variable gate");
+assert.match(linuxSidecarStagingJob, /sudo apt-get install -y tar unzip xz-utils/, "Linux sidecar staging must install extraction tools for ZIP and .tar.xz sidecar sources");
 assert.match(linuxSidecarStagingJob, /MC_FFMPEG_LINUX_X64_BINARY/, "Linux sidecar staging must accept a Linux FFmpeg binary repository variable");
 assert.match(linuxSidecarStagingJob, /MC_FFPROBE_LINUX_X64_BINARY/, "Linux sidecar staging must accept a Linux ffprobe binary repository variable");
 assert.match(linuxSidecarStagingJob, /Invalid Linux sidecar output release tag input/, "Linux sidecar staging must validate the optional output release tag before gh release commands");
@@ -452,6 +453,7 @@ assert.match(linuxSidecarReleaseScript, /FFPROBE_LINUX_X64_BINARY/, "Linux sidec
 assert.match(linuxSidecarReleaseScript, /verifySha256/, "Linux sidecar release helper must verify source binary checksums");
 assert.match(linuxSidecarReleaseScript, /extractArchive/, "Linux sidecar release helper must accept checksum-pinned archives from reviewed providers");
 assert.match(linuxSidecarReleaseScript, /tar\.xz|tar\\\.xz/, "Linux sidecar release helper must accept common .tar.xz FFmpeg archives from reviewed providers");
+assert.match(linuxSidecarReleaseScript, /-xJf/, "Linux sidecar release helper must explicitly extract .tar.xz archives with xz support");
 assert.match(linuxSidecarReleaseScript, /archive does not contain/, "Linux sidecar release helper must reject archives without the expected sidecar executable");
 assert.match(linuxSidecarReleaseScript, /not an AppImage/, "Linux sidecar release helper must reject AppImages as sidecar inputs");
 assert.match(linuxSidecarReleaseScript, /source must not be inside the output directory/, "Linux sidecar release helper must reject local sources inside the cleaned output directory");
@@ -460,6 +462,7 @@ assert.match(linuxSidecarReleaseScript, /Linux sidecar smoke tests must run on L
 assert.match(linuxEngineSourcesScript, /Linux engine source preparation must run on Linux x64/, "Linux engine source preparation helper must refuse non-Linux hosts");
 assert.match(linuxEngineSourcesScript, /verifySha256/, "Linux engine source preparation helper must verify source archive checksums");
 assert.match(linuxEngineSourcesScript, /tar\.xz|tar\\\.xz/, "Linux engine source preparation helper must accept common .tar.xz source archives");
+assert.match(linuxEngineSourcesScript, /-xJf/, "Linux engine source preparation helper must explicitly extract .tar.xz archives with xz support");
 assert.match(linuxEngineSourcesScript, /non-Linux file found in source tree/, "Linux engine source preparation helper must reject non-Linux files");
 assert.match(linuxEngineReleaseScript, /engines-manifest\.json/, "Linux staged engine helper must download or read the staged engine manifest");
 assert.match(linuxEngineReleaseScript, /platform = "linux-x64"/, "Linux staged engine helper must filter Linux x64 engine entries");

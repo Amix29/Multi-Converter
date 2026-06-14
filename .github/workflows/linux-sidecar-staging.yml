@@ -66,6 +66,11 @@ jobs:
 
       - run: npm ci
 
+      - name: Install Linux extraction dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tar unzip xz-utils
+
       - name: Validate Linux sidecar inputs
         shell: bash
         run: |

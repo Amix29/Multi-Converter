@@ -79,6 +79,7 @@ assert.match(linuxEngineSourcesPreparer, /process\.platform !== "linux"/, "Linux
 assert.match(linuxEngineSourcesPreparer, /pdfium[\s\S]*libreoffice[\s\S]*pandoc[\s\S]*libvips/, "Linux engine source preparation must cover every advanced engine");
 assert.match(linuxEngineSourcesPreparer, /verifySha256/, "Linux engine source preparation must verify source archive checksums");
 assert.match(linuxEngineSourcesPreparer, /tar\.xz|tar\\\.xz/, "Linux engine source preparation must accept common .tar.xz source archives");
+assert.match(linuxEngineSourcesPreparer, /-xJf/, "Linux engine source preparation must explicitly extract .tar.xz archives with xz support");
 assert.match(linuxEngineSourcesPreparer, /Refusing non-HTTPS Linux engine archive URL/, "Linux engine source preparation must reject non-HTTPS URLs");
 assert.match(linuxEngineSourcesPreparer, /non-Linux file found in source tree/, "Linux engine source preparation must reject Windows/macOS binaries");
 assert.match(linuxEngineSourcesPreparer, /\\\.\(app\|bat\|cmd\|dll\|dmg\|dylib\|exe\|msi\|pkg\|ps1\)/, "Linux engine source preparation must reject non-Linux binary path segments, not only final filenames");
@@ -134,6 +135,7 @@ assert.match(linuxSidecarReleasePreparer, /verifySha256/, "Linux sidecar release
 assert.match(linuxSidecarReleasePreparer, /Refusing non-HTTPS Linux sidecar source URL/, "Linux sidecar release asset staging must reject non-HTTPS URLs");
 assert.match(linuxSidecarReleasePreparer, /extractArchive/, "Linux sidecar release asset staging must accept checksum-pinned archives from reviewed providers");
 assert.match(linuxSidecarReleasePreparer, /tar\.xz|tar\\\.xz/, "Linux sidecar release asset staging must accept common .tar.xz FFmpeg archives from reviewed providers");
+assert.match(linuxSidecarReleasePreparer, /-xJf/, "Linux sidecar release asset staging must explicitly extract .tar.xz archives with xz support");
 assert.match(linuxSidecarReleasePreparer, /not an AppImage/, "Linux sidecar release asset staging must reject AppImages as sidecar inputs");
 assert.match(linuxSidecarReleasePreparer, /source must not be inside the output directory/, "Linux sidecar release asset staging must reject local sources inside the cleaned output directory");
 assert.match(linuxSidecarReleasePreparer, /staged Linux sidecar is not an x86_64 ELF executable/, "Linux sidecar release asset staging must reject non-x86_64 Linux sidecars");

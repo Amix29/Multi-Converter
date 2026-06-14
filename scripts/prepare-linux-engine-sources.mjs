@@ -120,9 +120,7 @@ async function extractArchive(archivePath, destination) {
   await fs.rm(destination, { recursive: true, force: true });
   await fs.mkdir(destination, { recursive: true });
   const name = path.basename(archivePath).toLowerCase();
-  const command = name.endsWith(".zip")
-    ? ["unzip", ["-q", archivePath, "-d", destination]]
-    : ["tar", ["-xf", archivePath, "-C", destination]];
+  const command = extractArchiveCommand(name, archivePath, destination);
   const result = spawnSync(command[0], command[1], {
     cwd: root,
     encoding: "utf8",
@@ -131,6 +129,13 @@ async function extractArchive(archivePath, destination) {
   if (result.status !== 0) {
     fail(`Archive extraction failed for ${archivePath}: ${result.stderr || result.stdout}`);
   }
+}
+
+function extractArchiveCommand(name, archivePath, destination) {
+  if (name.endsWith(".zip")) return ["unzip", ["-q", archivePath, "-d", destination]];
+  if (name.endsWith(".tar.xz")) return ["tar", ["-xJf", archivePath, "-C", destination]];
+  if (name.endsWith(".tar.gz") || name.endsWith(".tgz")) return ["tar", ["-xzf", archivePath, "-C", destination]];
+  return ["tar", ["-xf", archivePath, "-C", destination]];
 }
 
 async function findSourceRoot(startDir, requiredFiles) {
