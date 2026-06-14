@@ -108,6 +108,7 @@ assert.match(linuxAppImageBuildJob, /runs-on:\s+ubuntu-22\.04/, "Linux AppImage 
 assert.match(linuxAppImageBuildJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+linux-x64/, "Linux AppImage build must prepare Linux engines");
 assert.match(linuxAppImageBuildJob, /MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES:\s+1/, "Linux AppImage build must require advanced Linux engines");
 assert.match(linuxAppImageBuildJob, /APPIMAGE_EXTRACT_AND_RUN:\s+1/, "Linux AppImage build must allow linuxdeploy AppImages to run in CI without FUSE mounting");
+assert.match(linuxAppImageBuildJob, /NO_STRIP:\s+true/, "Linux AppImage build must avoid linuxdeploy strip failures on modern ELF sections");
 assert.match(linuxAppImageBuildJob, /libwebkit2gtk-4\.1-dev/, "Linux AppImage build must install WebKitGTK 4.1 development dependencies");
 assert.match(linuxAppImageBuildJob, /pkg-config/, "Linux AppImage build must install pkg-config for native Linux crates");
 assert.match(linuxAppImageBuildJob, /libdbus-1-dev/, "Linux AppImage build must install DBus development headers");
@@ -130,7 +131,7 @@ assert.match(linuxAppImageBuildJob, /npm run prepare:linux-engine-release-assets
 assert.match(linuxAppImageBuildJob, /npm run prepare:linux-engine-release-assets -- --tag "\$ENGINE_RELEASE_TAG" --repo "\$GITHUB_REPOSITORY"/, "Linux AppImage build must stage advanced Linux engine archives before conversion validation");
 assert.doesNotMatch(linuxAppImageBuildJob, /prepare-tauri-ci-sidecars/, "Linux AppImage build must use real sidecars, not CI placeholders");
 assert.match(linuxAppImageBuildJob, /npm run test:linux:conversions/, "Linux AppImage build must run real Linux conversion validation before packaging");
-assert.match(linuxAppImageBuildJob, /npm run tauri:build:linux/, "Linux AppImage build must produce the AppImage");
+assert.match(linuxAppImageBuildJob, /npm run tauri:build:linux -- --verbose/, "Linux AppImage build must produce the AppImage with verbose linuxdeploy diagnostics");
 assert.match(linuxAppImageBuildJob, /TAURI_SIGNING_PRIVATE_KEY/, "Linux AppImage build must receive updater signing credentials");
 assert.match(linuxAppImageBuildJob, /npm run prepare:linux-release-artifacts/, "Linux AppImage build must normalize AppImage release asset names");
 assert.match(linuxAppImageBuildJob, /npm run verify:linux-appimage/, "Linux AppImage build must verify the release-named AppImage before upload");
