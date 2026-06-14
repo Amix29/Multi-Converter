@@ -18,7 +18,9 @@ const linuxSidecarPreparer = fs.readFileSync(path.join(root, "scripts", "prepare
 const linuxSidecarReleasePreparer = fs.readFileSync(path.join(root, "scripts", "prepare-linux-sidecar-release-assets.mjs"), "utf8");
 const linuxAppImageVerifier = fs.readFileSync(path.join(root, "scripts", "verify-linux-appimage.mjs"), "utf8");
 const linuxPdfiumPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-pdfium-engine-linux.mjs"), "utf8");
+const linuxLibreOfficePrepare = fs.readFileSync(path.join(root, "scripts", "prepare-libreoffice-engine-linux.mjs"), "utf8");
 const linuxPandocPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-pandoc-engine-linux.mjs"), "utf8");
+const linuxLibvipsPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-engine-linux.mjs"), "utf8");
 const elfLibrary = fs.readFileSync(path.join(root, "scripts", "lib", "elf.mjs"), "utf8");
 const ffmpegVersionLibrary = fs.readFileSync(path.join(root, "scripts", "lib", "ffmpeg-version.mjs"), "utf8");
 const linuxCiGate = fs.readFileSync(path.join(root, "scripts", "test-linux-ci-gate.mjs"), "utf8");
@@ -43,10 +45,13 @@ assert.equal(packageJson.scripts["package:linux-engines"], "node scripts/package
 assert.equal(packageJson.scripts["prepare:linux-engine-sources"], "node scripts/prepare-linux-engine-sources.mjs", "Linux engine source preparation must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:linux-engine-release-assets"], "node scripts/prepare-linux-engine-release-assets.mjs", "Linux staged engine release helper must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:pdfium-engine:linux"], "node scripts/prepare-pdfium-engine-linux.mjs", "Linux PDFium upstream preparation must be exposed through npm");
+assert.equal(packageJson.scripts["prepare:libreoffice-engine:linux"], "node scripts/prepare-libreoffice-engine-linux.mjs", "Linux LibreOffice upstream preparation must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:pandoc-engine:linux"], "node scripts/prepare-pandoc-engine-linux.mjs", "Linux Pandoc upstream preparation must be exposed through npm");
+assert.equal(packageJson.scripts["prepare:libvips-engine:linux"], "node scripts/prepare-libvips-engine-linux.mjs", "Linux libvips runtime preparation must be exposed through npm");
 assert.match(packageJson.scripts["prepare:linux-upstream-engines"], /prepare:pdfium-engine:linux/, "Linux upstream preparation must include PDFium");
+assert.match(packageJson.scripts["prepare:linux-upstream-engines"], /prepare:libreoffice-engine:linux/, "Linux upstream preparation must include LibreOffice");
 assert.match(packageJson.scripts["prepare:linux-upstream-engines"], /prepare:pandoc-engine:linux/, "Linux upstream preparation must include Pandoc");
-assert.doesNotMatch(packageJson.scripts["prepare:linux-upstream-engines"], /libreoffice|libvips/, "Linux upstream preparation must not silently claim portable LibreOffice or libvips runtimes");
+assert.match(packageJson.scripts["prepare:linux-upstream-engines"], /prepare:libvips-engine:linux/, "Linux upstream preparation must include libvips");
 assert.equal(packageJson.scripts["verify:linux-appimage"], "node scripts/verify-linux-appimage.mjs", "Linux AppImage verification must be exposed through npm");
 assert.match(packageJson.scripts["tauri:build:linux"], /x86_64-unknown-linux-gnu/, "Linux build must target Linux x64 explicitly");
 assert.match(packageJson.scripts["tauri:build:linux"], /--bundles appimage/, "Linux build must produce the universal AppImage installer");
@@ -111,11 +116,21 @@ assert.match(linuxPdfiumPrepare, /pdfium-linux-x64\.tgz/, "Linux PDFium preparat
 assert.match(linuxPdfiumPrepare, /PDFIUM_LINUX_X64_ARCHIVE_SHA256/, "Linux PDFium preparation must require a pinned upstream SHA-256");
 assert.match(linuxPdfiumPrepare, /pdfium-render-x86_64-unknown-linux-gnu/, "Linux PDFium preparation must stage the wrapper name used by the Linux engine config");
 assert.match(linuxPdfiumPrepare, /PDFIUM_LIBRARY_PATH/, "Linux PDFium preparation must smoke-test the wrapper against the staged library");
+assert.match(linuxLibreOfficePrepare, /process\.platform !== "linux" \|\| process\.arch !== "x64"/, "Linux LibreOffice preparation must refuse non-Linux x64 hosts");
+assert.match(linuxLibreOfficePrepare, /Linux_x86-64_deb\.tar\.gz/, "Linux LibreOffice preparation must use the official Linux x86-64 deb archive");
+assert.match(linuxLibreOfficePrepare, /LIBREOFFICE_LINUX_X64_DEB_ARCHIVE_SHA256/, "Linux LibreOffice preparation must require a pinned upstream SHA-256");
+assert.match(linuxLibreOfficePrepare, /dpkg-deb/, "Linux LibreOffice preparation must extract official Debian packages without installing them into the runner");
+assert.match(linuxLibreOfficePrepare, /--terminate_after_init/, "Linux LibreOffice preparation must smoke-test headless startup");
 assert.match(linuxPandocPrepare, /process\.platform !== "linux" \|\| process\.arch !== "x64"/, "Linux Pandoc preparation must refuse non-Linux x64 hosts");
 assert.match(linuxPandocPrepare, /linux-amd64\.tar\.gz/, "Linux Pandoc preparation must use the official Linux amd64 archive");
 assert.match(linuxPandocPrepare, /PANDOC_LINUX_X64_ARCHIVE_SHA256/, "Linux Pandoc preparation must require a pinned upstream SHA-256");
 assert.match(linuxPandocPrepare, /bin", "pandoc"/, "Linux Pandoc preparation must stage the binary path used by the Linux engine config");
 assert.match(linuxPandocPrepare, /Bonjour Multi-Converter/, "Linux Pandoc preparation must run a real Markdown-to-HTML smoke test");
+assert.match(linuxLibvipsPrepare, /process\.platform !== "linux" \|\| process\.arch !== "x64"/, "Linux libvips preparation must refuse non-Linux x64 hosts");
+assert.match(linuxLibvipsPrepare, /libvips-tools/, "Linux libvips preparation must install or require Ubuntu libvips tools");
+assert.match(linuxLibvipsPrepare, /ldd/, "Linux libvips preparation must inspect dynamic dependencies");
+assert.match(linuxLibvipsPrepare, /LD_LIBRARY_PATH/, "Linux libvips preparation must smoke-test against packaged libraries");
+assert.match(linuxLibvipsPrepare, /VIPS_MODULE_PATH/, "Linux libvips preparation must stage and smoke-test libvips modules");
 
 assert.match(linuxEnvironmentTest, /pkg-config/, "Linux environment validation must check native pkg-config dependencies");
 assert.match(linuxEnvironmentTest, /dbus-1/, "Linux environment validation must check DBus development headers");

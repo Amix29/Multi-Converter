@@ -1385,7 +1385,7 @@ fn convert_with_libreoffice(
         "html" => "html:XHTML Writer File",
         other => other,
     };
-    let mut command = Command::new(&soffice);
+    let mut command = engine_command(&soffice);
     command
         .arg("--headless")
         .arg("--invisible")
@@ -1431,7 +1431,7 @@ fn convert_with_pandoc(
     let pandoc = engine_path(app, "pandoc")?;
     emit_progress(app, job_id, 24, "Conversion Pandoc");
     run_external_command_with_progress(
-        Command::new(&pandoc)
+        engine_command(&pandoc)
             .arg(input_path)
             .arg("-o")
             .arg(output_path),
@@ -1465,7 +1465,7 @@ fn convert_with_pdfium(
     ));
     fs::create_dir_all(&render_dir)?;
     let render_result = run_external_command_with_progress(
-        Command::new(&pdfium)
+        engine_command(&pdfium)
             .arg("--render-all")
             .arg(input_path)
             .arg(&render_dir)
@@ -1537,7 +1537,7 @@ fn convert_with_libvips(
     let vips = engine_path(app, "libvips")?;
     emit_progress(app, job_id, 24, "Conversion libvips");
     run_external_command_with_progress(
-        Command::new(&vips)
+        engine_command(&vips)
             .arg("copy")
             .arg(input_path)
             .arg(output_path),
@@ -1562,6 +1562,60 @@ fn engine_path(app: &AppHandle, id: &str) -> Result<PathBuf> {
             engines::tool_label(id)
         ))
     })
+}
+
+fn engine_command(path: &Path) -> Command {
+    let mut command = Command::new(path);
+    configure_linux_portable_engine_env(&mut command, path);
+    command
+}
+
+#[cfg(target_os = "linux")]
+fn configure_linux_portable_engine_env(command: &mut Command, path: &Path) {
+    let Some(bin_dir) = path.parent() else {
+        return;
+    };
+    let Some(engine_root) = bin_dir.parent() else {
+        return;
+    };
+    let lib_dir = engine_root.join("lib");
+    if lib_dir.is_dir() {
+        prepend_env_path(command, "LD_LIBRARY_PATH", &lib_dir);
+        if let Ok(entries) = fs::read_dir(&lib_dir) {
+            let module_dirs = entries
+                .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+                .filter(|entry| {
+                    entry.is_dir()
+                        && entry
+                            .file_name()
+                            .and_then(OsStr::to_str)
+                            .is_some_and(|name| name.starts_with("vips-modules-"))
+                })
+                .collect::<Vec<_>>();
+            if !module_dirs.is_empty() {
+                set_env_paths(command, "VIPS_MODULE_PATH", module_dirs);
+            }
+        }
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn configure_linux_portable_engine_env(_command: &mut Command, _path: &Path) {}
+
+#[cfg(target_os = "linux")]
+fn prepend_env_path(command: &mut Command, key: &str, value: &Path) {
+    let mut paths = vec![value.to_path_buf()];
+    if let Some(existing) = env::var_os(key) {
+        paths.extend(env::split_paths(&existing));
+    }
+    set_env_paths(command, key, paths);
+}
+
+#[cfg(target_os = "linux")]
+fn set_env_paths(command: &mut Command, key: &str, paths: Vec<PathBuf>) {
+    if let Ok(joined) = env::join_paths(paths) {
+        command.env(key, joined);
+    }
 }
 
 struct ExternalCommandProgress<'a> {

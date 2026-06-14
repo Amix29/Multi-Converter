@@ -817,7 +817,9 @@ pub(crate) fn smoke_test_external_path(
 }
 
 fn run_command(path: &Path, args: &[&str]) -> Result<(), String> {
-    run_command_prepared(Command::new(path), path, args)
+    let mut command = Command::new(path);
+    configure_linux_portable_engine_env(&mut command, path);
+    run_command_prepared(command, path, args)
 }
 
 fn run_command_prepared(mut command: Command, path: &Path, args: &[&str]) -> Result<(), String> {
@@ -863,6 +865,54 @@ fn run_command_prepared(mut command: Command, path: &Path, args: &[&str]) -> Res
             stderr.trim()
         };
         Err(message.to_string())
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn configure_linux_portable_engine_env(command: &mut Command, path: &Path) {
+    let Some(bin_dir) = path.parent() else {
+        return;
+    };
+    let Some(engine_root) = bin_dir.parent() else {
+        return;
+    };
+    let lib_dir = engine_root.join("lib");
+    if lib_dir.is_dir() {
+        prepend_env_path(command, "LD_LIBRARY_PATH", &lib_dir);
+        if let Ok(entries) = fs::read_dir(&lib_dir) {
+            let module_dirs = entries
+                .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+                .filter(|entry| {
+                    entry.is_dir()
+                        && entry
+                            .file_name()
+                            .and_then(|name| name.to_str())
+                            .is_some_and(|name| name.starts_with("vips-modules-"))
+                })
+                .collect::<Vec<_>>();
+            if !module_dirs.is_empty() {
+                set_env_paths(command, "VIPS_MODULE_PATH", module_dirs);
+            }
+        }
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn configure_linux_portable_engine_env(_command: &mut Command, _path: &Path) {}
+
+#[cfg(target_os = "linux")]
+fn prepend_env_path(command: &mut Command, key: &str, value: &Path) {
+    let mut paths = vec![value.to_path_buf()];
+    if let Some(existing) = env::var_os(key) {
+        paths.extend(env::split_paths(&existing));
+    }
+    set_env_paths(command, key, paths);
+}
+
+#[cfg(target_os = "linux")]
+fn set_env_paths(command: &mut Command, key: &str, paths: Vec<PathBuf>) {
+    if let Ok(joined) = env::join_paths(paths) {
+        command.env(key, joined);
     }
 }
 
