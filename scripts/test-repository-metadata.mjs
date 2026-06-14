@@ -147,7 +147,7 @@ assert.match(testingDocs, /single-run macOS conversion evidence[\s\S]*not enough
 assert.match(releaseNotesDraft, /Multi-Converter_1\.0\.5_linux-x64\.AppImage/, "release notes draft must name the versioned Linux AppImage");
 assert.match(releaseNotesDraft, /Linux automatic updates are enabled/, "release notes draft must mention enabled Linux automatic updates");
 assert.match(releaseNotesDraft, /Linux AppImage Build[\s\S]*Linux Conversion Matrix[\s\S]*Linux AppImage Verification/, "release notes draft must keep final Linux proof visible before publication");
-assert.match(releaseNotesDraft, /must not be published until the Linux AppImage build/i, "release notes draft must not present pending Linux proof as already publishable");
+assert.match(releaseNotesDraft, /must not be published until the final downloaded Linux AppImage smoke test/i, "release notes draft must keep final Linux smoke proof visible before publication");
 assert.doesNotMatch(testingDocs, /strict gate is expected to fail until real macOS sidecars/i, "testing docs must not describe the current macOS conversion matrix as still waiting on staged engines");
 assert.match(macosChecklist, /workflow must fail if any required `macos-universal` advanced engine entry is missing/, "macOS checklist must describe missing engines as a failure condition, not as the current expected state");
 assert.match(macosChecklist, /Apple Silicon[\s\S]*Intel/, "macOS checklist must require final conversion validation on both macOS architectures");

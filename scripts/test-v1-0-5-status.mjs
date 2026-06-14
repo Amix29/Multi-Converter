@@ -15,7 +15,7 @@ try {
   assert.equal(currentStatus.summary.hasMacosTwoArchitectureConversionEvidence, true, "current evidence must record two-architecture macOS conversion proof");
   assert.equal(currentStatus.summary.hasMacosTwoArchitectureDmgEvidence, true, "current evidence must record two-architecture DMG proof");
   assert.equal(currentStatus.summary.hasMacosAutomatedReleaseEvidence, true, "current evidence must record automated macOS release proof");
-  assert.equal(currentStatus.summary.hasLinuxAutomatedReleaseEvidence, false, "current evidence must not claim final Linux automation proof before the real AppImage workflow runs");
+  assert.equal(currentStatus.summary.hasLinuxAutomatedReleaseEvidence, true, "current evidence must record final Linux automation proof after the real AppImage workflow runs");
   assert.equal(currentStatus.summary.hasLinuxSidecarStagingEvidence, true, "current evidence must record the real Linux sidecar staging proof");
   assert.equal(currentStatus.summary.hasLinuxEngineStagingEvidence, true, "current evidence must record the real Linux advanced engine staging proof");
   assert.equal(currentStatus.summary.hasManualLinuxAppImageEvidence, false, "current pending receipt must not count as Linux AppImage smoke proof");
@@ -25,11 +25,12 @@ try {
   assert.match(currentStatus.blockers.join("\n"), /Manual clean-Mac Gatekeeper\/install smoke testing/, "current status must keep the clean-Mac blocker");
   assert.doesNotMatch(currentStatus.blockers.join("\n"), /Linux Sidecar Staging success evidence is missing/, "current status must not keep the Linux sidecar staging blocker after real workflow proof");
   assert.doesNotMatch(currentStatus.blockers.join("\n"), /Missing reviewed linux-x64 advanced engines/, "current status must not keep the Linux advanced-engine blocker after real staging proof");
-  assert.match(currentStatus.blockers.join("\n"), /Linux AppImage Build success evidence is missing/, "current status must keep the Linux AppImage build blocker");
-  assert.match(currentStatus.blockers.join("\n"), /Linux Conversion Matrix success evidence is missing/, "current status must keep the Linux conversion blocker");
-  assert.match(currentStatus.blockers.join("\n"), /Linux AppImage verification success evidence is missing/, "current status must keep the Linux verification blocker");
+  assert.doesNotMatch(currentStatus.blockers.join("\n"), /Linux AppImage Build success evidence is missing/, "current status must not keep the Linux AppImage build blocker after real workflow proof");
+  assert.doesNotMatch(currentStatus.blockers.join("\n"), /Linux Conversion Matrix success evidence is missing/, "current status must not keep the Linux conversion blocker after real workflow proof");
+  assert.doesNotMatch(currentStatus.blockers.join("\n"), /Linux AppImage verification success evidence is missing/, "current status must not keep the Linux verification blocker after real workflow proof");
   assert.match(currentStatus.blockers.join("\n"), /Manual Linux AppImage smoke testing/, "current status must keep the final Linux AppImage smoke-test blocker");
-  assert.match(currentStatus.blockers.join("\n"), /Codex Security/, "current status must keep the final security blocker until the post-Linux scan is recorded");
+  assert.equal(currentStatus.summary.hasCodexSecurityScanEvidence, true, "current status must record the final post-Linux Codex Security scan");
+  assert.doesNotMatch(currentStatus.blockers.join("\n"), /Codex Security/, "current status must not keep the final security blocker after the post-Linux scan is recorded");
   const currentReadyGate = runStatus("current-require-ready.md", currentEvidence, { requireReady: true, expectedStatus: 1 });
   assert.equal(currentReadyGate.status.releaseReady, false, "require-ready fixture must still write the failing status JSON");
   assert.match(currentReadyGate.output, /V1\.0\.5 is not release-ready/, "require-ready mode must explain that the release is blocked");
@@ -58,10 +59,10 @@ try {
   assert.equal(completedReceiptStatus.summary.hasManualCleanMacEvidence, true, "a complete receipt section must count as clean-Mac proof");
   assert.equal(completedReceiptStatus.summary.cleanMacSmokeEvidence.missing.length, 0, "complete receipt should not report missing smoke-test fields");
   assert.equal(completedReceiptStatus.summary.hasManualLinuxAppImageEvidence, false, "macOS receipt alone must not count as Linux AppImage smoke proof");
-  assert.match(completedReceiptStatus.blockers.join("\n"), /Codex Security/, "manual receipts alone must not satisfy the final security blocker");
+  assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /Codex Security/, "current final security evidence should satisfy the final security blocker");
   assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /macOS Conversion Matrix/, "complete macOS automation evidence must satisfy the macOS conversion blocker");
   assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /DMG verification/, "complete automation evidence must satisfy the DMG blocker");
-  assert.equal(completedReceiptStatus.summary.hasCodexSecurityScanEvidence, false, "pre-final scan evidence must not count as final Codex Security proof");
+  assert.equal(completedReceiptStatus.summary.hasCodexSecurityScanEvidence, true, "final Codex Security proof must be recognized");
 
   const missingMetadataStatus = runStatus("missing-metadata.md", completedReceipt(currentEvidence).replace("- Date: 2026-06-13", "- Date: pending"));
   assert.equal(missingMetadataStatus.summary.hasManualCleanMacEvidence, false, "receipt metadata must be recorded before clean-Mac proof counts");
@@ -136,7 +137,7 @@ try {
   assert.equal(missingReadmeArchitectureStatus.status.releaseReady, false, "macOS release readiness must require Apple Silicon and Intel README wording");
   assert.match(missingReadmeArchitectureStatus.output, /README macOS status matches available release evidence/, "missing README architecture wording must fail the README evidence check");
 
-  const missingLinuxAutomationStatus = runStatus("missing-linux-automation.md", completedLinuxReceipt(completedReceipt(currentEvidence)), {
+  const missingLinuxAutomationStatus = runStatus("missing-linux-automation.md", completedLinuxReceipt(missingLinuxAutomationEvidence(completedReceipt(currentEvidence))), {
     requireReady: true,
     expectedStatus: 1,
     readme: readyReadme(currentReadme),
@@ -247,6 +248,13 @@ function finalLinuxAutomationEvidence(evidence) {
       "- Linux AppImage Verification: pending",
       "- Linux AppImage Verification: run `9992002`, success. Verified `Multi-Converter_1.0.5_linux-x64.AppImage` on Linux before release publication.",
     );
+}
+
+function missingLinuxAutomationEvidence(evidence) {
+  return evidence
+    .replace(/^- Linux AppImage Build:.*$/m, "- Linux AppImage Build: pending")
+    .replace(/^- Linux Conversion Matrix:.*$/m, "- Linux Conversion Matrix: pending")
+    .replace(/^- Linux AppImage Verification:.*$/m, "- Linux AppImage Verification: pending");
 }
 
 function completedLinuxReceipt(evidence) {
