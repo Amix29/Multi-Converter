@@ -115,7 +115,7 @@ async function materializeExecutable(sourcePath, originalSource, executableName,
 
 function isArchiveSource(source) {
   const lower = String(source).split(/[?#]/, 1)[0].toLowerCase();
-  return lower.endsWith(".zip") || lower.endsWith(".tar.gz") || lower.endsWith(".tgz");
+  return lower.endsWith(".zip") || lower.endsWith(".tar.gz") || lower.endsWith(".tgz") || lower.endsWith(".tar.xz");
 }
 
 async function extractArchive(archivePath, destination, originalSource) {

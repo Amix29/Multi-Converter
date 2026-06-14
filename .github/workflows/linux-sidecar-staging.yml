@@ -20,19 +20,19 @@ on:
         default: ""
         type: string
       ffmpeg_binary_url:
-        description: "Maintainer-approved Linux x64 ffmpeg binary URL"
+        description: "Maintainer-approved Linux x64 ffmpeg executable or archive URL"
         required: true
         type: string
       ffmpeg_binary_sha256:
-        description: "SHA-256 for the Linux x64 ffmpeg binary"
+        description: "SHA-256 for the Linux x64 ffmpeg executable or archive"
         required: true
         type: string
       ffprobe_binary_url:
-        description: "Maintainer-approved Linux x64 ffprobe binary URL"
+        description: "Maintainer-approved Linux x64 ffprobe executable or archive URL"
         required: true
         type: string
       ffprobe_binary_sha256:
-        description: "SHA-256 for the Linux x64 ffprobe binary"
+        description: "SHA-256 for the Linux x64 ffprobe executable or archive"
         required: true
         type: string
 

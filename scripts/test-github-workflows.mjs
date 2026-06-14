@@ -451,6 +451,7 @@ assert.match(linuxSidecarReleaseScript, /FFMPEG_LINUX_X64_BINARY/, "Linux sideca
 assert.match(linuxSidecarReleaseScript, /FFPROBE_LINUX_X64_BINARY/, "Linux sidecar release helper must require an explicit Linux ffprobe binary source");
 assert.match(linuxSidecarReleaseScript, /verifySha256/, "Linux sidecar release helper must verify source binary checksums");
 assert.match(linuxSidecarReleaseScript, /extractArchive/, "Linux sidecar release helper must accept checksum-pinned archives from reviewed providers");
+assert.match(linuxSidecarReleaseScript, /tar\.xz|tar\\\.xz/, "Linux sidecar release helper must accept common .tar.xz FFmpeg archives from reviewed providers");
 assert.match(linuxSidecarReleaseScript, /archive does not contain/, "Linux sidecar release helper must reject archives without the expected sidecar executable");
 assert.match(linuxSidecarReleaseScript, /not an AppImage/, "Linux sidecar release helper must reject AppImages as sidecar inputs");
 assert.match(linuxSidecarReleaseScript, /source must not be inside the output directory/, "Linux sidecar release helper must reject local sources inside the cleaned output directory");
@@ -458,6 +459,7 @@ assert.match(linuxSidecarReleaseScript, /staged Linux sidecar is not an x86_64 E
 assert.match(linuxSidecarReleaseScript, /Linux sidecar smoke tests must run on Linux x64/, "Linux sidecar release helper must smoke-test real Linux sidecars on Linux x64");
 assert.match(linuxEngineSourcesScript, /Linux engine source preparation must run on Linux x64/, "Linux engine source preparation helper must refuse non-Linux hosts");
 assert.match(linuxEngineSourcesScript, /verifySha256/, "Linux engine source preparation helper must verify source archive checksums");
+assert.match(linuxEngineSourcesScript, /tar\.xz|tar\\\.xz/, "Linux engine source preparation helper must accept common .tar.xz source archives");
 assert.match(linuxEngineSourcesScript, /non-Linux file found in source tree/, "Linux engine source preparation helper must reject non-Linux files");
 assert.match(linuxEngineReleaseScript, /engines-manifest\.json/, "Linux staged engine helper must download or read the staged engine manifest");
 assert.match(linuxEngineReleaseScript, /platform = "linux-x64"/, "Linux staged engine helper must filter Linux x64 engine entries");

@@ -14,7 +14,8 @@ try {
   testChecksumMismatch();
   testNonElfRejected();
   testWrongArchitectureRejected();
-  testArchiveSourceAccepted();
+  testTarGzArchiveSourceAccepted();
+  testTarXzArchiveSourceAccepted();
   testAppImageSourceRejected();
   testSourceInsideOutputRejected();
 } finally {
@@ -70,14 +71,24 @@ function testWrongArchitectureRejected() {
   assert.match(result.stderr, /not an x86_64 ELF executable/);
 }
 
-function testArchiveSourceAccepted() {
-  const fixture = createFixture("archive-source");
-  const ffmpeg = writeArchiveFixture(fixture, "ffmpeg", fakeElf("ffmpeg fixture\n"));
+function testTarGzArchiveSourceAccepted() {
+  const fixture = createFixture("tar-gz-archive-source");
+  const ffmpeg = writeArchiveFixture(fixture, "ffmpeg", fakeElf("ffmpeg fixture\n"), ".tar.gz");
   const ffprobe = writeFixture(fixture, "ffprobe", fakeElf("ffprobe fixture\n"));
   const result = runPrepare(fixture.outDir, ffmpeg, sha256File(ffmpeg), ffprobe, sha256File(ffprobe));
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.equal(fs.existsSync(path.join(fixture.outDir, "ffmpeg-x86_64-unknown-linux-gnu")), true, "archive sidecar source should be extracted and staged");
+  assert.equal(fs.existsSync(path.join(fixture.outDir, "ffmpeg-x86_64-unknown-linux-gnu")), true, ".tar.gz sidecar source should be extracted and staged");
+}
+
+function testTarXzArchiveSourceAccepted() {
+  const fixture = createFixture("tar-xz-archive-source");
+  const ffmpeg = writeArchiveFixture(fixture, "ffmpeg", fakeElf("ffmpeg fixture\n"), ".tar.xz");
+  const ffprobe = writeFixture(fixture, "ffprobe", fakeElf("ffprobe fixture\n"));
+  const result = runPrepare(fixture.outDir, ffmpeg, sha256File(ffmpeg), ffprobe, sha256File(ffprobe));
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(fs.existsSync(path.join(fixture.outDir, "ffmpeg-x86_64-unknown-linux-gnu")), true, ".tar.xz sidecar source should be extracted and staged");
 }
 
 function testAppImageSourceRejected() {
@@ -116,12 +127,13 @@ function writeFixture(fixture, name, content) {
   return filePath;
 }
 
-function writeArchiveFixture(fixture, executableName, content) {
+function writeArchiveFixture(fixture, executableName, content, extension) {
   const archiveRoot = path.join(fixture.inputDir, `${executableName}-archive-root`);
   fs.mkdirSync(archiveRoot, { recursive: true });
   fs.writeFileSync(path.join(archiveRoot, executableName), content);
-  const archivePath = path.join(fixture.inputDir, `${executableName}.tar.gz`);
-  const result = spawnSync("tar", ["-czf", archivePath, "-C", archiveRoot, "."], {
+  const archivePath = path.join(fixture.inputDir, `${executableName}${extension}`);
+  const tarFlag = extension === ".tar.xz" ? "-cJf" : "-czf";
+  const result = spawnSync("tar", [tarFlag, archivePath, "-C", archiveRoot, "."], {
     cwd: root,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],

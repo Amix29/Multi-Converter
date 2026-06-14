@@ -102,6 +102,7 @@ async function materializeArchive(input, target) {
 
 function archiveExtension(input) {
   const name = path.basename(urlOrPath(input));
+  if (/\.tar\.xz$/i.test(name)) return ".tar.xz";
   if (/\.tar\.gz$/i.test(name) || /\.tgz$/i.test(name)) return ".tar.gz";
   if (/\.zip$/i.test(name)) return ".zip";
   return ".archive";
