@@ -73,6 +73,7 @@ assert.ok((prepareScript.match(/extractArchive\(archive, extractDir, engine\.arc
 assert.match(prepareScript, /patchelf/, "Bundled engine preparation must patch Linux engine RPATHs for AppImage packaging");
 assert.match(prepareScript, /--set-rpath/, "Bundled engine preparation must expose portable Linux engine libraries through ELF RPATHs");
 assert.match(prepareScript, /libkf5be1lo\.so/, "Bundled engine preparation must prune optional LibreOffice KDE backends from Linux headless bundles");
+assert.match(prepareScript, /lo_kde5filepicker/, "Bundled engine preparation must prune optional LibreOffice KDE file picker from Linux headless bundles");
 assert.match(validateScript, /linux-x64/, "Bundled engine validation must recognize Linux x64");
 assert.match(validateScript, /x86_64-unknown-linux-gnu/, "Bundled engine validation must require Linux x64 sidecars");
 assert.match(validateScript, /fichier Linux non-ELF/, "Bundled engine validation must reject non-ELF Linux sidecars even when smoke tests are skipped");
