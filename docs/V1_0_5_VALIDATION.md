@@ -17,7 +17,7 @@ This file records validation evidence for the in-progress v1.0.5 release. It is 
 Record these lines only after the real Linux workflow runs with real Linux sidecars and release-named artifacts.
 
 - Linux x64 Code Check: run `27498691393`, success. GitHub Actions Ubuntu 22.04 passed `npm run test:linux:ci` with Linux Tauri system dependencies, Linux packaging contracts, compile-only sidecar staging and Rust `check`/`clippy` for `x86_64-unknown-linux-gnu`. This is CI code validation only; it is not AppImage, real sidecar or full conversion evidence.
-- Linux Sidecar Staging: pending
+- Linux Sidecar Staging: run `27499910083`, success. GitHub Actions Ubuntu 22.04 staged real Linux x64 `ffmpeg-x86_64-unknown-linux-gnu`, `ffmpeg-x86_64-unknown-linux-gnu.sha256`, `ffprobe-x86_64-unknown-linux-gnu` and `ffprobe-x86_64-unknown-linux-gnu.sha256` from the reviewed BtbN FFmpeg `n8.1.1` Linux x64 archive `ffmpeg-n8.1.1-13-g83e8541aa6-linux64-gpl-8.1.tar.xz` with source SHA-256 `6e776e69d415f7c021af65cbb42cd423804ca653fc8190a32d5878411be6cbfd`. Downloaded artifact checks confirmed matching generated SHA-256 files and x86_64 ELF headers for both sidecars (`ffmpeg` SHA-256 `8f80c016b81c7c871a86986575c9143156563edd53e3b2765dcc47b609f602f7`, `ffprobe` SHA-256 `57b72cc5f09d8b7a210da5fd359f47433350b3bac2f7a35c535ddb92dc7c6667`).
 - Linux AppImage Build: pending
 - Linux Conversion Matrix: pending
 - Linux AppImage Verification: pending
