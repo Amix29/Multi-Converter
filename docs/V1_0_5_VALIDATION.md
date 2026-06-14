@@ -16,6 +16,7 @@ This file records validation evidence for the in-progress v1.0.5 release. It is 
 
 Record these lines only after the real Linux workflow runs with real Linux sidecars and release-named artifacts.
 
+- Linux x64 Code Check: run `27498691393`, success. GitHub Actions Ubuntu 22.04 passed `npm run test:linux:ci` with Linux Tauri system dependencies, Linux packaging contracts, compile-only sidecar staging and Rust `check`/`clippy` for `x86_64-unknown-linux-gnu`. This is CI code validation only; it is not AppImage, real sidecar or full conversion evidence.
 - Linux Sidecar Staging: pending
 - Linux AppImage Build: pending
 - Linux Conversion Matrix: pending
