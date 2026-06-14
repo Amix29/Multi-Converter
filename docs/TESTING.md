@@ -252,7 +252,7 @@ npm run prepare:linux-sidecar-release-assets -- \
 ```
 
 The manual `Linux Sidecar Staging` workflow runs the same check on Ubuntu 22.04, uploads a `linux-sidecar-assets` artifact and can optionally upload the four expected sidecar files to a test release for the later `Linux AppImage Build` workflow. The later AppImage workflow rejects extra files in that sidecar artifact directory before staging the sidecars.
-Inputs must be raw Linux x64 executables, not archives or AppImages, and local inputs must stay outside the output directory because that directory is cleaned before assets are written.
+Inputs must be raw Linux x64 executables or maintainer-approved `.zip`, `.tar.gz` or `.tgz` archives that contain the expected executable name. AppImages are rejected for sidecar staging, and local inputs must stay outside the output directory because that directory is cleaned before assets are written.
 
 Use this host gate only on Linux x64 with real `ffmpeg-x86_64-unknown-linux-gnu` and `ffprobe-x86_64-unknown-linux-gnu` sidecars staged:
 
@@ -293,7 +293,7 @@ The manual `Linux AppImage Build` GitHub Actions workflow is the normal CI hando
 
 It also accepts Linux advanced engines from either `engine_release_tag` or `engine_staging_run_id`, but not both. The release tag or the `linux-engine-assets` workflow artifact must contain `engines-manifest.json` plus verified Linux `pdfium`, `libreoffice`, `pandoc` and `libvips` ZIP assets. Use `npm run prepare:linux-engine-sources` to validate reviewed Linux x64 source-tree archives with SHA-256 checks, `npm run package:linux-engines` to package them, then `npm run prepare:linux-engine-release-assets` to stage those assets into the embedded manifest and bundled-engine cache for a build. That staging helper rejects non-advanced Linux engine entries, duplicate advanced entries, missing required advanced entries and unexpected advanced entries.
 
-The manual `Linux Sidecar Staging` workflow can produce the required sidecar assets from explicit binary URLs and checksums before the AppImage workflow. On `codex/test`, it is push-runnable only when `MC_ENABLE_LINUX_SIDECAR_STAGING=1` and the four `MC_FFMPEG_LINUX_X64_*` / `MC_FFPROBE_LINUX_X64_*` repository variables are set.
+The manual `Linux Sidecar Staging` workflow can produce the required sidecar assets from explicit executable/archive URLs and checksums before the AppImage workflow. On `codex/test`, it is push-runnable only when `MC_ENABLE_LINUX_SIDECAR_STAGING=1` and the four `MC_FFMPEG_LINUX_X64_*` / `MC_FFPROBE_LINUX_X64_*` repository variables are set.
 
 The manual `Linux Engine Staging` workflow performs that source validation and packaging on Ubuntu 22.04. It requires maintainer-approved Linux x64 source-tree archive URLs and SHA-256 values for PDFium, LibreOffice, Pandoc and libvips, uploads a `linux-engine-assets` artifact and can optionally upload the staged ZIPs plus `engines-manifest.json` to a test release. When `Linux AppImage Build` consumes a staging run ID, it verifies that the referenced run name and conclusion are exactly `Linux Sidecar Staging|success` or `Linux Engine Staging|success` before staging those artifacts.
 

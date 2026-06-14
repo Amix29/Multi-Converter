@@ -450,7 +450,9 @@ assert.match(linuxSidecarScript, /Linux sidecar smoke tests must run on Linux x6
 assert.match(linuxSidecarReleaseScript, /FFMPEG_LINUX_X64_BINARY/, "Linux sidecar release helper must require an explicit Linux FFmpeg binary source");
 assert.match(linuxSidecarReleaseScript, /FFPROBE_LINUX_X64_BINARY/, "Linux sidecar release helper must require an explicit Linux ffprobe binary source");
 assert.match(linuxSidecarReleaseScript, /verifySha256/, "Linux sidecar release helper must verify source binary checksums");
-assert.match(linuxSidecarReleaseScript, /must be a raw ffmpeg\/ffprobe executable/, "Linux sidecar release helper must reject archives and AppImages as sidecar inputs");
+assert.match(linuxSidecarReleaseScript, /extractArchive/, "Linux sidecar release helper must accept checksum-pinned archives from reviewed providers");
+assert.match(linuxSidecarReleaseScript, /archive does not contain/, "Linux sidecar release helper must reject archives without the expected sidecar executable");
+assert.match(linuxSidecarReleaseScript, /not an AppImage/, "Linux sidecar release helper must reject AppImages as sidecar inputs");
 assert.match(linuxSidecarReleaseScript, /source must not be inside the output directory/, "Linux sidecar release helper must reject local sources inside the cleaned output directory");
 assert.match(linuxSidecarReleaseScript, /staged Linux sidecar is not an x86_64 ELF executable/, "Linux sidecar release helper must reject non-x86_64 Linux sidecars");
 assert.match(linuxSidecarReleaseScript, /Linux sidecar smoke tests must run on Linux x64/, "Linux sidecar release helper must smoke-test real Linux sidecars on Linux x64");

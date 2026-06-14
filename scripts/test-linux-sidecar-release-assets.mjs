@@ -14,7 +14,8 @@ try {
   testChecksumMismatch();
   testNonElfRejected();
   testWrongArchitectureRejected();
-  testArchiveSourceRejected();
+  testArchiveSourceAccepted();
+  testAppImageSourceRejected();
   testSourceInsideOutputRejected();
 } finally {
   fs.rmSync(tempDir, { recursive: true, force: true });
@@ -69,14 +70,24 @@ function testWrongArchitectureRejected() {
   assert.match(result.stderr, /not an x86_64 ELF executable/);
 }
 
-function testArchiveSourceRejected() {
+function testArchiveSourceAccepted() {
   const fixture = createFixture("archive-source");
-  const ffmpeg = writeFixture(fixture, "ffmpeg.tar.gz", fakeElf("ffmpeg fixture\n"));
+  const ffmpeg = writeArchiveFixture(fixture, "ffmpeg", fakeElf("ffmpeg fixture\n"));
   const ffprobe = writeFixture(fixture, "ffprobe", fakeElf("ffprobe fixture\n"));
   const result = runPrepare(fixture.outDir, ffmpeg, sha256File(ffmpeg), ffprobe, sha256File(ffprobe));
 
-  assert.notEqual(result.status, 0, "archive sidecar source should fail");
-  assert.match(result.stderr, /must be a raw ffmpeg\/ffprobe executable/);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.equal(fs.existsSync(path.join(fixture.outDir, "ffmpeg-x86_64-unknown-linux-gnu")), true, "archive sidecar source should be extracted and staged");
+}
+
+function testAppImageSourceRejected() {
+  const fixture = createFixture("appimage-source");
+  const ffmpeg = writeFixture(fixture, "ffmpeg.AppImage", fakeElf("ffmpeg fixture\n"));
+  const ffprobe = writeFixture(fixture, "ffprobe", fakeElf("ffprobe fixture\n"));
+  const result = runPrepare(fixture.outDir, ffmpeg, sha256File(ffmpeg), ffprobe, sha256File(ffprobe));
+
+  assert.notEqual(result.status, 0, "AppImage sidecar source should fail");
+  assert.match(result.stderr, /not an AppImage/);
 }
 
 function testSourceInsideOutputRejected() {
@@ -103,6 +114,21 @@ function writeFixture(fixture, name, content) {
   const filePath = path.join(fixture.inputDir, name);
   fs.writeFileSync(filePath, content);
   return filePath;
+}
+
+function writeArchiveFixture(fixture, executableName, content) {
+  const archiveRoot = path.join(fixture.inputDir, `${executableName}-archive-root`);
+  fs.mkdirSync(archiveRoot, { recursive: true });
+  fs.writeFileSync(path.join(archiveRoot, executableName), content);
+  const archivePath = path.join(fixture.inputDir, `${executableName}.tar.gz`);
+  const result = spawnSync("tar", ["-czf", archivePath, "-C", archiveRoot, "."], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  return archivePath;
 }
 
 function runPrepare(outDir, ffmpeg, ffmpegSha256, ffprobe, ffprobeSha256) {

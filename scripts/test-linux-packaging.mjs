@@ -131,7 +131,8 @@ assert.match(linuxSidecarReleasePreparer, /FFMPEG_LINUX_X64_BINARY/, "Linux side
 assert.match(linuxSidecarReleasePreparer, /FFPROBE_LINUX_X64_BINARY/, "Linux sidecar release assets must come from an explicit Linux ffprobe source");
 assert.match(linuxSidecarReleasePreparer, /verifySha256/, "Linux sidecar release asset staging must verify source checksums");
 assert.match(linuxSidecarReleasePreparer, /Refusing non-HTTPS Linux sidecar source URL/, "Linux sidecar release asset staging must reject non-HTTPS URLs");
-assert.match(linuxSidecarReleasePreparer, /must be a raw ffmpeg\/ffprobe executable/, "Linux sidecar release asset staging must reject archives and AppImages as sidecar inputs");
+assert.match(linuxSidecarReleasePreparer, /extractArchive/, "Linux sidecar release asset staging must accept checksum-pinned archives from reviewed providers");
+assert.match(linuxSidecarReleasePreparer, /not an AppImage/, "Linux sidecar release asset staging must reject AppImages as sidecar inputs");
 assert.match(linuxSidecarReleasePreparer, /source must not be inside the output directory/, "Linux sidecar release asset staging must reject local sources inside the cleaned output directory");
 assert.match(linuxSidecarReleasePreparer, /staged Linux sidecar is not an x86_64 ELF executable/, "Linux sidecar release asset staging must reject non-x86_64 Linux sidecars");
 assert.match(linuxSidecarReleasePreparer, /Linux sidecar smoke tests must run on Linux x64/, "Linux sidecar release asset staging must smoke-test on Linux x64");
