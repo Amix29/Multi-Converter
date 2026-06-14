@@ -33,7 +33,7 @@ pub(crate) fn path(value: impl AsRef<Path>) -> String {
     let normalized = value.to_string_lossy();
     let trimmed = normalized.trim_end_matches(['/', '\\']);
     let name = trimmed
-        .rsplit(|separator| separator == '/' || separator == '\\')
+        .rsplit(['/', '\\'])
         .next()
         .filter(|file_name| !file_name.is_empty() && !file_name.ends_with(':'));
     match name {
