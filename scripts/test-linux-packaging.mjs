@@ -75,6 +75,7 @@ assert.match(prepareScript, /--set-rpath/, "Bundled engine preparation must expo
 assert.match(prepareScript, /libkf5be1lo\.so/, "Bundled engine preparation must prune optional LibreOffice KDE backends from Linux headless bundles");
 assert.match(prepareScript, /lo_kde5filepicker/, "Bundled engine preparation must prune optional LibreOffice KDE file picker from Linux headless bundles");
 assert.match(prepareScript, /libavmediagtk\.so/, "Bundled engine preparation must prune optional LibreOffice GTK media backend from Linux headless bundles");
+assert.match(prepareScript, /libavmediaqt6\.so/, "Bundled engine preparation must prune optional LibreOffice Qt media backend from Linux headless bundles");
 assert.match(prepareScript, /libvclplug_gtk3_kde5lo\.so/, "Bundled engine preparation must prune optional LibreOffice GTK/KDE VCL backend from Linux headless bundles");
 assert.match(prepareScript, /liblibreofficekitgtk\.so/, "Bundled engine preparation must prune optional LibreOfficeKit GTK backend from Linux headless bundles");
 assert.match(prepareScript, /libofficebean\.so/, "Bundled engine preparation must prune optional LibreOffice Java AWT bean from Linux headless bundles");

@@ -477,6 +477,8 @@ async function pruneLibreOfficeOptionalLinuxBackends(rootDir, engine) {
     "program/lo_qt5filepicker",
     "program/lo_qt6filepicker",
     "program/libavmediagtk.so",
+    "program/libavmediagst.so",
+    "program/libavmediaqt6.so",
     "program/libdeploymentgui.so",
     "program/liblibreofficekitgtk.so",
     "program/libofficebean.so",
