@@ -479,6 +479,7 @@ async function pruneLibreOfficeOptionalLinuxBackends(rootDir, engine) {
     "program/libavmediagtk.so",
     "program/libdeploymentgui.so",
     "program/liblibreofficekitgtk.so",
+    "program/libofficebean.so",
   ];
   const removed = [];
   for (const relative of optionalBackends) {
