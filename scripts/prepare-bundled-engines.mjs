@@ -147,6 +147,7 @@ async function prepareBundledEngine(engine) {
   await fs.mkdir(path.dirname(targetRoot), { recursive: true });
   await fs.cp(extractDir, targetRoot, { recursive: true, force: true });
   await ensureEngineExecutables(targetRoot, engine);
+  await configureLinuxEngineRpaths(targetRoot, engine);
   await assertNoBrokenSymlinksForNonWindowsEngine(targetRoot, engine);
 
   if (!(await bundledEngineLooksCurrent(targetRoot, engine))) {
@@ -582,6 +583,49 @@ async function ensureEngineExecutables(rootDir, engine) {
   for (const relative of engine.binaryPaths ?? []) {
     await ensureExecutable(path.join(rootDir, normalizeArchivePath(relative)));
   }
+}
+
+async function configureLinuxEngineRpaths(rootDir, engine) {
+  if (platform !== "linux-x64" || process.platform !== "linux" || engine.id !== "libvips") return;
+  const libDir = path.join(rootDir, "lib");
+  if (!(await isDirectory(libDir))) return;
+
+  const elfFiles = [];
+  await walkFiles(rootDir, async (filePath) => {
+    if (await isElfFile(filePath)) elfFiles.push(filePath);
+  });
+
+  for (const filePath of elfFiles) {
+    const result = spawnSync("patchelf", ["--set-rpath", linuxRpathFor(filePath, libDir), filePath], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    if (result.status !== 0) {
+      throw new Error(`${engine.id}: impossible de configurer le RPATH Linux pour ${path.relative(rootDir, filePath)} (${result.stderr || result.stdout})`);
+    }
+  }
+}
+
+function linuxRpathFor(filePath, libDir) {
+  const relative = path.relative(path.dirname(filePath), libDir).replaceAll(path.sep, "/");
+  return relative ? `$ORIGIN/${relative}` : "$ORIGIN";
+}
+
+async function isElfFile(filePath) {
+  const handle = await fs.open(filePath, "r").catch(() => null);
+  if (!handle) return false;
+  try {
+    const header = Buffer.alloc(4);
+    const { bytesRead } = await handle.read(header, 0, header.length, 0);
+    return bytesRead === 4 && header[0] === 0x7f && header[1] === 0x45 && header[2] === 0x4c && header[3] === 0x46;
+  } finally {
+    await handle.close();
+  }
+}
+
+async function isDirectory(filePath) {
+  const stat = await fs.stat(filePath).catch(() => null);
+  return stat?.isDirectory() === true;
 }
 
 async function ensureExecutable(filePath) {
