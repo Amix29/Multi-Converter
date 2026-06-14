@@ -146,6 +146,7 @@ async function prepareBundledEngine(engine) {
   await fs.rm(targetRoot, { recursive: true, force: true });
   await fs.mkdir(path.dirname(targetRoot), { recursive: true });
   await fs.cp(extractDir, targetRoot, { recursive: true, force: true });
+  await pruneLibreOfficeOptionalLinuxBackends(targetRoot, engine);
   await ensureEngineExecutables(targetRoot, engine);
   await configureLinuxEngineRpaths(targetRoot, engine);
   await assertNoBrokenSymlinksForNonWindowsEngine(targetRoot, engine);
@@ -457,6 +458,29 @@ async function assertNoBrokenSymlinksForNonWindowsEngine(rootDir, engine) {
 
   if (broken.length) {
     throw new Error(`${engine.id}: lien symbolique casse dans le moteur ${platform}: ${broken[0]}`);
+  }
+}
+
+async function pruneLibreOfficeOptionalLinuxBackends(rootDir, engine) {
+  if (platform !== "linux-x64" || engine.id !== "libreoffice") return;
+  const optionalBackends = [
+    "program/libkf5be1lo.so",
+    "program/libvclplug_kf5lo.so",
+    "program/libvclplug_qt5lo.so",
+    "program/libvclplug_qt6lo.so",
+    "program/libvclplug_gtk3lo.so",
+    "program/libvclplug_gtk4lo.so",
+  ];
+  const removed = [];
+  for (const relative of optionalBackends) {
+    const filePath = path.join(rootDir, relative);
+    const stat = await fs.stat(filePath).catch(() => null);
+    if (!stat?.isFile()) continue;
+    await fs.rm(filePath, { force: true });
+    removed.push(relative);
+  }
+  if (removed.length) {
+    console.log(`${engine.id}: removed ${removed.length} optional Linux UI backend(s) from headless bundle.`);
   }
 }
 
