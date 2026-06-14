@@ -12,6 +12,7 @@ const args = parseArgs(process.argv.slice(2));
 const outputRoot = path.resolve(args.outputDir ?? path.join(root, "engine-sources", "linux-x64"));
 const workRoot = path.resolve(args.workDir ?? path.join(os.tmpdir(), "mc-linux-engine-sources"));
 const userAgent = { "User-Agent": "Multi-Converter-Packager" };
+const allowExisting = args["allow-existing"] === "1";
 const engines = [
   {
     id: "pdfium",
@@ -60,8 +61,16 @@ console.log(`Linux engine source trees prepared in ${path.relative(root, outputR
 async function prepareEngine(engine) {
   const archiveInput = args[engine.archiveArg] ?? process.env[`MC_${engine.id.toUpperCase()}_LINUX_X64_ARCHIVE`];
   const expectedSha = args[engine.shaArg] ?? process.env[`MC_${engine.id.toUpperCase()}_LINUX_X64_ARCHIVE_SHA256`];
-  if (!archiveInput) fail(`${engine.id}: missing --${engine.archiveArg} or MC_${engine.id.toUpperCase()}_LINUX_X64_ARCHIVE.`);
-  if (!expectedSha) fail(`${engine.id}: missing --${engine.shaArg} or MC_${engine.id.toUpperCase()}_LINUX_X64_ARCHIVE_SHA256.`);
+  if (!archiveInput || !expectedSha) {
+    if (allowExisting && !archiveInput && !expectedSha) {
+      const existingRoot = path.join(outputRoot, engine.id);
+      await validateSourceTree(existingRoot, engine);
+      console.log(`${engine.id}: using existing validated Linux source tree.`);
+      return;
+    }
+    if (!archiveInput) fail(`${engine.id}: missing --${engine.archiveArg} or MC_${engine.id.toUpperCase()}_LINUX_X64_ARCHIVE.`);
+    if (!expectedSha) fail(`${engine.id}: missing --${engine.shaArg} or MC_${engine.id.toUpperCase()}_LINUX_X64_ARCHIVE_SHA256.`);
+  }
   if (!/^[a-f0-9]{64}$/i.test(expectedSha) || /^0{64}$/i.test(expectedSha)) {
     fail(`${engine.id}: SHA-256 is missing or placeholder.`);
   }
@@ -249,6 +258,10 @@ function parseArgs(rawArgs) {
     const key = arg.slice(2).replaceAll("-", "");
     const normalizedKey = arg.slice(2);
     if (normalizedKey === "skip-smoke") {
+      parsed[normalizedKey] = "1";
+      continue;
+    }
+    if (normalizedKey === "allow-existing") {
       parsed[normalizedKey] = "1";
       continue;
     }

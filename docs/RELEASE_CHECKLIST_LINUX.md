@@ -82,7 +82,7 @@ PDFIUM_LINUX_X64_ARCHIVE_SHA256="<sha256>" npm run prepare:pdfium-engine:linux
 PANDOC_LINUX_X64_ARCHIVE_SHA256="<sha256>" npm run prepare:pandoc-engine:linux
 ```
 
-These helpers must run on Linux x64. They only prepare `engine-sources/linux-x64/pdfium` and `engine-sources/linux-x64/pandoc`; they do not replace the required reviewed Linux runtime source trees for LibreOffice and libvips.
+These helpers must run on Linux x64. They only prepare `engine-sources/linux-x64/pdfium` and `engine-sources/linux-x64/pandoc`; they do not replace the required reviewed Linux runtime source trees for LibreOffice and libvips. The manual `Linux Engine Staging` workflow can run these helpers when `pdfium_upstream_sha256` and/or `pandoc_upstream_sha256` are provided instead of the matching source-tree archive inputs. PDFium and Pandoc source-tree archive inputs are mutually exclusive with their upstream SHA-256 inputs.
 
 The resulting `dist-engines-linux/engines-manifest.json` and advanced Linux engine ZIPs can then be staged for a build with:
 
@@ -90,7 +90,7 @@ The resulting `dist-engines-linux/engines-manifest.json` and advanced Linux engi
 npm run prepare:linux-engine-release-assets -- --tag "<linux-engine-tag>" --repo "Amix29/Multi-Converter"
 ```
 
-The manual GitHub Actions `Linux Engine Staging` workflow performs the same source validation and packaging on Ubuntu 22.04. It installs `tar`, `unzip`, `xz-utils` and `zip`, then requires maintainer-approved Linux x64 source-tree archive URLs and SHA-256 values for PDFium, LibreOffice, Pandoc and libvips. Source archives may be `.zip`, `.tar.gz`, `.tgz` or `.tar.xz`. The staged manifest used for AppImage packaging must contain exactly those advanced Linux engine entries; non-advanced Linux entries are rejected so the release cache cannot silently include extra Linux engine archives. On `codex/test`, it runs only when `MC_ENABLE_LINUX_ENGINE_STAGING=1` and the matching `MC_*_LINUX_X64_ARCHIVE` plus `MC_*_LINUX_X64_ARCHIVE_SHA256` repository variables are set.
+The manual GitHub Actions `Linux Engine Staging` workflow performs the same source validation and packaging on Ubuntu 22.04. It installs `tar`, `unzip`, `xz-utils` and `zip`, then requires reviewed Linux runtime inputs for all four advanced engines. PDFium and Pandoc may come from either source-tree archive URLs plus SHA-256 values or their upstream SHA-256 inputs. LibreOffice and libvips still require maintainer-approved Linux x64 source-tree archive URLs and SHA-256 values. Source archives may be `.zip`, `.tar.gz`, `.tgz` or `.tar.xz`. The staged manifest used for AppImage packaging must contain exactly those advanced Linux engine entries; non-advanced Linux entries are rejected so the release cache cannot silently include extra Linux engine archives. On `codex/test`, it runs only when `MC_ENABLE_LINUX_ENGINE_STAGING=1` and the matching repository variables are set.
 
 ## Build
 

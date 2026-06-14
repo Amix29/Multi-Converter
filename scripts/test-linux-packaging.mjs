@@ -84,6 +84,8 @@ for (const engine of linuxEngineConfig.engines) {
 }
 assert.match(linuxEngineSourcesPreparer, /process\.platform !== "linux"/, "Linux engine source preparation must refuse non-Linux hosts");
 assert.match(linuxEngineSourcesPreparer, /pdfium[\s\S]*libreoffice[\s\S]*pandoc[\s\S]*libvips/, "Linux engine source preparation must cover every advanced engine");
+assert.match(linuxEngineSourcesPreparer, /allow-existing/, "Linux engine source preparation must explicitly support already prepared source trees");
+assert.match(linuxEngineSourcesPreparer, /using existing validated Linux source tree/, "Linux engine source preparation must validate existing source trees before reuse");
 assert.match(linuxEngineSourcesPreparer, /verifySha256/, "Linux engine source preparation must verify source archive checksums");
 assert.match(linuxEngineSourcesPreparer, /tar\.xz|tar\\\.xz/, "Linux engine source preparation must accept common .tar.xz source archives");
 assert.match(linuxEngineSourcesPreparer, /-xJf/, "Linux engine source preparation must explicitly extract .tar.xz archives with xz support");

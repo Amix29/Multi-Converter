@@ -6,8 +6,11 @@ on:
       - codex/test
     paths:
       - ".github/workflows/linux-engine-staging.yml"
+      - "scripts/prepare-pdfium-engine-linux.mjs"
+      - "scripts/prepare-pandoc-engine-linux.mjs"
       - "scripts/prepare-linux-engine-sources.mjs"
       - "scripts/package-engines.mjs"
+      - "scripts/lib/download-integrity.mjs"
       - "tools/engine-packages.linux.config.json"
       - "package.json"
       - "package-lock.json"
@@ -19,12 +22,19 @@ on:
         default: ""
         type: string
       pdfium_archive_url:
-        description: "Maintainer-approved Linux x64 PDFium source-tree archive URL"
-        required: true
+        description: "Optional maintainer-approved Linux x64 PDFium source-tree archive URL; leave empty when using upstream PDFium"
+        required: false
+        default: ""
         type: string
       pdfium_archive_sha256:
         description: "SHA-256 for the Linux x64 PDFium source-tree archive"
-        required: true
+        required: false
+        default: ""
+        type: string
+      pdfium_upstream_sha256:
+        description: "SHA-256 for the upstream pdfium-linux-x64.tgz archive when pdfium_archive_url is empty"
+        required: false
+        default: ""
         type: string
       libreoffice_archive_url:
         description: "Maintainer-approved Linux x64 LibreOffice source-tree archive URL"
@@ -35,12 +45,19 @@ on:
         required: true
         type: string
       pandoc_archive_url:
-        description: "Maintainer-approved Linux x64 Pandoc source-tree archive URL"
-        required: true
+        description: "Optional maintainer-approved Linux x64 Pandoc source-tree archive URL; leave empty when using upstream Pandoc"
+        required: false
+        default: ""
         type: string
       pandoc_archive_sha256:
         description: "SHA-256 for the Linux x64 Pandoc source-tree archive"
-        required: true
+        required: false
+        default: ""
+        type: string
+      pandoc_upstream_sha256:
+        description: "SHA-256 for the upstream pandoc linux-amd64.tar.gz archive when pandoc_archive_url is empty"
+        required: false
+        default: ""
         type: string
       libvips_archive_url:
         description: "Maintainer-approved Linux x64 libvips source-tree archive URL"
@@ -69,10 +86,12 @@ jobs:
       MULTI_CONVERTER_ENGINE_PLATFORM: linux-x64
       MC_PDFIUM_LINUX_X64_ARCHIVE: ${{ github.event_name == 'workflow_dispatch' && inputs.pdfium_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_PDFIUM_LINUX_X64_ARCHIVE || '' }}
       MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pdfium_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256 || '' }}
+      PDFIUM_LINUX_X64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pdfium_upstream_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PDFIUM_LINUX_X64_UPSTREAM_SHA256 || '' }}
       MC_LIBREOFFICE_LINUX_X64_ARCHIVE: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_LINUX_X64_ARCHIVE || '' }}
       MC_LIBREOFFICE_LINUX_X64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_LINUX_X64_ARCHIVE_SHA256 || '' }}
       MC_PANDOC_LINUX_X64_ARCHIVE: ${{ github.event_name == 'workflow_dispatch' && inputs.pandoc_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_PANDOC_LINUX_X64_ARCHIVE || '' }}
       MC_PANDOC_LINUX_X64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pandoc_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PANDOC_LINUX_X64_ARCHIVE_SHA256 || '' }}
+      PANDOC_LINUX_X64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pandoc_upstream_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PANDOC_LINUX_X64_UPSTREAM_SHA256 || '' }}
       MC_LIBVIPS_LINUX_X64_ARCHIVE: ${{ github.event_name == 'workflow_dispatch' && inputs.libvips_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_LIBVIPS_LINUX_X64_ARCHIVE || '' }}
       MC_LIBVIPS_LINUX_X64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libvips_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBVIPS_LINUX_X64_ARCHIVE_SHA256 || '' }}
       OUTPUT_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.output_release_tag || '' }}
@@ -98,12 +117,8 @@ jobs:
         run: |
           set -euo pipefail
           for name in \
-            MC_PDFIUM_LINUX_X64_ARCHIVE \
-            MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256 \
             MC_LIBREOFFICE_LINUX_X64_ARCHIVE \
             MC_LIBREOFFICE_LINUX_X64_ARCHIVE_SHA256 \
-            MC_PANDOC_LINUX_X64_ARCHIVE \
-            MC_PANDOC_LINUX_X64_ARCHIVE_SHA256 \
             MC_LIBVIPS_LINUX_X64_ARCHIVE \
             MC_LIBVIPS_LINUX_X64_ARCHIVE_SHA256
           do
@@ -112,6 +127,32 @@ jobs:
               exit 1
             fi
           done
+          if [[ -n "$MC_PDFIUM_LINUX_X64_ARCHIVE" || -n "$MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256" ]]; then
+            if [[ -z "$MC_PDFIUM_LINUX_X64_ARCHIVE" || -z "$MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256" ]]; then
+              echo "Provide both MC_PDFIUM_LINUX_X64_ARCHIVE and MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256, or neither when using PDFIUM_LINUX_X64_ARCHIVE_SHA256." >&2
+              exit 1
+            fi
+            if [[ -n "$PDFIUM_LINUX_X64_ARCHIVE_SHA256" ]]; then
+              echo "PDFium source-tree archive inputs and PDFIUM_LINUX_X64_ARCHIVE_SHA256 are mutually exclusive." >&2
+              exit 1
+            fi
+          elif [[ -z "$PDFIUM_LINUX_X64_ARCHIVE_SHA256" ]]; then
+            echo "PDFium requires either source-tree archive inputs or PDFIUM_LINUX_X64_ARCHIVE_SHA256 for upstream preparation." >&2
+            exit 1
+          fi
+          if [[ -n "$MC_PANDOC_LINUX_X64_ARCHIVE" || -n "$MC_PANDOC_LINUX_X64_ARCHIVE_SHA256" ]]; then
+            if [[ -z "$MC_PANDOC_LINUX_X64_ARCHIVE" || -z "$MC_PANDOC_LINUX_X64_ARCHIVE_SHA256" ]]; then
+              echo "Provide both MC_PANDOC_LINUX_X64_ARCHIVE and MC_PANDOC_LINUX_X64_ARCHIVE_SHA256, or neither when using PANDOC_LINUX_X64_ARCHIVE_SHA256." >&2
+              exit 1
+            fi
+            if [[ -n "$PANDOC_LINUX_X64_ARCHIVE_SHA256" ]]; then
+              echo "Pandoc source-tree archive inputs and PANDOC_LINUX_X64_ARCHIVE_SHA256 are mutually exclusive." >&2
+              exit 1
+            fi
+          elif [[ -z "$PANDOC_LINUX_X64_ARCHIVE_SHA256" ]]; then
+            echo "Pandoc requires either source-tree archive inputs or PANDOC_LINUX_X64_ARCHIVE_SHA256 for upstream preparation." >&2
+            exit 1
+          fi
           if [[ -n "$OUTPUT_RELEASE_TAG" ]]; then
             if [[ ! "$OUTPUT_RELEASE_TAG" =~ ^[A-Za-z0-9._/-]+$ || "$OUTPUT_RELEASE_TAG" == -* || "$OUTPUT_RELEASE_TAG" == */..* || "$OUTPUT_RELEASE_TAG" == *..* ]]; then
               echo "Invalid Linux engine output release tag input: $OUTPUT_RELEASE_TAG" >&2
@@ -119,8 +160,16 @@ jobs:
             fi
           fi
 
+      - name: Prepare upstream Linux PDFium source tree
+        if: ${{ env.PDFIUM_LINUX_X64_ARCHIVE_SHA256 != '' }}
+        run: npm run prepare:pdfium-engine:linux
+
+      - name: Prepare upstream Linux Pandoc source tree
+        if: ${{ env.PANDOC_LINUX_X64_ARCHIVE_SHA256 != '' }}
+        run: npm run prepare:pandoc-engine:linux
+
       - name: Prepare Linux engine source trees
-        run: npm run prepare:linux-engine-sources
+        run: npm run prepare:linux-engine-sources -- --allow-existing
 
       - name: Package Linux engine archives
         run: |
