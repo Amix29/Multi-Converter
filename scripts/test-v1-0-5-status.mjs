@@ -17,13 +17,14 @@ try {
   assert.equal(currentStatus.summary.hasMacosAutomatedReleaseEvidence, true, "current evidence must record automated macOS release proof");
   assert.equal(currentStatus.summary.hasLinuxAutomatedReleaseEvidence, false, "current evidence must not claim final Linux automation proof before the real AppImage workflow runs");
   assert.equal(currentStatus.summary.hasLinuxSidecarStagingEvidence, true, "current evidence must record the real Linux sidecar staging proof");
+  assert.equal(currentStatus.summary.hasLinuxEngineStagingEvidence, true, "current evidence must record the real Linux advanced engine staging proof");
   assert.equal(currentStatus.summary.hasManualLinuxAppImageEvidence, false, "current pending receipt must not count as Linux AppImage smoke proof");
   assert.deepEqual(currentStatus.summary.missingLinuxAdvancedEngines, ["pdfium", "libreoffice", "pandoc", "libvips"], "current status must record missing Linux advanced engines");
   assert.doesNotMatch(currentStatus.blockers.join("\n"), /macOS Conversion Matrix/, "current status must not keep the macOS conversion blocker after final matrix proof");
   assert.doesNotMatch(currentStatus.blockers.join("\n"), /DMG verification.*Intel/, "current status must not keep the Intel DMG blocker after final DMG proof");
   assert.match(currentStatus.blockers.join("\n"), /Manual clean-Mac Gatekeeper\/install smoke testing/, "current status must keep the clean-Mac blocker");
   assert.doesNotMatch(currentStatus.blockers.join("\n"), /Linux Sidecar Staging success evidence is missing/, "current status must not keep the Linux sidecar staging blocker after real workflow proof");
-  assert.match(currentStatus.blockers.join("\n"), /Missing reviewed linux-x64 advanced engines/, "current status must keep the Linux advanced-engine blocker");
+  assert.doesNotMatch(currentStatus.blockers.join("\n"), /Missing reviewed linux-x64 advanced engines/, "current status must not keep the Linux advanced-engine blocker after real staging proof");
   assert.match(currentStatus.blockers.join("\n"), /Linux AppImage Build success evidence is missing/, "current status must keep the Linux AppImage build blocker");
   assert.match(currentStatus.blockers.join("\n"), /Linux Conversion Matrix success evidence is missing/, "current status must keep the Linux conversion blocker");
   assert.match(currentStatus.blockers.join("\n"), /Linux AppImage verification success evidence is missing/, "current status must keep the Linux verification blocker");

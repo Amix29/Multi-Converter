@@ -68,6 +68,7 @@ const linuxSidecarEvidence = linuxSidecarEvidenceFromDocs();
 const linuxAutomationEvidence = linuxAutomationEvidenceFromDocs();
 const hasLinuxAutomatedReleaseEvidence =
   linuxSidecarEvidence.complete &&
+  linuxAutomationEvidence.engineStaging &&
   linuxAutomationEvidence.appImageBuild &&
   linuxAutomationEvidence.conversionMatrix &&
   linuxAutomationEvidence.appImageVerification;
@@ -121,6 +122,7 @@ const status = {
     hasMacosTwoArchitectureDmgEvidence,
     hasManualCleanMacEvidence,
     hasLinuxSidecarStagingEvidence: linuxSidecarEvidence.complete,
+    hasLinuxEngineStagingEvidence: linuxAutomationEvidence.engineStaging,
     hasLinuxAutomatedReleaseEvidence,
     hasManualLinuxAppImageEvidence,
     hasLinuxPublicReleaseEvidence,
@@ -215,7 +217,7 @@ function linuxEvidenceBlockers() {
     if (!linuxSidecarEvidence.complete) {
       blockers.push("Linux Sidecar Staging success evidence is missing for ffmpeg-x86_64-unknown-linux-gnu and ffprobe-x86_64-unknown-linux-gnu.");
     }
-    if (missingLinuxAdvancedEngines.length > 0) {
+    if (missingLinuxAdvancedEngines.length > 0 && !linuxAutomationEvidence.engineStaging) {
       blockers.push(`Missing reviewed linux-x64 advanced engines or staging evidence: ${missingLinuxAdvancedEngines.join(", ")}.`);
     }
     if (!linuxAutomationEvidence.appImageBuild) {
@@ -262,6 +264,9 @@ function macosAutomationEvidenceFromDocs() {
 function linuxAutomationEvidenceFromDocs() {
   const expectedAppImage = `Multi-Converter_${packageJson.version}_linux-x64.AppImage`;
   return {
+    engineStaging:
+      /Linux Engine Staging:\s*run `\d+`, success/i.test(validationEvidence) &&
+      requiredAdvancedEngines.every((engine) => validationEvidence.includes(`${engine}-compatible-linux-x64.zip`)),
     appImageBuild: /Linux AppImage Build:\s*run `\d+`, success/i.test(validationEvidence) && validationEvidence.includes(expectedAppImage),
     conversionMatrix: /Linux Conversion Matrix:\s*run `\d+`, success/i.test(validationEvidence),
     appImageVerification: /Linux AppImage Verification:\s*run `\d+`, success/i.test(validationEvidence) && validationEvidence.includes(expectedAppImage),
