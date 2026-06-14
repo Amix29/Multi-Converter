@@ -211,6 +211,7 @@ function validateExecutable(id, filePath, args, expectedText, cwd = path.dirname
   if (skipExecutableSmoke) return;
   const result = spawnSync(filePath, args, {
     cwd,
+    env: executableEnvironment(filePath),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
@@ -247,6 +248,37 @@ function validateFile(id, filePath, options = {}) {
     return false;
   }
   return true;
+}
+
+function executableEnvironment(filePath) {
+  if (platform !== "linux-x64") return process.env;
+
+  const env = { ...process.env };
+  const binDir = path.dirname(filePath);
+  const engineRoot = path.dirname(binDir);
+  const libDir = path.join(engineRoot, "lib");
+  if (!isDirectory(libDir)) return env;
+
+  prependPathEnv(env, "LD_LIBRARY_PATH", libDir);
+  const moduleDirs = fs.readdirSync(libDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith("vips-modules-"))
+    .map((entry) => path.join(libDir, entry.name));
+  if (moduleDirs.length) {
+    env.VIPS_MODULE_PATH = moduleDirs.join(path.delimiter);
+  }
+  return env;
+}
+
+function prependPathEnv(env, key, value) {
+  env[key] = [value, env[key]].filter(Boolean).join(path.delimiter);
+}
+
+function isDirectory(filePath) {
+  try {
+    return fs.statSync(filePath).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 function isElf(filePath) {
