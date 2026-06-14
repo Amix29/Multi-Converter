@@ -75,6 +75,15 @@ npm run prepare:linux-engine-sources \
 npm run package:linux-engines -- --release-base-url "https://github.com/Amix29/Multi-Converter/releases/download/<linux-engine-tag>/"
 ```
 
+For upstream Linux engines that have a directly usable x64 binary package, PDFium and Pandoc can be prepared first with pinned SHA-256 values:
+
+```bash
+PDFIUM_LINUX_X64_ARCHIVE_SHA256="<sha256>" npm run prepare:pdfium-engine:linux
+PANDOC_LINUX_X64_ARCHIVE_SHA256="<sha256>" npm run prepare:pandoc-engine:linux
+```
+
+These helpers must run on Linux x64. They only prepare `engine-sources/linux-x64/pdfium` and `engine-sources/linux-x64/pandoc`; they do not replace the required reviewed Linux runtime source trees for LibreOffice and libvips.
+
 The resulting `dist-engines-linux/engines-manifest.json` and advanced Linux engine ZIPs can then be staged for a build with:
 
 ```bash

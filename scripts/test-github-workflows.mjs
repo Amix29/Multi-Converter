@@ -20,6 +20,8 @@ const linuxSidecarScript = fs.readFileSync(path.join(root, "scripts", "prepare-l
 const linuxEngineSourcesScript = fs.readFileSync(path.join(root, "scripts", "prepare-linux-engine-sources.mjs"), "utf8");
 const linuxEngineReleaseScript = fs.readFileSync(path.join(root, "scripts", "prepare-linux-engine-release-assets.mjs"), "utf8");
 const linuxSidecarReleaseScript = fs.readFileSync(path.join(root, "scripts", "prepare-linux-sidecar-release-assets.mjs"), "utf8");
+const linuxPdfiumPrepareScript = fs.readFileSync(path.join(root, "scripts", "prepare-pdfium-engine-linux.mjs"), "utf8");
+const linuxPandocPrepareScript = fs.readFileSync(path.join(root, "scripts", "prepare-pandoc-engine-linux.mjs"), "utf8");
 const windowsCiGateScript = fs.readFileSync(path.join(root, "scripts", "test-windows-ci-gate.mjs"), "utf8");
 const releaseNotesValidatorScript = fs.readFileSync(path.join(root, "scripts", "validate-release-notes.mjs"), "utf8");
 const releaseNotesValidationLibrary = fs.readFileSync(path.join(root, "scripts", "lib", "release-notes-validation.mjs"), "utf8");
@@ -400,6 +402,11 @@ assert.equal(packageJson.scripts["test:linux-sidecar-release-assets"], "node scr
 assert.equal(packageJson.scripts["package:linux-engines"], "node scripts/package-engines.mjs --config tools/engine-packages.linux.config.json --output dist-engines-linux", "Linux engine package helper must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:linux-engine-sources"], "node scripts/prepare-linux-engine-sources.mjs", "Linux engine source preparation helper must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:linux-engine-release-assets"], "node scripts/prepare-linux-engine-release-assets.mjs", "Linux staged engine release helper must be exposed through npm");
+assert.equal(packageJson.scripts["prepare:pdfium-engine:linux"], "node scripts/prepare-pdfium-engine-linux.mjs", "Linux PDFium upstream preparation helper must be exposed through npm");
+assert.equal(packageJson.scripts["prepare:pandoc-engine:linux"], "node scripts/prepare-pandoc-engine-linux.mjs", "Linux Pandoc upstream preparation helper must be exposed through npm");
+assert.match(packageJson.scripts["prepare:linux-upstream-engines"], /prepare:pdfium-engine:linux/, "Linux upstream preparation must include PDFium");
+assert.match(packageJson.scripts["prepare:linux-upstream-engines"], /prepare:pandoc-engine:linux/, "Linux upstream preparation must include Pandoc");
+assert.doesNotMatch(packageJson.scripts["prepare:linux-upstream-engines"], /libreoffice|libvips/, "Linux upstream preparation must not claim LibreOffice or libvips runtimes until portable builders are validated");
 assert.equal(packageJson.scripts["prepare:linux-release-artifacts"], "node scripts/prepare-linux-release-artifacts.mjs", "Linux release artifact helper must be exposed through npm");
 assert.equal(packageJson.scripts["test:linux-release-artifacts"], "node scripts/test-linux-release-artifacts.mjs", "Linux release artifact tests must be exposed through npm");
 assert.equal(packageJson.scripts["test:linux:environment"], "node scripts/test-linux-environment.mjs", "Linux environment tests must be exposed through npm");
@@ -464,6 +471,12 @@ assert.match(linuxEngineSourcesScript, /verifySha256/, "Linux engine source prep
 assert.match(linuxEngineSourcesScript, /tar\.xz|tar\\\.xz/, "Linux engine source preparation helper must accept common .tar.xz source archives");
 assert.match(linuxEngineSourcesScript, /-xJf/, "Linux engine source preparation helper must explicitly extract .tar.xz archives with xz support");
 assert.match(linuxEngineSourcesScript, /non-Linux file found in source tree/, "Linux engine source preparation helper must reject non-Linux files");
+assert.match(linuxPdfiumPrepareScript, /pdfium-linux-x64\.tgz/, "Linux PDFium upstream helper must use the official Linux x64 PDFium archive");
+assert.match(linuxPdfiumPrepareScript, /PDFIUM_LINUX_X64_ARCHIVE_SHA256/, "Linux PDFium upstream helper must require a pinned SHA-256");
+assert.match(linuxPdfiumPrepareScript, /pdfium-render-x86_64-unknown-linux-gnu/, "Linux PDFium upstream helper must stage the wrapper name used by Linux packaging");
+assert.match(linuxPandocPrepareScript, /linux-amd64\.tar\.gz/, "Linux Pandoc upstream helper must use the official Linux amd64 archive");
+assert.match(linuxPandocPrepareScript, /PANDOC_LINUX_X64_ARCHIVE_SHA256/, "Linux Pandoc upstream helper must require a pinned SHA-256");
+assert.match(linuxPandocPrepareScript, /Bonjour Multi-Converter/, "Linux Pandoc upstream helper must run a real document smoke test");
 assert.match(linuxEngineReleaseScript, /engines-manifest\.json/, "Linux staged engine helper must download or read the staged engine manifest");
 assert.match(linuxEngineReleaseScript, /platform = "linux-x64"/, "Linux staged engine helper must filter Linux x64 engine entries");
 assert.match(linuxEngineReleaseScript, /verifySha256/, "Linux staged engine helper must verify staged engine checksums");
