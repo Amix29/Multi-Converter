@@ -30,10 +30,12 @@ pub(crate) fn write(scope: &str, message: &str) {
 
 pub(crate) fn path(value: impl AsRef<Path>) -> String {
     let value = value.as_ref();
-    let name = value
-        .file_name()
-        .and_then(|file_name| file_name.to_str())
-        .filter(|file_name| !file_name.is_empty());
+    let normalized = value.to_string_lossy();
+    let trimmed = normalized.trim_end_matches(['/', '\\']);
+    let name = trimmed
+        .rsplit(|separator| separator == '/' || separator == '\\')
+        .next()
+        .filter(|file_name| !file_name.is_empty() && !file_name.ends_with(':'));
     match name {
         Some(file_name) => format!("<path:{file_name}>"),
         None => "<path>".to_string(),

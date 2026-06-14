@@ -11,7 +11,6 @@ const requiredPkgConfigPackages = [
   "webkit2gtk-4.1",
   "ayatana-appindicator3-0.1",
   "librsvg-2.0",
-  "xdo",
   "openssl",
 ];
 const runningInWsl = Boolean(process.env.WSL_DISTRO_NAME || /microsoft/i.test(os.release()));
@@ -42,6 +41,7 @@ requireCommand("cc", ["--version"], "A C compiler is required for Linux native d
 for (const packageName of requiredPkgConfigPackages) {
   requirePkgConfig(packageName);
 }
+requireHeader("xdo.h", "libxdo development headers are required for Linux native builds.");
 
 try {
   require("@tauri-apps/cli");
@@ -103,6 +103,17 @@ function requirePkgConfig(packageName) {
   });
   if (result.status !== 0) {
     failures.push(`Missing Linux development package for pkg-config module ${packageName}.`);
+  }
+}
+
+function requireHeader(headerName, message) {
+  const result = spawnSync("cc", ["-x", "c", "-", "-fsyntax-only"], {
+    encoding: "utf8",
+    input: `#include <${headerName}>\nint main(void) { return 0; }\n`,
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  if (result.status !== 0) {
+    failures.push(`${message}\n${result.stderr || result.stdout || `Unable to include ${headerName}.`}`);
   }
 }
 

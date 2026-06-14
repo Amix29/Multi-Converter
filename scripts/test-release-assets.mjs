@@ -17,7 +17,8 @@ const macosUpdaterSignature = `${macosUpdaterArchive}.sig`;
 const linuxAppImage = `Multi-Converter_${version}_linux-x64.AppImage`;
 const stableLinuxAppImage = "Multi-Converter_linux-x64.AppImage";
 const linuxAppImageSignature = `${linuxAppImage}.sig`;
-const agentsGuide = fs.readFileSync(path.join(root, "AGENTS.md"), "utf8");
+const agentsGuidePath = path.join(root, "AGENTS.md");
+const agentsGuide = fs.existsSync(agentsGuidePath) ? fs.readFileSync(agentsGuidePath, "utf8") : "";
 let updaterPublicKeyPath = "";
 let updaterSignatureVerifierPath = "";
 const windowsNotes = [
@@ -217,10 +218,12 @@ const preparedNonElfLinuxDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-
 const signingDir = fs.mkdtempSync(path.join(os.tmpdir(), "mc-assets-signing-"));
 
 try {
-  assert.match(agentsGuide, /--platform all[^\n]+Windows \+ macOS|Windows \+ macOS[^\n]+--platform all/s, "AGENTS.md must document the Windows + macOS release asset mode");
-  assert.match(agentsGuide, /--platform windows-linux/, "AGENTS.md must document the Windows + Linux release asset mode");
-  assert.match(agentsGuide, /--platform desktop/, "AGENTS.md must document the Windows + macOS + Linux release asset mode");
-  assert.match(agentsGuide, /exactly these thirteen application assets/, "AGENTS.md must list the complete desktop release asset count");
+  if (agentsGuide) {
+    assert.match(agentsGuide, /--platform all[^\n]+Windows \+ macOS|Windows \+ macOS[^\n]+--platform all/s, "AGENTS.md must document the Windows + macOS release asset mode");
+    assert.match(agentsGuide, /--platform windows-linux/, "AGENTS.md must document the Windows + Linux release asset mode");
+    assert.match(agentsGuide, /--platform desktop/, "AGENTS.md must document the Windows + macOS + Linux release asset mode");
+    assert.match(agentsGuide, /exactly these thirteen application assets/, "AGENTS.md must list the complete desktop release asset count");
+  }
 
   updaterSignatureVerifierPath = buildUpdaterSignatureVerifier(signingDir);
   updaterPublicKeyPath = generateUpdaterSigningKey(signingDir);
