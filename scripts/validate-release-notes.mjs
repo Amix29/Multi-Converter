@@ -5,9 +5,10 @@ import { validateReleaseNotes } from "./lib/release-notes-validation.mjs";
 const args = parseArgs(process.argv.slice(2));
 const version = args.version ?? readPackageVersion();
 const includeMacos = parseBoolean(args.includeMacos ?? "false", "--include-macos");
+const includeLinux = parseBoolean(args.includeLinux ?? "false", "--include-linux");
 const minLength = args.minLength === undefined ? 1 : Number(args.minLength);
 const body = readReleaseNotes(args);
-const validation = validateReleaseNotes({ body, version, includeMacos, minLength });
+const validation = validateReleaseNotes({ body, version, includeMacos, includeLinux, minLength });
 
 if (!validation.ok) {
   for (const error of validation.errors) {
@@ -16,7 +17,13 @@ if (!validation.ok) {
   process.exit(1);
 }
 
-console.log(`Release notes validated for Multi-Converter v${version} (${includeMacos ? "with macOS" : "Windows-only"}).`);
+console.log(
+  `Release notes validated for Multi-Converter v${version} (${[
+    "Windows",
+    ...(includeMacos ? ["macOS"] : []),
+    ...(includeLinux ? ["Linux"] : []),
+  ].join(" + ")}).`,
+);
 
 function parseArgs(rawArgs) {
   const parsed = {};
@@ -26,6 +33,7 @@ function parseArgs(rawArgs) {
     else if (arg === "--notes-file") parsed.notesFile = rawArgs[++index];
     else if (arg === "--notes-env") parsed.notesEnv = rawArgs[++index];
     else if (arg === "--include-macos") parsed.includeMacos = rawArgs[++index];
+    else if (arg === "--include-linux") parsed.includeLinux = rawArgs[++index];
     else if (arg === "--min-length") parsed.minLength = rawArgs[++index];
     else fail(`Unknown argument: ${arg}`);
   }

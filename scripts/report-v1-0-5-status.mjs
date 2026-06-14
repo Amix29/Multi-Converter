@@ -20,23 +20,29 @@ const requiredMacosSidecars = [
 
 const packageJson = readJson("package.json");
 const macosConfig = readJson("src-tauri/tauri.macos.conf.json");
+const linuxConfig = readJson("src-tauri/tauri.linux.conf.json");
 const enginesManifest = readJson("src-tauri/engines-manifest.json");
 const readme = readText(readmePath);
 const testingDocs = readText("docs/TESTING.md");
 const macosChecklist = readText("docs/RELEASE_CHECKLIST_MACOS.md");
 const validationEvidence = readOptionalText(validationEvidencePath);
 const cleanMacSmokeReceipt = markdownSection(validationEvidence, "Manual Clean-Mac Smoke Test Receipt");
+const linuxAppImageSmokeReceipt = markdownSection(validationEvidence, "Manual Linux AppImage Smoke Test Receipt");
 const securityEvidenceSection = markdownSection(validationEvidence, "Security And Confidentiality Evidence");
 const releaseNotesValidator = readText("scripts/lib/release-notes-validation.mjs");
 const windowsGate = readText("scripts/test-windows-ci-gate.mjs");
 const uiLayoutTest = readText("scripts/test-ui-layout.mjs");
 const macosConversionTest = readText("scripts/test-macos-conversions.mjs");
+const linuxAppImageVerifier = readText("scripts/verify-linux-appimage.mjs");
 const secretLeakTest = readText("scripts/test-secret-leaks.mjs");
 const productionConfigTest = readText("scripts/test-production-config.mjs");
 
 const macosAdvancedEngines = (enginesManifest.engines ?? []).filter((engine) => engine.platform === "macos-universal" && engine.mode === "advanced");
 const macosAdvancedEngineIds = new Set(macosAdvancedEngines.map((engine) => engine.id));
 const missingMacosAdvancedEngines = requiredAdvancedEngines.filter((id) => !macosAdvancedEngineIds.has(id));
+const linuxAdvancedEngines = (enginesManifest.engines ?? []).filter((engine) => engine.platform === "linux-x64" && engine.mode === "advanced");
+const linuxAdvancedEngineIds = new Set(linuxAdvancedEngines.map((engine) => engine.id));
+const missingLinuxAdvancedEngines = requiredAdvancedEngines.filter((id) => !linuxAdvancedEngineIds.has(id));
 const missingMacosSidecars = requiredMacosSidecars.filter((name) => !fs.existsSync(path.join(root, "src-tauri", "binaries", name)));
 const macosAutomationEvidence = macosAutomationEvidenceFromDocs();
 const hasMacosTwoArchitectureConversionEvidence =
@@ -58,26 +64,39 @@ const hasMacosAutomatedReleaseEvidence =
 const cleanMacSmokeEvidence = cleanMacSmokeEvidenceFromDocs();
 const hasManualCleanMacEvidence = cleanMacSmokeEvidence.complete;
 const hasMacosPublicReleaseEvidence = hasMacosAutomatedReleaseEvidence && hasManualCleanMacEvidence;
+const linuxSidecarEvidence = linuxSidecarEvidenceFromDocs();
+const linuxAutomationEvidence = linuxAutomationEvidenceFromDocs();
+const hasLinuxAutomatedReleaseEvidence =
+  linuxSidecarEvidence.complete &&
+  linuxAutomationEvidence.appImageBuild &&
+  linuxAutomationEvidence.conversionMatrix &&
+  linuxAutomationEvidence.appImageVerification;
+const linuxAppImageSmokeEvidence = linuxAppImageSmokeEvidenceFromDocs();
+const hasManualLinuxAppImageEvidence = linuxAppImageSmokeEvidence.complete;
+const hasLinuxPublicReleaseEvidence = hasLinuxAutomatedReleaseEvidence && hasManualLinuxAppImageEvidence;
 const hasSecurityCheckEvidence = securityCheckEvidenceFromDocs();
 const codexSecurityEvidence = codexSecurityEvidenceFromDocs();
 const hasCodexSecurityScanEvidence = codexSecurityEvidence.complete;
-const evidenceBlockers = macosEvidenceBlockers();
+const evidenceBlockers = [...macosEvidenceBlockers(), ...linuxEvidenceBlockers()];
 
 const checks = [
   check("version is 1.0.5", packageJson.version === "1.0.5"),
   check("macOS build command targets universal-apple-darwin", /universal-apple-darwin/.test(packageJson.scripts?.["tauri:build:macos"] ?? "")),
   check("macOS bundle shape is app + dmg", JSON.stringify(macosConfig.bundle?.targets) === JSON.stringify(["app", "dmg"])),
-  check("macOS updater artifacts are disabled for initial DMG", macosConfig.bundle?.createUpdaterArtifacts === false),
+  check("macOS updater artifacts are enabled", macosConfig.bundle?.createUpdaterArtifacts === true),
   check("macOS unsigned builds use ad-hoc signing", macosConfig.bundle?.macOS?.signingIdentity === "-"),
   check("README macOS status matches available release evidence", readmeMacosStatusMatchesEvidence()),
-  check("README keeps Linux in development", /\|\s*.*Linux\s*\|\s*.*In development\s*\|/.test(readme)),
+  check("Linux AppImage packaging and README status are enabled", linuxReleaseStatusIsAvailable()),
   check("UI floating stack overlap contract exists", /floating-corner/.test(uiLayoutTest) && /feedback-launcher/.test(uiLayoutTest) && /update-reminder/.test(uiLayoutTest)),
   check("Windows CI gate is grouped and checkpointed", /windows-ci-gate-status\.json/.test(windowsGate) && /beginStep\(command\)/.test(windowsGate)),
   check("macOS conversion gate rejects placeholders", /is a CI placeholder, not a real conversion sidecar/.test(macosConversionTest)),
   check("release validator guards macOS conversion coverage claims", /claimsFullMacosConversionCoverage/.test(releaseNotesValidator)),
+  check("release validator guards Linux conversion coverage claims", /claimsFullLinuxConversionCoverage/.test(releaseNotesValidator)),
+  check("Linux AppImage verifier extracts and validates sidecars", /--appimage-extract/.test(linuxAppImageVerifier) && /verifyLinuxSidecar\(appDir, "ffmpeg"\)/.test(linuxAppImageVerifier) && /verifyLinuxSidecar\(appDir, "ffprobe"\)/.test(linuxAppImageVerifier)),
   check("production config does not expose broad Tauri env variables", packageJson.scripts?.check?.includes("test:production-config") && /must not expose broad TAURI_/.test(productionConfigTest)),
   check("secret leak guard is part of the local quality gate", packageJson.scripts?.check?.includes("test:secret-leaks") && /Potential secret leak detected/.test(secretLeakTest)),
   check("v1.0.5 validation evidence records macOS CI runs", hasMacosAutomatedBaselineEvidence),
+  check("v1.0.5 validation evidence includes a structured Linux AppImage smoke receipt", linuxAppImageSmokeReceipt.length > 0 && /Launched AppImage/.test(linuxAppImageSmokeReceipt) && /Updater metadata behavior checked/.test(linuxAppImageSmokeReceipt)),
   check("v1.0.5 validation evidence records security checks", hasSecurityCheckEvidence),
   check("v1.0.5 validation evidence includes a structured clean-Mac smoke receipt", cleanMacSmokeReceipt.length > 0 && /Mounted final downloaded DMG/.test(cleanMacSmokeReceipt) && /Opened through System Settings > Privacy & Security > Open Anyway/.test(cleanMacSmokeReceipt)),
   check("testing docs warn static checks do not prove macOS conversions", /They do not prove that macOS conversions work\./.test(testingDocs)),
@@ -101,12 +120,20 @@ const status = {
     hasMacosTwoArchitectureConversionEvidence,
     hasMacosTwoArchitectureDmgEvidence,
     hasManualCleanMacEvidence,
+    hasLinuxSidecarStagingEvidence: linuxSidecarEvidence.complete,
+    hasLinuxAutomatedReleaseEvidence,
+    hasManualLinuxAppImageEvidence,
+    hasLinuxPublicReleaseEvidence,
     hasSecurityCheckEvidence,
     hasCodexSecurityScanEvidence,
     missingMacosAdvancedEngines,
+    missingLinuxAdvancedEngines,
     missingMacosSidecars,
     macosAutomationEvidence,
+    linuxSidecarEvidence,
+    linuxAutomationEvidence,
     cleanMacSmokeEvidence,
+    linuxAppImageSmokeEvidence,
     codexSecurityEvidence,
   },
 };
@@ -173,13 +200,51 @@ function macosEvidenceBlockers() {
     }
   }
   if (hasSecurityCheckEvidence && !hasCodexSecurityScanEvidence) {
-    if (/Exhaustive Codex Security subagent scan:\s*(?:success|accepted|passed)/i.test(securityEvidenceSection) && codexSecurityEvidence.missing.length > 0) {
+    if (/Final Codex Security scan(?: after Linux AppImage\/release asset changes)?:\s*(?:success|accepted|passed)/i.test(securityEvidenceSection) && codexSecurityEvidence.missing.length > 0) {
       blockers.push(`Codex Security evidence is incomplete: ${codexSecurityEvidence.missing.join(", ")}.`);
     } else {
-      blockers.push("Exhaustive Codex Security subagent scan is still pending explicit maintainer approval or accepted replacement evidence.");
+      blockers.push("Final Codex Security scan after Linux AppImage/release asset changes is still pending explicit maintainer approval or accepted replacement evidence.");
     }
   }
   return blockers;
+}
+
+function linuxEvidenceBlockers() {
+  const blockers = [];
+  if (!hasLinuxAutomatedReleaseEvidence) {
+    if (!linuxSidecarEvidence.complete) {
+      blockers.push("Linux Sidecar Staging success evidence is missing for ffmpeg-x86_64-unknown-linux-gnu and ffprobe-x86_64-unknown-linux-gnu.");
+    }
+    if (missingLinuxAdvancedEngines.length > 0) {
+      blockers.push(`Missing reviewed linux-x64 advanced engines or staging evidence: ${missingLinuxAdvancedEngines.join(", ")}.`);
+    }
+    if (!linuxAutomationEvidence.appImageBuild) {
+      blockers.push(`Linux AppImage Build success evidence is missing for Multi-Converter_${packageJson.version}_linux-x64.AppImage.`);
+    }
+    if (!linuxAutomationEvidence.conversionMatrix) {
+      blockers.push("Linux Conversion Matrix success evidence is missing.");
+    }
+    if (!linuxAutomationEvidence.appImageVerification) {
+      blockers.push(`Linux AppImage verification success evidence is missing for Multi-Converter_${packageJson.version}_linux-x64.AppImage.`);
+    }
+  }
+  if (!hasManualLinuxAppImageEvidence) {
+    if (/Manual Linux AppImage smoke testing:\s*success/i.test(linuxAppImageSmokeReceipt) && linuxAppImageSmokeEvidence.missing.length > 0) {
+      blockers.push(`Manual Linux AppImage smoke receipt is incomplete: ${linuxAppImageSmokeEvidence.missing.join(", ")}.`);
+    } else {
+      blockers.push("Manual Linux AppImage smoke testing is still required before a public Linux release claim.");
+    }
+  }
+  return blockers;
+}
+
+function linuxSidecarEvidenceFromDocs() {
+  return {
+    complete:
+      /Linux Sidecar Staging:\s*run `\d+`, success/i.test(validationEvidence) &&
+      validationEvidence.includes("ffmpeg-x86_64-unknown-linux-gnu") &&
+      validationEvidence.includes("ffprobe-x86_64-unknown-linux-gnu"),
+  };
 }
 
 function macosAutomationEvidenceFromDocs() {
@@ -194,6 +259,15 @@ function macosAutomationEvidenceFromDocs() {
   };
 }
 
+function linuxAutomationEvidenceFromDocs() {
+  const expectedAppImage = `Multi-Converter_${packageJson.version}_linux-x64.AppImage`;
+  return {
+    appImageBuild: /Linux AppImage Build:\s*run `\d+`, success/i.test(validationEvidence) && validationEvidence.includes(expectedAppImage),
+    conversionMatrix: /Linux Conversion Matrix:\s*run `\d+`, success/i.test(validationEvidence),
+    appImageVerification: /Linux AppImage Verification:\s*run `\d+`, success/i.test(validationEvidence) && validationEvidence.includes(expectedAppImage),
+  };
+}
+
 function securityCheckEvidenceFromDocs() {
   return (
     /`npm run test:secret-leaks`: passed on June 13, 2026\./.test(validationEvidence) &&
@@ -205,12 +279,12 @@ function securityCheckEvidenceFromDocs() {
 
 function codexSecurityEvidenceFromDocs() {
   const required = [
-    ["Exhaustive Codex Security subagent scan: success, passed or accepted", /Exhaustive Codex Security subagent scan:\s*(?:success|accepted|passed)/i],
-    ["Security date recorded", /^-\s*Security date:[ \t]+(?!pending\s*$).+\S\s*$/im],
-    ["Security reviewer recorded", /^-\s*Security reviewer:[ \t]+(?!pending\s*$).+\S\s*$/im],
-    ["Security scope recorded", /^-\s*Security scope:[ \t]+(?!pending\s*$).+\S\s*$/im],
-    ["Confidential information exposure recorded", /^-\s*Confidential information exposure:[ \t]+(?!pending\s*$).+\S\s*$/im],
-    ["Security outcome recorded", /^-\s*Security outcome:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Final Codex Security scan: success, passed or accepted", /Final Codex Security scan(?: after Linux AppImage\/release asset changes)?:\s*(?:success|accepted|passed)/i],
+    ["Final security date recorded", /^-\s*Final security date:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Final security reviewer recorded", /^-\s*Final security reviewer:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Final security scope recorded", /^-\s*Final security scope:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Final confidential information exposure recorded", /^-\s*Final confidential information exposure:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Final security outcome recorded", /^-\s*Final security outcome:[ \t]+(?!pending\s*$).+\S\s*$/im],
   ];
   const missing = required.filter(([, pattern]) => !pattern.test(securityEvidenceSection)).map(([name]) => name);
   return {
@@ -249,14 +323,40 @@ function cleanMacSmokeEvidenceFromDocs() {
   };
 }
 
+function linuxAppImageSmokeEvidenceFromDocs() {
+  const expectedAppImage = `Multi-Converter_${packageJson.version}_linux-x64.AppImage`;
+  const required = [
+    ["Manual Linux AppImage smoke testing: success", /Manual Linux AppImage smoke testing:\s*success/i],
+    ["Date recorded", /^-\s*Date:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Tester recorded", /^-\s*Tester:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Linux distribution recorded", /^-\s*Linux distribution:[ \t]+(?!pending\s*$).+\S\s*$/im],
+    ["Architecture tested records x64", /^-\s*Architecture tested:[ \t]+(?=.*(?:x64|x86_64)).+\S\s*$/im],
+    [`AppImage: ${expectedAppImage}`, new RegExp(`AppImage:\\s*${escapeRegExp(expectedAppImage)}\\b`, "i")],
+    ["Final downloaded GitHub release AppImage source recorded", /^-\s*AppImage source:[ \t]+(?=.*(?:final downloaded|GitHub release asset|GitHub release download)).+\S\s*$/im],
+    ["Marked AppImage executable: yes", /Marked AppImage executable:\s*yes/i],
+    ["Launched AppImage: yes", /Launched AppImage:\s*yes/i],
+    ["File selection verified: yes", /File selection verified:\s*yes/i],
+    ["FFmpeg media conversion verified: yes", /FFmpeg media conversion verified:\s*yes/i],
+    ["Document/PDF/image advanced conversion verified: yes", /Document\/PDF\/image advanced conversion verified:\s*yes/i],
+    ["Updater metadata behavior checked: yes", /Updater metadata behavior checked:\s*yes/i],
+  ];
+  const missing = required.filter(([, pattern]) => !pattern.test(linuxAppImageSmokeReceipt)).map(([name]) => name);
+  return {
+    complete: missing.length === 0,
+    expectedAppImage,
+    missing,
+  };
+}
+
 function readmeMacosStatusMatchesEvidence() {
-  if (!hasMacosPublicReleaseEvidence) {
+  if (!hasMacosAutomatedReleaseEvidence) {
     return /\|\s*.*macOS\s*\|\s*.*In development for v1\.0\.5\s*\|/.test(readme);
   }
   const macosInstallSection = markdownSection(readme, "macOS Installation");
   return (
-    /\|\s*.*macOS\s*\|\s*.*Available\s*\|/.test(readme) &&
-    macosInstallSection.includes(`Multi-Converter_${packageJson.version}_macos-universal.dmg`) &&
+    /\|\s*[^|]*macOS[^|]*\|\s*[^|]*Available[^|]*\|/.test(readme) &&
+    readme.includes("Multi-Converter_macos-universal.dmg") &&
+    macosInstallSection.includes("Multi-Converter_macos-universal.dmg") &&
     /Apple\s+Silicon/i.test(macosInstallSection) &&
     /Intel/i.test(macosInstallSection) &&
     /not\s+Apple-signed/i.test(macosInstallSection) &&
@@ -265,7 +365,20 @@ function readmeMacosStatusMatchesEvidence() {
     macosInstallSection.includes("Open Anyway") &&
     macosInstallSection.includes("Privacy & Security") &&
     /confirm\s+`?Open`?/i.test(macosInstallSection) &&
-    /macOS\s+automatic\s+updates\s+are\s+not\s+enabled/i.test(macosInstallSection)
+    /macOS\s+automatic\s+updates\s+are\s+enabled/i.test(macosInstallSection)
+  );
+}
+
+function linuxReleaseStatusIsAvailable() {
+  const linuxInstallSection = markdownSection(readme, "Linux Installation");
+  return (
+    JSON.stringify(linuxConfig.bundle?.targets) === JSON.stringify(["appimage"]) &&
+    linuxConfig.bundle?.createUpdaterArtifacts === true &&
+    /\|\s*[^|]*Linux x64[^|]*\|\s*[^|]*Available[^|]*\|/.test(readme) &&
+    readme.includes("Multi-Converter_linux-x64.AppImage") &&
+    linuxInstallSection.includes("Multi-Converter_linux-x64.AppImage") &&
+    linuxInstallSection.includes("chmod a+x") &&
+    /Linux\s+automatic\s+updates\s+are\s+enabled/i.test(linuxInstallSection)
   );
 }
 

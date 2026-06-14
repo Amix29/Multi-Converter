@@ -5,12 +5,13 @@ This checklist is for the planned macOS v1.0.5 work. A macOS release is not read
 ## Required Build Shape
 
 - Build on macOS, not Windows.
-- Produce one user-facing DMG only: `Multi-Converter_X.Y.Z_macos-universal.dmg`.
+- Produce one universal DMG from the clean macOS build, publish it as the versioned asset `Multi-Converter_X.Y.Z_macos-universal.dmg`, and publish the identical stable alias `Multi-Converter_macos-universal.dmg`.
+- Produce and publish the Tauri macOS updater artifacts from the same build: `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz` and `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig`.
 - Build the Tauri target as `universal-apple-darwin`.
 - Use `src-tauri/tauri.macos.conf.json`.
 - `npm run tauri:build:macos` intentionally refuses Windows/Linux hosts. Treat that refusal as a guardrail, not a product failure.
 - Use ad-hoc signing (`signingIdentity: "-"`) unless Apple Developer ID signing and notarization credentials are intentionally added.
-- macOS updater artifacts are disabled for this initial DMG workflow. Do not add Darwin entries to `latest.json` until macOS updater artifacts are generated and tested end to end.
+- macOS updater artifacts are enabled for macOS releases. `latest.json` must include `darwin-aarch64` and `darwin-x86_64` entries that point to the same verified universal `.app.tar.gz` updater archive.
 - Do not hand-edit the generated `.app`; change source/config/staged engines and rebuild.
 
 ## Mac Handoff Readiness
@@ -27,7 +28,7 @@ At that point, the only expected remaining work should be macOS-only work:
 - create or provide real Apple Silicon and Intel FFmpeg/ffprobe inputs, then build/verify the universal sidecars with `lipo`;
 - prepare PDFium, LibreOffice, Pandoc and libvips as reviewed `macos-universal` engine archives;
 - run `npm run test:macos:host` and `npm run test:macos:conversions` on macOS;
-- build `npm run tauri:build:macos`, prepare `Multi-Converter_X.Y.Z_macos-universal.dmg`, and run `npm run verify:macos-dmg`;
+- build `npm run tauri:build:macos`, prepare `Multi-Converter_X.Y.Z_macos-universal.dmg`, `Multi-Converter_macos-universal.dmg`, `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz` and `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig`, then run `npm run verify:macos-dmg`;
 - perform the manual clean-Mac smoke test before any public macOS release claim.
 
 If another task remains possible from Windows/Linux, finish it before treating the project as ready for Mac handoff.
@@ -166,7 +167,7 @@ Use the manual `macOS DMG Build` workflow when a Mac runner should build and ver
 - Prefer `engine_staging_run_id` from a successful `macOS Engine Staging` run for private `codex/test` DMG validation. The workflow will download the staged sidecars, engine manifest and engine archives from the `macos-engine-assets` workflow artifact.
 - On `codex/test`, push runs require `MC_ENABLE_MACOS_DMG=1` and read the staging artifact run from `MC_MACOS_ENGINE_STAGING_RUN_ID`.
 - Do not combine `engine_staging_run_id` with release-tag inputs in the same run.
-- The workflow prepares `macos-universal` engines, runs `npm run test:macos:host`, builds `npm run tauri:build:macos` on Apple Silicon, renames the output to `Multi-Converter_X.Y.Z_macos-universal.dmg`, verifies it with `npm run verify:macos-dmg`, uploads the verified DMG as a workflow artifact, then downloads and verifies that same DMG on Intel.
+- The workflow prepares `macos-universal` engines, runs `npm run test:macos:host`, builds `npm run tauri:build:macos` on Apple Silicon, renames the output to `Multi-Converter_X.Y.Z_macos-universal.dmg`, prepares the matching macOS updater archive and signature, verifies the DMG with `npm run verify:macos-dmg`, uploads the verified macOS release artifact set, then downloads and verifies that same DMG on Intel.
 - A failed workflow is not a release blocker by itself until the failure is reviewed. Common expected failures are missing staged sidecars, missing executable bits or a DMG that still contains Windows-only bundled engines.
 
 `npm run verify:macos-dmg` mounts the final DMG and inspects the app bundle. It must reject a DMG that contains Windows-only engine files such as `.exe` or `.dll`, missing engine metadata, or `engine.json` entries whose platform is not `macos-universal`.
@@ -180,9 +181,9 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$TMPDIR/mc-release-ass
 ## GitHub Release Handoff
 
 - Create or edit the GitHub release body in English before running the release workflow.
-- Upload the verified DMG asset to that release first: `Multi-Converter_X.Y.Z_macos-universal.dmg`.
+- Upload the verified macOS assets to that release first: `Multi-Converter_X.Y.Z_macos-universal.dmg`, `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz` and `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig`.
 - Run the `Release` workflow manually with `include_macos=true`.
-- The workflow downloads that pre-uploaded DMG, verifies it on Apple Silicon and Intel macOS runners, copies it into a clean release folder, validates `--platform all`, then republishes the exact final asset list.
+- The workflow downloads the pre-uploaded DMG, updater archive and updater signature, verifies the DMG on Apple Silicon and Intel macOS runners, copies them into a clean release folder as `Multi-Converter_X.Y.Z_macos-universal.dmg`, `Multi-Converter_macos-universal.dmg`, `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz` and `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig`, validates `--platform all`, then republishes the exact final asset list.
 - Before allocating release runners, the workflow validates the GitHub release notes with `scripts/validate-release-notes.mjs`, the same shared rules used by release asset validation. Before allocating a macOS runner, it also runs `npm run status:v1.0.5 -- --require-ready` and validates the macOS-specific wording; it must fail until the clean-Mac smoke-test receipt, final security approval, final README macOS availability row and required public macOS installation notes are recorded.
 - If either macOS DMG verification job fails, the publication job must not run.
 - Do not use `include_macos=true` for a DMG that has not passed the manual smoke test below.
@@ -222,7 +223,7 @@ If the build is not Apple-signed and not notarized, say that plainly and include
 
 > After the first launch warning, open `System Settings > Privacy & Security`, choose `Open Anyway`, then confirm `Open`.
 
-Also state that automatic updates for macOS are not enabled in this first DMG workflow if `latest.json` still contains only Windows updater platforms.
+Also state that automatic updates for macOS are enabled when the release includes `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz`, its `.sig`, and Darwin updater entries in `latest.json`.
 
 In `## Validation`, mention that the macOS DMG was verified on Apple Silicon and Intel, either manually or through the `macOS DMG verification` workflow jobs.
 

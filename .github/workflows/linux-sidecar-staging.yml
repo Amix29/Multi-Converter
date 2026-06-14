@@ -1,0 +1,108 @@
+name: Linux Sidecar Staging
+
+on:
+  push:
+    branches:
+      - codex/test
+    paths:
+      - ".github/workflows/linux-sidecar-staging.yml"
+      - "scripts/prepare-linux-sidecar-release-assets.mjs"
+      - "scripts/test-linux-sidecar-release-assets.mjs"
+      - "scripts/lib/elf.mjs"
+      - "scripts/lib/ffmpeg-version.mjs"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+    inputs:
+      output_release_tag:
+        description: "Optional test release tag that will receive the staged Linux sidecar assets"
+        required: false
+        default: ""
+        type: string
+      ffmpeg_binary_url:
+        description: "Maintainer-approved Linux x64 ffmpeg binary URL"
+        required: true
+        type: string
+      ffmpeg_binary_sha256:
+        description: "SHA-256 for the Linux x64 ffmpeg binary"
+        required: true
+        type: string
+      ffprobe_binary_url:
+        description: "Maintainer-approved Linux x64 ffprobe binary URL"
+        required: true
+        type: string
+      ffprobe_binary_sha256:
+        description: "SHA-256 for the Linux x64 ffprobe binary"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: linux-sidecar-staging-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: Stage Linux FFmpeg sidecars
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.MC_ENABLE_LINUX_SIDECAR_STAGING == '1' }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      FFMPEG_LINUX_X64_BINARY: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_binary_url || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_LINUX_X64_BINARY || '' }}
+      FFMPEG_LINUX_X64_BINARY_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_binary_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_LINUX_X64_BINARY_SHA256 || '' }}
+      FFPROBE_LINUX_X64_BINARY: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_binary_url || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_LINUX_X64_BINARY || '' }}
+      FFPROBE_LINUX_X64_BINARY_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_binary_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_LINUX_X64_BINARY_SHA256 || '' }}
+      OUTPUT_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.output_release_tag || '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Validate Linux sidecar inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in \
+            FFMPEG_LINUX_X64_BINARY \
+            FFMPEG_LINUX_X64_BINARY_SHA256 \
+            FFPROBE_LINUX_X64_BINARY \
+            FFPROBE_LINUX_X64_BINARY_SHA256
+          do
+            if [[ -z "${!name}" ]]; then
+              echo "$name is required for Linux sidecar staging." >&2
+              exit 1
+            fi
+          done
+          if [[ -n "$OUTPUT_RELEASE_TAG" ]]; then
+            if [[ ! "$OUTPUT_RELEASE_TAG" =~ ^[A-Za-z0-9._/-]+$ || "$OUTPUT_RELEASE_TAG" == -* || "$OUTPUT_RELEASE_TAG" == */..* || "$OUTPUT_RELEASE_TAG" == *..* ]]; then
+              echo "Invalid Linux sidecar output release tag input: $OUTPUT_RELEASE_TAG" >&2
+              exit 1
+            fi
+          fi
+
+      - name: Prepare Linux sidecar release assets
+        run: npm run prepare:linux-sidecar-release-assets -- --out-dir "$RUNNER_TEMP/mc-linux-sidecar-assets"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-sidecar-assets
+          path: ${{ runner.temp }}/mc-linux-sidecar-assets
+          if-no-files-found: error
+
+      - name: Upload staged sidecars to a test release
+        if: ${{ env.OUTPUT_RELEASE_TAG != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="$OUTPUT_RELEASE_TAG"
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$tag" --notes "Linux FFmpeg sidecar staging assets for Multi-Converter testing." --prerelease || true
+          gh release upload "$tag" "$RUNNER_TEMP"/mc-linux-sidecar-assets/* --repo "$GITHUB_REPOSITORY" --clobber

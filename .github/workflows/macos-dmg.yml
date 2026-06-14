@@ -8,7 +8,9 @@ on:
       - ".github/workflows/macos-dmg.yml"
       - "scripts/prepare-macos-engine-release-assets.mjs"
       - "scripts/prepare-macos-dmg-artifact.mjs"
+      - "scripts/prepare-macos-release-artifacts.mjs"
       - "scripts/validate-bundled-engines.mjs"
+      - "scripts/lib/ffmpeg-version.mjs"
       - "scripts/test-macos-host.mjs"
       - "scripts/test-macos-packaging.mjs"
       - "scripts/verify-macos-dmg.mjs"
@@ -55,6 +57,8 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       dmg_name: ${{ steps.version.outputs.dmg_name }}
+      updater_archive_name: ${{ steps.version.outputs.updater_archive_name }}
+      updater_signature_name: ${{ steps.version.outputs.updater_signature_name }}
     env:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
@@ -197,7 +201,10 @@ jobs:
           npm run test:pdfium-wrapper:compile
           npm run clippy:pdfium-wrapper
 
-      - name: Build universal DMG
+      - name: Build universal DMG and updater artifacts
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: npm run tauri:build:macos
 
       - id: version
@@ -205,17 +212,23 @@ jobs:
           version="$(node -p "require('./package.json').version")"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "dmg_name=Multi-Converter_${version}_macos-universal.dmg" >> "$GITHUB_OUTPUT"
+          echo "updater_archive_name=Multi-Converter_${version}_macos-universal.app.tar.gz" >> "$GITHUB_OUTPUT"
+          echo "updater_signature_name=Multi-Converter_${version}_macos-universal.app.tar.gz.sig" >> "$GITHUB_OUTPUT"
 
-      - name: Prepare release-named DMG artifact
-        run: npm run prepare:macos-dmg-artifact -- --version "${{ steps.version.outputs.version }}" --out-dir "$RUNNER_TEMP/mc-macos-dmg-artifact"
+      - name: Prepare release-named macOS artifacts
+        run: npm run prepare:macos-release-artifacts -- --version "${{ steps.version.outputs.version }}" --out-dir "$RUNNER_TEMP/mc-macos-release-artifacts"
 
       - name: Verify final DMG
-        run: npm run verify:macos-dmg -- --version "${{ steps.version.outputs.version }}" --dmg "$RUNNER_TEMP/mc-macos-dmg-artifact/${{ steps.version.outputs.dmg_name }}"
+        run: npm run verify:macos-dmg -- --version "${{ steps.version.outputs.version }}" --dmg "$RUNNER_TEMP/mc-macos-release-artifacts/${{ steps.version.outputs.dmg_name }}"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.version.outputs.dmg_name }}
-          path: ${{ runner.temp }}/mc-macos-dmg-artifact/${{ steps.version.outputs.dmg_name }}
+          name: macos-release-artifacts
+          path: |
+            ${{ runner.temp }}/mc-macos-release-artifacts/${{ steps.version.outputs.dmg_name }}
+            ${{ runner.temp }}/mc-macos-release-artifacts/Multi-Converter_macos-universal.dmg
+            ${{ runner.temp }}/mc-macos-release-artifacts/${{ steps.version.outputs.updater_archive_name }}
+            ${{ runner.temp }}/mc-macos-release-artifacts/${{ steps.version.outputs.updater_signature_name }}
           if-no-files-found: error
 
   verify-intel:
@@ -237,8 +250,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.build.outputs.dmg_name }}
-          path: ${{ runner.temp }}/mc-macos-dmg-artifact
+          name: macos-release-artifacts
+          path: ${{ runner.temp }}/mc-macos-release-artifacts
 
       - name: Verify final DMG on Intel
-        run: npm run verify:macos-dmg -- --version "${{ needs.build.outputs.version }}" --dmg "$RUNNER_TEMP/mc-macos-dmg-artifact/${{ needs.build.outputs.dmg_name }}"
+        run: npm run verify:macos-dmg -- --version "${{ needs.build.outputs.version }}" --dmg "$RUNNER_TEMP/mc-macos-release-artifacts/${{ needs.build.outputs.dmg_name }}"

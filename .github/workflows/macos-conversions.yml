@@ -8,6 +8,7 @@ on:
       - ".github/workflows/macos-conversions.yml"
       - "scripts/prepare-macos-engine-release-assets.mjs"
       - "scripts/validate-bundled-engines.mjs"
+      - "scripts/lib/ffmpeg-version.mjs"
       - "scripts/test-macos-host.mjs"
       - "scripts/test-macos-conversions.mjs"
       - "scripts/test-github-workflows.mjs"

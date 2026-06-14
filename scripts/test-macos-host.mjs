@@ -2,12 +2,13 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 
 const root = process.cwd();
 const binariesDir = path.join(root, "src-tauri", "binaries");
 const requiredTargets = ["aarch64-apple-darwin", "x86_64-apple-darwin"];
 const sidecars = ["ffmpeg", "ffprobe"];
-const expectedSidecarVersion = "8.1.1";
+const expectedSidecarVersion = readRequiredFfmpegVersion(root);
 
 if (process.platform !== "darwin") {
   fail("Real macOS host validation must run on macOS. Use GitHub Actions macos-latest or a real Mac.");
@@ -95,7 +96,7 @@ function commandOutput(command, args, message) {
 function runNodeScript(scriptPath, message) {
   const result = spawnSync(process.execPath, [scriptPath], {
     cwd: root,
-    env: { ...process.env, MULTI_CONVERTER_ENGINE_PLATFORM: "macos-universal" },
+    env: { ...process.env, MULTI_CONVERTER_ENGINE_PLATFORM: "macos-universal", MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES: "1" },
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   });

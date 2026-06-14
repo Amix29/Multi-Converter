@@ -1,0 +1,79 @@
+{
+  "manifestVersion": 1,
+  "packageFormatVersion": 1,
+  "platform": "linux-x64",
+  "downloadBaseUrl": "REPLACE_WITH_RELEASE_BASE_URL",
+  "engines": [
+    {
+      "engineId": "pdfium",
+      "displayName": "PDFium",
+      "mode": "advanced",
+      "version": "compatible",
+      "platform": "linux-x64",
+      "sourceDir": "engine-sources/linux-x64/pdfium",
+      "outputArchiveName": "pdfium-compatible-linux-x64.zip",
+      "binaryPaths": [
+        "bin/libpdfium.so",
+        "bin/pdfium-render-x86_64-unknown-linux-gnu"
+      ],
+      "healthCheck": "pdfium-render",
+      "licenseName": "BSD-3-Clause",
+      "licenseUrl": "https://github.com/bblanchon/pdfium-binaries",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": []
+    },
+    {
+      "engineId": "libreoffice",
+      "displayName": "LibreOffice headless",
+      "mode": "advanced",
+      "version": "compatible",
+      "platform": "linux-x64",
+      "sourceDir": "engine-sources/linux-x64/libreoffice",
+      "outputArchiveName": "libreoffice-compatible-linux-x64.zip",
+      "binaryPaths": ["program/soffice"],
+      "healthCheck": "libreoffice-headless",
+      "licenseName": "MPL-2.0",
+      "licenseUrl": "https://www.libreoffice.org/about-us/licenses/",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": []
+    },
+    {
+      "engineId": "pandoc",
+      "displayName": "Pandoc",
+      "mode": "advanced",
+      "version": "compatible",
+      "platform": "linux-x64",
+      "sourceDir": "engine-sources/linux-x64/pandoc",
+      "outputArchiveName": "pandoc-compatible-linux-x64.zip",
+      "binaryPaths": ["bin/pandoc"],
+      "healthCheck": "pandoc-md-html",
+      "licenseName": "GPL-2.0-or-later",
+      "licenseUrl": "https://github.com/jgm/pandoc/blob/main/COPYRIGHT",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": []
+    },
+    {
+      "engineId": "libvips",
+      "displayName": "libvips",
+      "mode": "advanced",
+      "version": "compatible",
+      "platform": "linux-x64",
+      "sourceDir": "engine-sources/linux-x64/libvips",
+      "outputArchiveName": "libvips-compatible-linux-x64.zip",
+      "binaryPaths": ["bin/vips"],
+      "healthCheck": "libvips-image",
+      "licenseName": "LGPL-2.1-or-later",
+      "licenseUrl": "https://github.com/libvips/libvips/blob/master/LICENSE",
+      "licenseFiles": ["licenses/LICENSE.txt"],
+      "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
+      "required": true,
+      "dependencies": []
+    }
+  ]
+}

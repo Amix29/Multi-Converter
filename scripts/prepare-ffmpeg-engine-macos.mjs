@@ -6,13 +6,14 @@ import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 import { publicSourceLabel } from "./lib/download-integrity.mjs";
+import { ffmpegVersionFromEnv } from "./lib/ffmpeg-version.mjs";
 
 const root = process.cwd();
 const downloads = path.join(root, "engine-sources", ".downloads");
 const extracts = path.join(root, "engine-sources", ".extracts");
 const platformRoot = path.join(root, "engine-sources", "macos-universal");
 const userAgent = { "User-Agent": "Multi-Converter-Packager" };
-const expectedVersion = process.env.FFMPEG_MACOS_EXPECTED_VERSION?.trim() || "8.1.1";
+const expectedVersion = ffmpegVersionFromEnv("FFMPEG_MACOS_EXPECTED_VERSION", root);
 const archInputs = [
   {
     arch: "aarch64",

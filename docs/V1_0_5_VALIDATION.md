@@ -12,12 +12,23 @@ This file records validation evidence for the in-progress v1.0.5 release. It is 
 - macOS DMG Build (Apple Silicon): run `27471124370`, success. Built, mounted and verified `Multi-Converter_1.0.5_macos-universal.dmg` on Apple Silicon, then uploaded the release-named artifact.
 - macOS DMG Verification (Intel): run `27471124370`, success. Downloaded the same `Multi-Converter_1.0.5_macos-universal.dmg` workflow artifact and verified it on Intel.
 
+## Linux Automated Evidence
+
+Record these lines only after the real Linux workflow runs with real Linux sidecars and release-named artifacts.
+
+- Linux Sidecar Staging: pending
+- Linux AppImage Build: pending
+- Linux Conversion Matrix: pending
+- Linux AppImage Verification: pending
+- Linux WSL Native Checkout Preflight: partial on June 14, 2026. A native WSL checkout was prepared under `~/Multi-Converter-linux`, Node.js v24.16.0 and npm 11.13.0 were installed from Linux binaries, and `npm ci` completed with Linux node_modules. `npm run test:linux:environment` still fails because required Ubuntu system packages are missing (`pkg-config`, `dbus-1`, `gtk+-3.0`, `webkit2gtk-4.1`, `ayatana-appindicator3-0.1`, `librsvg-2.0`, `xdo`, `openssl`) and this WSL session cannot install them without an interactive sudo password. This is not release evidence.
+
 ## Remaining Release Evidence
 
 - Automated macOS release evidence is now recorded for engine staging, the two-architecture `macOS Conversion Matrix`, and Apple Silicon + Intel verification of the universal DMG workflow artifact.
+- Linux AppImage support is wired into configuration, release asset preparation/validation, README download links, updater metadata contracts and GitHub Actions. Local WSL validation has covered Linux contract tests, but the final AppImage build and full Linux conversion matrix still require a Linux host with the documented system packages and real Linux FFmpeg/ffprobe sidecars staged.
 - Manual clean-Mac smoke testing is still required before a public macOS release claim: mount DMG, drag to Applications, approve the unsigned/not-notarized first launch through `System Settings > Privacy & Security > Open Anyway`, confirm second launch, file selection, one FFmpeg media conversion, and one document/PDF/image path when those engines are included.
-- Final Codex Security review is complete for the repository scan scope recorded below. Manual clean-Mac smoke testing is still required before marking the full v1.0.5 release goal complete.
-- The public release body still needs to state that the macOS build is not Apple-signed and not notarized, that macOS automatic updates are not enabled for the first DMG workflow, and how to open the app through `Open Anyway`.
+- A pre-final Codex Security scan is recorded below for the repository state before the latest Linux release hardening. Manual clean-Mac smoke testing, Linux AppImage build/conversion/verification evidence, manual Linux AppImage smoke testing and the final post-Linux Codex Security scan are still required before marking the full v1.0.5 release goal complete.
+- The public release body still needs to state whether the macOS build is Apple-signed and notarized, that macOS automatic updates are enabled when updater artifacts are included, and how to open the app through `Open Anyway` when the build is not Apple-signed or not notarized. If Linux is included, it must also name `Multi-Converter_1.0.5_linux-x64.AppImage`, state that Linux automatic updates are enabled, and mention the passed Linux AppImage verification and Linux Conversion Matrix evidence.
 
 ## Manual Clean-Mac Smoke Test Receipt
 
@@ -43,6 +54,25 @@ Record this receipt only after testing the final downloaded DMG on a clean macOS
 - Updater metadata behavior checked: no
 - Notes: pending
 
+## Manual Linux AppImage Smoke Test Receipt
+
+Record this receipt only after testing the final downloaded AppImage on a clean Linux x64 desktop. Leave the result as `pending` until every required line below is true for the exact release AppImage.
+
+- Manual Linux AppImage smoke testing: pending
+- Date: pending
+- Tester: pending
+- Linux distribution: pending
+- Architecture tested: pending
+- AppImage: Multi-Converter_1.0.5_linux-x64.AppImage
+- AppImage source: pending
+- Marked AppImage executable: no
+- Launched AppImage: no
+- File selection verified: no
+- FFmpeg media conversion verified: no
+- Document/PDF/image advanced conversion verified: no
+- Updater metadata behavior checked: no
+- Notes: pending
+
 ## Security And Confidentiality Evidence
 
 - `npm run test:secret-leaks`: passed on June 13, 2026.
@@ -52,12 +82,34 @@ Record this receipt only after testing the final downloaded DMG on a clean macOS
 - `cargo audit --file src-tauri/Cargo.lock`: completed on June 13, 2026. It reported the expected allowed warnings already documented for the current Tauri/Linux GTK-related dependency stack, plus unmaintained transitive crates; no new secret exposure was found by this command.
 - Extra tracked-file confidentiality search: passed on June 13, 2026. No private test repository reference, local maintainer path, signing-key value, Apple signing credential file name, npm token assignment or private-key block was found in tracked project files outside ignored/generated folders.
 - Local Git configuration was checked and the obsolete private test remote was removed from this machine. This was not a tracked repository change.
+- Linux release diff confidentiality pass: passed on June 14, 2026. Reviewed the changed release workflows, Linux AppImage config, release asset scripts, testing scripts and documentation for secret values, private repository references, maintainer-local paths, signing credential filenames, private-key blocks and token/password assignments. Only expected GitHub Actions secret references and public documentation warnings were present.
+- `npm run test:secret-leaks`: passed again on June 14, 2026 after the Linux release changes.
+- Linux WSL validation pass: environment rejected on June 14, 2026. WSL Ubuntu was detected, but the checkout was under `/mnt/c`, `npm` resolved through the Windows Node installation and native Linux build dependencies such as `pkg-config` were missing. This environment is not accepted as Linux build or conversion evidence. Linux packaging, release artifact, repository metadata and GitHub workflow contract tests were validated from the normal local gate, while real Linux AppImage and conversion proof must come from GitHub Actions Ubuntu or a clean Linux/WSL checkout with Linux-installed tooling.
+- Linux native WSL preparation: partial on June 14, 2026. The project was synchronized to `~/Multi-Converter-linux` without generated release outputs, Linux Node.js v24.16.0/npm 11.13.0 were installed under `~/.local/node-v24`, and `npm ci` completed there. The Linux environment preflight still failed on missing Ubuntu native development packages, and `sudo -n true` confirmed package installation is not available non-interactively in this session. This remains setup progress only, not AppImage or conversion evidence.
+- Linux AppImage updater artifact contract checked against the official Tauri v2 updater behavior on June 14, 2026: with `createUpdaterArtifacts: true`, Linux uses the AppImage itself as the updater bundle and emits `AppImage.sig`.
+- Linux release-note gate hardening: passed on June 14, 2026. `scripts/validate-release-notes.mjs`, release asset preparation, release asset validation and the GitHub `Release` workflow now pass `include_linux` through the shared release-note validator. Linux releases must name the versioned Linux x64 AppImage, state Linux automatic updates are enabled, mention Linux AppImage verification on Linux and avoid unproven full Linux conversion claims unless the Linux Conversion Matrix is named.
+- Linux sidecar staging gate: added on June 14, 2026. `npm run prepare:linux-sidecar-release-assets` and the manual `Linux Sidecar Staging` workflow normalize maintainer-approved Linux x64 FFmpeg/ffprobe binaries into the exact four assets expected by `Linux AppImage Build`, after SHA-256, placeholder, x86_64 ELF and smoke-test checks. This is a staging gate only; it is not final proof that the public Linux AppImage was built or tested.
+- Linux AppImage verification gate: added on June 14, 2026. `npm run verify:linux-appimage` extracts the release-named AppImage on Linux, validates AppDir structure, verifies bundled FFmpeg/ffprobe sidecars as x86_64 ELF executables, rejects obvious Windows/macOS-only bundled files, rejects foreign-platform FFmpeg/ffprobe sidecars without relying on filename extensions and cryptographically verifies the updater signature against the configured Tauri updater public key. The Linux AppImage build workflow and the GitHub Release Linux verification job now run this gate.
+- Linux host-sidecar ELF hardening: passed on June 14, 2026. `npm run test:linux:host`, `npm run prepare:linux-sidecars`, release asset preparation, release asset validation and AppImage verification all reject non-ELF or non-x86_64 Linux sidecars/AppImages before release claims.
+- Linux engine binary selection hardening: passed on June 14, 2026. Runtime engine selection and bundled-engine validation now prefer native Linux architecture paths, so a future Linux engine package containing multiple architecture subtrees will not accidentally pick an ARM binary on Linux x64.
+- Linux staged-engine manifest and source-tree hardening: passed on June 14, 2026. `npm run test:linux-engine-release-assets` now verifies that Linux staged advanced-engine manifests reject Windows/macOS binary path segments such as `.app`, `.dmg`, `.exe`, `.dll`, `.ps1`, and reject absolute or traversing binary paths before writing the embedded manifest. `npm run test:linux-packaging` also verifies the Linux source-tree helper rejects the same non-Linux path segments inside extracted archives.
+- FFmpeg version contract hardening: passed on June 14, 2026. Linux and macOS sidecar staging, host validation, AppImage/DMG verification and bundled-engine validation now read the expected FFmpeg version from `FFMPEG_REQUIRED_VERSION` in `src-tauri/src/engines.rs`, avoiding drift between runtime checks and release validators.
+- FFmpeg version workflow trigger hardening: passed on June 14, 2026. Linux AppImage, Linux sidecar staging, macOS engine staging, macOS DMG and macOS conversion workflows now include `scripts/lib/ffmpeg-version.mjs` in their `codex/test` push paths, so updates to the shared FFmpeg version contract retrigger the affected platform validation workflows.
+- Linux staging artifact handoff hardening: passed on June 14, 2026. `Linux AppImage Build` now accepts either release tags or successful `Linux Sidecar Staging` / `Linux Engine Staging` workflow run IDs for real Linux sidecars and advanced engines, rejects ambiguous mixed inputs, verifies workflow run provenance before using artifacts, and stages workflow artifacts through the same checksum, ELF and manifest validators used for release assets.
+- Linux release-asset negative coverage hardening: passed on June 14, 2026. `npm run test:release-assets` now explicitly covers Linux AppImage stable-alias hash mismatches, Linux `.sha256` content mismatches and `latest.json` Linux updater signature mismatches, in addition to non-ELF AppImage rejection.
+- Linux local engine artifact strictness: passed on June 14, 2026. `npm run prepare:linux-engine-release-assets -- --from-local-assets` now rejects unexpected files in the `linux-engine-assets` workflow artifact directory, so AppImage builds cannot silently consume or carry unreviewed extra local staging files alongside the manifest and required advanced-engine ZIPs.
+- Linux sidecar artifact strictness: passed on June 14, 2026. `npm run prepare:linux-sidecars -- --asset-dir ...` now rejects unexpected files in the `linux-sidecar-assets` workflow artifact directory, so AppImage builds can only stage the exact Linux x64 FFmpeg/ffprobe sidecars and matching `.sha256` files.
+- Linux conversion manifest path hardening: passed on June 14, 2026. `npm run test:linux:conversions` now rejects absolute, traversing or non-Linux advanced-engine binary paths before preparing engines or running conversion tests, matching the stricter staging helper rules.
+- Linux AppImage engine-set strictness: passed on June 14, 2026. `npm run verify:linux-appimage` now rejects duplicate advanced bundled engines, unexpected advanced engines and non-advanced Linux bundled engine metadata, so the final AppImage gate enforces the same reviewed advanced-engine set as staging.
+- Linux AppImage metadata path hardening: passed on June 14, 2026. `npm run verify:linux-appimage` now rejects absolute, traversing and Windows/macOS-style advanced-engine `binaryPaths` inside extracted AppImage metadata, matching the staged-engine and conversion manifest rules.
+- `npm run check`: passed on June 14, 2026 after the Linux release-note, Linux ELF, Linux staged-engine manifest/source-tree, FFmpeg version-contract, workflow-trigger, Linux staging artifact handoff, Linux release-asset negative coverage, Linux local engine artifact strictness, Linux sidecar artifact strictness, Linux conversion manifest path hardening, Linux AppImage engine-set strictness and Linux AppImage metadata path hardening.
 
-- Exhaustive Codex Security subagent scan: passed
-- Security date: June 13, 2026
-- Security reviewer: Codex Security subagents, authorized by the maintainer in this thread
-- Security scope: full repository scan split into 27 read-only discovery shards, excluding `AGENTS.md` per maintainer instruction
-- Confidential information exposure: no tracked secret, signing key value, Apple credential file name, private repository reference or maintainer-local path exposure found by the configured secret scan and subagent review
-- Security outcome: all discovered release-integrity and confidentiality candidates were fixed or suppressed with counterevidence; no surviving reportable finding remains in `C:\tmp\codex-security-scans\Multi-Converter\ae599a3_20260613T182656\report.md`
+- Pre-final Codex Security subagent scan: passed on June 13, 2026. Scope: full repository scan split into 27 read-only discovery shards, excluding `AGENTS.md` per maintainer instruction. Outcome: all discovered release-integrity and confidentiality candidates were fixed or suppressed with counterevidence; no surviving reportable finding remained in `C:\tmp\codex-security-scans\Multi-Converter\ae599a3_20260613T182656\report.md`.
+- Final Codex Security scan after Linux AppImage/release asset changes: pending
+- Final security date: pending
+- Final security reviewer: pending
+- Final security scope: pending
+- Final confidential information exposure: pending
+- Final security outcome: pending
 
-Do not mark the full v1.0.5 release goal complete until the manual clean-Mac smoke test receipt above is completed for the final downloaded DMG.
+Do not mark the full v1.0.5 release goal complete until the manual clean-Mac smoke test receipt above is completed for the final downloaded DMG and the manual Linux AppImage smoke test receipt is completed for the final downloaded AppImage.

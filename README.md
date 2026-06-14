@@ -25,6 +25,12 @@
   <a href="https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_windows-x64_setup.exe">
     <img alt="Download for Windows" src="https://img.shields.io/badge/⬇️%20Download%20for%20Windows-.exe-2563eb?style=for-the-badge">
   </a>
+  <a href="https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_macos-universal.dmg">
+    <img alt="Download for macOS" src="https://img.shields.io/badge/⬇️%20Download%20for%20macOS-.dmg-111827?style=for-the-badge">
+  </a>
+  <a href="https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_linux-x64.AppImage">
+    <img alt="Download for Linux" src="https://img.shields.io/badge/⬇️%20Download%20for%20Linux-.AppImage-16a34a?style=for-the-badge">
+  </a>
 </p>
 
 ---
@@ -33,6 +39,8 @@
 
 - [Why use Multi-Converter?](#why-use-multi-converter)
 - [Download](#download)
+- [macOS Installation](#macos-installation)
+- [Linux Installation](#linux-installation)
 - [Overview](#overview)
 - [Supported Formats](#supported-formats)
 - [Privacy](#privacy)
@@ -55,7 +63,7 @@
 | 🆓 **Free and open source** | Use **Multi-Converter** freely and browse its source code. |
 | 🔒 **Local and private** | Your files stay on your computer throughout the conversion. |
 | 🔄 **Multi-format** | Documents, images, audio and video — all handled in a single app. |
-| ⚡ **Ready after install** | Specialized document, PDF and image engines are bundled with the Windows x64 app. |
+| ⚡ **Ready after install** | Conversions run locally with the engines bundled for each release platform. |
 
 ---
 
@@ -64,8 +72,43 @@
 | System | Status | Download |
 | --- | --- | --- |
 | 🪟 Windows x64 | ✅ Available | [`.exe`](https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_windows-x64_setup.exe) |
-| 🍎 macOS | 🚧 In development for v1.0.5 | Not yet available |
-| 🐧 Linux | 🚧 In development | Not yet available |
+| 🍎 macOS Apple Silicon + Intel | ✅ Available | [`.dmg`](https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_macos-universal.dmg) |
+| 🐧 Linux x64 | ✅ Available | [`.AppImage`](https://github.com/Amix29/Multi-Converter/releases/latest/download/Multi-Converter_linux-x64.AppImage) |
+
+The macOS direct download uses the stable latest asset `Multi-Converter_macos-universal.dmg`. Each release also keeps the versioned DMG asset `Multi-Converter_X.Y.Z_macos-universal.dmg` for traceability.
+
+The Linux direct download uses the stable latest asset `Multi-Converter_linux-x64.AppImage`. Each release also keeps the versioned AppImage asset `Multi-Converter_X.Y.Z_linux-x64.AppImage` for traceability.
+
+---
+
+## macOS Installation
+
+The macOS build is a universal DMG for both Apple Silicon and Intel Macs.
+
+Download `Multi-Converter_macos-universal.dmg` for the latest macOS release. The same release also includes the versioned asset `Multi-Converter_X.Y.Z_macos-universal.dmg`.
+
+This macOS build is not Apple-signed and not notarized. On first launch, macOS may block it. To open it safely:
+
+1. Open `Multi-Converter.app` once from Applications.
+2. Go to `System Settings > Privacy & Security`.
+3. Choose `Open Anyway`, then confirm `Open`.
+
+This approval is normally needed only on the first launch for that downloaded app copy, or after installing a new version. macOS automatic updates are enabled for builds that include the Tauri updater-signed artifacts.
+
+---
+
+## Linux Installation
+
+Download `Multi-Converter_linux-x64.AppImage` for the latest Linux x64 release.
+
+Most Linux desktops need the AppImage to be marked executable once:
+
+```bash
+chmod a+x Multi-Converter_linux-x64.AppImage
+./Multi-Converter_linux-x64.AppImage
+```
+
+Linux automatic updates are enabled for builds that include the Tauri updater-signed AppImage artifact.
 
 ---
 
@@ -103,9 +146,9 @@ Conversions run on **your machine**. An internet connection may be required to d
 
 ## Bundled Conversion Engines
 
-The Windows x64 installer bundles third-party engines for **Office**, **PDF**, **Markdown/HTML/EPUB** and **advanced image** conversions, so users do not need a separate download after setup.
+The Windows x64 installer and macOS universal DMG bundle third-party engines for **Office**, **PDF**, **Markdown/HTML/EPUB** and **advanced image** conversions, so users do not need a separate download after setup. Linux AppImage releases must pass the Linux engine checklist before claiming the same advanced document/PDF/image coverage.
 
-*Full Windows x64 installation as declared in the manifest, sizes rounded:*
+*Full Windows x64 installation as declared in the manifest, sizes rounded. macOS bundle sizes may differ:*
 
 | Engine | Mainly used for | Download | Once installed | License |
 | --- | --- | ---: | ---: | --- |
@@ -128,7 +171,7 @@ Key points:
 - **Multi-Converter** itself is licensed under **AGPL-3.0-or-later**.
 - Third-party engines remain separate software with their own licenses.
 - The **Windows x64 V1** release bundles **FFmpeg** and **ffprobe** `8.1.1-essentials_build-www.gyan.dev`, built with `--enable-gpl`: the bundled executables are treated as third-party software covered by the GPL in this distribution.
-- The Windows x64 installer bundles **PDFium**, **LibreOffice**, **Pandoc** and **libvips**, each under their own license.
+- The Windows x64 installer and macOS universal DMG bundle **PDFium**, **LibreOffice**, **Pandoc** and **libvips**, each under their own license. Linux advanced engine redistribution must be verified separately before public release notes claim full Linux document/PDF/image coverage.
 
 See [NOTICE](NOTICE) and [docs/THIRD_PARTY_ENGINES.md](docs/THIRD_PARTY_ENGINES.md) for details.
 
@@ -156,8 +199,9 @@ This section is for anyone who wants to run the project locally, fix a bug, sugg
 
 ### Prerequisites
 
-- Windows x64 for developing and packaging the currently supported public version.
-- macOS 11 or newer with Xcode Command Line Tools is required for future macOS packaging and validation.
+- Windows x64 for Windows development and packaging.
+- macOS 11 or newer with Xcode Command Line Tools is required for macOS packaging and validation.
+- Linux x64 with WebKitGTK 4.1 development packages is required for Linux AppImage packaging and host validation.
 - Node.js `>=24 <25` and npm `>=11 <12`.
 - Rust and Cargo.
 - The [Tauri prerequisites for Windows](https://v2.tauri.app/start/prerequisites/).
@@ -215,6 +259,9 @@ npm run tauri:build
 # prepare:bundled-engines creates the universal sidecars required by Tauri.
 # The wrapper refuses this command on Windows/Linux so a DMG is never presented as cross-built.
 npm run tauri:build:macos
+
+# Linux x64 only, from a Linux host with real Linux sidecars staged.
+npm run tauri:build:linux
 ```
 
 Rust formatting and linting:
@@ -261,7 +308,7 @@ Generated folders (`dist`, `node_modules`, build caches, local engine sources, e
 
 The Windows x64 base engines `ffmpeg` and `ffprobe` are bundled in `src-tauri/binaries`. Advanced engines are prepared into `src-tauri/bundled-engines` and bundled as Tauri resources. Both groups are validated before each build.
 
-The planned macOS universal DMG must include universal FFmpeg/ffprobe sidecars. Advanced macOS engines must not be advertised until `src-tauri/engines-manifest.json` declares reviewed `macos-universal` entries with verified archives, licenses, notices and checksums.
+The macOS universal DMG must include universal FFmpeg/ffprobe sidecars. Advanced macOS engines must not be advertised unless the release workflow stages reviewed `macos-universal` entries with verified archives, licenses, notices and checksums and the final DMG passes macOS validation.
 
 Restore and validate the bundled engines:
 

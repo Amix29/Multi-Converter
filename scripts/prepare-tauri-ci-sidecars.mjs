@@ -7,6 +7,8 @@ const binariesDir = path.join(root, "src-tauri", "binaries");
 const bundledEnginesDir = path.join(root, "src-tauri", "bundled-engines");
 const marker = "Multi-Converter CI placeholder sidecar for Tauri compile checks only.";
 const darwinTargets = new Set(["aarch64-apple-darwin", "x86_64-apple-darwin"]);
+const linuxTargets = new Set(["x86_64-unknown-linux-gnu"]);
+const supportedTargets = new Set([...darwinTargets, ...linuxTargets]);
 const allowed = process.env.CI === "true" || process.env.MULTI_CONVERTER_ALLOW_PLACEHOLDER_SIDECARS === "1";
 
 if (!allowed) {
@@ -55,16 +57,19 @@ function addTargetValues(result, value) {
       result.add(hostDarwinTarget());
       continue;
     }
-    if (!darwinTargets.has(target)) fail(`Unsupported CI sidecar target: ${target}`);
+    if (!supportedTargets.has(target)) fail(`Unsupported CI sidecar target: ${target}`);
     result.add(target);
   }
 }
 
 function hostDarwinTarget() {
-  if (process.platform !== "darwin") {
-    fail(`Host placeholder target is only defined on macOS, current host is ${process.platform}/${process.arch}`);
+  if (process.platform === "darwin") {
+    return process.arch === "arm64" ? "aarch64-apple-darwin" : "x86_64-apple-darwin";
   }
-  return process.arch === "arm64" ? "aarch64-apple-darwin" : "x86_64-apple-darwin";
+  if (process.platform === "linux" && process.arch === "x64") {
+    return "x86_64-unknown-linux-gnu";
+  }
+  fail(`Host placeholder target is only defined on macOS or Linux x64, current host is ${process.platform}/${process.arch}`);
 }
 
 function writePlaceholder(fileName) {

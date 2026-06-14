@@ -2,15 +2,18 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { isX86_64Elf } from "./lib/elf.mjs";
+import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 
 const root = process.cwd();
 const manifestPath = path.join(root, "src-tauri", "engines-manifest.json");
 const bundledEnginesDir = path.join(root, "src-tauri", "bundled-engines");
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-const expectedVersion = "8.1.1";
+const expectedVersion = readRequiredFfmpegVersion(root);
 const platform = process.env.MULTI_CONVERTER_ENGINE_PLATFORM?.trim() || hostEnginePlatform();
 const baseBinaries = baseBinariesForPlatform(platform);
 const skipExecutableSmoke = process.env.MULTI_CONVERTER_SKIP_ENGINE_SMOKE === "1";
+const requireAdvancedEngines = process.env.MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES === "1";
 
 const errors = [];
 
@@ -19,14 +22,18 @@ if (platform === "unsupported") {
 }
 
 for (const item of baseBinaries) {
-  if (item.smoke === false) validateFile(item.id, item.filePath, { executable: true });
-  else validateExecutable(item.id, item.filePath, item.args, item.expectedText);
+  const fileOptions = { executable: platform !== "windows-x64", elf: item.elf === true };
+  if (item.smoke === false) validateFile(item.id, item.filePath, fileOptions);
+  else validateExecutable(item.id, item.filePath, item.args, item.expectedText, path.dirname(item.filePath), fileOptions);
 }
 
-for (const engine of bundledAdvancedEngines(manifest)) {
+const advancedEngines = bundledAdvancedEngines(manifest);
+
+for (const engine of advancedEngines) {
   const engineRoot = path.join(root, "src-tauri", "bundled-engines", engine.id, engine.version);
   validateEngineMetadata(engineRoot, engine);
   for (const relative of engine.binaryPaths ?? []) {
+    validatePlatformBinaryPath(engine, relative);
     validateFile(engine.id, path.join(engineRoot, normalizeArchivePath(relative)), { executable: platform !== "windows-x64" });
   }
   validateNoBrokenSymlinks(engineRoot, engine);
@@ -35,6 +42,10 @@ for (const engine of bundledAdvancedEngines(manifest)) {
 
 validateNoStaleBundledEngines(manifest);
 
+if (requireAdvancedEngines && advancedEngines.length === 0) {
+  errors.push(`No advanced bundled engines declared for ${platform}; strict release validation requires platform-specific advanced engines.`);
+}
+
 if (errors.length) {
   console.error("Bundled engine validation failed:");
   for (const error of errors) console.error(`- ${error}`);
@@ -42,7 +53,7 @@ if (errors.length) {
   process.exit(1);
 }
 
-if (platform !== "windows-x64" && bundledAdvancedEngines(manifest).length === 0) {
+if (platform !== "windows-x64" && advancedEngines.length === 0) {
   console.warn(`No advanced bundled engines declared for ${platform}; advanced conversions are not validated on this platform.`);
 }
 
@@ -132,6 +143,16 @@ function validateEngineMetadata(engineRoot, engine) {
   }
 }
 
+function validatePlatformBinaryPath(engine, relative) {
+  const normalized = String(relative).replaceAll("\\", "/").toLowerCase();
+  if (platform === "linux-x64" && /\.(app|bat|cmd|dll|dmg|dylib|exe|msi|pkg|ps1)$/i.test(normalized)) {
+    errors.push(`${engine.id}: chemin binaire non-Linux dans le manifeste (${relative})`);
+  }
+  if (platform === "macos-universal" && /\.(bat|cmd|dll|exe|msi|ps1)$/i.test(normalized)) {
+    errors.push(`${engine.id}: chemin binaire non-macOS dans le manifeste (${relative})`);
+  }
+}
+
 function validateEngineSmoke(engineRoot, engine) {
   const executable = primaryExecutable(engineRoot, engine);
   if (!executable) {
@@ -171,7 +192,7 @@ function executableScore(filePath) {
 }
 
 function architectureScore(filePath) {
-  if (platform !== "macos-universal") return 5;
+  if (platform !== "macos-universal" && platform !== "linux-x64") return 5;
   const text = filePath.replaceAll("\\", "/").toLowerCase();
   const nativeArm = process.arch === "arm64";
   const hasArm = text.includes("aarch64") || text.includes("arm64");
@@ -180,13 +201,13 @@ function architectureScore(filePath) {
 
   if (nativeArm && hasArm) return 30;
   if (!nativeArm && hasX64) return 30;
-  if (hasUniversal) return 25;
+  if (platform === "macos-universal" && hasUniversal) return 25;
   if (hasArm || hasX64) return 1;
   return 15;
 }
 
-function validateExecutable(id, filePath, args, expectedText, cwd = path.dirname(filePath)) {
-  if (!validateFile(id, filePath, { executable: platform !== "windows-x64" })) return;
+function validateExecutable(id, filePath, args, expectedText, cwd = path.dirname(filePath), fileOptions = { executable: platform !== "windows-x64" }) {
+  if (!validateFile(id, filePath, fileOptions)) return;
   if (skipExecutableSmoke) return;
   const result = spawnSync(filePath, args, {
     cwd,
@@ -217,11 +238,19 @@ function validateFile(id, filePath, options = {}) {
     errors.push(`${id}: fichier vide ou invalide (${path.relative(root, filePath)})`);
     return false;
   }
-  if (options.executable && (stat.mode & 0o111) === 0) {
+  if (options.executable && process.platform !== "win32" && (stat.mode & 0o111) === 0) {
     errors.push(`${id}: fichier non executable (${path.relative(root, filePath)})`);
     return false;
   }
+  if (options.elf && !isElf(filePath)) {
+    errors.push(`${id}: fichier Linux non-ELF (${path.relative(root, filePath)})`);
+    return false;
+  }
   return true;
+}
+
+function isElf(filePath) {
+  return isX86_64Elf(filePath);
 }
 
 function walkEntries(startDir, visit) {
@@ -290,6 +319,16 @@ function baseBinariesForPlatform(targetPlatform) {
         smoke: process.platform === "darwin",
       },
     ]);
+  }
+
+  if (targetPlatform === "linux-x64") {
+    return ["ffmpeg", "ffprobe"].map((stem) => ({
+      id: `${stem}-x86_64-unknown-linux-gnu`,
+      filePath: path.join(root, "src-tauri", "binaries", `${stem}-x86_64-unknown-linux-gnu`),
+      args: ["-version"],
+      expectedText: expectedVersion,
+      elf: true,
+    }));
   }
 
   return [];

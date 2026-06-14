@@ -3,13 +3,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 
 const root = process.cwd();
 const args = parseArgs(process.argv.slice(2));
 const version = args.version ?? readPackageVersion();
 const dmgPath = args.dmg ? path.resolve(args.dmg) : fail("Missing --dmg <path>.");
 const expectedDmgName = `Multi-Converter_${version}_macos-universal.dmg`;
-const expectedSidecarVersion = "8.1.1";
+const expectedSidecarVersion = readRequiredFfmpegVersion(root);
 
 if (process.platform !== "darwin") {
   fail("macOS DMG verification must run on macOS. Use GitHub Actions macos-latest or a real Mac.");

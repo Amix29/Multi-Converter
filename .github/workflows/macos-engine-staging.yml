@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/macos-engine-staging.yml"
       - "scripts/prepare-ffmpeg-engine-macos.mjs"
+      - "scripts/lib/ffmpeg-version.mjs"
       - "scripts/prepare-pdfium-engine-macos.mjs"
       - "scripts/prepare-libreoffice-engine-macos.mjs"
       - "scripts/prepare-pandoc-engine-macos.mjs"

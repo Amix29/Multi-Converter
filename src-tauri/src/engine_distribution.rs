@@ -377,7 +377,7 @@ fn executable_candidate_score_for(path: &Path, os: &str, arch: &str) -> u8 {
 }
 
 fn architecture_score(path_text: &str, os: &str, arch: &str) -> u8 {
-    if os != "macos" {
+    if !matches!(os, "macos" | "linux") {
         return 5;
     }
     let native_arm = matches!(arch, "aarch64" | "arm64");
@@ -391,7 +391,7 @@ fn architecture_score(path_text: &str, os: &str, arch: &str) -> u8 {
     if !native_arm && has_x64 {
         return 30;
     }
-    if has_universal {
+    if os == "macos" && has_universal {
         return 25;
     }
     if has_arm || has_x64 {
@@ -546,6 +546,26 @@ mod tests {
         assert!(
             executable_candidate_score_for(universal, "macos", "x86_64")
                 > executable_candidate_score_for(arm, "macos", "x86_64")
+        );
+    }
+
+    #[test]
+    fn linux_engine_binary_selection_prefers_native_architecture() {
+        let arm = Path::new("aarch64/bin/vips");
+        let x64 = Path::new("x86_64/bin/vips");
+        let generic = Path::new("bin/vips");
+
+        assert!(
+            executable_candidate_score_for(x64, "linux", "x86_64")
+                > executable_candidate_score_for(arm, "linux", "x86_64")
+        );
+        assert!(
+            executable_candidate_score_for(arm, "linux", "aarch64")
+                > executable_candidate_score_for(x64, "linux", "aarch64")
+        );
+        assert!(
+            executable_candidate_score_for(generic, "linux", "x86_64")
+                > executable_candidate_score_for(arm, "linux", "x86_64")
         );
     }
 

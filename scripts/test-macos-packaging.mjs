@@ -28,6 +28,7 @@ const convertersRust = fs.readFileSync(path.join(root, "src-tauri", "src", "conv
 const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
 const macosChecklist = fs.readFileSync(path.join(root, "docs", "RELEASE_CHECKLIST_MACOS.md"), "utf8");
 const thirdPartyEngines = fs.readFileSync(path.join(root, "docs", "THIRD_PARTY_ENGINES.md"), "utf8");
+const ffmpegVersionLibrary = fs.readFileSync(path.join(root, "scripts", "lib", "ffmpeg-version.mjs"), "utf8");
 
 assert.deepEqual(tauriConfig.bundle.externalBin, ["binaries/ffmpeg", "binaries/ffprobe"], "Tauri sidecar stems changed unexpectedly");
 assert.match(tauriSchema, /binary-name\{-target-triple\}/, "Tauri externalBin schema must keep target-triple sidecar naming");
@@ -67,6 +68,7 @@ for (const [scriptName, scriptText] of Object.entries({
   assert.doesNotMatch(scriptText, /\[\s*"-verify_arch"/, `${scriptName} must pass the input file before lipo -verify_arch`);
 }
 assert.match(macosHostTest, /verifySidecarVersion\(universal, stem\)/, "macOS host validation must smoke-test universal sidecars");
+assert.match(macosHostTest, /from "\.\/lib\/ffmpeg-version\.mjs"/, "macOS host validation must read the canonical FFmpeg version from Rust");
 assert.match(macosHostTest, /MULTI_CONVERTER_ENGINE_PLATFORM:\s*"macos-universal"/, "macOS host validation must run bundled-engine validation as macos-universal");
 assert.match(macosConversionTest, /process\.platform !== "darwin"/, "macOS conversion validation must refuse non-macOS hosts");
 assert.match(macosConversionTest, /sidecarMarker = "Multi-Converter CI placeholder sidecar for Tauri compile checks only\."/,
@@ -99,7 +101,7 @@ assert.match(macosFfmpegPrepare, /FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "macOS F
 assert.match(macosFfmpegPrepare, /readOptionalFfprobeSource/, "macOS FFmpeg preparation must support separate ffprobe archives");
 assert.match(macosFfmpegPrepare, /ffprobeExtractDir/, "macOS FFmpeg preparation must extract separate ffprobe archives independently");
 assert.match(macosFfmpegPrepare, /does not choose a third-party FFmpeg binary provider automatically/, "macOS FFmpeg preparation must not pick a third-party binary provider silently");
-assert.match(macosFfmpegPrepare, /expectedVersion.*"8\.1\.1"/, "macOS FFmpeg preparation must default to the configured FFmpeg version");
+assert.match(macosFfmpegPrepare, /from "\.\/lib\/ffmpeg-version\.mjs"/, "macOS FFmpeg preparation must default to the canonical FFmpeg version from Rust");
 assert.match(macosFfmpegPrepare, /lipo.*-create/s, "macOS FFmpeg preparation must create universal sidecars with lipo");
 assert.match(macosFfmpegPrepare, /ffmpeg-universal-apple-darwin/, "macOS FFmpeg preparation must stage the universal FFmpeg sidecar name used by Tauri");
 assert.match(macosFfmpegPrepare, /ffprobe-universal-apple-darwin/, "macOS FFmpeg preparation must stage the universal ffprobe sidecar name used by Tauri");
@@ -160,6 +162,7 @@ assert.match(macosLocalEnginesPrepare, /--keep-generated-manifest/, "local macOS
 assert.match(macosLocalEnginesPrepare, /finally/, "local macOS engine staging must restore the manifest even after failed validation steps");
 assert.match(macosLocalEnginesPrepare, /Do not commit generated engine manifests or archives/, "local macOS engine staging must warn against committing generated engine output");
 assert.match(macosDmgVerify, /process\.platform !== "darwin"/, "macOS DMG verification must refuse non-macOS hosts");
+assert.match(macosDmgVerify, /from "\.\/lib\/ffmpeg-version\.mjs"/, "macOS DMG verification must read the canonical FFmpeg version from Rust");
 assert.match(macosDmgVerify, /hdiutil.*attach/s, "macOS DMG verification must mount the DMG");
 assert.match(macosDmgVerify, /CFBundleExecutable/, "macOS DMG verification must read the executable name from Info.plist");
 assert.match(macosDmgVerify, /Mounted DMG contains multiple app bundles/, "macOS DMG verification must reject ambiguous DMGs with multiple app bundles");
@@ -176,7 +179,7 @@ assert.match(macosDmgVerify, /metadata\.platform !== "macos-universal"/, "macOS 
 assert.deepEqual(macosConfig.bundle.targets, ["app", "dmg"], "macOS release must build app and dmg bundles");
 assert.deepEqual(macosConfig.bundle.externalBin, tauriConfig.bundle.externalBin, "macOS release config must keep the same sidecar stems as the base config");
 assert.deepEqual(macosConfig.bundle.resources, tauriConfig.bundle.resources, "macOS release config must keep bundled engine resources");
-assert.equal(macosConfig.bundle.createUpdaterArtifacts, false, "macOS DMG releases must not create updater artifacts until Darwin updater metadata is enabled");
+assert.equal(macosConfig.bundle.createUpdaterArtifacts, true, "macOS releases must create updater artifacts for Darwin automatic updates");
 assert.equal(macosConfig.bundle.macOS.signingIdentity, "-", "unsigned macOS builds should use Tauri ad-hoc signing");
 assert.equal(macosConfig.bundle.macOS.minimumSystemVersion, "11.0", "macOS minimum version must stay explicit");
 assert.match(macosChecklist, /## Mac Handoff Readiness/, "macOS checklist must include a clear handoff readiness section");
@@ -262,10 +265,11 @@ assert.match(packageScript, /shouldSkipBrokenFrameworkHeaderSymlink/, "engine pa
 assert.match(packageScript, /if \(!isFrameworkLink\)[\s\S]*Lien symbolique casse refuse/, "engine packaging must still reject broken non-framework symbolic links");
 assert.match(packageScript, /\["-qry", archivePath, "\."\]/, "engine packaging must store Unix symbolic links in generated ZIP archives");
 assert.match(packageScript, /ffmpeg-8\.1\.1-macos-universal\.zip/, "engine packaging validation must include a macOS universal fixture");
+assert.match(ffmpegVersionLibrary, /FFMPEG_REQUIRED_VERSION/, "Shared FFmpeg version helper must read the runtime version contract from Rust");
 
 const hasMacosAdvancedEngines = (enginesManifest.engines ?? []).some((engine) => engine.platform === "macos-universal" && engine.mode === "advanced");
 if (!hasMacosAdvancedEngines) {
-  assert.match(readme, /Advanced macOS engines must not be advertised until/, "README must warn that advanced macOS engines are not ready yet");
+  assert.match(readme, /Advanced macOS engines must not be advertised unless the release workflow stages reviewed `macos-universal` entries/, "README must warn that advanced macOS engine claims depend on staged and validated release inputs");
   assert.match(macosChecklist, /advanced bundled engines are still declared for `windows-x64` only/, "macOS checklist must warn that advanced engines are Windows-only right now");
   assert.match(thirdPartyEngines, /macOS release notes and user-facing docs must limit macOS conversion claims/, "third-party engine docs must prevent overclaiming macOS engine support");
 }

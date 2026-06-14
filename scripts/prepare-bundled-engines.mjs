@@ -6,14 +6,17 @@ import process from "node:process";
 import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 import { publicSourceLabel } from "./lib/download-integrity.mjs";
+import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 
 const root = process.cwd();
 const platform = process.env.MULTI_CONVERTER_ENGINE_PLATFORM?.trim() || hostEnginePlatform();
+const ffmpegVersion = readRequiredFfmpegVersion(root);
 const manifestPath = path.join(root, "src-tauri", "engines-manifest.json");
 const binariesDir = path.join(root, "src-tauri", "binaries");
 const bundledEnginesDir = path.join(root, "src-tauri", "bundled-engines");
 const cacheDir = path.join(root, "engine-sources", ".bundled-engine-cache");
 const baseSidecars = baseSidecarsForPlatform(platform);
+const requireAdvancedEngines = process.env.MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES === "1";
 
 if (platform === "unsupported") {
   throw new Error(`Plateforme de moteurs non supportee: ${process.platform}/${process.arch}`);
@@ -35,6 +38,10 @@ await pruneBundledEngines(advancedEngines);
 
 for (const engine of advancedEngines) {
   await prepareBundledEngine(engine);
+}
+
+if (requireAdvancedEngines && advancedEngines.length === 0) {
+  throw new Error(`No advanced bundled engines declared for ${platform}; strict release preparation requires platform-specific advanced engines.`);
 }
 
 if (platform !== "windows-x64" && advancedEngines.length === 0) {
@@ -81,7 +88,7 @@ async function prepareDerivedSidecars(targetPlatform) {
     if (await sidecarLooksCurrent(universalTarget, { id: stem, smoke: true, lipoArch: ["arm64", "x86_64"] })) continue;
 
     const universalSource = await firstExisting([
-      path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", stem, "8.1.1", "bin", `${stem}-universal-apple-darwin`),
+      path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", stem, ffmpegVersion, "bin", `${stem}-universal-apple-darwin`),
       path.join(root, "engine-sources", "macos-universal", stem, "bin", `${stem}-universal-apple-darwin`),
     ]);
     if (universalSource) {
@@ -197,11 +204,11 @@ function embeddedBaseEngine(id) {
   const release = "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.0-alpha.0";
   const fallback = {
     ffmpeg: {
-      downloadUrl: `${release}/ffmpeg-8.1.1-windows-x64.zip`,
+      downloadUrl: `${release}/ffmpeg-${ffmpegVersion}-windows-x64.zip`,
       sha256: "665f9b32924c3250138503d09df75c280be803a0fc3d8ae8fb2d9c972a061133",
     },
     ffprobe: {
-      downloadUrl: `${release}/ffprobe-8.1.1-windows-x64.zip`,
+      downloadUrl: `${release}/ffprobe-${ffmpegVersion}-windows-x64.zip`,
       sha256: "b8faf8c447a10b142dd8124852424094b5c6686cc97a4a297d4440660ca9cd64",
     },
   };
@@ -289,7 +296,7 @@ async function binaryLooksCurrent(filePath) {
     timeout: 30000,
   });
   const text = `${result.stdout || result.stderr}`;
-  return result.status === 0 && text.includes("8.1.1");
+  return result.status === 0 && text.includes(ffmpegVersion);
 }
 
 async function sidecarLooksCurrent(filePath, item) {
@@ -494,7 +501,7 @@ function baseSidecarsForPlatform(targetPlatform) {
         id: "ffmpeg",
         fileName: "ffmpeg-x86_64-pc-windows-msvc.exe",
         localCandidates: [
-          path.join(process.env.LOCALAPPDATA ?? "", "Multi-Converter", "tool-env", "ffmpeg", "8.1.1", "bin", "ffmpeg-x86_64-pc-windows-msvc.exe"),
+          path.join(process.env.LOCALAPPDATA ?? "", "Multi-Converter", "tool-env", "ffmpeg", ffmpegVersion, "bin", "ffmpeg-x86_64-pc-windows-msvc.exe"),
           path.join(root, "engine-sources", "windows-x64", "ffmpeg", "bin", "ffmpeg-x86_64-pc-windows-msvc.exe"),
         ],
       },
@@ -502,7 +509,7 @@ function baseSidecarsForPlatform(targetPlatform) {
         id: "ffprobe",
         fileName: "ffprobe-x86_64-pc-windows-msvc.exe",
         localCandidates: [
-          path.join(process.env.LOCALAPPDATA ?? "", "Multi-Converter", "tool-env", "ffprobe", "8.1.1", "bin", "ffprobe-x86_64-pc-windows-msvc.exe"),
+          path.join(process.env.LOCALAPPDATA ?? "", "Multi-Converter", "tool-env", "ffprobe", ffmpegVersion, "bin", "ffprobe-x86_64-pc-windows-msvc.exe"),
           path.join(root, "engine-sources", "windows-x64", "ffprobe", "bin", "ffprobe-x86_64-pc-windows-msvc.exe"),
         ],
       },
@@ -518,7 +525,7 @@ function baseSidecarsForPlatform(targetPlatform) {
         smoke: process.platform === "darwin" && targetTriple === nativeTriple,
         lipoArch: targetTriple === "aarch64-apple-darwin" ? "arm64" : "x86_64",
         localCandidates: [
-          path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffmpeg", "8.1.1", "bin", `ffmpeg-${targetTriple}`),
+          path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffmpeg", ffmpegVersion, "bin", `ffmpeg-${targetTriple}`),
           path.join(root, "engine-sources", "macos-universal", "ffmpeg", "bin", `ffmpeg-${targetTriple}`),
         ],
       },
@@ -528,11 +535,32 @@ function baseSidecarsForPlatform(targetPlatform) {
         smoke: process.platform === "darwin" && targetTriple === nativeTriple,
         lipoArch: targetTriple === "aarch64-apple-darwin" ? "arm64" : "x86_64",
         localCandidates: [
-          path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffprobe", "8.1.1", "bin", `ffprobe-${targetTriple}`),
+          path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffprobe", ffmpegVersion, "bin", `ffprobe-${targetTriple}`),
           path.join(root, "engine-sources", "macos-universal", "ffprobe", "bin", `ffprobe-${targetTriple}`),
         ],
       },
     ]);
+  }
+
+  if (targetPlatform === "linux-x64") {
+    return [
+      {
+        id: "ffmpeg",
+        fileName: "ffmpeg-x86_64-unknown-linux-gnu",
+        localCandidates: [
+          path.join(process.env.HOME ?? "", ".local", "share", "Multi-Converter", "tool-env", "ffmpeg", ffmpegVersion, "bin", "ffmpeg-x86_64-unknown-linux-gnu"),
+          path.join(root, "engine-sources", "linux-x64", "ffmpeg", "bin", "ffmpeg-x86_64-unknown-linux-gnu"),
+        ],
+      },
+      {
+        id: "ffprobe",
+        fileName: "ffprobe-x86_64-unknown-linux-gnu",
+        localCandidates: [
+          path.join(process.env.HOME ?? "", ".local", "share", "Multi-Converter", "tool-env", "ffprobe", ffmpegVersion, "bin", "ffprobe-x86_64-unknown-linux-gnu"),
+          path.join(root, "engine-sources", "linux-x64", "ffprobe", "bin", "ffprobe-x86_64-unknown-linux-gnu"),
+        ],
+      },
+    ];
   }
 
   return [];

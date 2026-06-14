@@ -1,34 +1,51 @@
 # GitHub Topics
 
-Recommended repository topics for Multi-Converter:
+Recommended GitHub repository topics for Multi-Converter:
 
 ```text
 file-converter
-desktop-converter
 file-conversion
+desktop-converter
 batch-conversion
 multi-format
 offline-converter
 local-first
 privacy-first
+no-upload
+open-source-converter
 tauri
-tauri-app
 rust
-react
 windows
-windows-app
+windows-file-converter
 macos
-macos-app
 macos-universal
 apple-silicon
-intel-mac
 linux
+linux-appimage
+appimage
+```
+
+If GitHub allows more topics later, add these secondary discovery terms next:
+
+```text
+free-file-converter
+private-file-converter
+no-cloud
+pdf-converter
+image-converter
+audio-converter
+video-converter
+windows-converter
+macos-converter
+linux-converter
+tauri-app
+typescript
 ```
 
 Status context:
 
 - Windows x64 is the current public stable platform.
-- macOS is in development for V1.0.5 with one planned universal DMG for Apple Silicon and Intel Macs.
-- Linux is in development and must not be presented as a released platform yet.
+- macOS is available for V1.0.5 as one universal DMG for Apple Silicon and Intel Macs.
+- Linux x64 is available for V1.0.5 as one AppImage with updater metadata.
 
 Keep these topics aligned with `package.json` keywords and the platform table in `README.md`.

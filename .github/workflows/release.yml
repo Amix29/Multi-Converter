@@ -4,7 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       include_macos:
-        description: "Include the already uploaded and manually verified macOS universal DMG asset"
+        description: "Include already uploaded and verified macOS DMG plus updater artifacts"
+        required: false
+        default: false
+        type: boolean
+      include_linux:
+        description: "Include already uploaded and verified Linux x64 AppImage plus updater signature"
         required: false
         default: false
         type: boolean
@@ -26,6 +31,7 @@ jobs:
     timeout-minutes: 10
     outputs:
       include_macos: ${{ steps.mode.outputs.include_macos }}
+      include_linux: ${{ steps.mode.outputs.include_linux }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -45,6 +51,11 @@ jobs:
           else
             echo "include_macos=false" >> "$GITHUB_OUTPUT"
           fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.include_linux }}" == "true" ]]; then
+            echo "include_linux=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "include_linux=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Validate release notes before release runners
         shell: bash
@@ -55,12 +66,13 @@ jobs:
           version="$(node -p "require('./package.json').version")"
           tag="v$version"
           include_macos="${{ steps.mode.outputs.include_macos }}"
+          include_linux="${{ steps.mode.outputs.include_linux }}"
           notes_file="$RUNNER_TEMP/release-notes.md"
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq ".body" > "$notes_file"
-          node scripts/validate-release-notes.mjs --version "$version" --notes-file "$notes_file" --include-macos "$include_macos" --min-length 200
+          node scripts/validate-release-notes.mjs --version "$version" --notes-file "$notes_file" --include-macos "$include_macos" --include-linux "$include_linux" --min-length 200
 
-      - name: Require V1.0.5 macOS release readiness
-        if: ${{ steps.mode.outputs.include_macos == 'true' }}
+      - name: Require V1.0.5 platform release readiness
+        if: ${{ steps.mode.outputs.include_macos == 'true' || steps.mode.outputs.include_linux == 'true' }}
         run: npm run status:v1.0.5 -- --require-ready
 
   macos-dmg-verify:
@@ -68,7 +80,8 @@ jobs:
     needs: release-preflight
     if: ${{ needs.release-preflight.outputs.include_macos == 'true' }}
     outputs:
-      macos_dmg_sha256: ${{ steps.hash.outputs.sha256 }}
+      macos_dmg_sha256: ${{ steps.hash.outputs.dmg_sha256 }}
+      macos_updater_sha256: ${{ steps.hash.outputs.updater_sha256 }}
     strategy:
       fail-fast: false
       matrix:
@@ -106,23 +119,91 @@ jobs:
           version="${{ steps.version.outputs.version }}"
           tag="${{ steps.version.outputs.tag }}"
           macos_dmg_name="Multi-Converter_${version}_macos-universal.dmg"
+          macos_updater_name="Multi-Converter_${version}_macos-universal.app.tar.gz"
+          macos_updater_sig_name="${macos_updater_name}.sig"
           macos_dmg_dir="$RUNNER_TEMP/mc-release-macos-dmg"
           rm -rf "$macos_dmg_dir"
           mkdir -p "$macos_dmg_dir"
           gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$macos_dmg_name" --dir "$macos_dmg_dir"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$macos_updater_name" --dir "$macos_dmg_dir"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$macos_updater_sig_name" --dir "$macos_dmg_dir"
           test -s "$macos_dmg_dir/$macos_dmg_name"
+          test -s "$macos_dmg_dir/$macos_updater_name"
+          test -s "$macos_dmg_dir/$macos_updater_sig_name"
           echo "MACOS_DMG_PATH=$macos_dmg_dir/$macos_dmg_name" >> "$GITHUB_ENV"
+          echo "MACOS_UPDATER_PATH=$macos_dmg_dir/$macos_updater_name" >> "$GITHUB_ENV"
 
       - name: Verify macOS DMG on macOS
         shell: bash
         run: npm run verify:macos-dmg -- --version "${{ steps.version.outputs.version }}" --dmg "$MACOS_DMG_PATH"
 
       - id: hash
-        name: Record verified DMG SHA-256
+        name: Record verified macOS artifact SHA-256 values
         shell: bash
         run: |
-          sha="$(shasum -a 256 "$MACOS_DMG_PATH" | awk '{print $1}')"
-          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+          dmg_sha="$(shasum -a 256 "$MACOS_DMG_PATH" | awk '{print $1}')"
+          updater_sha="$(shasum -a 256 "$MACOS_UPDATER_PATH" | awk '{print $1}')"
+          echo "dmg_sha256=$dmg_sha" >> "$GITHUB_OUTPUT"
+          echo "updater_sha256=$updater_sha" >> "$GITHUB_OUTPUT"
+
+  linux-appimage-verify:
+    name: Linux AppImage verification
+    needs: release-preflight
+    if: ${{ needs.release-preflight.outputs.include_linux == 'true' }}
+    outputs:
+      linux_appimage_sha256: ${{ steps.hash.outputs.appimage_sha256 }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - id: version
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Download pre-uploaded Linux AppImage
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          tag="${{ steps.version.outputs.tag }}"
+          linux_appimage_name="Multi-Converter_${version}_linux-x64.AppImage"
+          linux_appimage_sig_name="${linux_appimage_name}.sig"
+          linux_dir="$RUNNER_TEMP/mc-release-linux-appimage"
+          rm -rf "$linux_dir"
+          mkdir -p "$linux_dir"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$linux_appimage_name" --dir "$linux_dir"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$linux_appimage_sig_name" --dir "$linux_dir"
+          test -s "$linux_dir/$linux_appimage_name"
+          test -s "$linux_dir/$linux_appimage_sig_name"
+          echo "LINUX_APPIMAGE_PATH=$linux_dir/$linux_appimage_name" >> "$GITHUB_ENV"
+          echo "LINUX_APPIMAGE_SIGNATURE_PATH=$linux_dir/$linux_appimage_sig_name" >> "$GITHUB_ENV"
+
+      - name: Verify Linux AppImage on Linux
+        shell: bash
+        run: npm run verify:linux-appimage -- --version "${{ steps.version.outputs.version }}" --appimage "$LINUX_APPIMAGE_PATH" --signature "$LINUX_APPIMAGE_SIGNATURE_PATH"
+
+      - id: hash
+        name: Record verified Linux AppImage SHA-256
+        shell: bash
+        run: |
+          appimage_sha="$(sha256sum "$LINUX_APPIMAGE_PATH" | awk '{print $1}')"
+          echo "appimage_sha256=$appimage_sha" >> "$GITHUB_OUTPUT"
 
   windows:
     permissions:
@@ -130,7 +211,8 @@ jobs:
     needs:
       - release-preflight
       - macos-dmg-verify
-    if: ${{ always() && needs.release-preflight.result == 'success' && (needs.macos-dmg-verify.result == 'success' || needs.macos-dmg-verify.result == 'skipped') }}
+      - linux-appimage-verify
+    if: ${{ always() && needs.release-preflight.result == 'success' && (needs.macos-dmg-verify.result == 'success' || needs.macos-dmg-verify.result == 'skipped') && (needs.linux-appimage-verify.result == 'success' || needs.linux-appimage-verify.result == 'skipped') }}
     runs-on: windows-latest
     timeout-minutes: 90
     env:
@@ -199,18 +281,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INCLUDE_MACOS: ${{ github.event_name == 'workflow_dispatch' && inputs.include_macos }}
+          INCLUDE_LINUX: ${{ github.event_name == 'workflow_dispatch' && inputs.include_linux }}
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
           $includeMacos = $env:INCLUDE_MACOS -eq "true"
+          $includeLinux = $env:INCLUDE_LINUX -eq "true"
           $body = gh release view $tag --repo $env:GITHUB_REPOSITORY --json body --jq ".body"
           if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($body)) {
             throw "Missing GitHub release notes for $tag. Create or edit the release notes directly on GitHub in English, then rerun this workflow."
           }
           $notesFile = Join-Path $env:RUNNER_TEMP "release-notes.md"
           $includeMacosArg = if ($includeMacos) { "true" } else { "false" }
+          $includeLinuxArg = if ($includeLinux) { "true" } else { "false" }
           Set-Content -LiteralPath $notesFile -Value $body -Encoding utf8
-          node scripts/validate-release-notes.mjs --version $version --notes-file $notesFile --include-macos $includeMacosArg --min-length 200
+          node scripts/validate-release-notes.mjs --version $version --notes-file $notesFile --include-macos $includeMacosArg --include-linux $includeLinuxArg --min-length 200
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
@@ -239,39 +324,101 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INCLUDE_MACOS: ${{ github.event_name == 'workflow_dispatch' && inputs.include_macos }}
+          INCLUDE_LINUX: ${{ github.event_name == 'workflow_dispatch' && inputs.include_linux }}
         run: |
           $version = "${{ steps.version.outputs.version }}"
           $tag = "${{ steps.version.outputs.tag }}"
           $includeMacos = $env:INCLUDE_MACOS -eq "true"
+          $includeLinux = $env:INCLUDE_LINUX -eq "true"
           $assetDir = Join-Path $env:RUNNER_TEMP "mc-release-assets\$tag"
           $platform = "windows"
 
           if ($includeMacos) {
             $macosDmgName = "Multi-Converter_${version}_macos-universal.dmg"
+            $macosUpdaterName = "Multi-Converter_${version}_macos-universal.app.tar.gz"
+            $macosUpdaterSigName = "$macosUpdaterName.sig"
             $macosDmgDir = Join-Path $env:RUNNER_TEMP "mc-release-macos-dmg"
             Remove-Item -LiteralPath $macosDmgDir -Recurse -Force -ErrorAction SilentlyContinue
             New-Item -ItemType Directory -Path $macosDmgDir | Out-Null
             gh release download $tag --repo $env:GITHUB_REPOSITORY --pattern $macosDmgName --dir $macosDmgDir
+            gh release download $tag --repo $env:GITHUB_REPOSITORY --pattern $macosUpdaterName --dir $macosDmgDir
+            gh release download $tag --repo $env:GITHUB_REPOSITORY --pattern $macosUpdaterSigName --dir $macosDmgDir
             if ($LASTEXITCODE -ne 0) {
               exit $LASTEXITCODE
             }
             $macosDmgPath = Join-Path $macosDmgDir $macosDmgName
+            $macosUpdaterPath = Join-Path $macosDmgDir $macosUpdaterName
+            $macosUpdaterSigPath = Join-Path $macosDmgDir $macosUpdaterSigName
             if (-not (Test-Path -LiteralPath $macosDmgPath)) {
               throw "Missing pre-uploaded macOS DMG asset on release $tag: $macosDmgName"
             }
+            if (-not (Test-Path -LiteralPath $macosUpdaterPath)) {
+              throw "Missing pre-uploaded macOS updater archive on release $tag: $macosUpdaterName"
+            }
+            if (-not (Test-Path -LiteralPath $macosUpdaterSigPath)) {
+              throw "Missing pre-uploaded macOS updater signature on release $tag: $macosUpdaterSigName"
+            }
             $expectedMacosDmgSha = "${{ needs.macos-dmg-verify.outputs.macos_dmg_sha256 }}"
+            $expectedMacosUpdaterSha = "${{ needs.macos-dmg-verify.outputs.macos_updater_sha256 }}"
             if ([string]::IsNullOrWhiteSpace($expectedMacosDmgSha)) {
               throw "Missing SHA-256 from the verified macOS DMG job."
+            }
+            if ([string]::IsNullOrWhiteSpace($expectedMacosUpdaterSha)) {
+              throw "Missing SHA-256 from the verified macOS updater artifact job."
             }
             $actualMacosDmgSha = (Get-FileHash -LiteralPath $macosDmgPath -Algorithm SHA256).Hash.ToLowerInvariant()
             if ($actualMacosDmgSha -ne $expectedMacosDmgSha.ToLowerInvariant()) {
               throw "Downloaded macOS DMG SHA-256 does not match the verified macOS DMG. Expected $expectedMacosDmgSha, got $actualMacosDmgSha."
             }
-            npm run prepare:release-assets -- --version $version --dir $assetDir --notes-env RELEASE_NOTES_BODY --macos-dmg $macosDmgPath
+            $actualMacosUpdaterSha = (Get-FileHash -LiteralPath $macosUpdaterPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($actualMacosUpdaterSha -ne $expectedMacosUpdaterSha.ToLowerInvariant()) {
+              throw "Downloaded macOS updater archive SHA-256 does not match the verified macOS updater archive. Expected $expectedMacosUpdaterSha, got $actualMacosUpdaterSha."
+            }
+            $platform = "all"
+          }
+
+          if ($includeLinux) {
+            $linuxAppImageName = "Multi-Converter_${version}_linux-x64.AppImage"
+            $linuxAppImageSigName = "$linuxAppImageName.sig"
+            $linuxDir = Join-Path $env:RUNNER_TEMP "mc-release-linux-appimage"
+            Remove-Item -LiteralPath $linuxDir -Recurse -Force -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory -Path $linuxDir | Out-Null
+            gh release download $tag --repo $env:GITHUB_REPOSITORY --pattern $linuxAppImageName --dir $linuxDir
+            gh release download $tag --repo $env:GITHUB_REPOSITORY --pattern $linuxAppImageSigName --dir $linuxDir
             if ($LASTEXITCODE -ne 0) {
               exit $LASTEXITCODE
             }
-            $platform = "all"
+            $linuxAppImagePath = Join-Path $linuxDir $linuxAppImageName
+            $linuxAppImageSigPath = Join-Path $linuxDir $linuxAppImageSigName
+            if (-not (Test-Path -LiteralPath $linuxAppImagePath)) {
+              throw "Missing pre-uploaded Linux AppImage asset on release $tag: $linuxAppImageName"
+            }
+            if (-not (Test-Path -LiteralPath $linuxAppImageSigPath)) {
+              throw "Missing pre-uploaded Linux AppImage updater signature on release $tag: $linuxAppImageSigName"
+            }
+            $expectedLinuxAppImageSha = "${{ needs.linux-appimage-verify.outputs.linux_appimage_sha256 }}"
+            if ([string]::IsNullOrWhiteSpace($expectedLinuxAppImageSha)) {
+              throw "Missing SHA-256 from the verified Linux AppImage job."
+            }
+            $actualLinuxAppImageSha = (Get-FileHash -LiteralPath $linuxAppImagePath -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($actualLinuxAppImageSha -ne $expectedLinuxAppImageSha.ToLowerInvariant()) {
+              throw "Downloaded Linux AppImage SHA-256 does not match the verified Linux AppImage. Expected $expectedLinuxAppImageSha, got $actualLinuxAppImageSha."
+            }
+          }
+
+          if ($includeMacos -or $includeLinux) {
+            $prepareArgs = @("run", "prepare:release-assets", "--", "--version", $version, "--dir", $assetDir, "--notes-env", "RELEASE_NOTES_BODY")
+            if ($includeMacos) {
+              $prepareArgs += @("--macos-dmg", $macosDmgPath, "--macos-updater-archive", $macosUpdaterPath, "--macos-updater-signature", $macosUpdaterSigPath)
+            }
+            if ($includeLinux) {
+              $prepareArgs += @("--linux-appimage", $linuxAppImagePath, "--linux-appimage-signature", $linuxAppImageSigPath)
+              $platform = if ($includeMacos) { "desktop" } else { "windows-linux" }
+            }
+            npm @prepareArgs
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
           } else {
             npm run prepare:release-assets -- --version $version --dir $assetDir --notes-env RELEASE_NOTES_BODY
             if ($LASTEXITCODE -ne 0) {
@@ -282,6 +429,10 @@ jobs:
           $validateArgs = @("run", "validate:release-assets", "--", "--version", $version, "--dir", $assetDir, "--platform", $platform)
           if ($includeMacos) {
             $validateArgs += @("--macos-dmg-sha256", "${{ needs.macos-dmg-verify.outputs.macos_dmg_sha256 }}")
+            $validateArgs += @("--macos-updater-sha256", "${{ needs.macos-dmg-verify.outputs.macos_updater_sha256 }}")
+          }
+          if ($includeLinux) {
+            $validateArgs += @("--linux-appimage-sha256", "${{ needs.linux-appimage-verify.outputs.linux_appimage_sha256 }}")
           }
           npm @validateArgs
           if ($LASTEXITCODE -ne 0) {
@@ -309,6 +460,21 @@ jobs:
           )
           if ($platform -eq "all") {
             $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
+            $expectedAssets += "Multi-Converter_macos-universal.dmg"
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz"
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz.sig"
+          }
+          if ($platform -eq "windows-linux" -or $platform -eq "desktop") {
+            $expectedAssets += "Multi-Converter_${version}_linux-x64.AppImage"
+            $expectedAssets += "Multi-Converter_${version}_linux-x64.AppImage.sig"
+            $expectedAssets += "Multi-Converter_${version}_linux-x64.AppImage.sha256"
+            $expectedAssets += "Multi-Converter_linux-x64.AppImage"
+          }
+          if ($platform -eq "desktop") {
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
+            $expectedAssets += "Multi-Converter_macos-universal.dmg"
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz"
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz.sig"
           }
 
           gh release edit $tag --repo $env:GITHUB_REPOSITORY --title "Multi-Converter $tag" --latest
@@ -341,6 +507,21 @@ jobs:
           )
           if ($platform -eq "all") {
             $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
+            $expectedAssets += "Multi-Converter_macos-universal.dmg"
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz"
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz.sig"
+          }
+          if ($platform -eq "windows-linux" -or $platform -eq "desktop") {
+            $expectedAssets += "Multi-Converter_${version}_linux-x64.AppImage"
+            $expectedAssets += "Multi-Converter_${version}_linux-x64.AppImage.sig"
+            $expectedAssets += "Multi-Converter_${version}_linux-x64.AppImage.sha256"
+            $expectedAssets += "Multi-Converter_linux-x64.AppImage"
+          }
+          if ($platform -eq "desktop") {
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
+            $expectedAssets += "Multi-Converter_macos-universal.dmg"
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz"
+            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz.sig"
           }
           $expectedAssets = $expectedAssets | Sort-Object
           $actualAssets = @(gh release view $tag --repo $env:GITHUB_REPOSITORY --json assets --jq ".assets[].name" | Sort-Object)

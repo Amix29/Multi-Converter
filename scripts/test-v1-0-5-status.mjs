@@ -15,10 +15,20 @@ try {
   assert.equal(currentStatus.summary.hasMacosTwoArchitectureConversionEvidence, true, "current evidence must record two-architecture macOS conversion proof");
   assert.equal(currentStatus.summary.hasMacosTwoArchitectureDmgEvidence, true, "current evidence must record two-architecture DMG proof");
   assert.equal(currentStatus.summary.hasMacosAutomatedReleaseEvidence, true, "current evidence must record automated macOS release proof");
-  assert.doesNotMatch(currentStatus.blockers.join("\n"), /Conversion Matrix/, "current status must not keep the conversion blocker after final matrix proof");
+  assert.equal(currentStatus.summary.hasLinuxAutomatedReleaseEvidence, false, "current evidence must not claim final Linux automation proof before the real AppImage workflow runs");
+  assert.equal(currentStatus.summary.hasLinuxSidecarStagingEvidence, false, "current evidence must not claim Linux sidecar staging proof before the real sidecar workflow runs");
+  assert.equal(currentStatus.summary.hasManualLinuxAppImageEvidence, false, "current pending receipt must not count as Linux AppImage smoke proof");
+  assert.deepEqual(currentStatus.summary.missingLinuxAdvancedEngines, ["pdfium", "libreoffice", "pandoc", "libvips"], "current status must record missing Linux advanced engines");
+  assert.doesNotMatch(currentStatus.blockers.join("\n"), /macOS Conversion Matrix/, "current status must not keep the macOS conversion blocker after final matrix proof");
   assert.doesNotMatch(currentStatus.blockers.join("\n"), /DMG verification.*Intel/, "current status must not keep the Intel DMG blocker after final DMG proof");
   assert.match(currentStatus.blockers.join("\n"), /Manual clean-Mac Gatekeeper\/install smoke testing/, "current status must keep the clean-Mac blocker");
-  assert.doesNotMatch(currentStatus.blockers.join("\n"), /Codex Security/, "current status must not keep the final security blocker after completed scan evidence");
+  assert.match(currentStatus.blockers.join("\n"), /Linux Sidecar Staging success evidence is missing/, "current status must keep the Linux sidecar staging blocker");
+  assert.match(currentStatus.blockers.join("\n"), /Missing reviewed linux-x64 advanced engines/, "current status must keep the Linux advanced-engine blocker");
+  assert.match(currentStatus.blockers.join("\n"), /Linux AppImage Build success evidence is missing/, "current status must keep the Linux AppImage build blocker");
+  assert.match(currentStatus.blockers.join("\n"), /Linux Conversion Matrix success evidence is missing/, "current status must keep the Linux conversion blocker");
+  assert.match(currentStatus.blockers.join("\n"), /Linux AppImage verification success evidence is missing/, "current status must keep the Linux verification blocker");
+  assert.match(currentStatus.blockers.join("\n"), /Manual Linux AppImage smoke testing/, "current status must keep the final Linux AppImage smoke-test blocker");
+  assert.match(currentStatus.blockers.join("\n"), /Codex Security/, "current status must keep the final security blocker until the post-Linux scan is recorded");
   const currentReadyGate = runStatus("current-require-ready.md", currentEvidence, { requireReady: true, expectedStatus: 1 });
   assert.equal(currentReadyGate.status.releaseReady, false, "require-ready fixture must still write the failing status JSON");
   assert.match(currentReadyGate.output, /V1\.0\.5 is not release-ready/, "require-ready mode must explain that the release is blocked");
@@ -46,10 +56,11 @@ try {
   const completedReceiptStatus = runStatus("completed-receipt.md", completedReceipt(currentEvidence));
   assert.equal(completedReceiptStatus.summary.hasManualCleanMacEvidence, true, "a complete receipt section must count as clean-Mac proof");
   assert.equal(completedReceiptStatus.summary.cleanMacSmokeEvidence.missing.length, 0, "complete receipt should not report missing smoke-test fields");
-  assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /Codex Security/, "complete security proof must satisfy the security blocker");
-  assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /Conversion Matrix/, "complete automation evidence must satisfy the conversion blocker");
+  assert.equal(completedReceiptStatus.summary.hasManualLinuxAppImageEvidence, false, "macOS receipt alone must not count as Linux AppImage smoke proof");
+  assert.match(completedReceiptStatus.blockers.join("\n"), /Codex Security/, "manual receipts alone must not satisfy the final security blocker");
+  assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /macOS Conversion Matrix/, "complete macOS automation evidence must satisfy the macOS conversion blocker");
   assert.doesNotMatch(completedReceiptStatus.blockers.join("\n"), /DMG verification/, "complete automation evidence must satisfy the DMG blocker");
-  assert.equal(completedReceiptStatus.summary.hasCodexSecurityScanEvidence, true, "completed scan evidence must count as Codex Security proof");
+  assert.equal(completedReceiptStatus.summary.hasCodexSecurityScanEvidence, false, "pre-final scan evidence must not count as final Codex Security proof");
 
   const missingMetadataStatus = runStatus("missing-metadata.md", completedReceipt(currentEvidence).replace("- Date: 2026-06-13", "- Date: pending"));
   assert.equal(missingMetadataStatus.summary.hasManualCleanMacEvidence, false, "receipt metadata must be recorded before clean-Mac proof counts");
@@ -69,7 +80,7 @@ try {
 
 ## Untrusted Notes
 
-- Exhaustive Codex Security subagent scan: accepted
+- Final Codex Security scan after Linux AppImage/release asset changes: accepted
 `,
     { requireReady: true, expectedStatus: 1, readme: readyReadme(currentReadme) },
   );
@@ -82,7 +93,7 @@ try {
     { requireReady: true, expectedStatus: 1, readme: readyReadme(currentReadme) },
   );
   assert.equal(incompleteSecurityStatus.status.releaseReady, false, "a bare accepted Codex Security line must not unlock readiness");
-  assert.match(incompleteSecurityStatus.output, /Security date recorded/, "incomplete security evidence must report missing structured fields");
+  assert.match(incompleteSecurityStatus.output, /Final security date recorded/, "incomplete security evidence must report missing structured fields");
 
   const appleSiliconOnlyStatus = runStatus("apple-silicon-only.md", completedReleaseEvidence(currentEvidence).replace(/^- macOS Conversion Matrix \(Intel\):.*\n/m, ""), {
     requireReady: true,
@@ -123,6 +134,38 @@ try {
   });
   assert.equal(missingReadmeArchitectureStatus.status.releaseReady, false, "macOS release readiness must require Apple Silicon and Intel README wording");
   assert.match(missingReadmeArchitectureStatus.output, /README macOS status matches available release evidence/, "missing README architecture wording must fail the README evidence check");
+
+  const missingLinuxAutomationStatus = runStatus("missing-linux-automation.md", completedLinuxReceipt(completedReceipt(currentEvidence)), {
+    requireReady: true,
+    expectedStatus: 1,
+    readme: readyReadme(currentReadme),
+  });
+  assert.equal(missingLinuxAutomationStatus.status.releaseReady, false, "Linux smoke proof alone must not unlock release readiness without AppImage workflow evidence");
+  assert.match(missingLinuxAutomationStatus.output, /Linux AppImage Build success evidence is missing/, "missing Linux AppImage build evidence must be reported explicitly");
+
+  const missingLinuxSmokeStatus = runStatus("missing-linux-smoke.md", finalLinuxAutomationEvidence(completedReceipt(currentEvidence)), {
+    requireReady: true,
+    expectedStatus: 1,
+    readme: readyReadme(currentReadme),
+  });
+  assert.equal(missingLinuxSmokeStatus.status.releaseReady, false, "Linux automation proof alone must not unlock release readiness without AppImage smoke testing");
+  assert.match(missingLinuxSmokeStatus.output, /Manual Linux AppImage smoke testing/, "missing Linux AppImage smoke proof must be reported explicitly");
+
+  const missingLinuxConversionStatus = runStatus("missing-linux-conversion.md", completedReleaseEvidence(currentEvidence).replace(/^- Linux Conversion Matrix:.*\n/m, ""), {
+    requireReady: true,
+    expectedStatus: 1,
+    readme: readyReadme(currentReadme),
+  });
+  assert.equal(missingLinuxConversionStatus.status.releaseReady, false, "Linux release readiness must require Linux Conversion Matrix evidence");
+  assert.match(missingLinuxConversionStatus.output, /Linux Conversion Matrix success evidence is missing/, "missing Linux conversion matrix evidence must be reported explicitly");
+
+  const missingLinuxSidecarStatus = runStatus("missing-linux-sidecar.md", completedReleaseEvidence(currentEvidence).replace(/^- Linux Sidecar Staging:.*\n/m, ""), {
+    requireReady: true,
+    expectedStatus: 1,
+    readme: readyReadme(currentReadme),
+  });
+  assert.equal(missingLinuxSidecarStatus.status.releaseReady, false, "Linux release readiness must require Linux sidecar staging evidence");
+  assert.match(missingLinuxSidecarStatus.output, /Linux Sidecar Staging success evidence is missing/, "missing Linux sidecar staging evidence must be reported explicitly");
 
   const readyStatus = runStatus("ready.md", completedReleaseEvidence(currentEvidence), { requireReady: true, readme: readyReadme(currentReadme) });
   assert.equal(readyStatus.releaseReady, true, "complete clean-Mac and accepted security evidence must satisfy require-ready mode");
@@ -180,24 +223,82 @@ function completedReceipt(evidence) {
 }
 
 function completedReleaseEvidence(evidence) {
-  return completedReceipt(finalDmgVerificationEvidence(finalMacosConversionEvidence(evidence)));
+  return completedFinalSecurityEvidence(
+    completedLinuxReceipt(finalLinuxAutomationEvidence(completedReceipt(finalDmgVerificationEvidence(finalMacosConversionEvidence(evidence))))),
+  );
+}
+
+function finalLinuxAutomationEvidence(evidence) {
+  return evidence
+    .replace(
+      "- Linux Sidecar Staging: pending",
+      "- Linux Sidecar Staging: run `9991999`, success. Published `ffmpeg-x86_64-unknown-linux-gnu`, `ffmpeg-x86_64-unknown-linux-gnu.sha256`, `ffprobe-x86_64-unknown-linux-gnu` and `ffprobe-x86_64-unknown-linux-gnu.sha256` from reviewed Linux x64 binaries.",
+    )
+    .replace(
+      "- Linux AppImage Build: pending",
+      "- Linux AppImage Build: run `9992001`, success. Built, signed and packaged `Multi-Converter_1.0.5_linux-x64.AppImage` with real Linux sidecars.",
+    )
+    .replace(
+      "- Linux Conversion Matrix: pending",
+      "- Linux Conversion Matrix: run `9992001`, success. Passed `npm run test:linux:conversions` on Linux x64 with real Linux FFmpeg/ffprobe sidecars.",
+    )
+    .replace(
+      "- Linux AppImage Verification: pending",
+      "- Linux AppImage Verification: run `9992002`, success. Verified `Multi-Converter_1.0.5_linux-x64.AppImage` on Linux before release publication.",
+    );
+}
+
+function completedLinuxReceipt(evidence) {
+  return evidence
+    .replace("- Manual Linux AppImage smoke testing: pending", "- Manual Linux AppImage smoke testing: success")
+    .replace("- Linux distribution: pending", "- Linux distribution: Ubuntu 22.04 clean desktop")
+    .replace("- AppImage source: pending", "- AppImage source: final downloaded GitHub release asset")
+    .replace("- Marked AppImage executable: no", "- Marked AppImage executable: yes")
+    .replace("- Launched AppImage: no", "- Launched AppImage: yes")
+    .replace("- Notes: pending", "- Notes: release smoke fixture only")
+    .replace("- Architecture tested: pending", "- Architecture tested: x64")
+    .replace("- Date: pending", "- Date: 2026-06-13")
+    .replace("- Tester: pending", "- Tester: maintainer")
+    .replace("- File selection verified: no", "- File selection verified: yes")
+    .replace("- FFmpeg media conversion verified: no", "- FFmpeg media conversion verified: yes")
+    .replace("- Document/PDF/image advanced conversion verified: no", "- Document/PDF/image advanced conversion verified: yes")
+    .replace("- Updater metadata behavior checked: no", "- Updater metadata behavior checked: yes");
 }
 
 function pendingSecurityEvidence(evidence) {
   return evidence
-    .replace(/^- Exhaustive Codex Security subagent scan:.*$/m, "- Exhaustive Codex Security subagent scan: pending")
-    .replace(/^- Security date:.*$/m, "- Security date: pending")
-    .replace(/^- Security reviewer:.*$/m, "- Security reviewer: pending")
-    .replace(/^- Security scope:.*$/m, "- Security scope: pending")
-    .replace(/^- Confidential information exposure:.*$/m, "- Confidential information exposure: pending")
-    .replace(/^- Security outcome:.*$/m, "- Security outcome: pending");
+    .replace(/^- Final Codex Security scan.*$/m, "- Final Codex Security scan after Linux AppImage/release asset changes: pending")
+    .replace(/^- Final security date:.*$/m, "- Final security date: pending")
+    .replace(/^- Final security reviewer:.*$/m, "- Final security reviewer: pending")
+    .replace(/^- Final security scope:.*$/m, "- Final security scope: pending")
+    .replace(/^- Final confidential information exposure:.*$/m, "- Final confidential information exposure: pending")
+    .replace(/^- Final security outcome:.*$/m, "- Final security outcome: pending");
 }
 
 function incompleteSecurityEvidence(evidence) {
   return pendingSecurityEvidence(evidence).replace(
-    "- Exhaustive Codex Security subagent scan: pending",
-    "- Exhaustive Codex Security subagent scan: accepted",
+    "- Final Codex Security scan after Linux AppImage/release asset changes: pending",
+    "- Final Codex Security scan after Linux AppImage/release asset changes: accepted",
   );
+}
+
+function completedFinalSecurityEvidence(evidence) {
+  return evidence
+    .replace(
+      "- Final Codex Security scan after Linux AppImage/release asset changes: pending",
+      "- Final Codex Security scan after Linux AppImage/release asset changes: passed",
+    )
+    .replace("- Final security date: pending", "- Final security date: 2026-06-14")
+    .replace("- Final security reviewer: pending", "- Final security reviewer: Codex Security final pass")
+    .replace(
+      "- Final security scope: pending",
+      "- Final security scope: full repository diff and tracked-file confidentiality scan after Linux AppImage/release asset evidence",
+    )
+    .replace(
+      "- Final confidential information exposure: pending",
+      "- Final confidential information exposure: no tracked secret, signing key value, private repository reference or maintainer-local path exposure found",
+    )
+    .replace("- Final security outcome: pending", "- Final security outcome: no surviving reportable finding remains");
 }
 
 function finalMacosConversionEvidence(evidence) {
@@ -231,15 +332,15 @@ function readyReadme(readme) {
 
 ## macOS Installation
 
-Download \`Multi-Converter_1.0.5_macos-universal.dmg\` for Apple Silicon and Intel Macs. This macOS build is not Apple-signed and not notarized. After the first launch warning, open \`System Settings > Privacy & Security\`, choose \`Open Anyway\`, then confirm \`Open\`.
+Download \`Multi-Converter_macos-universal.dmg\` for Apple Silicon and Intel Macs. The same release also includes \`Multi-Converter_1.0.5_macos-universal.dmg\` for traceability. This macOS build is not Apple-signed and not notarized. After the first launch warning, open \`System Settings > Privacy & Security\`, choose \`Open Anyway\`, then confirm \`Open\`.
 
-macOS automatic updates are not enabled for this first DMG workflow. Download future macOS versions manually until macOS updater artifacts are enabled and tested.
+macOS automatic updates are enabled.
 `;
 }
 
 function readyReadmeTableOnly(readme) {
-  return readme.replace(
-    /\|\s*🍎 macOS\s*\|[^\n]+/,
-    "| 🍎 macOS | ✅ Available | `Multi-Converter_1.0.5_macos-universal.dmg` |",
+  return readme.replace(/^## macOS Installation\s*[\s\S]*?(?=^##\s+)/m, "").replace(
+    /\|\s*🍎 macOS[^|]*\|[^\n]+/,
+    "| 🍎 macOS Apple Silicon + Intel | ✅ Available | `Multi-Converter_macos-universal.dmg` |",
   );
 }

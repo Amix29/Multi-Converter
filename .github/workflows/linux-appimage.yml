@@ -1,0 +1,265 @@
+name: Linux AppImage Build
+
+on:
+  push:
+    branches:
+      - codex/test
+    paths:
+      - ".github/workflows/linux-appimage.yml"
+      - "scripts/prepare-linux-sidecars.mjs"
+      - "scripts/prepare-linux-engine-release-assets.mjs"
+      - "scripts/prepare-linux-release-artifacts.mjs"
+      - "scripts/verify-linux-appimage.mjs"
+      - "scripts/lib/elf.mjs"
+      - "scripts/lib/ffmpeg-version.mjs"
+      - "scripts/prepare-bundled-engines.mjs"
+      - "scripts/validate-bundled-engines.mjs"
+      - "scripts/test-elf.mjs"
+      - "scripts/test-linux-host.mjs"
+      - "scripts/test-linux-environment.mjs"
+      - "scripts/test-linux-conversions.mjs"
+      - "scripts/test-linux-packaging.mjs"
+      - "scripts/test-linux-release-artifacts.mjs"
+      - "scripts/test-github-workflows.mjs"
+      - "tools/updater-signature-verifier/**"
+      - "tools/engine-packages.linux.config.json"
+      - "src-tauri/src/converters.rs"
+      - "src-tauri/src/engine_distribution.rs"
+      - "src-tauri/src/registry.rs"
+      - "src-tauri/tauri.linux.conf.json"
+      - "src-tauri/tauri.conf.json"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+    inputs:
+      sidecar_release_tag:
+        description: "Release tag containing Linux FFmpeg/ffprobe sidecar binary assets"
+        required: false
+        default: ""
+        type: string
+      sidecar_staging_run_id:
+        description: "Linux Sidecar Staging workflow run ID containing the linux-sidecar-assets artifact"
+        required: false
+        default: ""
+        type: string
+      engine_release_tag:
+        description: "Release tag containing Linux advanced engine ZIP assets and engines-manifest.json"
+        required: false
+        default: ""
+        type: string
+      engine_staging_run_id:
+        description: "Linux Engine Staging workflow run ID containing the linux-engine-assets artifact"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: linux-appimage-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build verified Linux x64 AppImage
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.MC_ENABLE_LINUX_APPIMAGE == '1' }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      appimage_name: ${{ steps.version.outputs.appimage_name }}
+      appimage_signature_name: ${{ steps.version.outputs.appimage_signature_name }}
+      appimage_checksum_name: ${{ steps.version.outputs.appimage_checksum_name }}
+    env:
+      CARGO_TERM_COLOR: always
+      RUST_BACKTRACE: 1
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      MULTI_CONVERTER_ENGINE_PLATFORM: linux-x64
+      MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES: 1
+      SIDECAR_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_release_tag || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_SIDECAR_RELEASE_TAG || '' }}
+      SIDECAR_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_SIDECAR_STAGING_RUN_ID || '' }}
+      ENGINE_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_release_tag || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_ENGINE_RELEASE_TAG || '' }}
+      ENGINE_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_ENGINE_STAGING_RUN_ID || '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Install Linux Tauri dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            libdbus-1-dev \
+            libssl-dev \
+            libxdo-dev \
+            librsvg2-dev \
+            build-essential \
+            pkg-config \
+            patchelf
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-linux-appimage-cargo-registry-v2-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-linux-appimage-cargo-registry-v2-
+            ${{ runner.os }}-cargo-registry-v2-
+
+      - run: npm ci
+
+      - name: Configure Cargo target directory
+        run: echo "CARGO_TARGET_DIR=$RUNNER_TEMP/mc-cargo-target-linux-appimage" >> "$GITHUB_ENV"
+
+      - name: Validate staged Linux asset inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$SIDECAR_RELEASE_TAG" && -n "$SIDECAR_STAGING_RUN_ID" ]]; then
+            echo "Use either sidecar_release_tag or sidecar_staging_run_id, not both." >&2
+            exit 1
+          fi
+          if [[ -n "$ENGINE_RELEASE_TAG" && -n "$ENGINE_STAGING_RUN_ID" ]]; then
+            echo "Use either engine_release_tag or engine_staging_run_id, not both." >&2
+            exit 1
+          fi
+          if [[ -z "$SIDECAR_RELEASE_TAG" && -z "$SIDECAR_STAGING_RUN_ID" ]]; then
+            echo "sidecar_release_tag, sidecar_staging_run_id, MC_LINUX_SIDECAR_RELEASE_TAG or MC_LINUX_SIDECAR_STAGING_RUN_ID is required for real Linux AppImage builds." >&2
+            exit 1
+          fi
+          if [[ -z "$ENGINE_RELEASE_TAG" && -z "$ENGINE_STAGING_RUN_ID" ]]; then
+            echo "engine_release_tag, engine_staging_run_id, MC_LINUX_ENGINE_RELEASE_TAG or MC_LINUX_ENGINE_STAGING_RUN_ID is required for full Linux AppImage builds." >&2
+            exit 1
+          fi
+          for run_id in "$SIDECAR_STAGING_RUN_ID" "$ENGINE_STAGING_RUN_ID"; do
+            if [[ -n "$run_id" && ! "$run_id" =~ ^[0-9]+$ ]]; then
+              echo "Linux staging workflow run IDs must be numeric GitHub Actions run IDs: $run_id" >&2
+              exit 1
+            fi
+          done
+          for tag in "$SIDECAR_RELEASE_TAG" "$ENGINE_RELEASE_TAG"; do
+            if [[ -n "$tag" && ( ! "$tag" =~ ^[A-Za-z0-9._/-]+$ || "$tag" == -* || "$tag" == */..* || "$tag" == *..* ) ]]; then
+              echo "Invalid Linux release tag input: $tag" >&2
+              exit 1
+            fi
+          done
+
+      - name: Download staged Linux sidecars from a workflow artifact
+        if: ${{ env.SIDECAR_STAGING_RUN_ID != '' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          asset_dir="$RUNNER_TEMP/linux-sidecar-assets"
+          mkdir -p "$asset_dir"
+          gh run download "$SIDECAR_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --name linux-sidecar-assets --dir "$asset_dir"
+          run_info="$(gh run view "$SIDECAR_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,name --jq '.name + "|" + .conclusion')"
+          if [[ "$run_info" != "Linux Sidecar Staging|success" ]]; then
+            echo "sidecar_staging_run_id must reference a successful Linux Sidecar Staging run. Got: $run_info" >&2
+            exit 1
+          fi
+          npm run prepare:linux-sidecars -- --asset-dir "$asset_dir"
+
+      - name: Download staged Linux sidecars from a release
+        if: ${{ env.SIDECAR_RELEASE_TAG != '' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          asset_dir="$RUNNER_TEMP/linux-sidecar-assets"
+          mkdir -p "$asset_dir"
+          for asset in \
+            ffmpeg-x86_64-unknown-linux-gnu \
+            ffprobe-x86_64-unknown-linux-gnu
+          do
+            gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir "$asset_dir"
+            gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset.sha256" --dir "$asset_dir"
+          done
+          npm run prepare:linux-sidecars -- --asset-dir "$asset_dir"
+
+      - name: Download staged Linux engines from a workflow artifact
+        if: ${{ env.ENGINE_STAGING_RUN_ID != '' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          asset_dir="$RUNNER_TEMP/mc-linux-engine-assets"
+          mkdir -p "$asset_dir"
+          gh run download "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --name linux-engine-assets --dir "$asset_dir"
+          run_info="$(gh run view "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,name --jq '.name + "|" + .conclusion')"
+          if [[ "$run_info" != "Linux Engine Staging|success" ]]; then
+            echo "engine_staging_run_id must reference a successful Linux Engine Staging run. Got: $run_info" >&2
+            exit 1
+          fi
+          npm run prepare:linux-engine-release-assets -- --from-local-assets --asset-dir "$asset_dir"
+
+      - name: Stage Linux advanced engine archives from a release
+        if: ${{ env.ENGINE_RELEASE_TAG != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run prepare:linux-engine-release-assets -- --tag "$ENGINE_RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
+
+      - name: Validate Linux packaging contracts
+        run: |
+          npm run test:linux:environment
+          npm run test:linux-packaging
+          npm run test:run-tauri
+          npm run test:linux-release-artifacts
+
+      - name: Prepare and verify real Linux engines
+        run: npm run test:linux:conversions
+
+      - name: Run Linux host tests
+        run: |
+          npm run test:rust
+          npm run test:pdfium-wrapper:compile
+          npm run clippy:pdfium-wrapper
+
+      - name: Build Linux AppImage and updater signature
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npm run tauri:build:linux
+
+      - id: version
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "appimage_name=Multi-Converter_${version}_linux-x64.AppImage" >> "$GITHUB_OUTPUT"
+          echo "appimage_signature_name=Multi-Converter_${version}_linux-x64.AppImage.sig" >> "$GITHUB_OUTPUT"
+          echo "appimage_checksum_name=Multi-Converter_${version}_linux-x64.AppImage.sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare release-named Linux artifacts
+        run: npm run prepare:linux-release-artifacts -- --version "${{ steps.version.outputs.version }}" --out-dir "$RUNNER_TEMP/mc-linux-release-artifacts"
+
+      - name: Verify release-named Linux AppImage
+        run: npm run verify:linux-appimage -- --version "${{ steps.version.outputs.version }}" --appimage "$RUNNER_TEMP/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_name }}" --signature "$RUNNER_TEMP/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_signature_name }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-artifacts
+          path: |
+            ${{ runner.temp }}/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_name }}
+            ${{ runner.temp }}/mc-linux-release-artifacts/Multi-Converter_linux-x64.AppImage
+            ${{ runner.temp }}/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_signature_name }}
+            ${{ runner.temp }}/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_checksum_name }}
+          if-no-files-found: error
