@@ -488,6 +488,14 @@ async function pruneLibreOfficeOptionalLinuxBackends(rootDir, engine) {
     await fs.rm(filePath, { force: true });
     removed.push(relative);
   }
+  const optionalPythonModulePattern =
+    /^program\/python-core-[^/]+\/lib\/lib-dynload\/_crypt\.cpython-[^/]+\.so$/;
+  await walkFiles(path.join(rootDir, "program"), async (filePath) => {
+    const relative = path.relative(rootDir, filePath).replaceAll(path.sep, "/");
+    if (!optionalPythonModulePattern.test(relative)) return;
+    await fs.rm(filePath, { force: true });
+    removed.push(relative);
+  });
   if (removed.length) {
     console.log(`${engine.id}: removed ${removed.length} optional Linux UI backend(s) from headless bundle.`);
   }
