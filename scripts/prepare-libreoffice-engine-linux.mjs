@@ -60,6 +60,7 @@ if (!libreOfficeRoot) {
 await fs.rm(sourceDir, { recursive: true, force: true });
 await fs.mkdir(path.dirname(sourceDir), { recursive: true });
 await fs.cp(libreOfficeRoot, sourceDir, { recursive: true, force: true, preserveTimestamps: true });
+await removeNonLinuxPayloadFiles(sourceDir);
 await fs.mkdir(path.join(sourceDir, "licenses"), { recursive: true });
 
 const soffice = path.join(sourceDir, "program", "soffice");
@@ -123,6 +124,19 @@ async function stageLicenseAndNotices() {
     ].join("\n"),
     "utf8",
   );
+}
+
+async function removeNonLinuxPayloadFiles(dir) {
+  for (const entry of await fs.readdir(dir, { withFileTypes: true }).catch(() => [])) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await removeNonLinuxPayloadFiles(fullPath);
+      continue;
+    }
+    if (entry.isFile() && /\.(?:bat|cmd|dll|dmg|dylib|exe|msi|pkg|ps1)$/i.test(entry.name)) {
+      await fs.rm(fullPath, { force: true });
+    }
+  }
 }
 
 async function smokeTestLibreOffice(soffice) {

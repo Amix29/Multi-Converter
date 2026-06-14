@@ -500,6 +500,7 @@ assert.match(linuxPdfiumPrepareScript, /pdfium-render-x86_64-unknown-linux-gnu/,
 assert.match(linuxLibreOfficePrepareScript, /Linux_x86-64_deb\.tar\.gz/, "Linux LibreOffice upstream helper must use the official Linux x86-64 deb archive");
 assert.match(linuxLibreOfficePrepareScript, /LIBREOFFICE_LINUX_X64_DEB_ARCHIVE_SHA256/, "Linux LibreOffice upstream helper must require a pinned SHA-256");
 assert.match(linuxLibreOfficePrepareScript, /dpkg-deb/, "Linux LibreOffice upstream helper must extract official Debian packages");
+assert.match(linuxLibreOfficePrepareScript, /removeNonLinuxPayloadFiles/, "Linux LibreOffice upstream helper must prune non-Linux payload files before validation");
 assert.match(linuxLibreOfficePrepareScript, /--terminate_after_init/, "Linux LibreOffice upstream helper must smoke-test headless startup");
 assert.match(linuxPandocPrepareScript, /linux-amd64\.tar\.gz/, "Linux Pandoc upstream helper must use the official Linux amd64 archive");
 assert.match(linuxPandocPrepareScript, /PANDOC_LINUX_X64_ARCHIVE_SHA256/, "Linux Pandoc upstream helper must require a pinned SHA-256");

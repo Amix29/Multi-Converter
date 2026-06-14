@@ -120,6 +120,7 @@ assert.match(linuxLibreOfficePrepare, /process\.platform !== "linux" \|\| proces
 assert.match(linuxLibreOfficePrepare, /Linux_x86-64_deb\.tar\.gz/, "Linux LibreOffice preparation must use the official Linux x86-64 deb archive");
 assert.match(linuxLibreOfficePrepare, /LIBREOFFICE_LINUX_X64_DEB_ARCHIVE_SHA256/, "Linux LibreOffice preparation must require a pinned upstream SHA-256");
 assert.match(linuxLibreOfficePrepare, /dpkg-deb/, "Linux LibreOffice preparation must extract official Debian packages without installing them into the runner");
+assert.match(linuxLibreOfficePrepare, /removeNonLinuxPayloadFiles/, "Linux LibreOffice preparation must prune non-Linux payload files before strict source validation");
 assert.match(linuxLibreOfficePrepare, /--terminate_after_init/, "Linux LibreOffice preparation must smoke-test headless startup");
 assert.match(linuxPandocPrepare, /process\.platform !== "linux" \|\| process\.arch !== "x64"/, "Linux Pandoc preparation must refuse non-Linux x64 hosts");
 assert.match(linuxPandocPrepare, /linux-amd64\.tar\.gz/, "Linux Pandoc preparation must use the official Linux amd64 archive");
