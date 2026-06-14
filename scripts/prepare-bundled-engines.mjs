@@ -469,9 +469,16 @@ async function pruneLibreOfficeOptionalLinuxBackends(rootDir, engine) {
     "program/libvclplug_qt5lo.so",
     "program/libvclplug_qt6lo.so",
     "program/libvclplug_gtk3lo.so",
+    "program/libvclplug_gtk3_kde5lo.so",
     "program/libvclplug_gtk4lo.so",
+    "program/lo_gtk3filepicker",
+    "program/lo_gtk4filepicker",
     "program/lo_kde5filepicker",
+    "program/lo_qt5filepicker",
+    "program/lo_qt6filepicker",
     "program/libavmediagtk.so",
+    "program/libdeploymentgui.so",
+    "program/liblibreofficekitgtk.so",
   ];
   const removed = [];
   for (const relative of optionalBackends) {

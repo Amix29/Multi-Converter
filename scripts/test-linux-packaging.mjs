@@ -75,6 +75,8 @@ assert.match(prepareScript, /--set-rpath/, "Bundled engine preparation must expo
 assert.match(prepareScript, /libkf5be1lo\.so/, "Bundled engine preparation must prune optional LibreOffice KDE backends from Linux headless bundles");
 assert.match(prepareScript, /lo_kde5filepicker/, "Bundled engine preparation must prune optional LibreOffice KDE file picker from Linux headless bundles");
 assert.match(prepareScript, /libavmediagtk\.so/, "Bundled engine preparation must prune optional LibreOffice GTK media backend from Linux headless bundles");
+assert.match(prepareScript, /libvclplug_gtk3_kde5lo\.so/, "Bundled engine preparation must prune optional LibreOffice GTK/KDE VCL backend from Linux headless bundles");
+assert.match(prepareScript, /liblibreofficekitgtk\.so/, "Bundled engine preparation must prune optional LibreOfficeKit GTK backend from Linux headless bundles");
 assert.match(validateScript, /linux-x64/, "Bundled engine validation must recognize Linux x64");
 assert.match(validateScript, /x86_64-unknown-linux-gnu/, "Bundled engine validation must require Linux x64 sidecars");
 assert.match(validateScript, /fichier Linux non-ELF/, "Bundled engine validation must reject non-ELF Linux sidecars even when smoke tests are skipped");
