@@ -68,7 +68,7 @@ async function prepareBaseSidecar(item) {
   const archive = path.join(cacheDir, `${item.id}.zip`);
   await downloadVerified(engine.downloadUrl, archive, engine.sha256, item.id);
   const extractDir = path.join(cacheDir, `${item.id}-extract`);
-  await extractArchive(archive, extractDir);
+  await extractArchive(archive, extractDir, engine.archiveType);
   const source = await findFile(extractDir, item.fileName);
   await fs.copyFile(source, target);
   await ensureExecutable(target);
@@ -361,13 +361,20 @@ async function sha256File(filePath) {
   return hash.digest("hex");
 }
 
-async function extractArchive(archive, destination) {
+async function extractArchive(archive, destination, archiveType = "tar") {
   await fs.rm(destination, { recursive: true, force: true });
   await fs.mkdir(destination, { recursive: true });
-  const result = process.platform === "win32"
-    ? spawnSync("powershell", ["-NoProfile", "-Command", `Expand-Archive -LiteralPath '${archive.replaceAll("'", "''")}' -DestinationPath '${destination.replaceAll("'", "''")}' -Force`], { stdio: "inherit", windowsHide: true })
+  const result = archiveType === "zip"
+    ? extractZipArchive(archive, destination)
     : spawnSync("tar", ["-xf", archive, "-C", destination], { stdio: "inherit" });
   if (result.status !== 0) throw new Error(`Extraction impossible : ${archive}`);
+}
+
+function extractZipArchive(archive, destination) {
+  if (process.platform === "win32") {
+    return spawnSync("powershell", ["-NoProfile", "-Command", `Expand-Archive -LiteralPath '${archive.replaceAll("'", "''")}' -DestinationPath '${destination.replaceAll("'", "''")}' -Force`], { stdio: "inherit", windowsHide: true });
+  }
+  return spawnSync("unzip", ["-q", archive, "-d", destination], { stdio: "inherit" });
 }
 
 async function findFile(base, name) {

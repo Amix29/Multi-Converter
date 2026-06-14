@@ -67,6 +67,8 @@ assert.match(prepareScript, /linux-x64/, "Bundled engine preparation must recogn
 assert.match(prepareScript, /ffmpeg-x86_64-unknown-linux-gnu/, "Bundled engine preparation must stage the Linux FFmpeg sidecar");
 assert.match(prepareScript, /engine-sources", "linux-x64"/, "Linux sidecars must come from explicit Linux engine sources");
 assert.match(prepareScript, /MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES/, "Bundled engine preparation must support strict advanced-engine release mode");
+assert.match(prepareScript, /extractZipArchive/, "Bundled engine preparation must extract ZIP-based advanced engine archives on Linux");
+assert.match(prepareScript, /unzip", \["-q"/, "Bundled engine preparation must use unzip for ZIP archives on non-Windows hosts");
 assert.match(validateScript, /linux-x64/, "Bundled engine validation must recognize Linux x64");
 assert.match(validateScript, /x86_64-unknown-linux-gnu/, "Bundled engine validation must require Linux x64 sidecars");
 assert.match(validateScript, /fichier Linux non-ELF/, "Bundled engine validation must reject non-ELF Linux sidecars even when smoke tests are skipped");
