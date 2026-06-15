@@ -260,10 +260,11 @@ export default function App() {
           }
           if (file.status !== "working") return file;
           const current = clamp(file.progress, 0, 100);
-          if (current >= 94) return file;
+          const optimisticCap = file.size > 700 * 1024 * 1024 ? 78 : file.size > 120 * 1024 * 1024 ? 88 : 94;
+          if (current >= optimisticCap) return file;
           const sizeFactor = file.size > 700 * 1024 * 1024 ? 0.55 : file.size > 120 * 1024 * 1024 ? 0.75 : 1;
           const pace = current < 45 ? 2.8 : current < 75 ? 1.7 : 0.65;
-          return { ...file, progress: Math.max(current, Math.min(94, current + pace * sizeFactor)) };
+          return { ...file, progress: Math.max(current, Math.min(optimisticCap, current + pace * sizeFactor)) };
         }),
       );
     }, 900);

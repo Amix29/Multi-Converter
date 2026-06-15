@@ -821,7 +821,22 @@ fn cpu_video_args(target_format: &str) -> Result<Vec<String>> {
         "avi" => owned_args(&[
             "-codec:v", "mpeg4", "-q:v", "5", "-codec:a", "mp3", "-b:a", "160k",
         ]),
-        "wmv" => owned_args(&["-codec:v", "wmv2", "-codec:a", "wmav2"]),
+        "wmv" => owned_args(&[
+            "-vf",
+            wmv_compatibility_scale_filter(),
+            "-codec:v",
+            "wmv2",
+            "-b:v",
+            "3500k",
+            "-maxrate",
+            "5000k",
+            "-bufsize",
+            "10000k",
+            "-codec:a",
+            "wmav2",
+            "-b:a",
+            "160k",
+        ]),
         "3gp" => owned_args(&[
             "-s", "640x360", "-codec:v", "mpeg4", "-codec:a", "aac", "-b:a", "96k",
         ]),
@@ -876,6 +891,10 @@ fn gpu_video_args(app: &AppHandle, target_format: &str) -> Vec<Vec<String>> {
         .filter(|encoder| ffmpeg_supports_encoder(app, encoder))
         .map(|encoder| gpu_h264_args(target_format, encoder))
         .collect()
+}
+
+fn wmv_compatibility_scale_filter() -> &'static str {
+    "scale=w=trunc(min(1920\\,iw)/2)*2:h=trunc(min(1080\\,ih)/2)*2:force_original_aspect_ratio=decrease"
 }
 
 fn gpu_h264_args(target_format: &str, encoder: &str) -> Vec<String> {
@@ -3145,6 +3164,21 @@ mod tests {
             assert!(cpu_video_args(target).is_err());
         }
         assert!(image_format_for_target("avif").is_err());
+    }
+
+    #[test]
+    fn wmv_output_uses_compatibility_resolution_limit() {
+        let args = cpu_video_args("wmv").unwrap();
+
+        assert!(args.windows(2).any(|pair| pair == ["-codec:v", "wmv2"]));
+        assert!(args.windows(2).any(|pair| pair == ["-codec:a", "wmav2"]));
+        assert!(args.windows(2).any(|pair| pair == ["-b:v", "3500k"]));
+        assert!(args.iter().any(|arg| arg.contains("min(1920\\,iw)")));
+        assert!(args.iter().any(|arg| arg.contains("min(1080\\,ih)")));
+        assert!(
+            args.iter()
+                .any(|arg| arg.contains("force_original_aspect_ratio=decrease"))
+        );
     }
 
     #[test]
