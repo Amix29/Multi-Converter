@@ -154,10 +154,13 @@ jobs:
             ffprobe-x86_64-apple-darwin \
             ffprobe-universal-apple-darwin
           do
-            if [[ ! -s "$asset_dir/$asset" || ! -s "$asset_dir/$asset.sha256" ]]; then
-              echo "Missing staged macOS asset or checksum: $asset" >&2
+            if [[ ! -s "$asset_dir/$asset" ]]; then
+              echo "Missing staged macOS asset: $asset" >&2
               find "$RUNNER_TEMP/mc-macos-engine-assets" -maxdepth 3 -type f | sort >&2
               exit 1
+            fi
+            if [[ ! -s "$asset_dir/$asset.sha256" ]]; then
+              (cd "$asset_dir" && shasum -a 256 "$asset" > "$asset.sha256")
             fi
             (cd "$asset_dir" && shasum -a 256 -c "$asset.sha256")
             cp "$asset_dir/$asset" "src-tauri/binaries/$asset"
