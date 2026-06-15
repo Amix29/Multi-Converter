@@ -118,6 +118,15 @@ jobs:
 
       - name: Download staged macOS assets from a workflow artifact
         if: ${{ env.ENGINE_STAGING_RUN_ID != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-engine-assets
+          path: ${{ runner.temp }}/mc-macos-engine-assets
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.ENGINE_STAGING_RUN_ID }}
+
+      - name: Validate staged macOS assets from a workflow artifact
+        if: ${{ env.ENGINE_STAGING_RUN_ID != '' }}
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -125,7 +134,6 @@ jobs:
           set -euo pipefail
           asset_dir="$RUNNER_TEMP/mc-macos-engine-assets"
           mkdir -p "$asset_dir" src-tauri/binaries
-          gh run download "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --name macos-engine-assets --dir "$asset_dir"
           run_info="$(gh run view "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,name --jq '.name + "|" + .conclusion')"
           if [[ "$run_info" != "macOS Engine Staging|success" ]]; then
             echo "engine_staging_run_id must reference a successful macOS Engine Staging run. Got: $run_info" >&2
