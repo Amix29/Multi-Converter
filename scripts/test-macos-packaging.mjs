@@ -36,6 +36,7 @@ assert.equal(packageJson.scripts["test:macos:host"], "node scripts/test-macos-ho
 assert.equal(packageJson.scripts["test:macos:conversions"], "node scripts/test-macos-conversions.mjs", "macOS conversion test script must be exposed through npm");
 assert.equal(packageJson.scripts["verify:macos-dmg"], "node scripts/verify-macos-dmg.mjs", "macOS DMG verification script must be exposed through npm");
 assert.match(packageJson.scripts["tauri:build:macos"], /--target universal-apple-darwin/, "macOS build must target universal-apple-darwin");
+assert.match(packageJson.scripts["tauri:build:macos"], /--bundles app,dmg/, "macOS build must produce both the app updater archive and the DMG installer");
 assert.match(packageJson.scripts["package:macos-engines"], /engine-packages\.macos\.config\.json/, "macOS engine packaging script must use the macOS engine config");
 assert.equal(packageJson.scripts["prepare:macos-local-engines"], "node scripts/prepare-macos-local-engines.mjs", "local macOS engine staging script must be exposed through npm");
 assert.equal(packageJson.scripts["prepare:ffmpeg-engine:macos"], "node scripts/prepare-ffmpeg-engine-macos.mjs", "macOS FFmpeg preparation script must be exposed through npm");
