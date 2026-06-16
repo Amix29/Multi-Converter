@@ -33,6 +33,7 @@ This file records validation evidence for the in-progress v1.0.6 release. It is 
 - Linux release artifact: `linux-release-artifacts`, artifact ID `7666415187`, size `1079168021` bytes, GitHub Actions artifact zip SHA-256 `8c79dd75bb4c648288ca8601dea1b7987e42236b5cac67eb835a3a4d6398be7e`.
 - Downloaded Linux files were hash-checked locally on Windows on 2026-06-16. SHA-256 `Multi-Converter_1.0.6_linux-x64.AppImage`: `8d31bfa9850cc3f1ae4f92fe14c4b74eeb72f2b5e74111e05186a3c8654cea4e`.
 - Additional WSL Linux structural smoke check: passed on 2026-06-16. The final AppImage reported its AppImage runtime version, extracted successfully on Ubuntu WSL2 x86_64, and the extracted bundle contained an executable `squashfs-root/AppRun`.
+- Additional WSL Linux launch smoke check: passed on 2026-06-16. With WSLg, DBus and `APPIMAGE_EXTRACT_AND_RUN=1`, the final AppImage stayed running until a 20-second timeout without an immediate application crash. WSL reported graphics acceleration warnings only.
 - Manual Linux AppImage smoke testing: pending.
 
 ## Security And Confidentiality Evidence

@@ -43,6 +43,7 @@ The desktop asset folder contains exactly the 13 required application assets:
 - macOS DMG Build: passed in GitHub Actions run `27615775974`; artifact `macos-release-artifacts`, ID `7666472580`.
 - Linux AppImage Build: passed in GitHub Actions run `27615778303`; artifact `linux-release-artifacts`, ID `7666415187`.
 - Additional Linux structural smoke check: passed under Ubuntu WSL2 x86_64. The final AppImage reported its AppImage runtime version, extracted successfully, and contained an executable `squashfs-root/AppRun`.
+- Additional Linux launch smoke check: passed under Ubuntu WSL2 with WSLg, DBus and `APPIMAGE_EXTRACT_AND_RUN=1`. The final AppImage stayed running until a 20-second timeout without an immediate application crash; WSL reported graphics acceleration warnings only.
 - Full desktop asset validation: passed with:
 
 ```powershell
@@ -61,7 +62,7 @@ node scripts/validate-release-assets.mjs --version 1.0.6 --dir "$env:LOCALAPPDAT
   - run one document/PDF path if those engines are included;
   - check updater metadata behavior.
 - Run the final Linux AppImage smoke test from the downloaded AppImage.
-  - The WSL structural check above does not replace this manual smoke test because it does not prove a normal desktop launch and user workflow.
+  - The WSL structural and launch checks above do not replace this manual smoke test because they do not prove a normal installed desktop workflow or user-driven conversion flow.
 - After those two manual checks pass, update `docs/V1_0_6_VALIDATION.md` from pending to success for the manual smoke tests before treating v1.0.6 as fully release-ready.
 
 ## Publication Steps After Manual Smoke Tests
