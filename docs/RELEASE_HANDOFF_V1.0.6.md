@@ -61,3 +61,32 @@ node scripts/validate-release-assets.mjs --version 1.0.6 --dir "$env:LOCALAPPDAT
   - check updater metadata behavior.
 - Run the final Linux AppImage smoke test from the downloaded AppImage.
 - After those two manual checks pass, update `docs/V1_0_6_VALIDATION.md` from pending to success for the manual smoke tests before treating v1.0.6 as fully release-ready.
+
+## Publication Steps After Manual Smoke Tests
+
+Do not run these steps until the clean-Mac DMG smoke test and Linux AppImage smoke test have both passed.
+
+1. Create or edit the GitHub release `v1.0.6` as a draft with the body from `docs/RELEASE_NOTES_V1.0.6_DESKTOP.md`.
+
+2. Pre-upload the verified macOS and Linux platform assets that the `Release` workflow expects to find on the draft release:
+
+```powershell
+$assetDir = "$env:LOCALAPPDATA\Temp\mc-release-assets\v1.0.6-desktop"
+gh release upload v1.0.6 `
+  "$assetDir\Multi-Converter_1.0.6_macos-universal.dmg" `
+  "$assetDir\Multi-Converter_1.0.6_macos-universal.app.tar.gz" `
+  "$assetDir\Multi-Converter_1.0.6_macos-universal.app.tar.gz.sig" `
+  "$assetDir\Multi-Converter_1.0.6_linux-x64.AppImage" `
+  "$assetDir\Multi-Converter_1.0.6_linux-x64.AppImage.sig" `
+  --repo Amix29/Multi-Converter --clobber
+```
+
+3. Run the manual GitHub Actions `Release` workflow on `codex/test` with `include_macos=true` and `include_linux=true`.
+
+4. Confirm the workflow republishes the exact 13-asset desktop set and verifies the published release asset list.
+
+5. Only after that workflow succeeds, publish the draft release or mark it as the latest public release if the workflow has not already done so.
+
+## Do Not Upload
+
+Do not manually upload extra assets such as `.deb`, `.rpm`, tarballs, portable folders, `.dmg.sig`, `.app.tar.gz.sha256`, duplicate Linux updater aliases, source archives, logs or engine archives. GitHub-generated source code links are separate from application assets and do not count against the required application asset list.
