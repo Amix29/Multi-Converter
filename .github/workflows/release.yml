@@ -71,9 +71,9 @@ jobs:
           gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq ".body" > "$notes_file"
           node scripts/validate-release-notes.mjs --version "$version" --notes-file "$notes_file" --include-macos "$include_macos" --include-linux "$include_linux" --min-length 200
 
-      - name: Require V1.0.5 platform release readiness
+      - name: Require V1.0.6 platform release readiness
         if: ${{ steps.mode.outputs.include_macos == 'true' || steps.mode.outputs.include_linux == 'true' }}
-        run: npm run status:v1.0.5 -- --require-ready
+        run: npm run status:v1.0.6 -- --require-ready
 
   macos-dmg-verify:
     name: macOS DMG verification (${{ matrix.arch_label }})

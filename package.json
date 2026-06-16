@@ -1,6 +1,6 @@
 {
   "name": "multi-converter",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Local desktop file converter for documents, images, audio and video.",
   "homepage": "https://github.com/Amix29/Multi-Converter#readme",
   "bugs": {
@@ -19,7 +19,7 @@
     "start": "npm run tauri:dev",
     "dev": "vite",
     "build": "npm run prepare:installer-assets && npm run prepare:bundled-engines && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && tsc --noEmit && vite build",
-    "check": "npm run prepare:installer-assets && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && npm run test:release-notes && npm run test:elf && npm run test:macos-packaging && npm run test:linux-packaging && npm run test:linux-sidecars && npm run test:linux-sidecar-release-assets && npm run test:linux-engine-release-assets && npm run test:github-workflows && npm run test:release-assets && npm run test:macos-dmg-artifact && npm run test:macos-release-artifacts && npm run test:linux-release-artifacts && npm run test:bundled-engines-platform && npm run test:ui-layout && npm run test:repository-metadata && npm run test:production-config && npm run test:secret-leaks && npm run test:v1.0.5-status && npm run test:run-tauri && npm run typecheck && npm run validate:engines",
+    "check": "npm run prepare:installer-assets && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && npm run test:release-notes && npm run test:elf && npm run test:macos-packaging && npm run test:linux-packaging && npm run test:linux-sidecars && npm run test:linux-sidecar-release-assets && npm run test:linux-engine-release-assets && npm run test:github-workflows && npm run test:release-assets && npm run test:macos-dmg-artifact && npm run test:macos-release-artifacts && npm run test:linux-release-artifacts && npm run test:bundled-engines-platform && npm run test:ui-layout && npm run test:repository-metadata && npm run test:production-config && npm run test:secret-leaks && npm run test:v1.0.6-status && npm run test:run-tauri && npm run typecheck && npm run validate:engines",
     "typecheck": "tsc --noEmit",
     "validate:i18n": "node scripts/validate-i18n.mjs",
     "sync:i18n": "node scripts/sync-i18n.mjs",
@@ -43,6 +43,8 @@
     "validate:release-notes-body": "node scripts/validate-release-notes.mjs",
     "status:v1.0.5": "node scripts/report-v1-0-5-status.mjs",
     "test:v1.0.5-status": "node scripts/test-v1-0-5-status.mjs",
+    "status:v1.0.6": "node scripts/report-v1-0-6-status.mjs",
+    "test:v1.0.6-status": "node scripts/test-v1-0-6-status.mjs",
     "test:run-tauri": "node scripts/test-run-tauri.mjs",
     "test:windows:ci": "node scripts/test-windows-ci-gate.mjs",
     "test:macos:host": "node scripts/test-macos-host.mjs",

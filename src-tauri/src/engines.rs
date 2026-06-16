@@ -690,6 +690,9 @@ fn engine_candidates(
         if source.id == "pdf" {
             return vec!["pdf-extract", "rust-text"];
         }
+        if office_like(source.id) && is_layoutless_document_target(target_id) {
+            return vec!["rust-text"];
+        }
         if prefers_pandoc(source.id, target_id) {
             return vec!["pandoc", "rust-text"];
         }
@@ -1159,6 +1162,11 @@ fn status_label(status: &str) -> &'static str {
 fn is_rich_document_target(target_id: &str) -> bool {
     matches!(target_id, "docx" | "odt" | "rtf")
 }
+
+fn is_layoutless_document_target(target_id: &str) -> bool {
+    matches!(target_id, "txt" | "md" | "csv" | "json" | "xml")
+}
+
 fn office_like(format_id: &str) -> bool {
     matches!(format_id, "doc" | "docx" | "odt" | "rtf")
 }
@@ -1262,6 +1270,25 @@ mod tests {
         assert_eq!(plan.id, "libreoffice");
         assert_eq!(plan.required_engine_ids, vec!["libreoffice"]);
         assert_eq!(plan.plan, vec!["LibreOffice headless"]);
+    }
+
+    #[test]
+    fn office_documents_to_layoutless_targets_use_integrated_text_extraction() {
+        for source_id in ["docx", "odt", "rtf"] {
+            let source = get_format_by_id(source_id).unwrap();
+
+            for target_id in ["txt", "md", "csv", "json", "xml"] {
+                let target = get_format_by_id(target_id).unwrap();
+                let plan = select_engine(None, &source, target.id, target.category_id, "text");
+
+                assert_eq!(
+                    plan.id, "rust-text",
+                    "{source_id} -> {target_id} should not depend on LibreOffice or Pandoc"
+                );
+                assert_eq!(plan.required_engine_ids, vec!["rust-text"]);
+                assert!(plan.available);
+            }
+        }
     }
 
     #[test]

@@ -440,10 +440,32 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
             source_format.id,
             target.id,
         )?,
-        "libreoffice" => {
-            convert_with_libreoffice(app, &job.id, &input_path, &output_path, target.id)?
-        }
-        "pandoc" => convert_with_pandoc(app, &job.id, &input_path, &output_path)?,
+        "libreoffice" => convert_external_document_with_text_fallback(
+            ExternalDocumentFallbackContext {
+                app,
+                job_id: &job.id,
+                input_path: &input_path,
+                output_path: &output_path,
+                source_format: source_format.id,
+                target_format: target.id,
+            },
+            "LibreOffice",
+            |app, job_id, input_path, output_path| {
+                convert_with_libreoffice(app, job_id, input_path, output_path, target.id)
+            },
+        )?,
+        "pandoc" => convert_external_document_with_text_fallback(
+            ExternalDocumentFallbackContext {
+                app,
+                job_id: &job.id,
+                input_path: &input_path,
+                output_path: &output_path,
+                source_format: source_format.id,
+                target_format: target.id,
+            },
+            "Pandoc",
+            convert_with_pandoc,
+        )?,
         "pdfium" => convert_with_pdfium(app, &job.id, &input_path, &output_path, target.id)?,
         "libvips" => convert_with_libvips(app, &job.id, &input_path, &output_path)?,
         _ => {
@@ -1385,6 +1407,68 @@ fn write_text_content_file(
     Ok(())
 }
 
+struct ExternalDocumentFallbackContext<'a> {
+    app: &'a AppHandle,
+    job_id: &'a str,
+    input_path: &'a Path,
+    output_path: &'a Path,
+    source_format: &'a str,
+    target_format: &'a str,
+}
+
+fn convert_external_document_with_text_fallback<F>(
+    context: ExternalDocumentFallbackContext<'_>,
+    engine_label: &str,
+    convert_external: F,
+) -> Result<()>
+where
+    F: FnOnce(&AppHandle, &str, &Path, &Path) -> Result<()>,
+{
+    match convert_external(
+        context.app,
+        context.job_id,
+        context.input_path,
+        context.output_path,
+    ) {
+        Ok(()) => Ok(()),
+        Err(error)
+            if can_fallback_to_integrated_text(context.source_format, context.target_format) =>
+        {
+            runtime_log::write(
+                "conversion",
+                &format!(
+                    "{} failed for {} -> {}; falling back to integrated text extraction: {}",
+                    engine_label,
+                    runtime_log::path(context.input_path),
+                    context.target_format,
+                    error
+                ),
+            );
+            let _ = fs::remove_file(context.output_path);
+            emit_progress(context.app, context.job_id, 30, "Fallback texte intégré");
+            convert_text_document(
+                context.app,
+                context.job_id,
+                context.input_path,
+                context.output_path,
+                context.source_format,
+                context.target_format,
+            )
+        }
+        Err(error) => Err(error),
+    }
+}
+
+fn can_fallback_to_integrated_text(source_format: &str, target_format: &str) -> bool {
+    matches!(
+        source_format,
+        "pdf" | "txt" | "md" | "html" | "csv" | "json" | "xml" | "rtf" | "docx" | "odt" | "epub"
+    ) && matches!(
+        target_format,
+        "txt" | "md" | "html" | "csv" | "json" | "xml" | "rtf" | "docx" | "odt" | "epub" | "pdf"
+    )
+}
+
 fn convert_with_libreoffice(
     app: &AppHandle,
     job_id: &str,
@@ -1879,7 +1963,7 @@ fn read_document_text(input_path: &Path, source_format: &str) -> Result<String> 
             .map_err(|err| ConvertError::Message(err.to_string()))?
             .trim()
             .to_string()),
-        "docx" => read_zip_text(input_path, "word/document.xml", "</w:p>"),
+        "docx" => read_docx_text(input_path),
         "odt" => read_zip_text(input_path, "content.xml", "</text:p>"),
         "epub" => read_epub_text(input_path),
         "html" => Ok(html_to_visible_text(&read_text_file(input_path)?)),
@@ -1968,6 +2052,79 @@ fn looks_like_utf16(buffer: &[u8], nul_offset: usize) -> bool {
     nul_count * 100 / pairs >= 60
 }
 
+fn read_docx_text(input_path: &Path) -> Result<String> {
+    let file = File::open(input_path)?;
+    let mut archive = zip::ZipArchive::new(file)?;
+    let mut parts = Vec::new();
+    let mut total_bytes = 0u64;
+    let preferred = [
+        "word/document.xml",
+        "word/footnotes.xml",
+        "word/endnotes.xml",
+        "word/comments.xml",
+    ];
+
+    for name in preferred {
+        if let Ok(mut entry) = archive.by_name(name) {
+            append_zip_xml_text_part(&mut entry, &mut parts, &mut total_bytes, "DOCX")?;
+        }
+    }
+
+    let mut secondary_names = Vec::new();
+    for index in 0..archive.len() {
+        let file = archive.by_index(index)?;
+        let name = file.name().to_ascii_lowercase();
+        if (name.starts_with("word/header") || name.starts_with("word/footer"))
+            && name.ends_with(".xml")
+        {
+            secondary_names.push(file.name().to_string());
+        }
+    }
+    secondary_names.sort();
+    for name in secondary_names {
+        let mut entry = archive.by_name(&name)?;
+        append_zip_xml_text_part(&mut entry, &mut parts, &mut total_bytes, "DOCX")?;
+    }
+
+    Ok(docx_xml_to_visible_text(&parts.join("\n\n")))
+}
+
+fn append_zip_xml_text_part<R: Read>(
+    entry: &mut zip::read::ZipFile<'_, R>,
+    parts: &mut Vec<String>,
+    total_bytes: &mut u64,
+    label: &str,
+) -> Result<()> {
+    ensure_extracted_text_budget(entry.size(), label)?;
+    let remaining = MAX_EXTRACTED_TEXT_BYTES.saturating_sub(*total_bytes);
+    if remaining == 0 {
+        ensure_extracted_text_budget(MAX_EXTRACTED_TEXT_BYTES + 1, label)?;
+    }
+    let mut content = String::new();
+    entry.take(remaining + 1).read_to_string(&mut content)?;
+    *total_bytes = total_bytes.saturating_add(content.len() as u64);
+    ensure_extracted_text_budget(*total_bytes, label)?;
+    parts.push(content);
+    Ok(())
+}
+
+fn docx_xml_to_visible_text(content: &str) -> String {
+    zip_xml_to_visible_text(
+        content,
+        &[
+            ("</w:p>", "\n"),
+            ("</w:tc>", "\t"),
+            ("</w:tr>", "\n"),
+            ("<w:tab/>", "\t"),
+            ("<w:tab />", "\t"),
+            ("<w:br/>", "\n"),
+            ("<w:br />", "\n"),
+            ("<w:cr/>", "\n"),
+            ("<w:cr />", "\n"),
+        ],
+    )
+}
+
 fn read_zip_text(input_path: &Path, name: &str, paragraph_tag: &str) -> Result<String> {
     let file = File::open(input_path)?;
     let mut archive = zip::ZipArchive::new(file)?;
@@ -1978,16 +2135,27 @@ fn read_zip_text(input_path: &Path, name: &str, paragraph_tag: &str) -> Result<S
         .take(MAX_EXTRACTED_TEXT_BYTES + 1)
         .read_to_string(&mut content)?;
     ensure_extracted_text_budget(content.len() as u64, "document")?;
-    Ok(html_escape::decode_html_entities(
-        &content
-            .replace(paragraph_tag, "\n")
-            .replace("</w:p>", "\n")
-            .replace("<br/>", "\n")
-            .replace("<br>", "\n"),
-    )
-    .replace_xml_tags()
-    .trim()
-    .to_string())
+    Ok(zip_xml_to_visible_text(&content, &[(paragraph_tag, "\n")]))
+}
+
+fn zip_xml_to_visible_text(content: &str, replacements: &[(&str, &str)]) -> String {
+    let mut normalized = content.to_string();
+    for (from, to) in replacements {
+        normalized = normalized.replace(from, to);
+    }
+    normalized = normalized
+        .replace("<br/>", "\n")
+        .replace("<br />", "\n")
+        .replace("<br>", "\n");
+    html_escape::decode_html_entities(&normalized)
+        .replace_xml_tags()
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect::<Vec<_>>()
+        .join("\n")
+        .trim()
+        .to_string()
 }
 
 trait StripXmlTags {
@@ -2580,6 +2748,48 @@ mod tests {
     }
 
     #[test]
+    fn complex_docx_extracts_text_for_layoutless_targets() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("complex.docx");
+        write_complex_docx_fixture(&input);
+
+        let content = read_document_text(&input, "docx").unwrap();
+        for expected in [
+            "Titre DOCX complexe",
+            "Cellule tableau A",
+            "Cellule tableau B",
+            "Texte après image et modèle 3D",
+            "En-tête utile",
+            "Pied de page utile",
+        ] {
+            assert!(
+                content.contains(expected),
+                "complex DOCX extraction lost {expected:?}: {content:?}"
+            );
+        }
+
+        for target_format in ["txt", "md", "csv", "json", "xml"] {
+            let output = dir.path().join(format!("complex.{target_format}"));
+            write_text_content_file(&output, "docx", target_format, &content)
+                .unwrap_or_else(|error| panic!("DOCX -> {target_format} should write: {error}"));
+            let readable = decode_text_buffer(&fs::read(&output).unwrap());
+
+            assert!(
+                readable.contains("Titre DOCX complexe"),
+                "DOCX -> {target_format} lost title: {readable:?}"
+            );
+            assert!(
+                readable.contains("Cellule tableau A"),
+                "DOCX -> {target_format} lost table text: {readable:?}"
+            );
+            assert!(
+                readable.contains("Texte après image et modèle 3D"),
+                "DOCX -> {target_format} lost body text: {readable:?}"
+            );
+        }
+    }
+
+    #[test]
     #[ignore = "full conversion matrix is run by npm run test:conversions"]
     fn conversion_matrix_document_outputs_preserve_french_characters() {
         let source_formats = [
@@ -2763,6 +2973,47 @@ mod tests {
             "epub" => write_epub(path, marker, "txt").unwrap(),
             _ => fs::write(path, marker).unwrap(),
         }
+    }
+
+    fn write_complex_docx_fixture(path: &Path) {
+        let mut zip = zip::ZipWriter::new(File::create(path).unwrap());
+        let options =
+            SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+
+        zip.start_file("[Content_Types].xml", options).unwrap();
+        zip.write_all(b"<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Default Extension=\"png\" ContentType=\"image/png\"/><Default Extension=\"glb\" ContentType=\"model/gltf-binary\"/><Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>").unwrap();
+        zip.add_directory("word/", options).unwrap();
+        zip.add_directory("word/media/", options).unwrap();
+        zip.add_directory("word/embeddings/", options).unwrap();
+        zip.start_file("word/media/image1.png", options).unwrap();
+        zip.write_all(b"not-a-real-image-needed-only-for-docx-shape")
+            .unwrap();
+        zip.start_file("word/embeddings/model3d.glb", options)
+            .unwrap();
+        zip.write_all(b"glTF").unwrap();
+        zip.start_file("word/header1.xml", options).unwrap();
+        zip.write_all(r#"<?xml version="1.0" encoding="UTF-8"?><w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:r><w:t>En-tête utile</w:t></w:r></w:p></w:hdr>"#.as_bytes()).unwrap();
+        zip.start_file("word/footer1.xml", options).unwrap();
+        zip.write_all(r#"<?xml version="1.0" encoding="UTF-8"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:r><w:t>Pied de page utile</w:t></w:r></w:p></w:ftr>"#.as_bytes()).unwrap();
+        zip.start_file("word/document.xml", options).unwrap();
+        zip.write_all(r#"<?xml version="1.0" encoding="UTF-8"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
+  <w:body>
+    <w:p><w:r><w:t>Titre DOCX complexe</w:t></w:r></w:p>
+    <w:tbl>
+      <w:tr>
+        <w:tc><w:p><w:r><w:t>Cellule tableau A</w:t></w:r></w:p></w:tc>
+        <w:tc><w:p><w:r><w:t>Cellule tableau B</w:t></w:r></w:p></w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p><w:r><w:drawing><wp:inline><wp:docPr id="1" name="Image"/></wp:inline></w:drawing></w:r></w:p>
+    <w:p><w:r><w:object><w:control r:id="rIdModel3D"/></w:object></w:r></w:p>
+    <w:p><w:r><w:t>Texte après image et modèle 3D</w:t></w:r></w:p>
+  </w:body>
+</w:document>"#.as_bytes()).unwrap();
+        zip.finish().unwrap();
     }
 
     fn write_document_target(

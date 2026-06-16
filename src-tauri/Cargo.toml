@@ -1,6 +1,6 @@
 [package]
 name = "multi-converter"
-version = "1.0.5"
+version = "1.0.6"
 description = "Local desktop file converter for documents, images, audio and video."
 authors = ["Multi-Converter"]
 license = "AGPL-3.0-or-later"

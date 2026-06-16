@@ -220,9 +220,9 @@ assert.match(releaseNotesValidationLibrary, /Linux\\s\+AppImage\\s\+verification
 assert.match(releaseNotesValidationLibrary, /Linux\\s\+AppImage\\s\+verification\\s\+\(\?:failed\|did\\s\+not\\s\+pass\|not\\s\+completed\|pending/, "shared release-note validation must reject failed or pending Linux AppImage verification wording");
 assert.match(releaseNotesValidationLibrary, /draft-only or do-not-publish wording/, "shared release-note validation must reject draft-only publication warnings");
 assert.match(releaseNotesValidationLibrary, /Linux\\s\+Conversion\\s\+Matrix/, "shared release-note validation must protect full Linux conversion coverage claims");
-assert.match(releasePreflightJob, /Require V1\.0\.5 platform release readiness/, "release preflight must require V1.0.5 readiness before platform verification");
+assert.match(releasePreflightJob, /Require V1\.0\.6 platform release readiness/, "release preflight must require V1.0.6 readiness before platform verification");
 assert.match(releasePreflightJob, /steps\.mode\.outputs\.include_macos == 'true' \|\| steps\.mode\.outputs\.include_linux == 'true'/, "release preflight must require readiness when macOS or Linux publication is requested");
-assert.match(releasePreflightJob, /npm run status:v1\.0\.5 -- --require-ready/, "release preflight must fail before platform runner allocation while V1.0.5 is not ready");
+assert.match(releasePreflightJob, /npm run status:v1\.0\.6 -- --require-ready/, "release preflight must fail before platform runner allocation while V1.0.6 is not ready");
 assert.match(releaseWorkflow, /macos-dmg-verify:/, "release workflow must include a macOS DMG verification job");
 assert.match(releaseWorkflow, /macos-dmg-verify:[\s\S]*?needs:\s+release-preflight/, "macOS DMG verification must wait for the cheap preflight");
 assert.match(releaseWorkflow, /needs\.release-preflight\.outputs\.include_macos == 'true'/, "macOS DMG verification must only run when preflight confirms macOS publication");
