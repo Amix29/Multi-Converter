@@ -12,9 +12,11 @@ try {
     assertMode: true,
   });
   assert.equal(current.version, "1.0.6");
-  assert.equal(current.releaseReady, false, "current V1.0.6 evidence should stay blocked until final platform proofs exist");
-  assert.match(current.blockers.join("\n"), /macOS Conversion Matrix/);
-  assert.match(current.blockers.join("\n"), /Linux AppImage Build/);
+  assert.equal(current.releaseReady, false, "current V1.0.6 evidence should stay blocked until final manual smoke tests exist");
+  assert.match(current.blockers.join("\n"), /Manual clean-Mac smoke testing/);
+  assert.match(current.blockers.join("\n"), /Manual Linux AppImage smoke testing/);
+  assert.doesNotMatch(current.blockers.join("\n"), /macOS Conversion Matrix/);
+  assert.doesNotMatch(current.blockers.join("\n"), /Linux AppImage Build/);
   assert.doesNotMatch(current.blockers.join("\n"), /Final Codex Security pass/);
 
   const ready = runStatus("ready.md", completedEvidence(), { requireReady: true });

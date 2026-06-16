@@ -16,17 +16,20 @@ This file records validation evidence for the in-progress v1.0.6 release. It is 
 
 ## macOS Release Evidence
 
-- macOS Conversion Matrix (Apple Silicon): pending.
-- macOS Conversion Matrix (Intel): pending.
-- macOS DMG verification (Apple Silicon): pending.
-- macOS DMG verification (Intel): pending.
+- macOS Conversion Matrix (Apple Silicon): success on 2026-06-16 in GitHub Actions run `27614880496` on commit `cfa9f1b3`.
+- macOS Conversion Matrix (Intel): success on 2026-06-16 in GitHub Actions run `27614880496` on commit `cfa9f1b3`.
+- macOS DMG verification (Apple Silicon): success on 2026-06-16 in GitHub Actions run `27615775974` on commit `cfa9f1b3`.
+- macOS DMG verification (Intel): success on 2026-06-16 in GitHub Actions run `27615775974` on commit `cfa9f1b3`.
+- macOS release artifact: `macos-release-artifacts`, artifact ID `7666472580`, size `2661378716` bytes, GitHub Actions artifact zip SHA-256 `a36b4acc7f40b3f18ac2d725386a47e1dfe88b8390173398b1b5ac52d6cadf1f`.
 - Manual clean-Mac smoke testing: pending.
 
 ## Linux Release Evidence
 
-- Linux AppImage Build: pending.
-- Linux Conversion Matrix: pending.
-- Linux AppImage Verification: pending.
+- Linux AppImage Build: success on 2026-06-16 in GitHub Actions run `27615778303` on commit `cfa9f1b3`.
+- Linux Conversion Matrix: success on 2026-06-16 as part of GitHub Actions run `27615778303` on commit `cfa9f1b3`.
+- Linux AppImage Verification: success on 2026-06-16 in GitHub Actions run `27615778303` on commit `cfa9f1b3`.
+- Linux release artifact: `linux-release-artifacts`, artifact ID `7666415187`, size `1079168021` bytes, GitHub Actions artifact zip SHA-256 `8c79dd75bb4c648288ca8601dea1b7987e42236b5cac67eb835a3a4d6398be7e`.
+- Downloaded Linux files were hash-checked locally on Windows on 2026-06-16. SHA-256 `Multi-Converter_1.0.6_linux-x64.AppImage`: `8d31bfa9850cc3f1ae4f92fe14c4b74eeb72f2b5e74111e05186a3c8654cea4e`.
 - Manual Linux AppImage smoke testing: pending.
 
 ## Security And Confidentiality Evidence
@@ -42,5 +45,5 @@ This file records validation evidence for the in-progress v1.0.6 release. It is 
 - Windows release assets: prepared and validated on 2026-06-16 with `npm run validate:release-assets -- --version 1.0.6 --platform windows`.
   - Clean folder: `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6`
   - SHA-256 `Multi-Converter_1.0.6_x64-setup.exe`: `63d1dab699e36c918cda3dcb1c07656a2e02fcfb74a871025cc80b7b9643c7a3`
-- macOS release assets: pending.
-- Linux release assets: pending.
+- macOS release assets: prepared and verified by GitHub Actions run `27615775974`. Local download of the 2.6 GB macOS artifact did not complete in this Windows session.
+- Linux release assets: prepared by GitHub Actions run `27615778303`, downloaded locally to `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6\linux-download`, and hash-checked on 2026-06-16.
