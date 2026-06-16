@@ -156,8 +156,14 @@ jobs:
             ffprobe-aarch64-apple-darwin \
             ffprobe-x86_64-apple-darwin
           do
-            test -s "$asset_dir/$asset"
-            test -s "$asset_dir/$asset.sha256"
+            if [[ ! -s "$asset_dir/$asset" ]]; then
+              echo "Missing staged macOS asset: $asset" >&2
+              find "$RUNNER_TEMP/mc-macos-engine-assets" -maxdepth 3 -type f | sort >&2
+              exit 1
+            fi
+            if [[ ! -s "$asset_dir/$asset.sha256" ]]; then
+              (cd "$asset_dir" && shasum -a 256 "$asset" > "$asset.sha256")
+            fi
             (cd "$asset_dir" && shasum -a 256 -c "$asset.sha256")
             cp "$asset_dir/$asset" "src-tauri/binaries/$asset"
           done
