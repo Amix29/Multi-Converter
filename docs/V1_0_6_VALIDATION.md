@@ -21,6 +21,8 @@ This file records validation evidence for the in-progress v1.0.6 release. It is 
 - macOS DMG verification (Apple Silicon): success on 2026-06-16 in GitHub Actions run `27615775974` on commit `cfa9f1b3`.
 - macOS DMG verification (Intel): success on 2026-06-16 in GitHub Actions run `27615775974` on commit `cfa9f1b3`.
 - macOS release artifact: `macos-release-artifacts`, artifact ID `7666472580`, size `2661378716` bytes, GitHub Actions artifact zip SHA-256 `a36b4acc7f40b3f18ac2d725386a47e1dfe88b8390173398b1b5ac52d6cadf1f`.
+- Downloaded macOS files were hash-checked locally on Windows on 2026-06-16. SHA-256 `Multi-Converter_1.0.6_macos-universal.dmg`: `d966bc73247b0ee77431443d30c19f9a2ca9b5a9aff7aa120f3288fcf8cf3c88`.
+- Downloaded macOS updater archive SHA-256 `Multi-Converter_1.0.6_macos-universal.app.tar.gz`: `128aadef0348dcbecaa83c804d4aed37c096e42fbeb162dbdfbad11334abcd72`.
 - Manual clean-Mac smoke testing: pending.
 
 ## Linux Release Evidence
@@ -45,5 +47,6 @@ This file records validation evidence for the in-progress v1.0.6 release. It is 
 - Windows release assets: prepared and validated on 2026-06-16 with `npm run validate:release-assets -- --version 1.0.6 --platform windows`.
   - Clean folder: `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6`
   - SHA-256 `Multi-Converter_1.0.6_x64-setup.exe`: `63d1dab699e36c918cda3dcb1c07656a2e02fcfb74a871025cc80b7b9643c7a3`
-- macOS release assets: prepared and verified by GitHub Actions run `27615775974`. Local download of the 2.6 GB macOS artifact did not complete in this Windows session.
+- macOS release assets: prepared and verified by GitHub Actions run `27615775974`, downloaded locally, and included in the validated desktop release asset folder.
 - Linux release assets: prepared by GitHub Actions run `27615778303`, downloaded locally to `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6\linux-download`, and hash-checked on 2026-06-16.
+- Full desktop release assets: prepared in `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6-desktop` and validated on 2026-06-16 with `node scripts/validate-release-assets.mjs --version 1.0.6 --platform desktop --macos-dmg-sha256 d966bc73247b0ee77431443d30c19f9a2ca9b5a9aff7aa120f3288fcf8cf3c88 --macos-updater-sha256 128aadef0348dcbecaa83c804d4aed37c096e42fbeb162dbdfbad11334abcd72 --linux-appimage-sha256 8d31bfa9850cc3f1ae4f92fe14c4b74eeb72f2b5e74111e05186a3c8654cea4e`.
