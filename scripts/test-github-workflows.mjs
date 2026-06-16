@@ -407,7 +407,7 @@ assert.doesNotMatch(macosConversionsJob, /prepare-tauri-ci-sidecars/, "macOS con
 assert.match(macosConversionsJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS conversion matrix must install both Darwin Rust targets");
 assert.match(macosConversionsJob, /Download staged macOS engine archives from a release/, "macOS conversion matrix must support staged macOS engine release assets");
 assert.match(macosConversionsJob, /Download staged macOS assets from a workflow artifact/, "macOS conversion matrix must support staged macOS engine workflow artifacts");
-assert.match(macosConversionsJob, /gh run download "\$ENGINE_STAGING_RUN_ID"[\s\S]*--name macos-engine-assets/, "macOS conversion matrix must download the macOS engine staging artifact");
+assert.match(macosConversionsJob, /actions\/download-artifact@v4[\s\S]*name:\s+macos-engine-assets[\s\S]*run-id:\s+\$\{\{\s*env\.ENGINE_STAGING_RUN_ID\s*\}\}/, "macOS conversion matrix must download the macOS engine staging artifact");
 assert.match(macosConversionsJob, /macOS Engine Staging\|success/, "macOS conversion matrix must verify staging artifact run provenance");
 assert.match(macosConversionsJob, /shasum -a 256 -c "\$asset\.sha256"/, "macOS conversion matrix must verify staged sidecar checksums");
 assert.match(macosConversionsJob, /--from-local-assets --asset-dir "\$asset_dir"/, "macOS conversion matrix must stage engine artifacts without a public release");

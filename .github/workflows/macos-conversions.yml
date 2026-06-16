@@ -122,6 +122,15 @@ jobs:
 
       - name: Download staged macOS assets from a workflow artifact
         if: ${{ env.ENGINE_STAGING_RUN_ID != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-engine-assets
+          path: ${{ runner.temp }}/mc-macos-engine-assets
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.ENGINE_STAGING_RUN_ID }}
+
+      - name: Validate staged macOS assets from a workflow artifact
+        if: ${{ env.ENGINE_STAGING_RUN_ID != '' }}
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -129,12 +138,18 @@ jobs:
           set -euo pipefail
           asset_dir="$RUNNER_TEMP/mc-macos-engine-assets"
           mkdir -p "$asset_dir" src-tauri/binaries
-          gh run download "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --name macos-engine-assets --dir "$asset_dir"
           run_info="$(gh run view "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,name --jq '.name + "|" + .conclusion')"
           if [[ "$run_info" != "macOS Engine Staging|success" ]]; then
             echo "engine_staging_run_id must reference a successful macOS Engine Staging run. Got: $run_info" >&2
             exit 1
           fi
+          if [[ ! -s "$asset_dir/ffmpeg-aarch64-apple-darwin" ]]; then
+            nested_asset="$(find "$asset_dir" -mindepth 1 -maxdepth 3 -type f -name ffmpeg-aarch64-apple-darwin -print -quit)"
+            if [[ -n "$nested_asset" ]]; then
+              asset_dir="$(dirname "$nested_asset")"
+            fi
+          fi
+          echo "Using staged macOS asset directory: $asset_dir"
           for asset in \
             ffmpeg-aarch64-apple-darwin \
             ffmpeg-x86_64-apple-darwin \
