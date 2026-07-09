@@ -2,6 +2,24 @@
 
 This file records validation evidence for the in-progress v1.0.6 release. It is not a public release approval by itself.
 
+Evidence and asset hashes dated 2026-06-16 below are historical. They predate the clipboard, drag-and-drop, PDF-to-Markdown and final GitHub checkout fixes and must not be used for the final publication assets.
+
+## Final-Source Local Windows Validation
+
+- `npm run check`: passed on 2026-07-09, including translations, production configuration, secret scanning, platform packaging contracts, workflow contracts and release-asset tests.
+- `npm run fmt:rust:check` and `npm run clippy:rust`: passed on 2026-07-09.
+- `npm run test:rust`: passed on 2026-07-09 with 77 passed, 0 failed and 6 conversion-matrix tests intentionally ignored by this command.
+- `npm run test:conversions`: passed on 2026-07-09 with all 6 full-matrix tests passed.
+- `npm run test:pdfium-wrapper`: passed on 2026-07-09 with all 5 runtime tests passed.
+- `npm run clippy:pdfium-wrapper`: passed on 2026-07-09.
+- `npm run build`: passed on 2026-07-09.
+- `npm run tauri:build`: passed on 2026-07-09 and generated the Windows x64 NSIS installer plus updater signature.
+- `npm run test:windows:ci`: passed on 2026-07-09. All 13 ordered steps completed successfully in `tmp/windows-ci-gate-status.json`.
+- `npm audit --omit=dev`: passed with 0 vulnerabilities.
+- `npm run audit:rust`: passed with 0 denied runtime vulnerabilities and 19 allowed warning-category advisories. `RUSTSEC-2026-0194` and `RUSTSEC-2026-0195` are temporarily ignored only for the build-time `wayland-scanner 0.31.10` proc-macro; no patched Wayland scanner release is available and the affected XML parser is not used on application or user input at runtime.
+- Playwright frontend QA: passed on 2026-07-09 at 1440x900 and 390x844 with 0 console errors and 0 console warnings. The Files screen rendered without a clipboard button or visible mobile overflow.
+- Regression coverage includes complex DOCX layout-free extraction, complex PDF-to-Markdown table reconstruction, bounded local clipboard files and drop/paste step restrictions.
+
 ## Local Windows Validation
 
 - `npm run test:rust`: passed on 2026-06-16 after the DOCX text extraction fix.
@@ -45,6 +63,8 @@ This file records validation evidence for the in-progress v1.0.6 release. It is 
 - Confidential information exposure: none found in the local configured scans, tracked-file confidentiality search and final diff-scoped Codex Security pass.
 
 ## Release Asset Evidence
+
+The asset folder and hashes in this section are superseded by the final-source changes and are retained only as historical evidence. Rebuild and revalidate all 13 desktop assets before publication.
 
 - Windows release assets: prepared and validated on 2026-06-16 with `npm run validate:release-assets -- --version 1.0.6 --platform windows`.
   - Clean folder: `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6`

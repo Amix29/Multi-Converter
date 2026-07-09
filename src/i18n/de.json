@@ -178,6 +178,8 @@
   "upload.dropZone": "Ablagebereich",
   "upload.dragDrop": "Ziehen und ablegen",
   "upload.browse": "Durchsuchen",
+  "clipboard.tooManyFiles": "Die Zwischenablage enthält zu viele Dateien für einen gleichzeitigen Import.",
+  "clipboard.fileTooLarge": "Diese Datei aus der Zwischenablage ist zu groß. Kopieren Sie sie im Explorer und fügen Sie sie mit Strg+V ein.",
   "upload.preparation": "Vorbereitung",
   "upload.state": "Status",
   "upload.filesCount": "Dateien",

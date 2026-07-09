@@ -178,6 +178,8 @@
   "upload.dropZone": "Zona de soltado",
   "upload.dragDrop": "Arrastrar y soltar",
   "upload.browse": "Examinar",
+  "clipboard.tooManyFiles": "El portapapeles contiene demasiados archivos para importarlos a la vez.",
+  "clipboard.fileTooLarge": "Este archivo del portapapeles es demasiado grande. Cópialo desde el Explorador y pégalo con Ctrl+V.",
   "upload.preparation": "Preparacion",
   "upload.state": "Estado",
   "upload.filesCount": "archivos",

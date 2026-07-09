@@ -178,6 +178,8 @@
   "upload.dropZone": "Drop zone",
   "upload.dragDrop": "Drag and drop",
   "upload.browse": "Browse",
+  "clipboard.tooManyFiles": "The clipboard contains too many files to import at once.",
+  "clipboard.fileTooLarge": "This clipboard file is too large. Copy it from File Explorer, then paste it with Ctrl+V.",
   "upload.preparation": "Preparation",
   "upload.state": "State",
   "upload.filesCount": "files",

@@ -2,17 +2,19 @@
 
 This handoff summarizes the prepared v1.0.6 release state. It is not a publication approval by itself.
 
+The hashes and asset paths recorded below were produced on 2026-06-16 and are superseded by later v1.0.6 source changes. Do not publish those older files; replace this evidence after the final Windows, macOS and Linux rebuilds complete.
+
 ## Current Status
 
 - Branch: `codex/test`
 - Prepared version: `1.0.6`
 - Release mode prepared locally: Windows x64 + macOS universal + Linux x64
-- Clean desktop asset folder: `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6-desktop`
+- Clean desktop asset folder: pending final-source rebuild
 - GitHub release notes source: `docs/RELEASE_NOTES_V1.0.6_DESKTOP.md`
 
-## Validated Desktop Assets
+## Superseded Desktop Assets
 
-The desktop asset folder contains exactly the 13 required application assets:
+The previous desktop asset folder contained the 13 required application assets listed below. Those files predate the final-source changes and must be replaced:
 
 1. `latest.json`
 2. `Multi-Converter_1.0.6_x64-setup.exe`
@@ -28,14 +30,14 @@ The desktop asset folder contains exactly the 13 required application assets:
 12. `Multi-Converter_1.0.6_linux-x64.AppImage.sig`
 13. `Multi-Converter_1.0.6_linux-x64.AppImage.sha256`
 
-## Hashes
+## Superseded Hashes
 
 - Windows installer SHA-256: `63d1dab699e36c918cda3dcb1c07656a2e02fcfb74a871025cc80b7b9643c7a3`
 - macOS DMG SHA-256: `d966bc73247b0ee77431443d30c19f9a2ca9b5a9aff7aa120f3288fcf8cf3c88`
 - macOS updater archive SHA-256: `128aadef0348dcbecaa83c804d4aed37c096e42fbeb162dbdfbad11334abcd72`
 - Linux AppImage SHA-256: `8d31bfa9850cc3f1ae4f92fe14c4b74eeb72f2b5e74111e05186a3c8654cea4e`
 
-## Validation Passed
+## Historical Validation
 
 - Local Windows validation: `npm run check`, `npm run test:rust`, `npm run test:conversions`, Rust format, Clippy, PDFium wrapper tests, `npm run build`, and `npm run tauri:build`.
 - Windows release assets: prepared and validated.

@@ -178,6 +178,8 @@
   "upload.dropZone": "Area di rilascio",
   "upload.dragDrop": "Trascina e rilascia",
   "upload.browse": "Sfoglia",
+  "clipboard.tooManyFiles": "Gli appunti contengono troppi file da importare insieme.",
+  "clipboard.fileTooLarge": "Questo file negli appunti è troppo grande. Copialo da Esplora file e incollalo con Ctrl+V.",
   "upload.preparation": "Preparazione",
   "upload.state": "Stato",
   "upload.filesCount": "file",

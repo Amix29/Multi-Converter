@@ -178,6 +178,8 @@
   "upload.dropZone": "Zona de largada",
   "upload.dragDrop": "Arrastar e largar",
   "upload.browse": "Procurar",
+  "clipboard.tooManyFiles": "A área de transferência contém demasiados ficheiros para importar de uma vez.",
+  "clipboard.fileTooLarge": "Este ficheiro da área de transferência é demasiado grande. Copie-o do Explorador de Ficheiros e cole-o com Ctrl+V.",
   "upload.preparation": "Preparação",
   "upload.state": "Estado",
   "upload.filesCount": "ficheiros",

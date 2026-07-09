@@ -178,6 +178,8 @@
   "upload.dropZone": "Zone de dépôt",
   "upload.dragDrop": "Glissez-déposez ou parcourez",
   "upload.browse": "Parcourir",
+  "clipboard.tooManyFiles": "Le presse-papiers contient trop de fichiers à importer en une fois.",
+  "clipboard.fileTooLarge": "Ce fichier du presse-papiers est trop volumineux. Copiez-le depuis l'explorateur puis collez-le avec Ctrl+V.",
   "upload.preparation": "Préparation",
   "upload.state": "État",
   "upload.filesCount": "fichiers",

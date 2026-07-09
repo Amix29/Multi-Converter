@@ -23,6 +23,13 @@ assert.ok(
 );
 assert.match(app, /data-testid="feedback-launcher"/, "feedback launcher test id is missing");
 assert.match(updateFlow, /data-testid="update-reminder"/, "update reminder test id is missing");
+assert.match(app, /window\.addEventListener\("paste", onPaste\)/, "clipboard paste listener is missing");
+assert.match(app, /canImportDroppedFiles\s*=\s*step === 1 \|\| step === 2/, "paste and drop imports must be limited to Files and Formats");
+assert.match(app, /if \(!canImportDroppedFilesRef\.current\) return;/, "native file drops must be ignored outside import steps");
+assert.match(app, /if \(!canImportDroppedFiles\) return;/, "HTML file drops must be ignored outside import steps");
+assert.match(app, /api\.saveClipboardFiles/, "clipboard files must be saved locally before analysis");
+assert.doesNotMatch(app, /pasteFromClipboard|clipboard-button/, "clipboard import must remain implicit without a dedicated UI button");
+assert.match(api, /saveClipboardFiles\(files: ClipboardFileInput\[\]\)/, "clipboard API contract is missing");
 
 const floatingCorner = cssRule(".floating-corner");
 assert.match(floatingCorner, /position:\s*fixed;/, "floating-corner must own fixed positioning");
@@ -60,7 +67,6 @@ assert.match(css, /\.feedback-launcher:hover,\s*[\r\n]+\.feedback-launcher:focus
 assert.match(css, /\.feedback-launcher:hover span,\s*[\r\n]+\.feedback-launcher:focus-visible span/, "feedback launcher icon should provide subtle motion feedback");
 assert.match(css, /\.primary-button:active:not\(:disabled\),[\s\S]*?scale\(0\.985\);/, "main controls must have a stable pressed state");
 assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/, "reduced motion preference must be honored");
-
 console.log("UI layout tests passed.");
 
 function cssRule(selector) {

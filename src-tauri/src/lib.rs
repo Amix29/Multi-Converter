@@ -17,6 +17,9 @@ use tauri::AppHandle;
 
 type CommandResult<T> = std::result::Result<T, String>;
 const MAX_FOLDER_IMPORT_FILES: usize = 2000;
+const MAX_CLIPBOARD_IMPORT_FILES: usize = 24;
+const MAX_CLIPBOARD_IMPORT_BYTES: usize = 128 * 1024 * 1024;
+const CLIPBOARD_TEMP_PREFIX: &str = "multi-converter-clipboard-";
 
 #[derive(Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -30,6 +33,14 @@ struct ExportResult {
 #[serde(rename_all = "camelCase")]
 struct WelcomeState {
     show: bool,
+}
+
+#[derive(Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ClipboardFile {
+    name: String,
+    mime_type: String,
+    bytes: Vec<u8>,
 }
 
 #[tauri::command]
@@ -75,6 +86,101 @@ async fn describe_paths(app: AppHandle, paths: Vec<String>) -> CommandResult<Vec
     })
     .await
     .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+async fn save_clipboard_files(files: Vec<ClipboardFile>) -> CommandResult<Vec<String>> {
+    tauri::async_runtime::spawn_blocking(move || save_clipboard_files_to_temp(&files))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+fn save_clipboard_files_to_temp(files: &[ClipboardFile]) -> CommandResult<Vec<String>> {
+    let directory =
+        env::temp_dir().join(format!("{CLIPBOARD_TEMP_PREFIX}{}", uuid::Uuid::new_v4()));
+    match save_clipboard_files_to_directory(files, &directory) {
+        Ok(paths) => Ok(paths),
+        Err(error) => {
+            let _ = fs::remove_dir_all(&directory);
+            Err(error)
+        }
+    }
+}
+
+fn save_clipboard_files_to_directory(
+    files: &[ClipboardFile],
+    directory: &Path,
+) -> CommandResult<Vec<String>> {
+    if files.is_empty() {
+        return Err("clipboard.empty".to_string());
+    }
+    if files.len() > MAX_CLIPBOARD_IMPORT_FILES {
+        return Err("clipboard.tooManyFiles".to_string());
+    }
+
+    fs::create_dir_all(directory).map_err(|error| error.to_string())?;
+
+    let mut saved_paths = Vec::with_capacity(files.len());
+    for file in files {
+        if file.bytes.len() > MAX_CLIPBOARD_IMPORT_BYTES {
+            return Err("clipboard.fileTooLarge".to_string());
+        }
+
+        let file_name = safe_clipboard_file_name(&file.name, &file.mime_type);
+        let output_path = directory.join(format!("{}-{file_name}", uuid::Uuid::new_v4()));
+        fs::write(&output_path, &file.bytes).map_err(|error| error.to_string())?;
+        saved_paths.push(output_path.to_string_lossy().to_string());
+    }
+
+    Ok(saved_paths)
+}
+
+fn safe_clipboard_file_name(name: &str, mime_type: &str) -> String {
+    let source_name = Path::new(name)
+        .file_name()
+        .and_then(OsStr::to_str)
+        .unwrap_or_default();
+    let sanitized = source_name
+        .chars()
+        .map(|ch| {
+            if matches!(ch, '<' | '>' | ':' | '"' | '/' | '\\' | '|' | '?' | '*') || ch.is_control()
+            {
+                '-'
+            } else {
+                ch
+            }
+        })
+        .collect::<String>();
+
+    if sanitized.trim().is_empty() || sanitized == "." || sanitized == ".." {
+        format!("clipboard.{}", extension_for_clipboard_mime(mime_type))
+    } else if Path::new(&sanitized).extension().is_some() {
+        sanitized
+    } else {
+        format!("{sanitized}.{}", extension_for_clipboard_mime(mime_type))
+    }
+}
+
+fn extension_for_clipboard_mime(mime_type: &str) -> &'static str {
+    match mime_type.to_ascii_lowercase().as_str() {
+        "text/plain" => "txt",
+        "image/jpeg" => "jpg",
+        "image/png" => "png",
+        "image/gif" => "gif",
+        "image/webp" => "webp",
+        "image/bmp" => "bmp",
+        "image/tiff" => "tiff",
+        "audio/mpeg" => "mp3",
+        "audio/wav" | "audio/x-wav" => "wav",
+        "audio/ogg" => "ogg",
+        "audio/flac" => "flac",
+        "audio/mp4" => "m4a",
+        "video/mp4" => "mp4",
+        "video/quicktime" => "mov",
+        "video/webm" => "webm",
+        "video/x-matroska" => "mkv",
+        _ => "bin",
+    }
 }
 
 struct ExpandedPaths {
@@ -648,6 +754,27 @@ fn cleanup_stale_temp_output_folders() {
     }
 }
 
+fn cleanup_stale_clipboard_folders() {
+    let Ok(entries) = fs::read_dir(env::temp_dir()) else {
+        return;
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let is_clipboard_dir = path.is_dir()
+            && path
+                .file_name()
+                .and_then(OsStr::to_str)
+                .is_some_and(|name| name.starts_with(CLIPBOARD_TEMP_PREFIX));
+        if is_clipboard_dir && fs::remove_dir_all(&path).is_err() {
+            runtime_log::write(
+                "cleanup",
+                &format!("clipboard cleanup failed for {}", path.display()),
+            );
+        }
+    }
+}
+
 fn should_show_welcome_for_install() -> bool {
     #[cfg(debug_assertions)]
     {
@@ -696,6 +823,7 @@ pub fn run() {
         .setup(|_| {
             runtime_log::write("startup", "Multi-Converter starting");
             cleanup_stale_temp_output_folders();
+            cleanup_stale_clipboard_folders();
             if let Err(error) = engine_distribution::cleanup_stale_installing_dirs() {
                 runtime_log::write("cleanup", &format!("engine cleanup failed: {error}"));
             }
@@ -706,6 +834,7 @@ pub fn run() {
             mark_welcome_seen,
             pick_file_paths,
             describe_paths,
+            save_clipboard_files,
             pick_output_folder,
             create_temp_output_folder,
             cleanup_temp_output_folder,
@@ -736,6 +865,40 @@ mod tests {
         assert!(!is_managed_temp_output_folder(Path::new(
             "multi-converter-relative"
         )));
+    }
+
+    #[test]
+    fn clipboard_import_writes_local_files_with_safe_names() {
+        let directory = tempfile::tempdir().unwrap();
+        let files = vec![ClipboardFile {
+            name: "..\\screenshot?.png".to_string(),
+            mime_type: "image/png".to_string(),
+            bytes: vec![1, 2, 3, 4],
+        }];
+
+        let paths = save_clipboard_files_to_directory(&files, directory.path()).unwrap();
+
+        assert_eq!(paths.len(), 1);
+        let saved = PathBuf::from(&paths[0]);
+        assert_eq!(saved.parent(), Some(directory.path()));
+        assert!(
+            saved
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .ends_with("screenshot-.png")
+        );
+        assert_eq!(fs::read(saved).unwrap(), vec![1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn clipboard_import_adds_extension_from_mime_type() {
+        assert_eq!(
+            safe_clipboard_file_name("clipboard", "text/plain"),
+            "clipboard.txt"
+        );
+        assert_eq!(safe_clipboard_file_name("", "video/mp4"), "clipboard.mp4");
+        assert_eq!(extension_for_clipboard_mime("audio/x-wav"), "wav");
     }
 
     #[test]

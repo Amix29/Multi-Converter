@@ -39,6 +39,12 @@ export interface FileWarning {
   limitBytes?: number | null;
 }
 
+export interface ClipboardFileInput {
+  name: string;
+  mimeType: string;
+  bytes: number[];
+}
+
 export interface ConversionJob {
   id: string;
   inputPath: string;
@@ -116,6 +122,7 @@ export interface MultiConverterApi {
   exportToDownloads(filePaths: string[], outputDir?: string | null): Promise<ExportResult>;
   exportToFolder(filePaths: string[], destinationDir: string, outputDir?: string | null): Promise<ExportResult>;
   describePaths(paths: string[]): Promise<FileDescription[]>;
+  saveClipboardFiles(files: ClipboardFileInput[]): Promise<string[]>;
   convert(job: ConversionJob): Promise<ConversionResult>;
   cancelConversion(jobId: string): Promise<boolean>;
   revealFile(filePath: string): Promise<boolean>;
@@ -171,6 +178,7 @@ function createTauriApi(): MultiConverterApi {
     exportToDownloads: (filePaths, outputDir) => invoke<ExportResult>("export_to_downloads", { filePaths, outputDir }),
     exportToFolder: (filePaths, destinationDir, outputDir) => invoke<ExportResult>("export_to_folder", { filePaths, destinationDir, outputDir }),
     describePaths: (paths) => invoke<FileDescription[]>("describe_paths", { paths }),
+    saveClipboardFiles: (files) => invoke<string[]>("save_clipboard_files", { files }),
     convert: (job) => invoke<ConversionResult>("start_conversion", { job }),
     cancelConversion: (jobId) => invoke<boolean>("cancel_conversion", { jobId }),
     revealFile: (filePath) => invoke<boolean>("reveal_file", { filePath }),
@@ -277,6 +285,9 @@ function createPreviewApi(): MultiConverterApi {
         const targets = extension === ".png" || extension === ".jpg" || extension === ".jpeg" || extension === ".webp" ? imageTargets : extension === ".txt" || extension === ".md" ? textTargets : extension === ".mp4" || extension === ".mov" || extension === ".mkv" ? videoTargets : audioTargets;
         return makePreviewFile(name, extension, 42865012, targets, previewRoot);
       });
+    },
+    async saveClipboardFiles(files) {
+      return files.map((file, index) => `${previewRoot}\\Desktop\\clipboard-${index + 1}-${file.name || "file.txt"}`);
     },
     async convert(job) {
       const steps: Array<[number, string]> = [

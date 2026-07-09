@@ -1,46 +1,67 @@
 # Multi-Converter v1.0.6
 
-Multi-Converter v1.0.6 is a reliability update focused on safer document conversions and stronger release checks. 🛠️
+Multi-Converter v1.0.6 makes importing files easier and improves complex document conversions on Windows. ✨
 
 ## Highlights
 
-- 📝 Fixed DOCX conversions to plain text-style formats such as TXT, Markdown, CSV, JSON and XML when the source document contains complex content like tables, images or embedded objects.
-- 🛟 Added a safer text fallback for readable documents when a richer external document engine cannot finish a conversion.
-- ✅ Strengthened release readiness checks for v1.0.6 so platform release gates no longer depend on old v1.0.5 status evidence.
+- 📋 Paste text, images, audio or video directly into Multi-Converter with `Ctrl+V`, then convert it like any other imported file.
+- 📝 Complex DOCX files containing tables, images or embedded objects can now be converted to layout-free formats without losing their useful text.
+- 📊 PDF-to-Markdown now preserves extractable text and reconstructs repeated table-like rows, even when a PDF also contains images or signature fields.
+- 🎯 Drag-and-drop imports are now accepted only during the Files and Formats steps.
 
 ## Download And Installation
 
-- 🪟 Windows x64: download `Multi-Converter_1.0.6_x64-setup.exe`, or use the stable latest alias `Multi-Converter_windows-x64_setup.exe`.
-- 🔄 Automatic updates for Windows are enabled through the updater metadata in `latest.json`.
-- 🏠 Conversions still run locally on your computer. Multi-Converter does not upload your files.
+- 🪟 Windows x64: download `Multi-Converter_1.0.6_x64-setup.exe`, or use `Multi-Converter_windows-x64_setup.exe` for the stable latest download.
+- 🔄 Automatic updates remain available through the Windows x64 entry in `latest.json`.
+- 🏠 Conversions and clipboard imports stay on your computer; files are not uploaded.
 
 ## Validation
 
-- ✅ TypeScript, i18n, bundled-engine, embedded-manifest, release-asset contract, production-config and secret-leak checks passed with `npm run check`.
-- Rust unit tests passed with `npm run test:rust`.
-- The local conversion matrix passed with `npm run test:conversions`.
-- Rust formatting and Clippy passed with `npm run fmt:rust:check` and `npm run clippy:rust`.
-- The production web bundle passed with `npm run build`.
-- The Windows x64 Tauri build completed and produced the signed updater artifact for `Multi-Converter_1.0.6_x64-setup.exe`.
+- ✅ TypeScript, translations, production configuration, secret scanning, packaging contracts and release-asset contracts passed the local release checks.
+- 77 Rust unit tests and the complete conversion matrix passed, including regressions for complex DOCX, complex PDF-to-Markdown and clipboard-backed files.
+- Rust formatting, Clippy, PDFium wrapper runtime tests and the production web build passed.
+- The Windows x64 Tauri installer is rebuilt from the final v1.0.6 source before release-asset validation.
+
+## What's New
+
+- 📋 Clipboard import works without a dedicated button while the Files or Formats step is active.
+- Native file paths are reused when available; text and in-memory media are saved temporarily on the local machine before analysis.
 
 ## Formats And Conversions
 
-- 📝 DOCX files with tables, images or embedded objects now use integrated text extraction for layout-free outputs, so useful text is preserved instead of failing because a layout-aware engine could not simplify the document.
-- TXT, Markdown, CSV, JSON and XML outputs are covered for the complex DOCX path.
-- Rich layout conversions still use the best available document engine when layout fidelity matters.
+- Complex DOCX extraction now preserves readable body and table text plus useful header, footer, footnote, endnote and comment content.
+- PDF-to-Markdown reconstructs consistent repeated columns as Markdown tables.
+- Readable documents can use the integrated text fallback when a compatible layout-free conversion cannot be completed by LibreOffice or Pandoc.
+
+## Interface And Usability
+
+- 🎯 Drag-and-drop events are ignored after the Formats step.
+- Clipboard shortcuts do not intercept editable fields.
 
 ## Performance And Reliability
 
-- 🛟 Document conversions can fall back to the integrated text pipeline when LibreOffice or Pandoc fails and the target format can be produced safely from readable text.
-- DOCX text extraction now also reads useful header and footer text and handles table boundaries more cleanly.
+- In-memory clipboard items larger than 128 MB are rejected before a second full byte buffer is allocated.
+- Temporary clipboard imports use bounded file counts, safe filenames and startup cleanup.
+- GitHub build and release jobs restore verified sidecars without depending on Git LFS downloads.
+
+## Fixes
+
+- Fixed complex DOCX conversions that previously failed or produced unusable layout-free output when tables, images, 3D models or other embedded objects were present.
+- Fixed accidental file imports caused by dropping files during the Output step or after the import workflow had ended.
+- Fixed PDF-to-Markdown conversion for readable complex PDFs by preserving text around tables, images and signature fields and rebuilding consistent table rows.
 
 ## Security And Privacy
 
-- 🔒 The production config check passed and keeps frontend environment exposure narrow.
-- The secret leak scan passed for tracked project files.
-- The local-first privacy promise is unchanged: files are converted on the user's machine.
+- 🔒 Clipboard content is written only to a local temporary folder and is never uploaded.
+- Production configuration and tracked-file secret scans passed for the release changes.
+- Newly published RustSec advisories in PDF parsing and shared dependencies were resolved by updating `pdf-extract`, `lopdf`, Tauri and their dependency chain.
+
+## Known Limitations
+
+- ⚠️ PDF-to-Markdown does not reproduce image pixels, exact page layout or cryptographic signature data, and scanned-only PDFs require OCR first.
+- Raw in-memory clipboard items are limited to 128 MB each.
 
 ## Developer And Build Notes
 
-- Version files are synchronized at `1.0.6` across `package.json`, `package-lock.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock` and `src-tauri/tauri.conf.json`.
-- The GitHub release preflight now uses the v1.0.6 readiness gate for platform releases.
+- Version metadata is synchronized at `1.0.6` across npm, Cargo and Tauri configuration files.
+- The Windows-only release asset contract contains exactly five application assets, including `latest.json` and the stable installer alias.

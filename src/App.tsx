@@ -3,6 +3,7 @@ import { isPermissionGranted, requestPermission, sendNotification } from "@tauri
 import {
   api,
   type ConversionResult,
+  type ClipboardFileInput,
   type ExportResult,
   type FileDescription,
   type TargetFormat,
@@ -68,6 +69,7 @@ const welcomeStorageKey = "multi-converter-welcome-seen";
 const notificationsStorageKey = "multi-converter-notifications-enabled";
 const feedbackPrivacyStorageKey = "multi-converter-feedback-public-warning-seen";
 const issueNewUrl = `${repositoryUrl}/issues/new`;
+const maxClipboardMemoryFileBytes = 128 * 1024 * 1024;
 
 const feedbackKinds: FeedbackKind[] = ["bug", "feature", "other"];
 const feedbackLabels: Record<FeedbackKind, string> = {
@@ -116,6 +118,8 @@ export default function App() {
   const [notice, setNotice] = useState<{ id: number; tone: NoticeTone; message: string } | null>(null);
   const [importFeedback, setImportFeedback] = useState<ImportFeedback>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const canImportDroppedFiles = step === 1 || step === 2;
+  const canImportDroppedFilesRef = useRef(canImportDroppedFiles);
   const wasConverting = useRef(false);
   const cancellationRequested = useRef(false);
 
@@ -165,6 +169,11 @@ export default function App() {
   }, [notificationsEnabled]);
 
   useEffect(() => {
+    canImportDroppedFilesRef.current = canImportDroppedFiles;
+    if (!canImportDroppedFiles) setIsDragOver(false);
+  }, [canImportDroppedFiles]);
+
+  useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(null), 5200);
     return () => window.clearTimeout(timeout);
@@ -195,6 +204,20 @@ export default function App() {
   }, [language]);
 
   useEffect(() => {
+    function onPaste(event: ClipboardEvent) {
+      if (!canImportDroppedFilesRef.current || isEditablePasteTarget(event.target)) return;
+      const files = clipboardEventFiles(event.clipboardData);
+      const text = event.clipboardData?.getData("text/plain") ?? "";
+      if (!files.length && !text.trim()) return;
+      event.preventDefault();
+      void importClipboardContent(files, text);
+    }
+
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [language]);
+
+  useEffect(() => {
     let progressUnlisten: (() => void) | undefined;
     let dropUnlisten: (() => void) | undefined;
     let disposed = false;
@@ -216,6 +239,7 @@ export default function App() {
     });
 
     api.onFileDrop(async (paths) => {
+      if (!canImportDroppedFilesRef.current) return;
       if (!paths.length) return;
       await addFilePaths(paths);
     }).then((unlisten) => {
@@ -321,6 +345,24 @@ export default function App() {
     }
   }
 
+  async function importClipboardContent(files: File[], text: string) {
+    const nativePaths = files
+      .map((file) => (file as File & { path?: string }).path)
+      .filter((path): path is string => Boolean(path));
+    const localFiles = files.filter((file) => !(file as File & { path?: string }).path);
+    if (!localFiles.length && !nativePaths.length && text.trim()) {
+      localFiles.push(new File([text], clipboardFileName("text/plain"), { type: "text/plain" }));
+    }
+
+    await importFiles(nativePaths.length + localFiles.length, async () => {
+      const savedPaths = localFiles.length ? await api.saveClipboardFiles(await Promise.all(localFiles.map(toClipboardFileInput))) : [];
+      const paths = [...nativePaths, ...savedPaths];
+      const descriptions = await api.describePaths(paths);
+      if (!descriptions.length && paths.length) showNotice("error", skippedFilesText(language, paths.length));
+      return descriptions;
+    });
+  }
+
   async function importFiles(count: number | null, loader: () => Promise<FileDescription[]>) {
     let feedbackShown = false;
     const timer = window.setTimeout(() => {
@@ -385,6 +427,7 @@ export default function App() {
   async function handleHtmlDrop(event: React.DragEvent<HTMLElement>) {
     event.preventDefault();
     setIsDragOver(false);
+    if (!canImportDroppedFiles) return;
     const paths = Array.from(event.dataTransfer.files)
       .map((file) => (file as File & { path?: string }).path)
       .filter((path): path is string => Boolean(path));
@@ -2088,6 +2131,60 @@ function shouldReconvertCleanedResult(file: FileItem, isTempOutputCleaned: boole
 
 function getConvertedOutputPaths(files: FileItem[]) {
   return files.filter((file) => file.status === "done" && file.result?.outputPath).map((file) => file.result!.outputPath);
+}
+
+function isEditablePasteTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  return target.isContentEditable || target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT";
+}
+
+function clipboardEventFiles(data: DataTransfer | null) {
+  if (!data) return [];
+  const files = Array.from(data.files);
+  if (files.length) return files;
+  return Array.from(data.items)
+    .filter((item) => item.kind === "file")
+    .map((item) => item.getAsFile())
+    .filter((file): file is File => file !== null);
+}
+
+function clipboardFileName(mimeType: string) {
+  const extension = clipboardExtension(mimeType);
+  return `clipboard-${new Date().toISOString().replace(/[:.]/g, "-")}.${extension}`;
+}
+
+function clipboardExtension(mimeType: string) {
+  const extensions: Record<string, string> = {
+    "text/plain": "txt",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/gif": "gif",
+    "image/webp": "webp",
+    "image/bmp": "bmp",
+    "image/tiff": "tiff",
+    "audio/mpeg": "mp3",
+    "audio/wav": "wav",
+    "audio/x-wav": "wav",
+    "audio/ogg": "ogg",
+    "audio/flac": "flac",
+    "audio/mp4": "m4a",
+    "video/mp4": "mp4",
+    "video/quicktime": "mov",
+    "video/webm": "webm",
+    "video/x-matroska": "mkv",
+  };
+  return extensions[mimeType.toLowerCase()] ?? "bin";
+}
+
+async function toClipboardFileInput(file: File): Promise<ClipboardFileInput> {
+  if (file.size > maxClipboardMemoryFileBytes) {
+    throw new Error("clipboard.fileTooLarge");
+  }
+  return {
+    name: file.name || clipboardFileName(file.type),
+    mimeType: file.type || "application/octet-stream",
+    bytes: Array.from(new Uint8Array(await file.arrayBuffer())),
+  };
 }
 
 async function notifyConversionFinished(language: LanguageCode, failed: boolean, enabled: boolean) {

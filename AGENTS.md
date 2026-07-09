@@ -10,6 +10,7 @@ Multi-Converter is a local-first desktop app built with Tauri 2, React, TypeScri
 
 - Read `README.md` and `docs/RELEASE_CHECKLIST_WINDOWS.md` before Windows release work. Also read `docs/RELEASE_CHECKLIST_MACOS.md` before any macOS build, packaging or release work, and `docs/RELEASE_CHECKLIST_LINUX.md` before any Linux build, packaging or release work.
 - Read `docs/TESTING.md` before changing test commands, GitHub Actions jobs, release validation, macOS/Linux packaging checks or conversion test coverage.
+- The Rust audit may ignore only `RUSTSEC-2026-0194` and `RUSTSEC-2026-0195`, and only while the affected `quick-xml` version is reachable exclusively through the build-time `wayland-scanner` proc-macro. Remove the exceptions when that dependency supports `quick-xml >=0.41.0`; never extend them to a runtime XML parser.
 - Do not revert user changes in the working tree unless explicitly asked.
 - Keep generated folders and release outputs out of commits unless a maintainer explicitly approves them.
 - Do not commit local engine sources, generated engine archives, release checksums or third-party engine version changes without maintainer approval.
@@ -46,6 +47,7 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp
 ## GitHub Actions And Test Branches
 
 - Publish normal, stable GitHub Actions workflows for the public project in the main repository: `Amix29/Multi-Converter`.
+- GitHub Actions build and release checkouts must use `lfs: false`. Restore or stage verified platform sidecars and advanced engines through the project preparation workflows instead of depending on Git LFS downloads.
 - Development-version validation, experimental workflows, risky CI experiments, temporary release tests and unreleased platform tests should run in the main repository on the single persistent test branch `codex/test`, not in a separate private test repository.
 - Do not create a new test branch for each validation round. Reuse `codex/test` for test runs, reset or update it intentionally when needed, and keep `main` out of in-progress experiments.
 - Do not use `main` as the playground for tests of an in-progress version. Merge back only the stable, reviewed workflow or test changes that are ready for the public repository.
@@ -78,7 +80,10 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp
 - Do not ask users to disable Gatekeeper globally. Avoid `sudo spctl --master-disable` in public instructions.
 - Do not present `xattr -dr com.apple.quarantine` as the normal install path. Reserve quarantine-removal commands for advanced troubleshooting only.
 - The normal user-facing opening instructions for an unsigned/not-notarized macOS build are: open the app once, go to `System Settings > Privacy & Security`, choose `Open Anyway`, then confirm `Open`. Mention that this approval is normally needed only on first launch for that downloaded app copy or after installing a new version.
+- If Apple Developer ID signing and notarization are not available, treat the Gatekeeper first-launch warning as an expected distribution limitation, not as a broken DMG. Do not claim the warning can be removed for public users without Apple Developer ID signing and notarization.
+- For a free/open-source macOS distribution path without Apple notarization, consider adding a Homebrew Cask later to simplify installation. Do not present Homebrew Cask as equivalent to Apple notarization; it may reduce install friction, but the app can still require the normal `System Settings > Privacy & Security > Open Anyway` approval when unsigned/not-notarized.
 - Test the final downloaded DMG on a clean macOS environment before release. At minimum verify: mount DMG, drag the app to Applications, first launch warning/approval path, second launch behavior, file selection, one base media conversion, one document/PDF path if those engines are included, and updater metadata behavior if macOS updates are enabled.
+- For unsigned/not-notarized macOS builds, the clean-Mac smoke test must explicitly confirm that the first launch is blocked by Gatekeeper, `Open Anyway` appears in `System Settings > Privacy & Security`, confirming `Open` launches Multi-Converter, and the second launch opens normally without repeating the same approval flow for that downloaded app copy.
 
 ## Linux Development
 
@@ -247,6 +252,8 @@ Do not upload `.deb`, `.rpm`, tarballs, portable folders or extra Linux aliases 
 - GIF handling must distinguish static GIFs from animated GIFs: static GIFs use image targets, animated GIFs use video targets.
 - Integrated image conversions must decode and validate output files, including ICO compatibility.
 - PDF text conversions must preserve readable text and accented characters.
+- PDF-to-Markdown conversion is text-first. Preserve extractable text and reconstruct repeated table-like rows when possible, but do not claim that Markdown reproduces image pixels, visual layout, cryptographic signatures or text from scanned-only pages without OCR.
+- Clipboard imports are implicit and local: accept paste events only during the Files and Formats steps, prefer native file paths when available, and persist memory-backed text/image/audio/video data to a temporary local file before analysis. Do not add a dedicated paste button unless the maintainer explicitly changes this product constraint.
 - Base media conversions rely on bundled `ffmpeg` and `ffprobe`; advanced document/PDF/image conversions rely on bundled PDFium, LibreOffice, Pandoc and libvips resources. Use `npm run prepare:bundled-engines` and `npm run validate:bundled-engines` when restoring or validating bundled engines manually.
 
 ## Frontend QA

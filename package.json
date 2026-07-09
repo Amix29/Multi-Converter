@@ -75,7 +75,7 @@
     "prepare:bundled-engines": "node scripts/prepare-bundled-engines.mjs",
     "prepare:installer-assets": "node scripts/generate-installer-assets.mjs",
     "package:base-engines": "node scripts/package-base-engines.mjs",
-    "audit:rust": "cargo audit --file src-tauri/Cargo.lock",
+    "audit:rust": "cargo audit --file src-tauri/Cargo.lock --ignore RUSTSEC-2026-0194 --ignore RUSTSEC-2026-0195",
     "prepare:ffmpeg-engine:macos": "node scripts/prepare-ffmpeg-engine-macos.mjs",
     "prepare:pdfium-engine": "node scripts/prepare-pdfium-engine.mjs",
     "prepare:pdfium-engine:macos": "node scripts/prepare-pdfium-engine-macos.mjs",

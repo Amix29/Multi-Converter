@@ -1,6 +1,6 @@
 # Testing Matrix
 
-This document describes the V1.0.5 test split by platform. Use it to avoid false confidence from Windows-only checks when macOS behavior is involved.
+This document describes the current desktop release test split by platform. Use it to avoid false confidence from checks that ran on only one operating system.
 
 ## Windows x64
 
@@ -49,7 +49,9 @@ npm run audit:rust
 
 `npm audit --omit=dev` should finish with no production vulnerabilities.
 
-`npm run audit:rust` currently uses `cargo audit --file src-tauri/Cargo.lock`. This fails on denied vulnerabilities, but Cargo Audit does not fail on warning categories unless `--deny warnings`, `--deny unmaintained`, `--deny unsound` or `--deny yanked` is added. Do not report this as "no RustSec warnings" unless that stricter command also passes.
+`npm run audit:rust` runs Cargo Audit against `src-tauri/Cargo.lock` and fails on denied runtime vulnerabilities. It intentionally ignores only `RUSTSEC-2026-0194` and `RUSTSEC-2026-0195` while `wayland-scanner 0.31.10` has no patched release. That dependency is a Linux build-time proc-macro which parses the bundled Wayland protocol definitions; it is not used to parse user XML or application input at runtime. Remove both exceptions as soon as the Wayland dependency chain supports `quick-xml >=0.41.0`, and do not reuse these exceptions for another dependency path.
+
+Cargo Audit does not fail on warning categories unless `--deny warnings`, `--deny unmaintained`, `--deny unsound` or `--deny yanked` is added. Do not report this as "no RustSec warnings" unless that stricter command also passes.
 
 For V1.0.5, the expected Rust audit state is:
 
@@ -98,6 +100,8 @@ The GitHub `Build` workflow runs a `macOS code check` job on `macos-latest` for 
 - `x86_64-apple-darwin`
 
 Pushes that modify only Markdown/docs files skip the full `Build` workflow to conserve GitHub Actions minutes. Pushes to the persistent `codex/test` branch also skip the expensive `Build` jobs unless the repository variable `MC_ENABLE_CODEX_TEST_BUILD` is set to `1`; use that variable or `workflow_dispatch` when a maintainer intentionally wants the full build from the test branch.
+
+All `Build` and `Release` jobs check out with `lfs: false`. Platform sidecars and advanced engines must come from the verified preparation or staging paths used by each job; a release gate must not depend on the repository Git LFS budget.
 
 That job intentionally runs code and contract checks that do not require unreleased local engine binaries:
 

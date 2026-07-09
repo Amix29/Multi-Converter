@@ -2503,7 +2503,111 @@ fn html_to_visible_text(content: &str) -> String {
 }
 
 fn to_markdown(content: &str, source_format: &str) -> String {
-    to_plain_text(content, source_format)
+    let plain = to_plain_text(content, source_format);
+    if source_format == "pdf" {
+        pdf_text_to_markdown(&plain)
+    } else {
+        plain
+    }
+}
+
+fn pdf_text_to_markdown(content: &str) -> String {
+    let normalized = content.replace('\u{c}', "\n\n---\n\n");
+    let lines = normalized.lines().collect::<Vec<_>>();
+    let mut output = Vec::new();
+    let mut index = 0;
+
+    while index < lines.len() {
+        let line = lines[index].trim();
+        if line.is_empty() {
+            if output.last().is_some_and(|item: &String| !item.is_empty()) {
+                output.push(String::new());
+            }
+            index += 1;
+            continue;
+        }
+
+        if let Some(first_row) = split_pdf_table_columns(line) {
+            let column_count = first_row.len();
+            let mut rows = vec![first_row];
+            let mut next = index + 1;
+            while next < lines.len() {
+                while next < lines.len() && lines[next].trim().is_empty() {
+                    next += 1;
+                }
+                if next >= lines.len() {
+                    break;
+                }
+                let Some(row) = split_pdf_table_columns(lines[next].trim()) else {
+                    break;
+                };
+                if row.len() != column_count {
+                    break;
+                }
+                rows.push(row);
+                next += 1;
+            }
+
+            if rows.len() >= 2 {
+                output.push(markdown_table_row(&rows[0]));
+                output.push(markdown_table_row(&vec!["---".to_string(); column_count]));
+                output.extend(rows.iter().skip(1).map(|row| markdown_table_row(row)));
+                output.push(String::new());
+                index = next;
+                continue;
+            }
+        }
+
+        output.push(line.to_string());
+        index += 1;
+    }
+
+    while output.last().is_some_and(String::is_empty) {
+        output.pop();
+    }
+    output.join("\n")
+}
+
+fn split_pdf_table_columns(line: &str) -> Option<Vec<String>> {
+    let mut columns = Vec::new();
+    let mut current = String::new();
+    let mut whitespace = 0usize;
+
+    for ch in line.chars() {
+        if ch == '\t' || ch == ' ' {
+            whitespace += 1;
+            continue;
+        }
+
+        if whitespace > 0 {
+            if whitespace >= 2 || line.contains('\t') {
+                if !current.trim().is_empty() {
+                    columns.push(current.trim().to_string());
+                    current.clear();
+                }
+            } else {
+                current.push(' ');
+            }
+            whitespace = 0;
+        }
+        current.push(ch);
+    }
+
+    if !current.trim().is_empty() {
+        columns.push(current.trim().to_string());
+    }
+    (columns.len() >= 2).then_some(columns)
+}
+
+fn markdown_table_row(columns: &[String]) -> String {
+    format!(
+        "| {} |",
+        columns
+            .iter()
+            .map(|column| column.replace('|', "\\|"))
+            .collect::<Vec<_>>()
+            .join(" | ")
+    )
 }
 
 fn to_html(content: &str, source_format: &str) -> String {
@@ -2790,6 +2894,33 @@ mod tests {
     }
 
     #[test]
+    fn complex_pdf_with_table_image_and_signature_converts_to_markdown() {
+        let dir = tempfile::tempdir().unwrap();
+        let input = dir.path().join("complex.pdf");
+        fs::write(&input, complex_pdf_fixture()).unwrap();
+
+        let content = read_document_text(&input, "pdf").unwrap();
+        let markdown = to_markdown(&content, "pdf");
+
+        assert!(
+            markdown.contains("Complex PDF report"),
+            "title missing: {markdown:?}"
+        );
+        assert!(
+            markdown.contains("| Item | Quantity | Price |"),
+            "table header was not converted: {markdown:?}"
+        );
+        assert!(
+            markdown.contains("| Camera | 2 | 450 EUR |"),
+            "table row was not converted: {markdown:?}"
+        );
+        assert!(
+            markdown.contains("Signature: Approved by Alex"),
+            "signature label missing: {markdown:?}"
+        );
+    }
+
+    #[test]
     #[ignore = "full conversion matrix is run by npm run test:conversions"]
     fn conversion_matrix_document_outputs_preserve_french_characters() {
         let source_formats = [
@@ -3014,6 +3145,57 @@ mod tests {
   </w:body>
 </w:document>"#.as_bytes()).unwrap();
         zip.finish().unwrap();
+    }
+
+    fn complex_pdf_fixture() -> Vec<u8> {
+        let content = b"BT /F1 14 Tf 24 180 Td (Complex PDF report) Tj 0 -24 Td /F1 10 Tf (Item    Quantity    Price) Tj 0 -16 Td (Camera    2    450 EUR) Tj 0 -16 Td (Tripod    1    90 EUR) Tj 0 -24 Td (Signature: Approved by Alex) Tj ET\nq 24 0 0 24 150 24 cm /Im1 Do Q";
+        let content_object = format!(
+            "<< /Length {} >>\nstream\n{}\nendstream",
+            content.len(),
+            String::from_utf8_lossy(content)
+        )
+        .into_bytes();
+        let mut image_object = b"<< /Type /XObject /Subtype /Image /Width 1 /Height 1 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Length 3 >>\nstream\n".to_vec();
+        image_object.extend_from_slice(&[0x33, 0x66, 0x99]);
+        image_object.extend_from_slice(b"\nendstream");
+
+        build_pdf_fixture(vec![
+            b"<< /Type /Catalog /Pages 2 0 R /AcroForm 7 0 R >>".to_vec(),
+            b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>".to_vec(),
+            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 220 220] /Resources << /Font << /F1 4 0 R >> /XObject << /Im1 6 0 R >> >> /Contents 5 0 R /Annots [8 0 R] >>".to_vec(),
+            b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>".to_vec(),
+            content_object,
+            image_object,
+            b"<< /Fields [8 0 R] /SigFlags 3 >>".to_vec(),
+            b"<< /Type /Annot /Subtype /Widget /FT /Sig /Rect [20 20 120 40] /T (Approval) /V 9 0 R /P 3 0 R >>".to_vec(),
+            b"<< /Type /Sig /Filter /Adobe.PPKLite /SubFilter /adbe.pkcs7.detached /ByteRange [0 0 0 0] /Contents <00> /Reason (Approved by Alex) >>".to_vec(),
+        ])
+    }
+
+    fn build_pdf_fixture(objects: Vec<Vec<u8>>) -> Vec<u8> {
+        let mut pdf = b"%PDF-1.4\n".to_vec();
+        let mut offsets = Vec::with_capacity(objects.len());
+        for (index, object) in objects.iter().enumerate() {
+            offsets.push(pdf.len());
+            pdf.extend_from_slice(format!("{} 0 obj\n", index + 1).as_bytes());
+            pdf.extend_from_slice(object);
+            pdf.extend_from_slice(b"\nendobj\n");
+        }
+
+        let xref_offset = pdf.len();
+        pdf.extend_from_slice(format!("xref\n0 {}\n", objects.len() + 1).as_bytes());
+        pdf.extend_from_slice(b"0000000000 65535 f \n");
+        for offset in offsets {
+            pdf.extend_from_slice(format!("{offset:010} 00000 n \n").as_bytes());
+        }
+        pdf.extend_from_slice(
+            format!(
+                "trailer << /Size {} /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF\n",
+                objects.len() + 1
+            )
+            .as_bytes(),
+        );
+        pdf
     }
 
     fn write_document_target(

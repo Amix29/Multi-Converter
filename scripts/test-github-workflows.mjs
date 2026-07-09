@@ -33,6 +33,12 @@ const releaseWindowsJob = workflowJob(releaseWorkflow, "windows");
 const macosBuildJob = workflowJob(buildWorkflow, "macos-code-check");
 const macosHostTestsJob = workflowJob(buildWorkflow, "macos-host-tests");
 const linuxCodeCheckJob = workflowJob(buildWorkflow, "linux-code-check");
+
+assert.equal(
+  packageJson.scripts["audit:rust"],
+  "cargo audit --file src-tauri/Cargo.lock --ignore RUSTSEC-2026-0194 --ignore RUSTSEC-2026-0195",
+  "Rust audit exceptions must stay limited to the two build-time wayland-scanner quick-xml advisories",
+);
 const macosEngineStagingJob = workflowJob(macosEngineStagingWorkflow, "stage");
 const macosLibvipsRuntimeJob = workflowJob(macosLibvipsRuntimeWorkflow, "build");
 const macosDmgBuildJob = workflowJob(macosDmgWorkflow, "build");
@@ -50,6 +56,7 @@ assert.match(windowsBuildJob, /id:\s+cargo-audit-cache/, "Windows CI must cache 
 assert.match(windowsBuildJob, /~\/\.cargo\/bin\/cargo-audit\.exe/, "Windows CI cargo-audit cache must target the installed binary");
 assert.match(windowsBuildJob, /cargo install cargo-audit --locked\s*\n\s+if:\s+steps\.cargo-audit-cache\.outputs\.cache-hit != 'true'/, "Windows CI must skip cargo-audit installation on cache hits");
 assert.match(windowsBuildJob, /npm run test:windows:ci/, "Windows CI must use the explicit Windows validation wrapper");
+assert.doesNotMatch(buildWorkflow, /lfs:\s*true/, "Build workflow must not depend on exhausted Git LFS downloads");
 assert.match(buildWorkflow, /macos-code-check:/, "build workflow must include a macOS code-check job");
 assert.match(macosBuildJob, /runs-on:\s+macos-latest/, "macOS CI must run on macOS");
 assertCodexTestBuildGate(macosBuildJob, "macOS code-check");
@@ -86,6 +93,7 @@ assert.match(linuxCodeCheckJob, /libwebkit2gtk-4\.1-dev/, "Linux CI must install
 assert.match(linuxCodeCheckJob, /pkg-config/, "Linux CI must install pkg-config for native Linux crates");
 assert.match(linuxCodeCheckJob, /libdbus-1-dev/, "Linux CI must install DBus development headers");
 assert.match(linuxCodeCheckJob, /npm run test:linux:ci/, "Linux CI must use the explicit Linux validation wrapper");
+assert.doesNotMatch(releaseWorkflow, /lfs:\s*true/, "Release workflow must restore verified sidecars and engines without Git LFS checkout");
 
 assert.match(linuxAppImageWorkflow, /name:\s+Linux AppImage Build/, "Linux AppImage workflow must be clearly named");
 assert.match(linuxAppImageWorkflow, /workflow_dispatch:/, "Linux AppImage workflow must be manually runnable");
