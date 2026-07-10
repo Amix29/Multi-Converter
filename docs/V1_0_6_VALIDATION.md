@@ -1,8 +1,6 @@
 # Multi-Converter v1.0.6 Validation Evidence
 
-This file records validation evidence for the in-progress v1.0.6 release. It is not a public release approval by itself.
-
-Evidence and asset hashes dated 2026-06-16 below are historical. They predate the clipboard, drag-and-drop, PDF-to-Markdown and final GitHub checkout fixes and must not be used for the final publication assets.
+This file records the final validation evidence for the v1.0.6 release.
 
 ## Final-Source Local Windows Validation
 
@@ -34,25 +32,23 @@ Evidence and asset hashes dated 2026-06-16 below are historical. They predate th
 
 ## macOS Release Evidence
 
-- macOS Conversion Matrix (Apple Silicon): success on 2026-06-16 in GitHub Actions run `27614880496` on commit `cfa9f1b3`.
-- macOS Conversion Matrix (Intel): success on 2026-06-16 in GitHub Actions run `27614880496` on commit `cfa9f1b3`.
-- macOS DMG verification (Apple Silicon): success on 2026-06-16 in GitHub Actions run `27615775974` on commit `cfa9f1b3`.
-- macOS DMG verification (Intel): success on 2026-06-16 in GitHub Actions run `27615775974` on commit `cfa9f1b3`.
-- macOS release artifact: `macos-release-artifacts`, artifact ID `7666472580`, size `2661378716` bytes, GitHub Actions artifact zip SHA-256 `a36b4acc7f40b3f18ac2d725386a47e1dfe88b8390173398b1b5ac52d6cadf1f`.
-- Downloaded macOS files were hash-checked locally on Windows on 2026-06-16. SHA-256 `Multi-Converter_1.0.6_macos-universal.dmg`: `d966bc73247b0ee77431443d30c19f9a2ca9b5a9aff7aa120f3288fcf8cf3c88`.
-- Downloaded macOS updater archive SHA-256 `Multi-Converter_1.0.6_macos-universal.app.tar.gz`: `128aadef0348dcbecaa83c804d4aed37c096e42fbeb162dbdfbad11334abcd72`.
-- Manual clean-Mac smoke testing: pending.
+- macOS Conversion Matrix (Apple Silicon): success on 2026-07-10 in GitHub Actions run `29052945332` on commit `33ba006b`.
+- macOS Conversion Matrix (Intel): success on 2026-07-10 in GitHub Actions run `29052945332` on commit `33ba006b`.
+- macOS DMG verification (Apple Silicon): success on 2026-07-10 in GitHub Actions run `29052946761` on commit `33ba006b`.
+- macOS DMG verification (Intel): success on 2026-07-10 in GitHub Actions run `29052946761` on commit `33ba006b`.
+- macOS release artifact: `macos-release-artifacts`, artifact ID `8213016442`, size `2657339578` bytes.
+- SHA-256 `Multi-Converter_1.0.6_macos-universal.dmg`: `f6978d93278a142c98c23a655059b77b5ed68fdc6b2408296f2df1ae8cd3421f`.
+- SHA-256 `Multi-Converter_1.0.6_macos-universal.app.tar.gz`: `0b0e95fd7cefe5885a587dac6e7a0a4069b7c36b59331518cf18184a0111abdc`.
+- Manual clean-Mac smoke testing: success on 2026-07-10, confirmed by the maintainer for the final downloaded draft DMG. The confirmation covers DMG mount, drag to Applications, the expected unsigned/not-notarized Gatekeeper warning, `System Settings > Privacy & Security > Open Anyway`, confirmation with `Open`, normal second launch, file selection, a base media conversion, a document/PDF conversion and updater metadata behavior.
 
 ## Linux Release Evidence
 
-- Linux AppImage Build: success on 2026-06-16 in GitHub Actions run `27615778303` on commit `cfa9f1b3`.
-- Linux Conversion Matrix: success on 2026-06-16 as part of GitHub Actions run `27615778303` on commit `cfa9f1b3`.
-- Linux AppImage Verification: success on 2026-06-16 in GitHub Actions run `27615778303` on commit `cfa9f1b3`.
-- Linux release artifact: `linux-release-artifacts`, artifact ID `7666415187`, size `1079168021` bytes, GitHub Actions artifact zip SHA-256 `8c79dd75bb4c648288ca8601dea1b7987e42236b5cac67eb835a3a4d6398be7e`.
-- Downloaded Linux files were hash-checked locally on Windows on 2026-06-16. SHA-256 `Multi-Converter_1.0.6_linux-x64.AppImage`: `8d31bfa9850cc3f1ae4f92fe14c4b74eeb72f2b5e74111e05186a3c8654cea4e`.
-- Additional WSL Linux structural smoke check: passed on 2026-06-16. The final AppImage reported its AppImage runtime version, extracted successfully on Ubuntu WSL2 x86_64, and the extracted bundle contained an executable `squashfs-root/AppRun`.
-- Additional WSL Linux launch smoke check: passed on 2026-06-16. With WSLg, DBus and `APPIMAGE_EXTRACT_AND_RUN=1`, the final AppImage stayed running until a 20-second timeout without an immediate application crash. WSL reported graphics acceleration warnings only.
-- Manual Linux AppImage smoke testing: pending.
+- Linux AppImage Build: success on 2026-07-10 in GitHub Actions run `29052948091` on commit `33ba006b`.
+- Linux Conversion Matrix: success on 2026-07-10 as part of GitHub Actions run `29052948091` on commit `33ba006b`.
+- Linux AppImage Verification: success on 2026-07-10 in GitHub Actions run `29052948091` on commit `33ba006b`.
+- Linux release artifact: `linux-release-artifacts`, artifact ID `8212865700`, size `1078842855` bytes.
+- SHA-256 `Multi-Converter_1.0.6_linux-x64.AppImage`: `aa743940ed29e7426877f82b54e951681697906a5c1750dca8aee5b973093fce`.
+- Manual Linux AppImage smoke testing: success on 2026-07-10, confirmed by the maintainer for the final downloaded draft AppImage. The confirmation covers executable permission, normal desktop launch, file selection, conversion and output access.
 
 ## Security And Confidentiality Evidence
 
@@ -64,11 +60,8 @@ Evidence and asset hashes dated 2026-06-16 below are historical. They predate th
 
 ## Release Asset Evidence
 
-The asset folder and hashes in this section are superseded by the final-source changes and are retained only as historical evidence. Rebuild and revalidate all 13 desktop assets before publication.
-
-- Windows release assets: prepared and validated on 2026-06-16 with `npm run validate:release-assets -- --version 1.0.6 --platform windows`.
-  - Clean folder: `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6`
-  - SHA-256 `Multi-Converter_1.0.6_x64-setup.exe`: `63d1dab699e36c918cda3dcb1c07656a2e02fcfb74a871025cc80b7b9643c7a3`
-- macOS release assets: prepared and verified by GitHub Actions run `27615775974`, downloaded locally, and included in the validated desktop release asset folder.
-- Linux release assets: prepared by GitHub Actions run `27615778303`, downloaded locally to `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6\linux-download`, and hash-checked on 2026-06-16.
-- Full desktop release assets: prepared in `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6-desktop` and validated on 2026-06-16 with `node scripts/validate-release-assets.mjs --version 1.0.6 --platform desktop --macos-dmg-sha256 d966bc73247b0ee77431443d30c19f9a2ca9b5a9aff7aa120f3288fcf8cf3c88 --macos-updater-sha256 128aadef0348dcbecaa83c804d4aed37c096e42fbeb162dbdfbad11334abcd72 --linux-appimage-sha256 8d31bfa9850cc3f1ae4f92fe14c4b74eeb72f2b5e74111e05186a3c8654cea4e`.
+- Windows release assets: prepared and validated on 2026-07-10. SHA-256 `Multi-Converter_1.0.6_x64-setup.exe`: `4d33813ea175cf66f15202dfc204328d841b2b8829ba4eab57ba2c8ca406d73a`.
+- macOS release assets: prepared and verified by GitHub Actions run `29052946761`, downloaded and hash-checked locally.
+- Linux release assets: prepared and verified by GitHub Actions run `29052948091`, downloaded and hash-checked locally.
+- Full desktop release assets: prepared in `%LOCALAPPDATA%\Temp\mc-release-assets\v1.0.6-final-desktop` and validated on 2026-07-10 with `npm run validate:release-assets -- --version 1.0.6 --platform desktop --macos-dmg-sha256 f6978d93278a142c98c23a655059b77b5ed68fdc6b2408296f2df1ae8cd3421f --macos-updater-sha256 0b0e95fd7cefe5885a587dac6e7a0a4069b7c36b59331518cf18184a0111abdc --linux-appimage-sha256 aa743940ed29e7426877f82b54e951681697906a5c1750dca8aee5b973093fce`.
+- GitHub draft `v1.0.6`: exactly 13 application assets, with every remote size and digest matching the validated local desktop folder before publication.

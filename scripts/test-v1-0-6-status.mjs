@@ -12,15 +12,19 @@ try {
     assertMode: true,
   });
   assert.equal(current.version, "1.0.6");
-  assert.equal(current.releaseReady, false, "current V1.0.6 evidence should stay blocked until final manual smoke tests exist");
-  assert.match(current.blockers.join("\n"), /Manual clean-Mac smoke testing/);
-  assert.match(current.blockers.join("\n"), /Manual Linux AppImage smoke testing/);
-  assert.doesNotMatch(current.blockers.join("\n"), /macOS Conversion Matrix/);
-  assert.doesNotMatch(current.blockers.join("\n"), /Linux AppImage Build/);
-  assert.doesNotMatch(current.blockers.join("\n"), /Final Codex Security pass/);
+  assert.equal(current.releaseReady, true, "current V1.0.6 evidence should be ready after final manual smoke tests");
+  assert.deepEqual(current.blockers, []);
 
   const ready = runStatus("ready.md", completedEvidence(), { requireReady: true });
   assert.equal(ready.releaseReady, true, "complete V1.0.6 evidence should satisfy require-ready mode");
+
+  const missingManualSmoke = runStatus(
+    "missing-manual-smoke.md",
+    completedEvidence().replace("Manual clean-Mac smoke testing: success", "Manual clean-Mac smoke testing: pending"),
+    { requireReady: true, expectedStatus: 1 },
+  );
+  assert.equal(missingManualSmoke.status.releaseReady, false);
+  assert.match(missingManualSmoke.output, /Manual clean-Mac smoke testing is still required/);
 
   const missingSecurity = runStatus("missing-security.md", completedEvidence().replace("Final Codex Security pass: passed", "Final Codex Security pass: pending"), {
     requireReady: true,
