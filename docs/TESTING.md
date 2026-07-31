@@ -16,8 +16,10 @@ That command intentionally refuses non-Windows hosts and runs:
 
 ```powershell
 npm audit --omit=dev
+npm audit
 npm run prepare:bundled-engines
 npm run check
+npm run test:ui:preview
 npm run fmt:rust:check
 npm run clippy:rust
 npm run audit:rust
@@ -26,13 +28,17 @@ npm run test:rust
 npm run test:conversions
 npm run test:pdfium-wrapper
 npm run clippy:pdfium-wrapper
-npm run test:production-config
-npm run test:secret-leaks
 npm run build
 npm run tauri:build
 ```
 
-During a long local run, the wrapper writes progress to `tmp/windows-ci-gate-status.json`. If a terminal session times out while `tauri:build` or NSIS is still running, inspect that file and the running processes before starting another full gate.
+These 15 steps include both production-only and complete installed dependency
+audits. `npm run check` contains the unit, source-contract, production-config
+and secret-leak checks; the separate Playwright step then exercises the
+compiled frontend in Chromium. During a long local run, the wrapper writes
+progress to `tmp/windows-ci-gate-status.json`. If a terminal session times out
+while `tauri:build` or NSIS is still running, inspect that file and the running
+processes before starting another full gate.
 
 Before publishing Windows assets, prepare a clean release folder and run:
 
@@ -46,19 +52,22 @@ Run package and Rust dependency audits before release:
 
 ```powershell
 npm audit --omit=dev
+npm audit
 npm run audit:rust
 ```
 
-`npm audit --omit=dev` should finish with no production vulnerabilities.
+Both npm audits should finish with no known vulnerabilities. The first makes
+the production dependency boundary explicit; the second also covers the local
+build and test toolchain.
 
-`npm run audit:rust` runs Cargo Audit against `src-tauri/Cargo.lock` and fails on denied runtime vulnerabilities. It intentionally ignores only `RUSTSEC-2026-0194` and `RUSTSEC-2026-0195` while `wayland-scanner 0.31.10` has no patched release. That dependency is a Linux build-time proc-macro which parses the bundled Wayland protocol definitions; it is not used to parse user XML or application input at runtime. Remove both exceptions as soon as the Wayland dependency chain supports `quick-xml >=0.41.0`, and do not reuse these exceptions for another dependency path.
+`npm run audit:rust` runs Cargo Audit against `src-tauri/Cargo.lock` without advisory exceptions and fails on denied vulnerabilities. The former build-time `wayland-scanner 0.31.10` dependency was updated to `0.31.11`, which removed the vulnerable `quick-xml 0.39.4` parser and allowed the two temporary RustSec exceptions to be deleted.
 
 Cargo Audit does not fail on warning categories unless `--deny warnings`, `--deny unmaintained`, `--deny unsound` or `--deny yanked` is added. Do not report this as "no RustSec warnings" unless that stricter command also passes.
 
 For the current V1.0.6 baseline and V1.0.7 development tree, the expected Rust audit state is:
 
 - 0 reported vulnerabilities;
-- allowed warnings from transitive Tauri/Linux GTK-related crates and a few unmaintained utility crates;
+- allowed warning categories from transitive Tauri/Linux GTK-related crates and a few unmaintained utility crates, including the remaining `glib 0.18.5` unsoundness warning;
 - follow-up review needed when Tauri, Wry or Linux support dependencies are upgraded.
 
 ## Secret Leak Scan
@@ -107,17 +116,99 @@ Changes to the Pages pipeline must update
 repository-level `.github/workflows/` directory; the workflow executes its npm
 steps inside `site/` and uploads `site/out`.
 
+## Frontend Guardrails
+
+Use the fast unit suite while changing pure frontend logic:
+
+```bash
+npm run typecheck:tests
+npm run test:unit
+```
+
+The dedicated TypeScript project covers `tests/**/*.ts`,
+`playwright.config.ts` and `vitest.config.ts`; the application `tsconfig.json`
+continues to cover `src` only.
+
+Vitest currently exercises the DOM-independent editor pagination planner,
+including empty input, overflow, forced page breaks, oversized blocks and
+invalid measurements. Add pure logic here rather than extending a source-text
+contract with behavior that can be executed directly.
+
+Use the compiled-preview behavior suite after changing application flows,
+responsive layout or editor dialogs:
+
+```bash
+npx playwright install chromium
+npm run test:ui:preview
+```
+
+Playwright builds the frontend, serves `dist` on `127.0.0.1:4173`, and runs the
+same scenarios in desktop Chromium and a 390 x 844 mobile viewport. Reports,
+traces and failure screenshots are written under `output/playwright/` and stay
+local.
+
+The preview API is an in-memory browser simulation. These tests do not prove
+native Tauri file access, real conversion output, durable editor persistence,
+sidecars, updater behavior, OCR or packaging. Keep Rust, conversion, host and
+packaging gates for those responsibilities.
+
+Run both focused guardrail suites with:
+
+```bash
+npm run test:guardrails
+```
+
+## Local Refactor Measurements
+
+Capture a structured local engineering snapshot without recording user
+content or sending measurement telemetry:
+
+```powershell
+npm run measure:baseline -- --output test-results/phase-1-baseline/current.json --gate-status tmp/windows-ci-gate-status.json
+```
+
+Pass `--artifact <exact-path>` to include a known installer or executable.
+The report counts software source only within configured repository folders,
+reports raw and gzip frontend bundle sizes, keeps engine sizes separate, and
+can summarize a Windows gate status ledger. Generated JSON remains ignored.
+Detected artifacts and engine folders reflect the current machine state, so
+compare reports only when the same preparation command and artifact boundary
+were used.
+
+On Windows, an opt-in startup proxy can measure process launch to the first
+responsive top-level window and sample process memory:
+
+```powershell
+npm run measure:windows-runtime -- -ExecutablePath "<exact-exe-path>" -Runs 5
+```
+
+The first sample is labelled `first` and later samples `repeat`; this is not a
+controlled cold-start benchmark. A responsive window handle is only a startup
+proxy, not proof that conversion, editor or interaction work is ready. Memory
+figures cover the launched root process and do not include WebView2 or engine
+child processes. The script itself does not read user content or send
+telemetry, but it launches Multi-Converter with its normal local profile and
+does not isolate the app from configured updater checks. See
+`REFACTOR_BASELINE.md` for the fixed Phase 1 boundary and interpretation rules.
+
 ## Document Editor
 
 Run the editor contract tests after changing the Tiptap setup, document model, pagination, autosave commands or editor navigation:
 
 ```bash
 npm run test:editor
+npm run test:unit
 npm run test:ui-layout
 npm run typecheck
 ```
 
-`npm run test:editor` verifies that all Tiptap packages stay on one exact open-source version, rejects `@tiptap-pro/*`, checks the shared frontend/backend command contract, forbids Office-to-HTML routing and exercises the DOM-independent pagination planner. The Rust suite covers local draft paths, atomic writes, the bounded ODT parser, hostile XML/archive inputs, `mc-asset://` validation, rich ODT round trips, page layout, headers, footers and numbering.
+`npm run test:editor` verifies that all Tiptap packages stay on one exact
+open-source version, rejects `@tiptap-pro/*`, checks the shared
+frontend/backend command contract and forbids Office-to-HTML routing.
+`npm run test:unit` executes the DOM-independent pagination planner. The Rust
+suite covers local draft paths, atomic writes, the bounded ODT parser, hostile
+XML/archive inputs, `mc-asset://` validation, rich ODT round trips, page layout,
+headers, footers and numbering.
 
 After an editor UI change, also run the Vite preview and verify:
 
@@ -135,11 +226,13 @@ After an editor UI change, also run the Vite preview and verify:
 
 Vite uses a simulated local API. Opening, saving, importing, native Tauri file drops and exporting real files must be checked through `npm start` or `npm run tauri:dev`.
 
-To inspect the compiled frontend rather than the development module graph, build it and serve the generated `dist` folder with the local Vite executable:
+To inspect the compiled frontend rather than the development module graph, run
+the automated preview suite or build and serve `dist` manually:
 
 ```bash
-npm run build
-npx vite preview --host 127.0.0.1 --port 4173 --strictPort
+npm run test:ui:preview
+npm run build:frontend
+npm run preview:test
 ```
 
 Before starting the OCR work, run the Windows Tauri editor matrix for ODT, DOCX and RTF: import a rich multi-page document, edit body/header/footer/table/image/page settings, save as each office format, export PDF, reopen the office outputs, restart the app, and test overwrite confirmation plus an external-source conflict. Record the engine versions, output hashes, screenshots and every anomaly in `docs/V1_0_7_EDITOR_VALIDATION.md`. A Vite-only result is not valid evidence for this matrix.

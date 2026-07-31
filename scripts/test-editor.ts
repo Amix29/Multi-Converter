@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { planPageBreaks } from "../src/editor/pagination.ts";
 
 const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
@@ -48,22 +47,4 @@ assert.match(editorExtensions, /allowBase64:\s*false/, "base64 images must be di
 assert.match(imageNodeView, /URL\.revokeObjectURL/, "temporary editor asset URLs must be revoked");
 assert.match(api, /editorStoreAsset/, "the frontend asset storage contract is missing");
 
-assert.deepEqual(planPageBreaks([], 100), { breakPositions: [], pageCount: 1 });
-assert.deepEqual(
-  planPageBreaks([
-    { pos: 1, height: 60 },
-    { pos: 10, height: 50 },
-    { pos: 20, height: 20 },
-  ], 100),
-  { breakPositions: [10], pageCount: 2 },
-);
-assert.deepEqual(
-  planPageBreaks([
-    { pos: 1, height: 20 },
-    { pos: 5, height: 20, forceBefore: true },
-  ], 100),
-  { breakPositions: [5], pageCount: 2 },
-);
-assert.equal(planPageBreaks([{ pos: 1, height: 250 }], 100).pageCount, 3, "oversized blocks must count overflow pages");
-
-console.log("Editor contracts and pagination tests passed.");
+console.log("Editor source contracts passed.");

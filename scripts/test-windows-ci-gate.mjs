@@ -18,8 +18,10 @@ const status = {
 
 const commands = [
   ["npm", ["audit", "--omit=dev"]],
+  ["npm", ["audit"]],
   ["npm", ["run", "prepare:bundled-engines"]],
   ["npm", ["run", "check"]],
+  ["npm", ["run", "test:ui:preview"]],
   ["npm", ["run", "fmt:rust:check"]],
   ["npm", ["run", "clippy:rust"]],
   ["npm", ["run", "audit:rust"]],

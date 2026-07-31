@@ -62,6 +62,7 @@ jobs:
           key: ${{ runner.os }}-cargo-audit-bin-v1
 
       - run: npm ci
+      - run: npx playwright install chromium
       - run: cargo install cargo-audit --locked
         if: steps.cargo-audit-cache.outputs.cache-hit != 'true'
       - run: npm run test:windows:ci

@@ -7,7 +7,8 @@
 - Last documentation review: **2026-07-31**
 - Overall gate: **blocked**
 - Version metadata: **1.0.6**
-- Development checkpoint: local commit **`1be6b840`** on `codex/test`, not pushed
+- Development checkpoint: local commit **`3570b89a`** on `codex/test`, not pushed
+- Phase 1 state: uncommitted validation work on `codex/phase-1-guardrails`
 
 This is the combined release-validation ledger for V1.0.7. It does not replace the detailed editor or OCR documents:
 
@@ -42,6 +43,52 @@ Vite development server remained in dependency optimization during this pass.
 It proves only the rendered mock-browser flow: it does not validate current
 Tauri persistence, native file access, Office import/export, sidecars, updater
 behavior or OCR.
+
+## 2026-07-31 Refactor Phase 1 Guardrails
+
+Phase 1 is an isolated local guardrail and measurement change on branch
+`codex/phase-1-guardrails`, based on commit `3570b89a03a7`. It preserves every
+bundled engine and conversion path and intentionally leaves the project
+metadata at `1.0.6`.
+
+Implemented evidence:
+
+- Vitest executes ten pagination-planner cases instead of relying on
+  source-text inspection for that behavior;
+- a dedicated TypeScript project checks the Vitest/Playwright configuration
+  and all test files instead of leaving them outside `tsc --noEmit`;
+- Playwright exercises converter import/format selection, editor creation and
+  editing, and the recent-document delete confirmation in compiled Chromium at
+  desktop and 390 x 844 mobile sizes;
+- the browser suite passes 6 scenarios, but remains mock-preview evidence only;
+- the installed npm dependency audit reports zero known vulnerabilities after
+  upgrading Vite/PostCSS and adding the pinned test tools;
+- the Rust audit reports zero vulnerabilities without exceptions after the
+  `wayland-scanner` update removed the affected older `quick-xml` path; allowed
+  warning categories remain documented in `TESTING.md`;
+- local-only scripts now separate software, frontend bundle, packaged artifact
+  and engine-size measurements, with an opt-in Windows responsive-window and
+  process-memory proxy;
+- the final 15-step Windows gate passed in 1,148,177 ms, including both npm
+  audits, 34 Vitest tests, 6 compiled-preview Chromium scenarios, Rust/Clippy,
+  the complete conversion matrix, PDFium and the Tauri/NSIS build;
+- after review-only test/tooling hardening, `npm run check` and
+  `npm run test:guardrails` passed again with 35 Vitest tests, strict test
+  configuration typechecking and the 6 Chromium scenarios;
+- the resulting Windows executable is 25,644,032 bytes and the local unsigned
+  NSIS installer is 612,348,424 bytes. These are development artifacts, not
+  V1.0.7 release assets.
+
+The initial browser run also found a mobile pointer overlap from the floating
+feedback control and could not use a newly edited preview document as a stable
+recent-document navigation fixture. These are recorded in
+`REFACTOR_BASELINE.md`; they were not repaired or misreported as native-runtime
+proof in this guardrail phase.
+
+Phase 1 does **not** close the Windows Tauri editor matrix, native drop,
+persistent asset, OCR, macOS, Linux, version synchronization or release-asset
+gates below. The responsive-window probe also remains a local startup proxy,
+not functional validation of the packaged editor or conversion UI.
 
 ## Gate Summary
 

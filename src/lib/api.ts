@@ -306,8 +306,11 @@ function createTauriApi(): MultiConverterApi {
 }
 
 function createPreviewApi(): MultiConverterApi {
+  const previewParams = new URLSearchParams(window.location.search);
   const listeners = new Set<(payload: ProgressPayload) => void>();
-  const previewDocuments: EditorDocumentV1[] = [];
+  const previewDocuments: EditorDocumentV1[] = previewParams.get("mockRecentDocuments") === "1"
+    ? [makePreviewEditorDocument("Brouillon de test")]
+    : [];
   const previewEditorAssets = new Map<string, EditorAssetData>();
   const previewRoot = "C:\\Users\\Public";
   const previewTemp = `${previewRoot}\\AppData\\Local\\Temp\\multi-converter-preview`;
@@ -340,7 +343,7 @@ function createPreviewApi(): MultiConverterApi {
 
   return {
     async welcomeState() {
-      return { show: new URLSearchParams(window.location.search).get("mockWelcomeSeen") !== "1" };
+      return { show: previewParams.get("mockWelcomeSeen") !== "1" };
     },
     async markWelcomeSeen() {
       return true;

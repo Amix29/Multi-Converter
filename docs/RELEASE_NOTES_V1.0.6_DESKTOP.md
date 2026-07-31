@@ -87,4 +87,4 @@ Multi-Converter v1.0.6 makes importing files easier and improves complex documen
 - Version metadata is synchronized at `1.0.6` across npm, Cargo and Tauri configuration files.
 - The full desktop release contains exactly 13 application assets: Windows installer files, the universal macOS DMG and updater archive, the Linux AppImage files, and one shared `latest.json`.
 - Build and Release workflow checkout contracts now enforce `lfs: false` so exhausted repository LFS bandwidth cannot block verified release preparation.
-- Two `quick-xml` denial-of-service advisories remain explicitly acknowledged only in the build-time Wayland protocol generator; that code does not parse application or user XML at runtime and no patched `wayland-scanner` release is currently available.
+- At publication time, two `quick-xml` denial-of-service advisories were explicitly acknowledged only in the build-time Wayland protocol generator; that code did not parse application or user XML at runtime. The later V1.0.7 development lockfile moved to the patched `wayland-scanner` release and removed those exceptions.

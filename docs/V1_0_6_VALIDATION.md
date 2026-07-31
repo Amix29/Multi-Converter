@@ -14,7 +14,7 @@ This file records the final validation evidence for the v1.0.6 release.
 - `npm run tauri:build`: passed on 2026-07-09 and generated the Windows x64 NSIS installer plus updater signature.
 - `npm run test:windows:ci`: passed on 2026-07-09. All 13 ordered steps completed successfully in `tmp/windows-ci-gate-status.json`.
 - `npm audit --omit=dev`: passed with 0 vulnerabilities.
-- `npm run audit:rust`: passed with 0 denied runtime vulnerabilities and 19 allowed warning-category advisories. `RUSTSEC-2026-0194` and `RUSTSEC-2026-0195` are temporarily ignored only for the build-time `wayland-scanner 0.31.10` proc-macro; no patched Wayland scanner release is available and the affected XML parser is not used on application or user input at runtime.
+- `npm run audit:rust`: passed with 0 denied runtime vulnerabilities and 19 allowed warning-category advisories. At release-validation time, `RUSTSEC-2026-0194` and `RUSTSEC-2026-0195` were temporarily acknowledged only for the build-time `wayland-scanner 0.31.10` proc-macro; the later V1.0.7 development lockfile moved to the patched scanner and removed those exceptions.
 - Playwright frontend QA: passed on 2026-07-09 at 1440x900 and 390x844 with 0 console errors and 0 console warnings. The Files screen rendered without a clipboard button or visible mobile overflow.
 - Regression coverage includes complex DOCX layout-free extraction, complex PDF-to-Markdown table reconstruction, bounded local clipboard files and drop/paste step restrictions.
 

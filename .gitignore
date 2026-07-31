@@ -6,6 +6,7 @@ dist/
 out/
 release/
 release-artifacts/
+release-direct/
 
 # Tauri/Rust build output
 src-tauri/target/
@@ -20,6 +21,7 @@ dist-engines-*/
 # Local test and automation artifacts
 test-results/
 playwright-report/
+output/
 .playwright-cli/
 tmp/
 tmp-test/
