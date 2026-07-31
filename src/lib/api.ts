@@ -2,6 +2,86 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 export type Engine = string;
+export type AppMode = "converter" | "editor";
+export type EditorFormat = "docx" | "odt" | "rtf" | "txt" | "md" | "html" | "pdf";
+
+export interface EditorAssetRef {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  width?: number;
+  height?: number;
+}
+
+export interface EditorCompatibilityWarning {
+  code: string;
+  message: string;
+  blocksOverwrite: boolean;
+}
+
+export interface EditorDocumentV1 {
+  schemaVersion: 1;
+  id: string;
+  title: string;
+  source: {
+    path: string;
+    format: Exclude<EditorFormat, "pdf">;
+    size: number;
+    modifiedAt: string;
+  } | null;
+  content: Record<string, unknown>;
+  header: Record<string, unknown> | null;
+  footer: Record<string, unknown> | null;
+  page: {
+    format: "a3" | "a4" | "a5" | "letter" | "legal";
+    orientation: "portrait" | "landscape";
+    marginsMm: { top: number; right: number; bottom: number; left: number };
+    numbering: "none" | "bottom-center" | "bottom-right";
+  };
+  assets: EditorAssetRef[];
+  warnings: EditorCompatibilityWarning[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EditorDocumentSummary {
+  id: string;
+  title: string;
+  format: string;
+  sourcePath: string | null;
+  updatedAt: string;
+  recoverable: boolean;
+}
+
+export interface EditorImportResult {
+  document: EditorDocumentV1;
+  transientContent?: {
+    kind: "html" | "markdown";
+    value: string;
+  } | null;
+}
+
+export interface EditorWriteRequest {
+  document: EditorDocumentV1;
+  targetFormat: EditorFormat;
+  destinationPath?: string | null;
+}
+
+export interface EditorWriteResult {
+  path: string;
+  document: EditorDocumentV1;
+}
+
+export interface EditorAssetData {
+  bytes: number[];
+  mimeType: string;
+}
+
+export interface EditorAssetStoreResult {
+  asset: EditorAssetRef;
+  document: EditorDocumentV1;
+}
 
 export interface TargetFormat {
   format: string;
@@ -127,6 +207,22 @@ export interface MultiConverterApi {
   cancelConversion(jobId: string): Promise<boolean>;
   revealFile(filePath: string): Promise<boolean>;
   openExternalUrl(url: string): Promise<boolean>;
+  editorCreateDocument(): Promise<EditorDocumentV1>;
+  editorListRecentDocuments(): Promise<EditorDocumentSummary[]>;
+  editorLoadDocument(id: string): Promise<EditorDocumentV1>;
+  editorSaveDraft(document: EditorDocumentV1): Promise<EditorDocumentV1>;
+  editorDeleteDraft(id: string): Promise<boolean>;
+  editorRenameDocument(id: string, title: string): Promise<EditorDocumentV1>;
+  editorDuplicateDocument(id: string, title: string): Promise<EditorDocumentV1>;
+  editorImportDocument(path?: string | null): Promise<EditorImportResult | null>;
+  editorSaveDocument(request: EditorWriteRequest): Promise<EditorWriteResult>;
+  editorSaveAs(request: EditorWriteRequest): Promise<EditorWriteResult | null>;
+  editorExportDocument(request: EditorWriteRequest): Promise<EditorWriteResult | null>;
+  editorReadAsset(documentId: string, assetId: string): Promise<EditorAssetData>;
+  editorStoreAsset(documentId: string, name: string, mimeType: string, bytes: number[]): Promise<EditorAssetStoreResult>;
+  editorImportAsset(documentId: string, path?: string | null): Promise<EditorAssetStoreResult | null>;
+  editorRemoveAsset(documentId: string, assetId: string): Promise<EditorDocumentV1>;
+  editorPruneAssets(documentId: string): Promise<EditorDocumentV1>;
   engineStatuses(): Promise<EngineStatus[]>;
   onProgress(callback: (payload: ProgressPayload) => void): Promise<UnlistenFn>;
   onFileDrop(callback: (paths: string[]) => void): Promise<UnlistenFn>;
@@ -183,6 +279,22 @@ function createTauriApi(): MultiConverterApi {
     cancelConversion: (jobId) => invoke<boolean>("cancel_conversion", { jobId }),
     revealFile: (filePath) => invoke<boolean>("reveal_file", { filePath }),
     openExternalUrl: (url) => invoke<boolean>("open_external_url", { url }),
+    editorCreateDocument: () => invoke<EditorDocumentV1>("editor_create_document"),
+    editorListRecentDocuments: () => invoke<EditorDocumentSummary[]>("editor_list_recent_documents"),
+    editorLoadDocument: (id) => invoke<EditorDocumentV1>("editor_load_document", { id }),
+    editorSaveDraft: (document) => invoke<EditorDocumentV1>("editor_save_draft", { document }),
+    editorDeleteDraft: (id) => invoke<boolean>("editor_delete_draft", { id }),
+    editorRenameDocument: (id, title) => invoke<EditorDocumentV1>("editor_rename_document", { id, title }),
+    editorDuplicateDocument: (id, title) => invoke<EditorDocumentV1>("editor_duplicate_document", { id, title }),
+    editorImportDocument: (path) => invoke<EditorImportResult | null>("editor_import_document", { path: path ?? null }),
+    editorSaveDocument: (request) => invoke<EditorWriteResult>("editor_save_document", { request }),
+    editorSaveAs: (request) => invoke<EditorWriteResult | null>("editor_save_as", { request }),
+    editorExportDocument: (request) => invoke<EditorWriteResult | null>("editor_export_document", { request }),
+    editorReadAsset: (documentId, assetId) => invoke<EditorAssetData>("editor_read_asset", { documentId, assetId }),
+    editorStoreAsset: (documentId, name, mimeType, bytes) => invoke<EditorAssetStoreResult>("editor_store_asset", { documentId, name, mimeType, bytes }),
+    editorImportAsset: (documentId, path) => invoke<EditorAssetStoreResult | null>("editor_import_asset", { documentId, path: path ?? null }),
+    editorRemoveAsset: (documentId, assetId) => invoke<EditorDocumentV1>("editor_remove_asset", { documentId, assetId }),
+    editorPruneAssets: (documentId) => invoke<EditorDocumentV1>("editor_prune_assets", { documentId }),
     engineStatuses: () => invoke<EngineStatus[]>("engine_statuses"),
     onProgress: async (callback) => listen<ProgressPayload>("convert-progress", (event) => callback(event.payload)),
     onFileDrop: async (callback) =>
@@ -195,6 +307,8 @@ function createTauriApi(): MultiConverterApi {
 
 function createPreviewApi(): MultiConverterApi {
   const listeners = new Set<(payload: ProgressPayload) => void>();
+  const previewDocuments: EditorDocumentV1[] = [];
+  const previewEditorAssets = new Map<string, EditorAssetData>();
   const previewRoot = "C:\\Users\\Public";
   const previewTemp = `${previewRoot}\\AppData\\Local\\Temp\\multi-converter-preview`;
   const audioTargets = [
@@ -315,6 +429,115 @@ function createPreviewApi(): MultiConverterApi {
       window.open(url, "_blank", "noopener,noreferrer");
       return true;
     },
+    async editorCreateDocument() {
+      const document = makePreviewEditorDocument("Sans titre");
+      previewDocuments.unshift(document);
+      return document;
+    },
+    async editorListRecentDocuments() {
+      return previewDocuments.slice(0, 10).map((document) => ({
+        id: document.id,
+        title: document.title,
+        format: document.source?.format ?? "draft",
+        sourcePath: document.source?.path ?? null,
+        updatedAt: document.updatedAt,
+        recoverable: true,
+      }));
+    },
+    async editorLoadDocument(id) {
+      const document = previewDocuments.find((item) => item.id === id);
+      if (!document) throw new Error("Brouillon introuvable.");
+      return structuredClone(document);
+    },
+    async editorSaveDraft(document) {
+      const saved = { ...structuredClone(document), updatedAt: new Date().toISOString() };
+      const index = previewDocuments.findIndex((item) => item.id === saved.id);
+      if (index >= 0) previewDocuments.splice(index, 1);
+      previewDocuments.unshift(saved);
+      return saved;
+    },
+    async editorDeleteDraft(id) {
+      const index = previewDocuments.findIndex((item) => item.id === id);
+      if (index >= 0) previewDocuments.splice(index, 1);
+      return true;
+    },
+    async editorRenameDocument(id, title) {
+      const document = previewDocuments.find((item) => item.id === id);
+      if (!document) throw new Error("Brouillon introuvable.");
+      return this.editorSaveDraft({ ...document, title: title.trim() });
+    },
+    async editorDuplicateDocument(id, title) {
+      const document = previewDocuments.find((item) => item.id === id);
+      if (!document) throw new Error("Brouillon introuvable.");
+      const duplicate = structuredClone(document);
+      duplicate.id = crypto.randomUUID();
+      duplicate.title = title.trim();
+      duplicate.source = null;
+      duplicate.createdAt = new Date().toISOString();
+      duplicate.updatedAt = duplicate.createdAt;
+      for (const asset of duplicate.assets) {
+        const data = previewEditorAssets.get(`${id}:${asset.id}`);
+        if (data) previewEditorAssets.set(`${duplicate.id}:${asset.id}`, structuredClone(data));
+      }
+      return this.editorSaveDraft(duplicate);
+    },
+    async editorImportDocument(path) {
+      const document = makePreviewEditorDocument(path?.split(/[\\/]/).pop()?.replace(/\.[^.]+$/, "") || "Rapport annuel");
+      document.source = {
+        path: path || `${previewRoot}\\Documents\\Rapport annuel.docx`,
+        format: "docx",
+        size: 84214,
+        modifiedAt: new Date().toISOString(),
+      };
+      previewDocuments.unshift(document);
+      return {
+        document,
+        transientContent: {
+          kind: "html",
+          value: "<h1>Rapport annuel</h1><p>Ce document reste entièrement local et peut être modifié avec Multi-Converter.</p><h2>Résumé</h2><p>Ajoutez votre contenu ici.</p>",
+        },
+      };
+    },
+    async editorSaveDocument(request) {
+      const path = request.document.source?.path || `${previewRoot}\\Documents\\${request.document.title}.${request.targetFormat}`;
+      return { path, document: await this.editorSaveDraft(request.document) };
+    },
+    async editorSaveAs(request) {
+      const document = await this.editorSaveDraft(request.document);
+      return { path: `${previewRoot}\\Documents\\${document.title}.${request.targetFormat}`, document };
+    },
+    async editorExportDocument(request) {
+      const document = await this.editorSaveDraft(request.document);
+      return { path: `${previewRoot}\\Downloads\\${document.title}.${request.targetFormat}`, document };
+    },
+    async editorReadAsset(documentId, assetId) {
+      const data = previewEditorAssets.get(`${documentId}:${assetId}`);
+      if (!data) throw new Error("Ressource introuvable.");
+      return structuredClone(data);
+    },
+    async editorStoreAsset(documentId, name, mimeType, bytes) {
+      const document = previewDocuments.find((item) => item.id === documentId);
+      if (!document) throw new Error("Brouillon introuvable.");
+      const asset: EditorAssetRef = { id: crypto.randomUUID(), name, mimeType, size: bytes.length };
+      document.assets = [...document.assets, asset];
+      previewEditorAssets.set(`${documentId}:${asset.id}`, { bytes: [...bytes], mimeType });
+      return { asset, document: await this.editorSaveDraft(document) };
+    },
+    async editorImportAsset() {
+      return null;
+    },
+    async editorRemoveAsset(documentId, assetId) {
+      const document = previewDocuments.find((item) => item.id === documentId);
+      if (!document) throw new Error("Brouillon introuvable.");
+      document.assets = document.assets.filter((asset) => asset.id !== assetId);
+      previewEditorAssets.delete(`${documentId}:${assetId}`);
+      return this.editorSaveDraft(document);
+    },
+    async editorPruneAssets(documentId) {
+      const document = previewDocuments.find((item) => item.id === documentId);
+      if (!document) throw new Error("Brouillon introuvable.");
+      return structuredClone(document);
+    },
     async engineStatuses() {
       return [
         { id: "rust-text", label: "Moteur documents intégré", mode: "base", available: true, status: "ready" },
@@ -334,6 +557,29 @@ function createPreviewApi(): MultiConverterApi {
     async onFileDrop() {
       return () => undefined;
     },
+  };
+}
+
+function makePreviewEditorDocument(title: string): EditorDocumentV1 {
+  const now = new Date().toISOString();
+  return {
+    schemaVersion: 1,
+    id: crypto.randomUUID(),
+    title,
+    source: null,
+    content: { type: "doc", content: [{ type: "paragraph" }] },
+    header: null,
+    footer: null,
+    page: {
+      format: "a4",
+      orientation: "portrait",
+      marginsMm: { top: 25, right: 20, bottom: 25, left: 20 },
+      numbering: "bottom-center",
+    },
+    assets: [],
+    warnings: [],
+    createdAt: now,
+    updatedAt: now,
   };
 }
 

@@ -42,6 +42,9 @@
 - [macOS Installation](#macos-installation)
 - [Linux Installation](#linux-installation)
 - [Overview](#overview)
+- [V1.0.7 In Development](#v107-in-development)
+- [Document Editor (V1.0.7 development)](#document-editor-v107-development)
+- [Local OCR (V1.0.7 planned)](#local-ocr-v107-planned)
 - [Supported Formats](#supported-formats)
 - [Privacy](#privacy)
 - [Bundled Conversion Engines](#bundled-conversion-engines)
@@ -63,6 +66,8 @@
 | 🆓 **Free and open source** | Use **Multi-Converter** freely and browse its source code. |
 | 🔒 **Local and private** | Your files stay on your computer throughout the conversion. |
 | 🔄 **Multi-format** | Documents, images, audio and video — all handled in a single app. |
+| ✍️ **Local document editor** | The V1.0.7 branch adds local document creation and editing with Tiptap. |
+| 🔎 **Local OCR** | V1.0.7 will extract text from PDFs and images with PP-OCRv6_medium. |
 | ⚡ **Ready after install** | Conversions run locally with the engines bundled for each release platform. |
 
 ---
@@ -120,6 +125,74 @@ Linux automatic updates are enabled for builds that include the Tauri updater-si
   <img src="docs/screenshots/03-output.png" alt="Conversion complete" width="32%">
 </p>
 
+The current public release is **V1.0.6** for Windows x64, universal macOS and Linux x64. **V1.0.7 is in development** and adds two major local features: a Tiptap document editor and PP-OCRv6_medium OCR.
+
+---
+
+## V1.0.7 In Development
+
+V1.0.7 has two official objectives:
+
+| Workstream | Goal | Current status |
+| --- | --- | --- |
+| ✍️ Document editor | Create, import, edit, save and export documents locally with Tiptap | Implemented in the development tree; final Windows Office round-trip validation is still pending |
+| 🔎 OCR | Convert scanned/image PDFs to text formats and copy text from images with `PP-OCRv6_medium` | Specified and planned; runtime/model integration has not started |
+
+The repository and application metadata intentionally remain at `1.0.6`. They will move to `1.0.7` only after the editor and OCR gates pass.
+
+The complete scope and release gates are defined in [`docs/V1_0_7_PLAN.md`](docs/V1_0_7_PLAN.md). The full documentation map is available in [`docs/README.md`](docs/README.md).
+
+---
+
+## Document Editor (V1.0.7 development)
+
+> **Development status**
+> The editor is not part of the current stable V1.0.6 release. Its Windows office round-trip matrix is still open, so the supported-format list below describes the implemented V1.0.7 code path rather than a completed public compatibility claim.
+
+The application now has two separate workspaces:
+
+- **Converter** keeps the existing three-step file conversion flow.
+- **Editor** opens a local document workspace with one active document at a time.
+
+From the editor home screen, users can:
+
+- create a new document;
+- open or drag and drop one DOCX, ODT, RTF, TXT, Markdown or HTML document;
+- reopen a recent local draft;
+- rename, duplicate or delete a draft from its recent-document menu.
+
+Deleting a recent document removes only the local draft and its local editor assets. It does not delete the original imported file. A confirmation dialog is required before deletion.
+
+The editor provides a paginated canvas, common text formatting, tables, local images, page settings, headers, footers, numbering, autosave and export controls. Draft content is stored as versioned Tiptap JSON. Persisted images use local `mc-asset://<uuid>` references instead of Base64 data, remote URLs or exposed file-system paths.
+
+Rich DOCX and RTF imports are converted locally to ODT by LibreOffice, then read by the bounded ODT parser. Direct ODT imports use the same parser. Office exports are generated from the editor document model through ODT before DOCX, RTF or PDF conversion.
+
+The implemented export choices are DOCX, ODT, RTF, HTML, Markdown, TXT and PDF. **PDF import remains disabled** until PP-OCRv6_medium is integrated. Failed rich Office imports must display an error and must never silently fall back to plain text.
+
+The latest editor status and the still-pending Windows Tauri scenarios are tracked in [`docs/V1_0_7_EDITOR_VALIDATION.md`](docs/V1_0_7_EDITOR_VALIDATION.md).
+
+<p align="center">
+  <img src="docs/screenshots/v1.0.7-editor-recents-menu.png" alt="V1.0.7 document editor home with recent-document actions" width="49%">
+  <img src="docs/screenshots/v1.0.7-editor-delete-dialog.png" alt="V1.0.7 local draft deletion confirmation" width="49%">
+</p>
+
+---
+
+## Local OCR (V1.0.7 planned)
+
+V1.0.7 will integrate the local `PP-OCRv6_medium` model to:
+
+- convert scanned or image-only PDFs to TXT, Markdown and HTML;
+- open a PDF as editable Tiptap content;
+- extract text from PNG, JPEG, WebP, TIFF and BMP images;
+- let the user copy recognized image text to the clipboard.
+
+OCR processing must remain offline. Source images, PDF pages and recognized text must not be uploaded. The model and inference runtime will be pinned, checksum-verified and packaged locally.
+
+OCR is **not implemented yet**, so PDF import remains disabled in the editor. Existing PDF conversions with an extractable text layer continue to use the current local text path.
+
+See [`docs/V1_0_7_OCR.md`](docs/V1_0_7_OCR.md) for the product behavior, local architecture, security rules and validation matrix.
+
 ---
 
 ## Supported Formats
@@ -140,7 +213,7 @@ Linux automatic updates are enabled for builds that include the Tauri updater-si
 
 ## Privacy
 
-Conversions run on **your machine**. An internet connection may be required to download the app or install an update, but **Multi-Converter** never sends your files to the cloud.
+Conversions run on **your machine**. An internet connection may be required to download the app or install an update, but **Multi-Converter** never sends your files to the cloud. The planned V1.0.7 OCR follows the same rule: PDF pages, images and recognized text stay local.
 
 ---
 
@@ -169,6 +242,8 @@ The Windows x64 installer and macOS universal DMG bundle third-party engines for
 Key points:
 
 - **Multi-Converter** itself is licensed under **AGPL-3.0-or-later**.
+- The document editor uses the open-source **Tiptap** packages under the **MIT** license. It does not use Tiptap Pro packages or Tiptap Cloud.
+- The selected PaddleOCR project is licensed under **Apache-2.0**. Exact runtime, model and dependency notices will be added when the OCR engine is actually packaged.
 - Third-party engines remain separate software with their own licenses.
 - The **Windows x64 V1** release bundles **FFmpeg** and **ffprobe** `8.1.1-essentials_build-www.gyan.dev`, built with `--enable-gpl`: the bundled executables are treated as third-party software covered by the GPL in this distribution.
 - The Windows x64 installer and macOS universal DMG bundle **PDFium**, **LibreOffice**, **Pandoc** and **libvips**, each under their own license. Linux advanced engine redistribution must be verified separately before public release notes claim full Linux document/PDF/image coverage.
@@ -193,8 +268,11 @@ This section is for anyone who wants to run the project locally, fix a bug, sugg
 | --- | --- |
 | Desktop application | Tauri 2 |
 | UI | React + TypeScript |
+| Document editor | Tiptap 3 + ProseMirror |
+| Planned OCR | PP-OCRv6_medium through a local Tauri-managed runtime |
 | Backend | Rust + Cargo |
 | Frontend build | Vite |
+| Marketing site | Next.js 16 static export + React |
 | Internal scripts | Node.js |
 
 ### Prerequisites
@@ -226,6 +304,18 @@ npm run tauri:dev
 
 > `npm run dev` only starts the Vite frontend with a simulated API. To test **real conversions**, **sidecars**, the **Tauri** runtime or file system access, use `npm start` or `npm run tauri:dev`.
 
+### Running the Marketing Site
+
+The static marketing site has its own locked dependencies:
+
+```bash
+npm --prefix site install
+npm run site:dev
+```
+
+Use `npm run site:build` for a static export or `npm run site:check` for
+typechecking, the production export and the SEO audit.
+
 ### Useful Commands
 
 Recommended checks before a pull request:
@@ -233,8 +323,10 @@ Recommended checks before a pull request:
 ```bash
 npm run check
 npm run test:rust
+npm run test:editor
 npm run test:pdfium-wrapper
 npm run test:pdfium-wrapper:compile
+npm run site:check
 ```
 
 `npm run check` covers installer asset generation, bundled engine validation, embedded manifest validation, i18n validation, TypeScript typechecking and engine packaging validation.
@@ -290,6 +382,8 @@ src-tauri/                   Tauri/Rust backend
 src-tauri/tauri.macos.conf.json
 src-tauri/binaries/          Base sidecars bundled for the current release target
 src-tauri/engines-manifest.json
+branding-kit/                Brand sources, guides, tokens, templates and mockups
+site/                        Static Next.js marketing site and public media
 docs/                        License, security and third-party engine documentation
 tools/                       Engine technical configuration
 scripts/                     Build, validation and maintenance scripts

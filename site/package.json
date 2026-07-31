@@ -1,0 +1,31 @@
+{
+  "name": "multi-converter-landing",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1",
+    "build": "npm run optimize:images && next build && node scripts/prune-static-export.mjs && node scripts/minify-static-assets.mjs",
+    "optimize:images": "node scripts/optimize-screenshots.mjs",
+    "preview": "npx serve@latest out",
+    "typecheck": "tsc --noEmit",
+    "audit:seo": "node scripts/audit-seo.mjs",
+    "check": "npm run typecheck && npm run build && npm run audit:seo"
+  },
+  "dependencies": {
+    "next": "16.2.12",
+    "react": "19.2.5",
+    "react-dom": "19.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "25.6.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "sharp": "0.35.3",
+    "terser": "5.48.0",
+    "typescript": "6.0.3"
+  },
+  "overrides": {
+    "postcss": "8.5.25",
+    "sharp": "$sharp"
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
 import {
   api,
@@ -7,6 +7,7 @@ import {
   type ExportResult,
   type FileDescription,
   type TargetFormat,
+  type AppMode,
 } from "./lib/api";
 import { UpdateDialog, UpdateInstallDialog, UpdateProgress, UpdateReminder } from "./components/UpdateFlow";
 import { useAppUpdater } from "./hooks/useAppUpdater";
@@ -22,6 +23,9 @@ import {
 } from "./i18n";
 import { minimumReportVersion, repositoryUrl, type AppUpdateInfo, type UpdateDownloadSize, type UpdateStatus } from "./lib/updateService";
 import brandLogoUrl from "./assets/multi-converter-icon-brand-orange.svg";
+import "./editor/editor.css";
+
+const EditorWorkspace = lazy(() => import("./editor/EditorWorkspace").then((module) => ({ default: module.EditorWorkspace })));
 
 type Step = 1 | 2 | 3;
 type Status = "pending" | "ready" | "queued" | "working" | "canceling" | "canceled" | "done" | "error" | "unsupported";
@@ -68,6 +72,7 @@ const isTauriRuntime = "__TAURI_INTERNALS__" in window;
 const welcomeStorageKey = "multi-converter-welcome-seen";
 const notificationsStorageKey = "multi-converter-notifications-enabled";
 const feedbackPrivacyStorageKey = "multi-converter-feedback-public-warning-seen";
+const appModeStorageKey = "multi-converter-app-mode";
 const issueNewUrl = `${repositoryUrl}/issues/new`;
 const maxClipboardMemoryFileBytes = 128 * 1024 * 1024;
 
@@ -108,6 +113,8 @@ export default function App() {
   const [isFeedbackPrivacyOpen, setIsFeedbackPrivacyOpen] = useState(false);
   const [feedbackPrivacyAccepted, setFeedbackPrivacyAccepted] = useState(() => readStoredFeedbackPrivacyAccepted());
   const [step, setStep] = useState<Step>(1);
+  const [appMode, setAppMode] = useState<AppMode>(() => localStorage.getItem(appModeStorageKey) === "editor" ? "editor" : "converter");
+  const [editorWasOpened, setEditorWasOpened] = useState(appMode === "editor");
   const [files, setFiles] = useState<FileItem[]>([]);
   const [outputDir, setOutputDir] = useState<string | null>(null);
   const [isConverting, setIsConverting] = useState(false);
@@ -118,8 +125,10 @@ export default function App() {
   const [notice, setNotice] = useState<{ id: number; tone: NoticeTone; message: string } | null>(null);
   const [importFeedback, setImportFeedback] = useState<ImportFeedback>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const canImportDroppedFiles = step === 1 || step === 2;
+  const [editorDropRequest, setEditorDropRequest] = useState<{ id: number; paths: string[] } | null>(null);
+  const canImportDroppedFiles = appMode === "converter" && (step === 1 || step === 2);
   const canImportDroppedFilesRef = useRef(canImportDroppedFiles);
+  const appModeRef = useRef(appMode);
   const wasConverting = useRef(false);
   const cancellationRequested = useRef(false);
 
@@ -146,7 +155,7 @@ export default function App() {
     showNotice,
   });
   const updateReminderActive = updateReminderVisible && Boolean(updateInfo) && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen;
-  const feedbackLauncherActive = step === 1 && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen && updateStatus !== "installing" && !isFeedbackOpen && !isFeedbackPrivacyOpen;
+  const feedbackLauncherActive = appMode === "converter" && step === 1 && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen && updateStatus !== "installing" && !isFeedbackOpen && !isFeedbackPrivacyOpen;
   const importToastActive = Boolean(importFeedback?.visible);
 
   function openFeedback() {
@@ -167,6 +176,12 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(notificationsStorageKey, notificationsEnabled ? "true" : "false");
   }, [notificationsEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem(appModeStorageKey, appMode);
+    appModeRef.current = appMode;
+    if (appMode === "editor") setEditorWasOpened(true);
+  }, [appMode]);
 
   useEffect(() => {
     canImportDroppedFilesRef.current = canImportDroppedFiles;
@@ -239,9 +254,12 @@ export default function App() {
     });
 
     api.onFileDrop(async (paths) => {
-      if (!canImportDroppedFilesRef.current) return;
       if (!paths.length) return;
-      await addFilePaths(paths);
+      if (appModeRef.current === "editor") {
+        setEditorDropRequest({ id: Date.now(), paths });
+        return;
+      }
+      if (canImportDroppedFilesRef.current) await addFilePaths(paths);
     }).then((unlisten) => {
       if (disposed) {
         unlisten();
@@ -694,31 +712,55 @@ export default function App() {
   const hasConvertibleFiles = files.some(hasAvailableTargets);
 
   return (
-    <main className={`app-shell ${updateReminderActive ? "has-update-reminder" : ""} ${feedbackLauncherActive ? "has-feedback-launcher" : ""} ${importToastActive ? "has-import-toast" : ""}`}>
+    <main className={`app-shell ${appMode === "editor" ? "is-editor-mode" : ""} ${updateReminderActive ? "has-update-reminder" : ""} ${feedbackLauncherActive ? "has-feedback-launcher" : ""} ${importToastActive ? "has-import-toast" : ""}`}>
       <header className="topbar">
         <div className="brand">
           <div className="brand-mark" aria-hidden="true">
             <img src={brandLogoUrl} alt="" />
           </div>
-          <div>
+          <div className="brand-copy">
             <h1>Multi-Converter</h1>
+            <div className="mode-toggle" role="tablist" aria-label={t(language, "mode.label")}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={appMode === "converter"}
+                className={appMode === "converter" ? "is-converter" : ""}
+                onClick={() => setAppMode("converter")}
+              >
+                {t(language, "mode.converter")}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={appMode === "editor"}
+                className={appMode === "editor" ? "is-editor" : ""}
+                onClick={() => setAppMode("editor")}
+              >
+                {t(language, "mode.editor")}
+              </button>
+            </div>
           </div>
         </div>
 
-        <nav className="process-strip" aria-label={t(language, "app.progress")}>
-          {stepLabels(language).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`process-step ${step === item.id ? "is-active" : ""} ${step > item.id ? "is-done" : ""}`}
-              disabled={item.id > step || isConverting}
-              onClick={() => setStep(item.id)}
-            >
-              <span>{item.label}</span>
-              <strong>{item.title}</strong>
-            </button>
-          ))}
-        </nav>
+        {appMode === "converter" ? (
+          <nav className="process-strip" aria-label={t(language, "app.progress")}>
+            {stepLabels(language).map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`process-step ${step === item.id ? "is-active" : ""} ${step > item.id ? "is-done" : ""}`}
+                disabled={item.id > step || isConverting}
+                onClick={() => setStep(item.id)}
+              >
+                <span>{item.label}</span>
+                <strong>{item.title}</strong>
+              </button>
+            ))}
+          </nav>
+        ) : (
+          <div className="editor-context-pill"><DocumentModeIcon />{t(language, "editor.contextTitle")}</div>
+        )}
 
         <div className="topbar-actions">
           <button
@@ -811,6 +853,7 @@ export default function App() {
 
       <PageNotice language={language} notice={notice} onDismiss={() => setNotice(null)} />
 
+      {appMode === "converter" ? <>
       <section className={`screen upload-screen ${step === 1 ? "is-active" : ""}`} aria-labelledby="upload-title">
         <h2 id="upload-title" className="visually-hidden">{t(language, "step.files")}</h2>
 
@@ -915,6 +958,18 @@ export default function App() {
         onRetryFile={retryFile}
         onRetryFailed={retryFailedConversions}
       />
+      </> : null}
+
+      {editorWasOpened && (
+        <Suspense fallback={appMode === "editor" ? <div className="editor-loading">{t(language, "editor.loading")}</div> : null}>
+          <EditorWorkspace
+            isActive={appMode === "editor"}
+            language={language}
+            nativeDropRequest={editorDropRequest}
+            onNotice={showNotice}
+          />
+        </Suspense>
+      )}
     </main>
   );
 }
@@ -1728,6 +1783,15 @@ function SettingsIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" />
       <path d="M19.4 13.5c.1-.5.1-1 .1-1.5s0-1-.1-1.5l2-1.6-2-3.4-2.4 1a8 8 0 0 0-2.6-1.5L14 2.5h-4L9.6 5a8 8 0 0 0-2.6 1.5l-2.4-1-2 3.4 2 1.6c-.1.5-.1 1-.1 1.5s0 1 .1 1.5l-2 1.6 2 3.4 2.4-1a8 8 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a8 8 0 0 0 2.6-1.5l2.4 1 2-3.4-2-1.6Z" />
+    </svg>
+  );
+}
+
+function DocumentModeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 2.75h8.5L19 7.25v14H6z" />
+      <path d="M14.5 2.75v4.5H19M9 11h7M9 14.5h7M9 18h5" />
     </svg>
   );
 }

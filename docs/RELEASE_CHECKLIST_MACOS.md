@@ -1,6 +1,21 @@
 # macOS Universal DMG Release Checklist
 
-This checklist is for the planned macOS v1.0.5 work. A macOS release is not ready until these checks pass on a real Mac.
+Use this checklist before publishing a universal macOS release for Apple Silicon and Intel. V1.0.6 is the current public baseline. V1.0.7 must repeat these checks after the Tiptap editor and local `PP-OCRv6_medium` engine are integrated; a Windows result or a Vite preview is never sufficient macOS evidence.
+
+## V1.0.7 Feature Gate
+
+Before a V1.0.7 macOS release:
+
+- complete the editor import → edit → export matrix in the real Tauri app on Apple Silicon and Intel;
+- verify DOCX, ODT and RTF imports, persistent `mc-asset://` images, headers, footers, numbering and PDF export;
+- package the real local `PP-OCRv6_medium` runtime and model as universal-compatible or correctly architecture-specific resources;
+- test scanned and mixed PDFs to TXT, Markdown, HTML and the editor;
+- test copying OCR text from PNG, JPEG, WebP, TIFF and BMP images;
+- verify offline operation, progress, cancellation, restart, bounded resource handling and temporary-file cleanup;
+- record exact OCR runtime/model versions, checksums, licenses and notices;
+- update `docs/V1_0_7_PLAN.md`, `docs/V1_0_7_OCR.md`, `docs/TESTING.md` and `docs/V1_0_7_VALIDATION.md` with real results.
+
+Do not publish a V1.0.7 macOS package if either architecture lacks the editor or OCR runtime, or if the model would be downloaded during a conversion.
 
 ## Required Build Shape
 
@@ -45,7 +60,7 @@ If another task remains possible from Windows/Linux, finish it before treating t
 
 All executable files must keep executable permissions. `npm run prepare:bundled-engines` creates the `*-universal-apple-darwin` sidecars with `lipo` on macOS from the Apple Silicon and Intel inputs. Do not create or edit these inside the generated `.app`.
 
-Current V1.0.5 preparation state: advanced bundled engines are still declared for `windows-x64` only in the committed embedded manifest, while the release workflows stage reviewed `macos-universal` entries for macOS validation. Those staged FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips assets have passed `macOS Engine Staging`, the two-architecture `macOS Conversion Matrix`, and the universal DMG verification workflow on `codex/test`. Do not treat that as public release approval until the manual clean-Mac smoke test and final security evidence are recorded.
+V1.0.6 established the published macOS baseline for FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips. V1.0.7 must restage and revalidate that complete baseline together with the editor and OCR resources. Historical V1.0.5 staging evidence remains useful provenance, but it is not approval for a new release.
 
 `npm run prepare:macos-upstream-engines` can stage the reviewed upstream macOS candidates for PDFium, LibreOffice and Pandoc on a real Mac. It requires pinned SHA-256 values for every upstream archive and does not prepare FFmpeg/ffprobe or libvips.
 
@@ -184,7 +199,7 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$TMPDIR/mc-release-ass
 - Upload the verified macOS assets to that release first: `Multi-Converter_X.Y.Z_macos-universal.dmg`, `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz` and `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig`.
 - Run the `Release` workflow manually with `include_macos=true`.
 - The workflow downloads the pre-uploaded DMG, updater archive and updater signature, verifies the DMG on Apple Silicon and Intel macOS runners, copies them into a clean release folder as `Multi-Converter_X.Y.Z_macos-universal.dmg`, `Multi-Converter_macos-universal.dmg`, `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz` and `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig`, validates `--platform all`, then republishes the exact final asset list.
-- Before allocating release runners, the workflow validates the GitHub release notes with `scripts/validate-release-notes.mjs`, the same shared rules used by release asset validation. Before allocating a macOS runner, it also runs `npm run status:v1.0.5 -- --require-ready` and validates the macOS-specific wording; it must fail until the clean-Mac smoke-test receipt, final security approval, final README macOS availability row and required public macOS installation notes are recorded.
+- Before allocating release runners, the workflow validates the GitHub release notes with `scripts/validate-release-notes.mjs`, the same shared rules used by release asset validation. The current workflow also runs `npm run status:v1.0.6 -- --require-ready` for the published baseline. A future V1.0.7 publication must use a V1.0.7 status gate that includes the editor and OCR evidence defined above.
 - If either macOS DMG verification job fails, the publication job must not run.
 - Do not use `include_macos=true` for a DMG that has not passed the manual smoke test below.
 
@@ -198,7 +213,7 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$TMPDIR/mc-release-ass
 - Verify file selection and at least one audio/video conversion using FFmpeg.
 - Verify document/PDF/image advanced conversions only if their macOS engines are included and validated.
 
-After the test passes, record the result in `docs/V1_0_5_VALIDATION.md` under `## Manual Clean-Mac Smoke Test Receipt`. Do not change `Manual clean-Mac smoke testing` to `success` unless every required smoke-test line is `yes` for the final downloaded DMG:
+After the test passes, record the result in the validation document for the exact release. Historical V1.0.5 evidence lives in `docs/V1_0_5_VALIDATION.md`; V1.0.6 evidence lives in `docs/V1_0_6_VALIDATION.md`; V1.0.7 must receive its own complete release evidence once the editor and OCR gates are closed. Do not mark the smoke test as successful unless every required line is `yes` for the final downloaded DMG:
 
 - `Architecture tested` must name Apple Silicon or Intel
 - `DMG source` must identify the final downloaded GitHub release DMG
@@ -213,7 +228,7 @@ After the test passes, record the result in `docs/V1_0_5_VALIDATION.md` under `#
 - `Document/PDF/image advanced conversion verified`
 - `Updater metadata behavior checked`
 
-`npm run status:v1.0.5` keeps the release blocked if this receipt is missing, still marked `pending`, or incomplete.
+The status command for the exact release must keep publication blocked if this receipt is missing, still marked `pending`, or incomplete. Do not reuse a previous version's successful receipt.
 
 ## Release Notes Requirement
 

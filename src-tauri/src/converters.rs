@@ -343,6 +343,28 @@ pub fn convert(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult> 
     result
 }
 
+/// Runs the rich Office bridge without consulting the generic engine planner and
+/// without its text fallback. The document editor uses this path so an ODT,
+/// DOCX, RTF or PDF export can never silently lose layout, assets, headers or
+/// footers when LibreOffice fails.
+pub(crate) fn convert_office_document_strict(
+    app: &AppHandle,
+    job_id: &str,
+    input_path: &Path,
+    output_path: &Path,
+    target_format: &str,
+) -> Result<()> {
+    let target = target_format.trim_start_matches('.').to_ascii_lowercase();
+    if !matches!(target.as_str(), "odt" | "docx" | "rtf" | "pdf") {
+        return Err(ConvertError::Message(format!(
+            "Le pont Office strict ne prend pas en charge le format {target}."
+        )));
+    }
+    ensure_source_file_available(input_path)?;
+    convert_with_libreoffice(app, job_id, input_path, output_path, &target)?;
+    validate_conversion_output(app, output_path, &target, "documents")
+}
+
 fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult> {
     if job.input_path.trim().is_empty() || job.target_format.trim().is_empty() {
         return Err(ConvertError::Message("Conversion invalide.".to_string()));
@@ -1476,7 +1498,7 @@ fn convert_with_libreoffice(
     output_path: &Path,
     target_format: &str,
 ) -> Result<()> {
-    let soffice = engine_path(app, "libreoffice")?;
+    let soffice = libreoffice_conversion_launcher(&engine_path(app, "libreoffice")?);
     let out_dir = output_path
         .parent()
         .ok_or_else(|| ConvertError::Message("Dossier de sortie invalide.".to_string()))?;
@@ -1523,6 +1545,25 @@ fn convert_with_libreoffice(
     move_external_output(input_path, out_dir, output_path, target_format)?;
     emit_progress(app, job_id, 88, "Finalisation LibreOffice");
     Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn libreoffice_conversion_launcher(configured: &Path) -> PathBuf {
+    // soffice.exe delegates to soffice.bin and can exit before the conversion
+    // has completely consumed its temporary profile. soffice.com is the
+    // synchronous console launcher shipped beside it, so waiting on the child
+    // really means the document and its repeated page styles are finalized.
+    let console = configured.with_extension("com");
+    if console.is_file() {
+        console
+    } else {
+        configured.to_path_buf()
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn libreoffice_conversion_launcher(configured: &Path) -> PathBuf {
+    configured.to_path_buf()
 }
 
 fn convert_with_pandoc(
@@ -2814,6 +2855,18 @@ fn escape_xml(value: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn libreoffice_conversions_prefer_the_synchronous_console_launcher() {
+        let dir = tempfile::tempdir().unwrap();
+        let configured = dir.path().join("soffice.exe");
+        let console = dir.path().join("soffice.com");
+        fs::write(&configured, b"exe").unwrap();
+        assert_eq!(libreoffice_conversion_launcher(&configured), configured);
+        fs::write(&console, b"com").unwrap();
+        assert_eq!(libreoffice_conversion_launcher(&configured), console);
+    }
 
     #[test]
     fn text_encodings_decode_utf8_utf16_and_windows_1252() {

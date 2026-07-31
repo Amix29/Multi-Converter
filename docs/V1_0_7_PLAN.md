@@ -1,0 +1,183 @@
+# Multi-Converter V1.0.7 Development Plan
+
+## Status
+
+- Development version: **V1.0.7**
+- Current published version: **V1.0.6**
+- Last documentation review: **2026-07-30**
+- Release status: **not ready**
+
+V1.0.7 is built around two official product objectives:
+
+1. add a local document editor powered by the open-source Tiptap/ProseMirror stack;
+2. add local OCR powered by `PP-OCRv6_medium` for PDF-to-text conversion and text extraction from images.
+
+The repository version remains `1.0.6` until both objectives are implemented, tested and accepted. Do not publish V1.0.7 release notes, updater metadata or release assets before the exit gates in this document pass.
+
+## Product Principles
+
+- Files stay on the user's computer.
+- Editing and OCR must work without an account or cloud service.
+- Document contents, images and OCR results must never be uploaded.
+- The editor uses only the MIT-licensed Tiptap/ProseMirror packages already declared by the project.
+- The OCR target is the local `PP-OCRv6_medium` model. Do not replace it with a remote API.
+- Vite mock behavior is useful for UI work but never proves real file import, export, OCR or persistence.
+- Failed rich document imports or OCR jobs must return a visible error. They must not silently produce incomplete plain text.
+
+## Workstream A — Document Editor
+
+### Implemented
+
+- Separate `Convertisseur | Éditeur` workspaces.
+- One active editor document at a time.
+- New document, open document and drag-and-drop entry points.
+- Local recent documents with rename, duplicate and confirmed draft deletion.
+- Tiptap JSON document model with schema versioning.
+- Paginated editing canvas and DOM-independent pagination planner.
+- Text styles, headings, fonts, sizes, colors, highlighting, alignment, lists, links, tables and local images.
+- Page formats, orientation, margins, headers, footers and numbering.
+- Local autosave and recent-document storage.
+- Validated local image assets referenced as `mc-asset://<uuid>`.
+- DOCX and RTF import through LibreOffice-to-ODT followed by the bounded ODT parser.
+- Direct ODT parsing without Office-to-HTML routing.
+- Office/PDF export through the rich ODT generator.
+- TXT, Markdown and HTML adapters.
+- UI regression protection for recent-document menus and full-viewport dialogs.
+
+### Still required
+
+- Complete the real Windows Tauri ODT/DOCX/RTF import → edit → export → reopen matrix.
+- Confirm rich images, headers, footers, page numbers, merged cells, landscape layout and manual page breaks in real output files.
+- Confirm native Tauri drag and drop.
+- Confirm draft and `mc-asset://` image persistence after closing and restarting the packaged application.
+- Confirm overwrite approval, external-source conflicts and original-file integrity after a forced failure.
+- Confirm unsupported embedded objects create a compatibility warning and block unsafe replacement.
+- Record fixtures, screenshots and SHA-256 values in `V1_0_7_EDITOR_VALIDATION.md`.
+
+The editor gate must close before OCR implementation is treated as the active release workstream.
+
+## Workstream B — Local OCR
+
+### Required user outcomes
+
+- Convert PDFs containing scanned or image-only pages into usable text formats.
+- Copy text detected in a local image.
+- Open a PDF in the document editor by converting recognized content into the existing Tiptap JSON model.
+- Preserve readable page order and paragraph separation when the source makes them recoverable.
+- Show progress, allow cancellation and report partial-page failures without hiding them.
+
+### Selected model
+
+- OCR family: PaddleOCR PP-OCRv6.
+- Required tier: `PP-OCRv6_medium`.
+- Execution: local only.
+- Network use during recognition: forbidden.
+- Model/runtime archives: pinned and checksum-verified before packaging.
+
+The upstream PP-OCRv6 documentation describes tiny, small and medium tiers and identifies the medium pipeline as the default high-accuracy tier. Upstream also documents unified recognition for 50 languages in the medium model. Multi-Converter must advertise only the languages and platforms that its own packaged-runtime tests validate.
+
+### Minimum V1.0.7 scope
+
+- Input:
+  - PDF;
+  - PNG;
+  - JPEG/JPG;
+  - WebP;
+  - TIFF/TIF;
+  - BMP.
+- OCR text outputs:
+  - TXT;
+  - Markdown;
+  - HTML.
+- Editor bridge:
+  - OCR result → Tiptap JSON;
+  - document can then use the editor's normal Save As and export paths.
+- Clipboard:
+  - copy recognized image text only after the user requests extraction;
+  - no background clipboard monitoring.
+
+### Out of scope
+
+- Cloud OCR or account-based OCR.
+- Handwriting guarantees.
+- Pixel-perfect reconstruction of the original PDF.
+- Automatic translation of recognized text.
+- Training or fine-tuning PP-OCRv6.
+- Claiming table, formula or layout fidelity that has not been measured.
+
+The detailed OCR architecture and validation contract live in `V1_0_7_OCR.md`.
+
+## Integration Between The Two Workstreams
+
+```text
+PDF with usable text layer
+  → existing local text extraction
+  → text adapter / Tiptap JSON
+
+Scanned or image-only PDF
+  → PDFium page rasterization
+  → PP-OCRv6_medium
+  → ordered OCR blocks
+  → TXT / Markdown / HTML or Tiptap JSON
+
+Local image
+  → PP-OCRv6_medium
+  → recognized text
+  → copy to clipboard or text export
+```
+
+OCR must not bypass the editor document model when a PDF is opened for editing. The output must enter the same `EditorDocumentV1` flow used by other editor imports.
+
+## Release Gates
+
+### Windows gate
+
+- Complete editor matrix recorded as passed.
+- OCR tests pass with real `PP-OCRv6_medium` model files.
+- Image-to-clipboard extraction works in the packaged Tauri application.
+- Native-text, scanned and mixed PDFs convert to the promised text targets.
+- OCR cancellation, progress, errors and temporary-file cleanup are verified.
+- Packaged application restarts without re-downloading the model.
+- Full Windows CI, conversion matrix, PDFium tests and Tauri build pass.
+
+### macOS and Linux gates
+
+Windows validation is sufficient to begin the OCR work after the editor gate closes. It is not sufficient for a multiplatform release claim.
+
+Before publishing V1.0.7 for macOS or Linux:
+
+- package the real OCR runtime and model for that platform;
+- run the editor host matrix;
+- run the OCR fixture matrix;
+- verify architecture, licenses, notices and checksums;
+- test the final DMG or AppImage on the target operating system.
+
+### Documentation and release gate
+
+- Update `NOTICE` only when the OCR runtime/model is actually added.
+- Record exact PaddleOCR, PaddlePaddle/inference-runtime and model versions.
+- Record model archive origin, SHA-256, installed size and redistribution notices.
+- Synchronize version `1.0.7` only after editor and OCR gates pass.
+- Write final English release notes from verified user-visible behavior.
+
+## Documentation Map
+
+| Document | Purpose |
+| --- | --- |
+| `README.md` | Public overview, stable release and V1.0.7 development summary |
+| `V1_0_7_PLAN.md` | Source of truth for the complete V1.0.7 scope |
+| `V1_0_7_VALIDATION.md` | Combined release gate and evidence ledger |
+| `V1_0_7_EDITOR_VALIDATION.md` | Editor automated and manual validation evidence |
+| `V1_0_7_EDITOR_UI_QA.md` | Editor-home visual regression evidence |
+| `V1_0_7_OCR.md` | OCR product, architecture, security and test specification |
+| `TESTING.md` | Commands and platform test procedures |
+| `THIRD_PARTY_ENGINES.md` | Packaging, licensing and notice requirements |
+
+## Official References
+
+- Tiptap repository: https://github.com/ueberdosis/tiptap
+- Tiptap MIT license: https://github.com/ueberdosis/tiptap/blob/main/LICENSE.md
+- PaddleOCR repository: https://github.com/PaddlePaddle/PaddleOCR
+- PP-OCRv6 technical documentation: https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/algorithm/PP-OCRv6/PP-OCRv6.md
+- PaddleOCR pipeline documentation: https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/OCR.en.md
+- PaddleOCR Apache-2.0 license: https://github.com/PaddlePaddle/PaddleOCR/blob/main/LICENSE

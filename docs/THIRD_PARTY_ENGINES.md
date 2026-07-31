@@ -18,11 +18,11 @@ Do not publish an archive if its license, notices, binary origin, redistribution
 
 For bundled FFmpeg/ffprobe binaries, the same rule applies even though they are stored in `src-tauri/binaries` instead of a downloadable ZIP.
 
-## Active V1 engines
+## Active V1.0.6 engine families
 
 | Engine | Mode | License warning | Release requirement |
 | --- | --- | --- | --- |
-| FFmpeg | Base bundled | V1 Windows x64 uses `8.1.1-essentials_build-www.gyan.dev`, configured with `--enable-gpl`. Treat the bundled executable as GPL-covered third-party software. | Document the exact Gyan build, preserve FFmpeg license/notices, and provide access to corresponding FFmpeg source/build information for the released binary. |
+| FFmpeg | Base bundled | Windows x64 uses `8.1.1-essentials_build-www.gyan.dev`, configured with `--enable-gpl`. macOS and Linux use separately staged platform binaries. Treat each released executable according to its exact configuration and license bundle. | Document the exact platform build, preserve FFmpeg license/notices, and provide access to corresponding FFmpeg source/build information for the released binary. |
 | ffprobe | Base bundled | Same Gyan `8.1.1` build family and GPL treatment as FFmpeg. | Keep notices aligned with the FFmpeg build it came from. |
 | PDFium | Advanced bundled | BSD-3-Clause for PDFium builds, with Chromium/PDFium third-party notices. | Include PDFium license, Chromium/PDFium third-party notices, and wrapper notices. |
 | LibreOffice | Advanced bundled | MPL-2.0/LGPL family with many bundled third-party components. | Include LibreOffice license files and third-party notices matching the packaged runtime. |
@@ -30,15 +30,32 @@ For bundled FFmpeg/ffprobe binaries, the same rule applies even though they are 
 | libvips | Advanced bundled | LGPL-2.1-or-later, with many image codec dependencies that may carry separate terms. | Include libvips license and notices for all bundled DLLs/codecs. |
 | 7-Zip | Future archive engine | LGPL with additional unRAR restriction if RAR support is included. | Document 7-Zip usage, link to source, and avoid implying RAR creation support unless explicitly verified. |
 
+## Planned V1.0.7 OCR engine
+
+V1.0.7 selects the local `PP-OCRv6_medium` model from PaddleOCR. OCR is not bundled yet, so it must not be added to the active-engine table or `NOTICE` until implementation.
+
+Before packaging OCR:
+
+- verify the exact PaddleOCR and inference-runtime versions;
+- verify the license and redistribution terms of every runtime dependency and model archive;
+- preserve the PaddleOCR Apache-2.0 license and applicable notices;
+- pin official model/runtime URLs and SHA-256 values;
+- record compressed and installed sizes;
+- package platform-native executables/libraries only;
+- prove that recognition works offline and does not download a model during conversion;
+- add OCR entries to the embedded engine manifest only after the package validator understands them.
+
+The selected upstream project is Apache-2.0, but this does not remove the obligation to inspect PaddlePaddle, inference backend, image/PDF dependencies and model-distribution notices individually.
+
 ## macOS engine status
 
-macOS support is being prepared for one universal DMG. Do not publish macOS engine archives or a macOS DMG until the exact FFmpeg/ffprobe, PDFium, LibreOffice, Pandoc and libvips builds have been reviewed for origin, license files, notices, checksums and executable permissions.
+V1.0.6 is published as one universal DMG. Any V1.0.7 engine change, including OCR, must be rebuilt and revalidated for both Apple Silicon and Intel before a new universal DMG is published. Do not reuse Windows OCR binaries or claim macOS OCR from source inspection.
 
 For the universal DMG, release sidecars should include the `*-universal-apple-darwin` files required by Tauri's `externalBin` handling. The Apple Silicon and Intel inputs used to create those universal files must have matching license and notice coverage.
 
 The macOS packaging contract lives in `tools/engine-packages.macos.config.json`. It expects reviewed `macos-universal` sources under `engine-sources/macos-universal/`. PDFium, LibreOffice and Pandoc have upstream macOS archive candidates and can be staged on macOS with `npm run prepare:macos-upstream-engines`.
 
-The V1.0.5 `codex/test` automation has staged maintainer-provided FFmpeg/ffprobe inputs and Homebrew-derived portable libvips runtime archives for Apple Silicon and Intel. `npm run prepare:ffmpeg-engine:macos` accepts only explicit archives with SHA-256 checksums, either as one combined archive per architecture or as separate `ffmpeg` and `ffprobe` archives, then creates universal sidecars with `lipo`. `npm run prepare:libvips-engine:macos` accepts only two already-portable libvips runtime trees and rejects non-system absolute dynamic links such as Homebrew, MacPorts or Fink paths. Maintainers must still review copied dependency licenses and notices before a public release.
+The original V1.0.5 `codex/test` automation staged the maintainer-provided FFmpeg/ffprobe inputs and Homebrew-derived portable libvips runtime archives later used by the desktop release work. This is historical provenance, not permission to reuse those steps unchanged for OCR. `npm run prepare:ffmpeg-engine:macos` accepts only explicit archives with SHA-256 checksums, either as one combined archive per architecture or as separate `ffmpeg` and `ffprobe` archives, then creates universal sidecars with `lipo`. `npm run prepare:libvips-engine:macos` accepts only two already-portable libvips runtime trees and rejects non-system absolute dynamic links such as Homebrew, MacPorts or Fink paths.
 
 macOS upstream engine downloads must be pinned before staging. Set `PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256`, `LIBREOFFICE_MACOS_AARCH64_DMG_SHA256`, `LIBREOFFICE_MACOS_X86_64_DMG_SHA256`, `PANDOC_MACOS_AARCH64_ARCHIVE_SHA256` and `PANDOC_MACOS_X86_64_ARCHIVE_SHA256` when running the macOS upstream engine preparation workflow or scripts. Windows upstream preparation has the same rule for `PANDOC_WINDOWS_X64_ARCHIVE_SHA256`, `PDFIUM_WINDOWS_X64_ARCHIVE_SHA256`, `LIBREOFFICE_WINDOWS_X64_MSI_SHA256`, `LESSMSI_WINDOWS_X64_ARCHIVE_SHA256` and `LIBVIPS_WINDOWS_X64_ARCHIVE_SHA256`.
 
@@ -48,7 +65,7 @@ The normal committed embedded manifest remains conservative for public builds un
 
 Recommended release wording:
 
-> Multi-Converter bundles third-party conversion engines for better format support in the Windows x64 installer. These engines are separate software packages with their own licenses and notices. The bundled engine set may add GPL, LGPL, MPL, BSD, Apache, or similarly licensed components depending on the selected engines.
+> Multi-Converter bundles platform-specific third-party conversion engines for better format support. These engines are separate software packages with their own licenses and notices. The bundled engine set may add GPL, LGPL, MPL, BSD, Apache, or similarly licensed components depending on the selected platform and engines.
 
 ## Packaging checks
 
@@ -71,3 +88,5 @@ Before publishing V1 engine archives:
 - libvips license: https://www.libvips.org/
 - PDFium project/license: https://github.com/PDFium/PDFium
 - 7-Zip FAQ/license notice: https://www.7-zip.org/faq.html
+- PaddleOCR repository/license: https://github.com/PaddlePaddle/PaddleOCR
+- PP-OCRv6 documentation: https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/algorithm/PP-OCRv6/PP-OCRv6.md

@@ -9,12 +9,12 @@ Multi-Converter can use bundled third-party conversion engines. Those engines
 are separate third-party software packages and retain their own licenses,
 notices, and redistribution conditions.
 
-The Windows x64 V1 application bundles FFmpeg and ffprobe
-8.1.1-essentials_build-www.gyan.dev as base sidecar executables, and bundles
-advanced engines such as PDFium, LibreOffice, Pandoc, and libvips as app
-resources. The FFmpeg build is configured with --enable-gpl, so the bundled
-FFmpeg/ffprobe executables are treated as GPL-covered third-party software in
-this distribution. Multi-Converter uses these engines as separate local
+Current desktop releases bundle FFmpeg and ffprobe as platform-specific base
+sidecars, and bundle advanced engines such as PDFium, LibreOffice, Pandoc, and
+libvips as application resources when validated for that platform. The Windows
+x64 package uses FFmpeg/ffprobe 8.1.1-essentials_build-www.gyan.dev, configured
+with --enable-gpl, so those Windows executables are treated as GPL-covered
+third-party software. Multi-Converter uses these engines as separate local
 processes or libraries; the AGPL-3.0-or-later license for Multi-Converter does
 not replace their licenses.
 
@@ -26,3 +26,13 @@ or any other third-party engine bundled or distributed for Multi-Converter.
 
 See docs/THIRD_PARTY_ENGINES.md for the V1 engine notice checklist and
 redistribution warnings.
+
+The document editor includes Tiptap and ProseMirror open-source packages.
+Tiptap is distributed under the MIT License. Multi-Converter does not include
+Tiptap Pro packages or depend on Tiptap Cloud. The applicable package license
+texts are retained in the installed dependency distribution and source tree.
+
+The bounded OpenDocument parser uses quick-xml 0.41.0 under the MIT License.
+Standalone HTML export uses base64 0.22.1 under the MIT OR Apache-2.0 License
+to embed local editor assets without exposing file-system paths. The applicable
+license texts are retained in the Cargo dependency source distribution.

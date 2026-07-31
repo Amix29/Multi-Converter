@@ -44,8 +44,12 @@ typescript
 
 Status context:
 
-- Windows x64 is the current public stable platform.
-- macOS is available for V1.0.5 as one universal DMG for Apple Silicon and Intel Macs.
-- Linux x64 is available for V1.0.5 as one AppImage with updater metadata.
+- V1.0.6 is the current public stable release.
+- Windows x64 is available as an NSIS installer.
+- macOS is available as one universal DMG for Apple Silicon and Intel Macs.
+- Linux x64 is available as one AppImage with updater metadata.
+- V1.0.7 is in development with a Tiptap document editor and local PP-OCRv6_medium OCR.
+
+Do not add OCR-specific discovery topics until the OCR feature is implemented and published. `document-editor` and `ocr` are candidate topics for V1.0.7 after its release gate passes.
 
 Keep these topics aligned with `package.json` keywords and the platform table in `README.md`.

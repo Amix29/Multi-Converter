@@ -1,48 +1,28 @@
-# AGENTS.md
+# Multi-Converter
 
-Guidance for AI agents working on Multi-Converter.
+Guidance for AI agents working on Multi-Converter inside the Atelier IA workspace.
 
 ## Project Context
 
-Multi-Converter is a local-first desktop app built with Tauri 2, React, TypeScript, Rust and Vite. The current stable public build is Windows x64; V1.0.5 release work is adding one universal macOS build for Apple Silicon and Intel Macs plus one Linux x64 AppImage. Real conversions, file-system access, bundled sidecars and updater behavior must be tested through the Tauri app or Rust tests, not only through the Vite preview.
+Multi-Converter contains a local-first Tauri desktop app, its static Next.js marketing site in `site/` and its reusable brand sources in `branding-kit/`. The current public desktop release is V1.0.6 for Windows x64, one universal macOS build for Apple Silicon and Intel Macs, and one Linux x64 AppImage. V1.0.7 is in development with two official objectives: the local Tiptap document editor and local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images. Real conversions, file-system access, bundled sidecars, OCR inference and updater behavior must be tested through the Tauri app or Rust tests, not only through the Vite preview.
 
-## Core Rules
+## Rule Hierarchy
 
-- Read `README.md` and `docs/RELEASE_CHECKLIST_WINDOWS.md` before Windows release work. Also read `docs/RELEASE_CHECKLIST_MACOS.md` before any macOS build, packaging or release work, and `docs/RELEASE_CHECKLIST_LINUX.md` before any Linux build, packaging or release work.
-- Read `docs/TESTING.md` before changing test commands, GitHub Actions jobs, release validation, macOS/Linux packaging checks or conversion test coverage.
+- [`../../AGENTS.md`](../../AGENTS.md), its indexed rules and [`../../Stack.md`](../../Stack.md) apply first.
+- This file and `.agents/rules/` contain only Multi-Converter additions. If a project rule duplicates or conflicts with an Atelier rule, keep the Atelier rule and remove the project copy.
+
+## Rules
+
+Read the relevant focused rule before acting:
+
+- **Product constraints** - [.agents/rules/product-constraints.md](.agents/rules/product-constraints.md) - Local privacy, V1.0.7 editor and OCR invariants.
+- **Testing** - [.agents/rules/testing.md](.agents/rules/testing.md) - Real-runtime evidence and platform-specific validation.
+- **Release engineering** - [.agents/rules/release-engineering.md](.agents/rules/release-engineering.md) - Publication, signing, assets and release-note safeguards.
+
+## Universal Project Rules
+
+- Treat `docs/V1_0_7_PLAN.md` as the source of truth for V1.0.7 scope, `docs/V1_0_7_VALIDATION.md` as the combined release ledger and `docs/V1_0_7_OCR.md` as the OCR contract.
 - The Rust audit may ignore only `RUSTSEC-2026-0194` and `RUSTSEC-2026-0195`, and only while the affected `quick-xml` version is reachable exclusively through the build-time `wayland-scanner` proc-macro. Remove the exceptions when that dependency supports `quick-xml >=0.41.0`; never extend them to a runtime XML parser.
-- Do not revert user changes in the working tree unless explicitly asked.
-- Keep generated folders and release outputs out of commits unless a maintainer explicitly approves them.
-- Do not commit local engine sources, generated engine archives, release checksums or third-party engine version changes without maintainer approval.
-- Preserve the local/privacy promise: conversions must run on the user's machine and must not upload files.
-- Keep this `AGENTS.md` file up to date. If project workflows, release requirements, validation commands, engine behavior or AI instructions change, update this file so future agents receive true, current and reliable guidance.
-
-## Communication Style
-
-- Use a warm, helpful and approachable tone when writing user-facing content.
-- Emojis are very encouraged and recommended in release notes and short product messages when they make the content easier to scan, friendlier and more understandable. Prefer a small number of clear, useful emojis over decorative overload.
-- Keep explanations clear and concise. Prefer simple words, short sentences and concrete examples over technical phrasing.
-- Write for a broad public first. Technical readers should still find accurate details, but non-technical users must understand what changed and what they need to do.
-- When technical details are necessary, explain their user impact before naming internal tooling, dependencies or implementation details.
-
-## Validation Before Release
-
-Run these checks after meaningful changes:
-
-```powershell
-npm run check
-npm run fmt:rust:check
-npm run clippy:rust
-npm run test:rust
-npm run test:conversions
-npm run test:pdfium-wrapper
-npm run clippy:pdfium-wrapper
-npm run build
-npm run tauri:build
-npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp\mc-release-assets\vX.Y.Z"
-```
-
-`npm run test:rust` intentionally skips the heavy conversion matrix. Run `npm run test:conversions` before claiming conversion coverage is complete.
 
 ## GitHub Actions And Test Branches
 
@@ -51,13 +31,11 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp
 - Development-version validation, experimental workflows, risky CI experiments, temporary release tests and unreleased platform tests should run in the main repository on the single persistent test branch `codex/test`, not in a separate private test repository.
 - Do not create a new test branch for each validation round. Reuse `codex/test` for test runs, reset or update it intentionally when needed, and keep `main` out of in-progress experiments.
 - Do not use `main` as the playground for tests of an in-progress version. Merge back only the stable, reviewed workflow or test changes that are ready for the public repository.
-- Before publishing, pushing release assets, opening `codex/test` publicly for review, or merging test work, verify that no sensitive information will be exposed. Run the configured secret/confidentiality checks, review the diff and release assets, and make sure no local paths, credentials, signing keys, tokens, private engine URLs or private repository references are present.
 - Public release gates, final release validation and normal GitHub Actions that protect the main project still belong in `Amix29/Multi-Converter`.
 
 ## Build And Signing
 
 - Local unsigned builds are allowed when `TAURI_SIGNING_PRIVATE_KEY` is unavailable.
-- On this maintainer machine, `TAURI_SIGNING_PRIVATE_KEY` is defined in the user environment. Do not write or expose the private key value in repository files, logs or user-facing messages.
 - CI/release builds should provide `TAURI_SIGNING_PRIVATE_KEY` so Tauri can generate signed updater artifacts.
 - Tauri updater signing is not the same as Apple code signing. Do not describe a macOS app as Apple-signed or notarized just because updater artifacts have `.sig` files.
 - If the release version changes, keep these files in sync:
@@ -258,24 +236,15 @@ Do not upload `.deb`, `.rpm`, tarballs, portable folders or extra Linux aliases 
 
 ## Frontend QA
 
-After UI changes, verify the rendered app, not just TypeScript. At minimum check:
+For editor UI changes, verify the project-specific interactions:
 
-- first screen is not blank;
-- no Vite/framework overlay;
-- browser console has no relevant errors or warnings;
-- primary interactions work;
-- dialogs and floating notices do not overlap;
-- mobile viewport has no horizontal overflow.
+- editor recent-document menus remain above later animated cards, including when the grid has multiple rows;
+- editor dialogs rendered from animated workspaces cover the full viewport, and destructive actions remain visually distinct;
+- editor HTML drops and native Tauri file drops both reach the editor only while editor mode is active;
 
 Use `npm run dev -- --host 127.0.0.1` for UI preview. Use `npm start` or `npm run tauri:dev` when testing real conversions, sidecars, updater runtime or file-system behavior.
 
 ## Release Notes
-
-Release notes must be structured, warm, public-facing and consistent across versions. Write for end users first, then maintainers. Avoid internal implementation jargon unless it directly affects installation, compatibility or user-visible behavior.
-
-Release notes should feel clear, useful and easy to read for someone who only wants to know what changed, whether the update is worth installing and how to install it. Keep them concise, but explain each important change well enough that a non-technical user understands the benefit.
-
-Order the content by importance: the most useful or risky user-visible changes should appear before smaller improvements, minor fixes and maintainer details. Technical changes belong near the end of the notes unless they directly affect installation, compatibility, privacy, security or a visible feature.
 
 The automatic updater must display the real release notes for the exact published version. Do not add fake, test or placeholder update notes to production code. The release body, updater metadata and visible release notes should describe the same version and the same user-visible changes.
 
@@ -321,19 +290,11 @@ Add these sections only when they are relevant. Omit empty sections. Conditional
 
 - Do not use a copy-paste release note template. Create the release notes from these instructions and the verified changes for the exact version being published.
 - Keep section order stable: required sections first, then conditional sections in the order above, unless readability clearly benefits from a small adjustment.
-- Prefer bullets over long paragraphs; one bullet should usually fit on one or two lines.
-- Sort sections and bullets by user impact, not by commit order or implementation order.
 - Describe changes compared only with the previous published version. If a feature was added and then a bug, wording issue or internal behavior in that same unreleased feature was fixed before publication, mention only the final feature users receive. Do not list fixes, improvements or regressions for work that users could never experience in a published version.
-- Use simple, public-facing wording: explain what changed, why it matters and what the user should do if action is needed.
-- Keep notes well explained but concise. Do not write vague bullets such as "various improvements"; name the area and the visible result.
-- Do not paste raw commit messages or a raw changelog. Rewrite changes for end users.
 - Emojis or small visual markers are very encouraged and recommended when they improve readability, make changes easier to scan or help non-technical users understand the release faster. Use them intentionally as scan aids, especially in Highlights, Download And Installation, Validation and user-facing limitation notes.
 - Be specific: name exact formats, platforms, installer assets, engines or workflows when they changed.
 - Do not claim a conversion works unless tests or manual verification proved it.
 - Do not invent features, supported formats, release assets, tests, signatures, updater artifacts or installer names. Verify them from the current files, command output or release workflow.
 - In `## Validation`, mention categories of checks that passed, not full logs. Good examples are TypeScript/i18n checks, Rust tests, conversion matrix, PDFium wrapper tests, Clippy and the Windows x64 build.
 - Do not overpromise quality. If a conversion is basic, fallback-based or text-only, say so clearly.
-- Do not include noisy internal details such as dependency trees, temporary paths, compile logs or implementation experiments.
-- Include maintainer-only details only when they affect release correctness, signing, downloads or updater behavior, and place them near the end.
 - Keep release notes accurate for the exact version being published; do not reuse notes from another version without checking every item.
-- If a change is purely internal and has no user impact, omit it unless it belongs in `Developer And Build Notes`.

@@ -1,6 +1,6 @@
 # Multi-Converter v1.0.5 Validation Evidence
 
-This file records validation evidence for the in-progress v1.0.5 release. It is not a public release approval by itself.
+This file is the historical validation record for v1.0.5. It is preserved for provenance and must not be used as the current V1.0.7 status or as proof for a later release.
 
 ## macOS Automated Evidence
 

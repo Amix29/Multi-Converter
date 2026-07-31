@@ -2,6 +2,24 @@
 
 Use this checklist before publishing a Linux x64 AppImage for Multi-Converter.
 
+V1.0.6 is the current public Linux baseline. V1.0.7 must repeat the host, conversion, packaging and AppImage checks after the Tiptap editor and local OCR engine are integrated.
+
+## V1.0.7 Feature Gate
+
+Before a V1.0.7 Linux release:
+
+- complete the editor import → edit → export matrix in the real Tauri AppImage;
+- verify DOCX, ODT and RTF imports, persistent `mc-asset://` images, headers, footers, numbering and PDF export;
+- package and validate the real Linux x64 `PP-OCRv6_medium` runtime and model;
+- test scanned and mixed PDFs to TXT, Markdown, HTML and the editor;
+- test copying OCR text from PNG, JPEG, WebP, TIFF and BMP images;
+- verify offline operation, progress, cancellation, restart, bounded resource handling and temporary-file cleanup;
+- record exact OCR runtime/model versions, checksums, licenses and notices;
+- rerun the complete Linux conversion matrix and verify the exact final AppImage;
+- add the real Linux results to `docs/V1_0_7_VALIDATION.md`.
+
+Windows or macOS results do not prove Linux OCR behavior. The final AppImage must not download the model during a conversion.
+
 ## Build Host
 
 - Use a Linux x64 host, preferably the same baseline as CI: Ubuntu 22.04.

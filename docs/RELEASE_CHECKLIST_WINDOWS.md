@@ -8,6 +8,7 @@ For macOS packaging, use `docs/RELEASE_CHECKLIST_MACOS.md` instead of this Windo
 npm ci
 npm run typecheck
 npm run validate:i18n
+npm run test:editor
 npm run validate:bundled-engines
 npm run validate:embedded-manifest
 npm run validate:engines
@@ -21,6 +22,18 @@ npm run build
 npm run tauri:build
 npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp\mc-release-assets\vX.Y.Z"
 ```
+
+## V1.0.7 Feature Gate
+
+Before a V1.0.7 Windows release:
+
+- `docs/V1_0_7_VALIDATION.md` must mark the combined Windows feature and release gates passed;
+- `docs/V1_0_7_EDITOR_VALIDATION.md` must mark the complete real Tauri Office matrix passed;
+- real `PP-OCRv6_medium` inference must pass the fixtures in `docs/V1_0_7_OCR.md`;
+- scanned PDF to TXT/Markdown/HTML and copy-text-from-image must work offline in the packaged application;
+- OCR progress, cancellation, limits, cleanup and original-file integrity must pass;
+- `NOTICE` and `docs/THIRD_PARTY_ENGINES.md` must name the exact packaged OCR runtime/model and notices;
+- version metadata may change to `1.0.7` only after these checks pass.
 
 For a Windows-only release workflow run, do not enable the `include_macos` manual input and do not mention a macOS DMG in the GitHub release notes.
 

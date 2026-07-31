@@ -1,0 +1,70 @@
+name: Deploy static site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "site/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    defaults:
+      run:
+        working-directory: site
+    env:
+      NEXT_PUBLIC_SITE_URL: https://amix29.github.io/Multi-Converter
+      NEXT_PUBLIC_BASE_PATH: /Multi-Converter
+      NEXT_PUBLIC_PRODUCT_VERSION: v1.0.0
+      NEXT_PUBLIC_SOURCE_URL: https://github.com/Amix29/Multi-Converter
+      NEXT_PUBLIC_RELEASES_URL: https://github.com/Amix29/Multi-Converter/releases/latest
+      NEXT_PUBLIC_LATEST_RELEASE_API_URL: https://api.github.com/repos/Amix29/Multi-Converter/releases/latest
+      NEXT_PUBLIC_ISSUES_URL: https://github.com/Amix29/Multi-Converter/issues
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck, build and audit SEO
+        run: npm run check
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

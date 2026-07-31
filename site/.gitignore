@@ -1,0 +1,8 @@
+.next/
+out/
+node_modules/
+*.log
+dist/
+output/
+tsconfig.tsbuildinfo
+.claude/settings.local.json

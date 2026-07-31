@@ -1,0 +1,69 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { planPageBreaks } from "../src/editor/pagination.ts";
+
+const root = process.cwd();
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const packageLock = fs.readFileSync(path.join(root, "package-lock.json"), "utf8");
+const app = fs.readFileSync(path.join(root, "src", "App.tsx"), "utf8");
+const api = fs.readFileSync(path.join(root, "src", "lib", "api.ts"), "utf8");
+const editorRoot = path.join(root, "src-tauri", "src", "editor");
+const backend = [
+  fs.readFileSync(path.join(root, "src-tauri", "src", "editor.rs"), "utf8"),
+  ...fs.readdirSync(editorRoot).filter((name) => name.endsWith(".rs")).map((name) => fs.readFileSync(path.join(editorRoot, name), "utf8")),
+].join("\n");
+const editorImporter = fs.readFileSync(path.join(editorRoot, "import.rs"), "utf8");
+const editorExporter = fs.readFileSync(path.join(editorRoot, "export.rs"), "utf8");
+const converters = fs.readFileSync(path.join(root, "src-tauri", "src", "converters.rs"), "utf8");
+const editorExtensions = fs.readFileSync(path.join(root, "src", "editor", "extensions.ts"), "utf8");
+const imageNodeView = fs.readFileSync(path.join(root, "src", "editor", "DocumentImageView.tsx"), "utf8");
+
+for (const [name, version] of Object.entries(packageJson.dependencies)) {
+  assert.ok(!name.startsWith("@tiptap-pro/"), `paid Tiptap dependency is forbidden: ${name}`);
+  if (name.startsWith("@tiptap/")) assert.equal(version, "3.27.3", `${name} must be exactly pinned`);
+}
+assert.doesNotMatch(packageLock, /node_modules\/@tiptap-pro\//, "package lock must not contain Tiptap Pro packages");
+
+assert.match(app, /type AppMode/, "app mode contract must be imported");
+assert.match(app, /className="mode-toggle"/, "converter/editor mode toggle is missing");
+assert.match(app, /appMode === "converter" && \(step === 1 \|\| step === 2\)/, "converter drop scope must not capture editor drops");
+assert.match(api, /editorCreateDocument\(\)/, "editor frontend API is missing");
+assert.match(api, /editorRenameDocument\(/, "recent document rename API is missing");
+assert.match(api, /editorDuplicateDocument\(/, "recent document duplicate API is missing");
+assert.match(backend, /editor_rename_document/, "recent document rename command is missing");
+assert.match(backend, /editor_duplicate_document/, "recent document duplicate command is missing");
+assert.match(backend, /duplicate\.source = None/, "duplicates must never retain overwrite access to the original source");
+assert.match(backend, /EDITOR_SOURCE_CONFLICT/, "external source conflict protection is missing");
+assert.match(backend, /MAX_IMPORT_BYTES/, "bounded editor import is missing");
+assert.equal((editorImporter.match(/target_format:\s*"html"/g) ?? []).length, 1, "only the Markdown adapter may route through HTML");
+assert.match(editorImporter, /convert_office_document_strict/, "office imports must use the strict rich ODT bridge");
+assert.match(editorExporter, /convert_office_document_strict/, "office exports must use the strict rich ODT bridge");
+assert.ok((editorExporter.match(/convert_office_document_strict/g) ?? []).length >= 2, "office exports must normalize ODT before final LibreOffice conversion");
+assert.doesNotMatch(editorExporter, /ConversionJob|converters::convert\(/, "office exports must not use the generic engine planner or its text fallback");
+assert.match(converters, /pub\(crate\) fn convert_office_document_strict/, "the strict LibreOffice bridge is missing");
+assert.match(backend, /mc-asset:\/\//, "canonical editor asset protocol is missing");
+assert.doesNotMatch(api, /html:\s*editor\.getHTML/, "office exports must use Tiptap JSON rather than a frontend HTML snapshot");
+assert.match(editorExtensions, /allowBase64:\s*false/, "base64 images must be disabled in Tiptap");
+assert.match(imageNodeView, /URL\.revokeObjectURL/, "temporary editor asset URLs must be revoked");
+assert.match(api, /editorStoreAsset/, "the frontend asset storage contract is missing");
+
+assert.deepEqual(planPageBreaks([], 100), { breakPositions: [], pageCount: 1 });
+assert.deepEqual(
+  planPageBreaks([
+    { pos: 1, height: 60 },
+    { pos: 10, height: 50 },
+    { pos: 20, height: 20 },
+  ], 100),
+  { breakPositions: [10], pageCount: 2 },
+);
+assert.deepEqual(
+  planPageBreaks([
+    { pos: 1, height: 20 },
+    { pos: 5, height: 20, forceBefore: true },
+  ], 100),
+  { breakPositions: [5], pageCount: 2 },
+);
+assert.equal(planPageBreaks([{ pos: 1, height: 250 }], 100).pageCount, 3, "oversized blocks must count overflow pages");
+
+console.log("Editor contracts and pagination tests passed.");

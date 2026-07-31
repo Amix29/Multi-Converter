@@ -1,10 +1,12 @@
 # Testing Matrix
 
-This document describes the current desktop release test split by platform. Use it to avoid false confidence from checks that ran on only one operating system.
+This document describes the current desktop release test split by platform. The published baseline is V1.0.6 on Windows x64, universal macOS and Linux x64. V1.0.7 is in development with the Tiptap editor and local `PP-OCRv6_medium` OCR; see `V1_0_7_PLAN.md` for scope and `V1_0_7_VALIDATION.md` for the combined gate. Use this document to avoid false confidence from checks that ran on only one operating system.
+
+Historical V1.0.5 and V1.0.6 status commands remain documented where release workflows still use their recorded evidence. They are not the current V1.0.7 completion gate.
 
 ## Windows x64
 
-Windows is the current stable public platform and keeps the full validation gate. Use the grouped command when you want the same Windows validation sequence as the GitHub `Build` workflow:
+Windows x64 is one of the current V1.0.6 public platforms and remains the primary local development gate. Use the grouped command when you want the same Windows validation sequence as the GitHub `Build` workflow:
 
 ```powershell
 npm run test:windows:ci
@@ -53,7 +55,7 @@ npm run audit:rust
 
 Cargo Audit does not fail on warning categories unless `--deny warnings`, `--deny unmaintained`, `--deny unsound` or `--deny yanked` is added. Do not report this as "no RustSec warnings" unless that stricter command also passes.
 
-For V1.0.5, the expected Rust audit state is:
+For the current V1.0.6 baseline and V1.0.7 development tree, the expected Rust audit state is:
 
 - 0 reported vulnerabilities;
 - allowed warnings from transitive Tauri/Linux GTK-related crates and a few unmaintained utility crates;
@@ -78,6 +80,112 @@ npm run test:production-config
 ```
 
 This check keeps frontend environment exposure narrow. In particular, Vite must expose only `VITE_` variables to client code; broad prefixes such as `TAURI_` are not allowed because maintainer machines and CI can carry signing or release secrets in `TAURI_*` variables.
+
+## Marketing Site
+
+Install the site dependencies once, then run its complete gate from the
+repository root:
+
+```bash
+npm --prefix site install
+npm run site:check
+npm --prefix site audit --omit=dev
+```
+
+The site gate runs TypeScript checking, the static Next.js export, screenshot
+optimization and the SEO audit. Generated `site/.next/`, `site/out/`,
+`site/output/` and `site/node_modules/` content is not source and must remain
+ignored.
+
+The 2026-07-30 production dependency audit passes with zero known
+vulnerabilities after resolving Next.js `16.2.12`, PostCSS `8.5.25` and one
+deduplicated Sharp `0.35.3` instance. See `../SECURITY.md` for the maintained
+dependency boundary.
+
+Changes to the Pages pipeline must update
+`.github/workflows/deploy-pages.yml`. GitHub reads workflows only from the
+repository-level `.github/workflows/` directory; the workflow executes its npm
+steps inside `site/` and uploads `site/out`.
+
+## Document Editor
+
+Run the editor contract tests after changing the Tiptap setup, document model, pagination, autosave commands or editor navigation:
+
+```bash
+npm run test:editor
+npm run test:ui-layout
+npm run typecheck
+```
+
+`npm run test:editor` verifies that all Tiptap packages stay on one exact open-source version, rejects `@tiptap-pro/*`, checks the shared frontend/backend command contract, forbids Office-to-HTML routing and exercises the DOM-independent pagination planner. The Rust suite covers local draft paths, atomic writes, the bounded ODT parser, hostile XML/archive inputs, `mc-asset://` validation, rich ODT round trips, page layout, headers, footers and numbering.
+
+After an editor UI change, also run the Vite preview and verify:
+
+- the landing screen, mode switching, document creation, text entry and autosave state;
+- HTML drag and drop on the editor landing area, including the visible drag-active state, unsupported extensions and the one-document limit;
+- recent-document rename, duplicate and delete actions;
+- deletion cancellation and the confirmation text explaining that the original source is not removed;
+- a recent-document menu opened on an upper grid row with enough cards to create a second row;
+- the open menu remains above later cards and its destructive item remains visible and clickable;
+- rename, delete, header and footer dialogs cover the full viewport rather than being constrained by the animated editor workspace;
+- destructive buttons keep a readable danger background and text contrast;
+- keyboard focus, reduced-motion behavior, console output and a 390 px viewport without horizontal overflow.
+
+`npm run test:ui-layout` contains regression contracts for editor drop routing, the active recent-card stacking layer, React portal dialogs and destructive-button styling.
+
+Vite uses a simulated local API. Opening, saving, importing, native Tauri file drops and exporting real files must be checked through `npm start` or `npm run tauri:dev`.
+
+To inspect the compiled frontend rather than the development module graph, build it and serve the generated `dist` folder with the local Vite executable:
+
+```bash
+npm run build
+npx vite preview --host 127.0.0.1 --port 4173 --strictPort
+```
+
+Before starting the OCR work, run the Windows Tauri editor matrix for ODT, DOCX and RTF: import a rich multi-page document, edit body/header/footer/table/image/page settings, save as each office format, export PDF, reopen the office outputs, restart the app, and test overwrite confirmation plus an external-source conflict. Record the engine versions, output hashes, screenshots and every anomaly in `docs/V1_0_7_EDITOR_VALIDATION.md`. A Vite-only result is not valid evidence for this matrix.
+
+Persistent editor JSON must contain only `mc-asset://<uuid>` image references. Tests should reject Base64, Blob URLs, file paths and remote URLs; manual restart testing must confirm that the associated image bytes remain available after the WebView Blob URLs have been revoked and recreated.
+
+Editor PDF import must remain unavailable until the PP-OCRv6_medium integration is implemented. Do not describe PDF export or office round trips as platform-complete until the real conversion matrix has passed on that platform.
+
+## V1.0.7 OCR Gate
+
+OCR is specified in `V1_0_7_OCR.md` but is not implemented yet. There is currently no runnable OCR test command, and documentation must not pretend otherwise.
+
+When OCR implementation begins:
+
+- add a dedicated OCR contract command;
+- include it in `npm run check`;
+- add real-model integration coverage to the Rust/Tauri test path;
+- record the exact model/runtime version, origin, SHA-256 and installed size;
+- ensure tests run offline and fail if a network fallback is attempted.
+
+Minimum automated coverage:
+
+- native-text, scanned and mixed PDFs;
+- PDF page rasterization and page order;
+- PNG, JPEG, WebP, TIFF and BMP;
+- French accents and reviewed multilingual fixtures;
+- TXT, Markdown and HTML serialization;
+- OCR result to Tiptap JSON;
+- explicit image-text clipboard result;
+- progress and cancellation;
+- corrupt/password-protected inputs;
+- source, pixel, page, time and memory limits;
+- temporary-file cleanup and original-file integrity.
+
+Minimum real Tauri coverage on Windows:
+
+1. disconnect network access;
+2. launch the packaged application;
+3. convert native, scanned and mixed PDFs to each advertised text target;
+4. copy recognized text from each advertised image format;
+5. open a scanned PDF in the editor and export the edited document;
+6. cancel a multipage OCR job;
+7. restart and repeat without model download;
+8. record output hashes, screenshots, timings, peak memory and warnings.
+
+Windows OCR validation is required before the version bump. Equivalent real host tests remain required on macOS and Linux before publishing V1.0.7 packages for those platforms.
 
 ## macOS Code Checks
 
@@ -155,7 +263,7 @@ npm run test:pdfium-wrapper
 npm run test:conversions
 ```
 
-For v1.0.5, the final two-architecture `macOS Conversion Matrix` evidence is recorded in `docs/V1_0_5_VALIDATION.md` with staged real macOS sidecars and `macos-universal` advanced engine archives passing on both Apple Silicon and Intel. The older single-run macOS conversion evidence remains historical context only and is not enough for final v1.0.5 readiness by itself. Rerun the two-architecture matrix after any conversion, sidecar, engine, manifest or packaging change before making a new macOS conversion claim. If the real macOS stack is missing or incomplete, this gate must fail instead of allowing release notes or status updates to say that all macOS conversions were tested.
+Historical v1.0.5 two-architecture `macOS Conversion Matrix` evidence is recorded in `docs/V1_0_5_VALIDATION.md`. V1.0.6 superseded that evidence and is the current public baseline. Rerun the two-architecture matrix after any conversion, sidecar, engine, manifest, editor, OCR or packaging change before making a new macOS conversion claim. If the real macOS stack is missing or incomplete, this gate must fail instead of allowing release notes or status updates to say that all macOS conversions were tested.
 
 Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Silicon and Intel archives plus SHA-256 checksums. A source may be one combined archive containing both `ffmpeg` and `ffprobe`, or separate `FFMPEG_MACOS_*` and `FFPROBE_MACOS_*` archives with separate SHA-256 values. `npm run prepare:macos-upstream-engines` also requires pinned checksums for PDFium, LibreOffice and Pandoc through `PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256`, `LIBREOFFICE_MACOS_AARCH64_DMG_SHA256`, `LIBREOFFICE_MACOS_X86_64_DMG_SHA256`, `PANDOC_MACOS_AARCH64_ARCHIVE_SHA256` and `PANDOC_MACOS_X86_64_ARCHIVE_SHA256`. Use `npm run prepare:libvips-engine:macos` only with two already-portable libvips runtime trees. These scripts are strict packaging gates; they are not CI placeholders and should fail when the inputs are missing, unpinned or still linked to machine-local package manager paths.
 
@@ -200,17 +308,17 @@ That DMG verification also runs only on macOS. It mounts the DMG, checks `Multi-
 
 A macOS release is not ready from code checks alone. The release DMG must be built and tested on macOS using `docs/RELEASE_CHECKLIST_MACOS.md`.
 
-For a local readiness snapshot that does not overclaim macOS support, run:
+For the published V1.0.6 baseline, run:
 
 ```bash
-npm run status:v1.0.5
+npm run status:v1.0.6
 ```
 
-The command writes `tmp/v1.0.5-status.json`. In the current preparation state, `releaseReady` should remain false because the clean-Mac Gatekeeper/install smoke test and final downloaded Linux AppImage smoke test have not both been recorded yet. The Linux sidecar staging, Linux engine staging, Linux AppImage build, Linux Conversion Matrix, Linux AppImage verification and final Codex Security evidence are recorded in `docs/V1_0_5_VALIDATION.md`. When every final manual proof exists, the same audit can report `releaseReady: true` instead of blocking that state.
+The command writes `tmp/v1.0.6-status.json`. The committed V1.0.6 evidence is complete and the status should report `releaseReady: true`.
 
-Current v1.0.5 macOS, Linux and final security evidence is recorded in `docs/V1_0_5_VALIDATION.md`. It covers macOS engine staging, the two-architecture `macOS Conversion Matrix` on Apple Silicon and Intel, universal DMG verification on Apple Silicon and Intel, Linux sidecar staging, Linux engine staging, Linux AppImage Build, Linux Conversion Matrix, Linux AppImage Verification and the final post-Linux Codex Security pass. Do not convert that evidence into a public release claim until the manual clean-Mac smoke test, final downloaded Linux AppImage smoke test, final README platform availability rows and public release notes are complete.
+The V1.0.5 status command and `docs/V1_0_5_VALIDATION.md` are retained only for historical reproducibility. In its then-current preparation state, `releaseReady` remained false until the old clean-Mac and Linux AppImage receipts were recorded; that statement is not the current product status.
 
-The clean-Mac smoke test must be recorded in `docs/V1_0_5_VALIDATION.md` under `## Manual Clean-Mac Smoke Test Receipt`. `npm run status:v1.0.5` requires the receipt to name `Multi-Converter_1.0.5_macos-universal.dmg`, mark the test as `success`, record Apple Silicon or Intel as the tested architecture, identify the source as the final downloaded GitHub release DMG, and record `yes` for the DMG mount, Applications install, unsigned/not-notarized first-launch warning, `Open Anyway` path, second launch, file selection, FFmpeg media conversion, document/PDF/image advanced conversion, and updater metadata behavior.
+For V1.0.7, create a version-specific status command and validation document only after the editor and OCR implementations expose real, testable gates. That future gate must require the editor Office matrix, packaged `PP-OCRv6_medium` fixtures, platform packaging, manual host tests and final security evidence. Do not reuse the V1.0.6 success as V1.0.7 proof.
 
 ## Linux x64
 
@@ -322,15 +430,15 @@ When the GitHub `Release` workflow is started with `include_macos=true`, it runs
 
 The GitHub `Release` workflow first runs a lightweight `release-preflight` job before allocating release runners. For every release, it validates the GitHub release body through `scripts/validate-release-notes.mjs`, the same shared rules used by release asset validation. For Windows-only runs, it rejects accidental macOS DMG and Linux AppImage mentions. For Linux runs, it requires the versioned Linux x64 AppImage name, enabled Linux automatic-update wording and positive Linux AppImage verification wording before publication.
 
-For macOS or Linux publication, the same preflight also runs:
+For macOS or Linux publication of the current baseline, the same preflight also runs:
 
 ```bash
-npm run status:v1.0.5 -- --require-ready
+npm run status:v1.0.6 -- --require-ready
 ```
 
-That gate intentionally fails until the two-architecture macOS conversion matrix, Intel DMG verification, clean-Mac smoke-test receipt, Linux AppImage build evidence, Linux Conversion Matrix evidence, Linux AppImage verification evidence, final Linux AppImage smoke-test receipt and final Codex Security scan or accepted replacement evidence are recorded. The README macOS and Linux rows must point to the final public installers when those platforms are released. The README must also include a `## macOS Installation` section that names the universal DMG, Apple Silicon, Intel, the Apple signing/notarization status, the `Open Anyway` path when the build is not Apple-signed or not notarized, and the enabled macOS updater behavior. For macOS runs, the shared release-note validator also checks the GitHub release body for the required macOS DMG name, Apple signing/notarization wording, `Open Anyway` instructions when needed, enabled macOS updater wording, Apple Silicon + Intel DMG verification wording, and `macOS Conversion Matrix` evidence before any full macOS conversion claim. For Linux runs, it requires the versioned Linux x64 AppImage name, enabled Linux updater wording, Linux AppImage verification wording and `Linux Conversion Matrix` evidence before any full Linux conversion claim. If the preflight fails, the platform verification jobs and the publishing job do not run.
+That gate requires the recorded V1.0.6 two-architecture macOS matrix and DMG verification, clean-Mac receipt, Linux AppImage build/conversion/verification/smoke evidence and final security evidence. The README macOS and Linux rows must point to the final public installers. The README must also include a `## macOS Installation` section that names the universal DMG, Apple Silicon, Intel, the Apple signing/notarization status, the `Open Anyway` path when the build is not Apple-signed or notarized, and updater behavior. The shared release-note validator checks the corresponding platform wording before publication.
 
-Final security evidence must be structured in `docs/V1_0_5_VALIDATION.md`, not only described in prose. `npm run status:v1.0.5 -- --require-ready` requires the `## Security And Confidentiality Evidence` section to record the final post-Linux Codex Security result, final security date, final reviewer, final scope, final confidential-information exposure result and final outcome.
+Final V1.0.6 security evidence is structured in `docs/V1_0_6_VALIDATION.md`. A future V1.0.7 status gate must point to V1.0.7 evidence and must include the editor and OCR security scope; previous-version evidence is not sufficient.
 
 The minimum manual DMG smoke test is:
 
@@ -376,3 +484,5 @@ http://127.0.0.1:1420/?mockUpdate=1&mockWelcomeSeen=1
 ```
 
 This shows the update reminder and feedback launcher together without the welcome dialog, so the floating-corner layout can be inspected directly.
+
+For the editor recent-document regression state, create at least five mock drafts, return to the editor home, open the action menu on the second card, then open and cancel the delete confirmation. Do not press the final destructive action unless the document is a disposable test draft.

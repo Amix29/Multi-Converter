@@ -1,0 +1,37 @@
+# Pricing - Multi-Converter
+
+## Free
+
+- Price: 0 EUR
+- Billing: none
+- Account required: no
+- Subscription required: no
+- Product type: Windows desktop utility
+- Source model: open source
+- Core use: local file conversion
+- Current platform: Windows x64
+- macOS: in development
+- Linux: planned
+
+## Included
+
+- Convert recognized document, data, image, audio and video formats when a compatible local engine is available
+- Process files locally on the user's computer
+- Use without creating an online account
+- Use without a subscription
+- Use without uploading files to a third-party web converter for local conversions
+- Access the source code on GitHub
+
+## Optional Maximum Quality extension
+
+- Price: 0 EUR
+- Billing: none
+- Purpose: install specialized third-party engines for more accurate or advanced conversions
+- Engines: PDFium, LibreOffice headless, Pandoc, libvips
+- Windows x64 download size: about 540.9 MB
+- Windows x64 installed size: about 1.79 GB
+- License note: each third-party engine keeps its own license and notices
+
+## Notes
+
+Multi-Converter is presented as a free and open source file converter for Windows. If a paid distribution, installer signature, donation page or commercial support offer is added later, this file should be updated before publishing.

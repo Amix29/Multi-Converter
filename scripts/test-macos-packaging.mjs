@@ -271,7 +271,7 @@ assert.match(ffmpegVersionLibrary, /FFMPEG_REQUIRED_VERSION/, "Shared FFmpeg ver
 const hasMacosAdvancedEngines = (enginesManifest.engines ?? []).some((engine) => engine.platform === "macos-universal" && engine.mode === "advanced");
 if (!hasMacosAdvancedEngines) {
   assert.match(readme, /Advanced macOS engines must not be advertised unless the release workflow stages reviewed `macos-universal` entries/, "README must warn that advanced macOS engine claims depend on staged and validated release inputs");
-  assert.match(macosChecklist, /advanced bundled engines are still declared for `windows-x64` only/, "macOS checklist must warn that advanced engines are Windows-only right now");
+  assert.match(macosChecklist, /V1\.0\.6 established the published macOS baseline[\s\S]*V1\.0\.7 must restage and revalidate/, "macOS checklist must distinguish the published baseline from the V1.0.7 restaging gate");
   assert.match(thirdPartyEngines, /macOS release notes and user-facing docs must limit macOS conversion claims/, "third-party engine docs must prevent overclaiming macOS engine support");
 }
 

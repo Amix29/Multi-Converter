@@ -1,4 +1,5 @@
 mod converters;
+mod editor;
 mod engine_distribution;
 mod engines;
 mod registry;
@@ -846,6 +847,22 @@ pub fn run() {
             open_external_url,
             export_to_downloads,
             export_to_folder,
+            editor::editor_create_document,
+            editor::editor_list_recent_documents,
+            editor::editor_load_document,
+            editor::editor_save_draft,
+            editor::editor_delete_draft,
+            editor::editor_rename_document,
+            editor::editor_duplicate_document,
+            editor::editor_import_document,
+            editor::editor_save_document,
+            editor::editor_save_as,
+            editor::editor_export_document,
+            editor::editor_read_asset,
+            editor::editor_store_asset,
+            editor::editor_import_asset,
+            editor::editor_remove_asset,
+            editor::editor_prune_assets,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Multi-Converter");

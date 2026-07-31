@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Logo Multi-Converter interface">
+  <g transform="translate(70 58) rotate(-1.5 186 186)">
+    <rect x="28" y="28" width="372" height="372" rx="78" fill="#1d241f" opacity="0.10"/>
+    <rect x="0" y="0" width="372" height="372" rx="78" fill="#fffdf7" stroke="#1d241f" stroke-width="15"/>
+    <rect x="94" y="177" width="184" height="22" rx="11" fill="#1d241f"/>
+    <rect x="177" y="94" width="22" height="184" rx="11" fill="#1d241f"/>
+    <circle cx="264" cy="270" r="38" fill="#3f7664"/>
+  </g>
+</svg>

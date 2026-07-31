@@ -2,7 +2,23 @@
 
 Cette page est une checklist technique de conformité et de packaging pour les mainteneurs du projet. Les contributions communautaires ne sont pas censées préparer les releases, checksums, notes de version ou archives de moteurs, sauf demande explicite d'un mainteneur. Elle ne remplace pas une revue juridique.
 
-La V1 Windows x64 assume des moteurs de base FFmpeg/ffprobe intégrés. Les exécutables actuellement validés sont les builds Gyan `8.1.1-essentials_build-www.gyan.dev`, configurés avec `--enable-gpl`. Ils doivent être documentés et redistribués comme composants tiers GPL/LGPL séparés du code AGPL-3.0-or-later de Multi-Converter.
+La version publique V1.0.6 fournit des moteurs locaux pour Windows x64, macOS universel et Linux x64. Sous Windows, les exécutables FFmpeg/ffprobe actuellement validés sont les builds Gyan `8.1.1-essentials_build-www.gyan.dev`, configurés avec `--enable-gpl`. Ils doivent être documentés et redistribués comme composants tiers GPL/LGPL séparés du code AGPL-3.0-or-later de Multi-Converter.
+
+## Préparation OCR V1.0.7
+
+V1.0.7 prévoit le modèle local `PP-OCRv6_medium` pour convertir les PDF numérisés en formats texte et copier le texte détecté dans une image. Ce moteur n'est pas encore intégré : ne l'ajoutez pas au manifeste embarqué, à `NOTICE` ou aux archives de publication avant que le runtime exact soit choisi et validé.
+
+Le futur paquet OCR doit :
+
+- épingler les versions exactes de PaddleOCR, du runtime d'inférence et du modèle ;
+- vérifier chaque archive et fichier de modèle par SHA-256 avant extraction ;
+- inclure les licences Apache-2.0 et toutes les notices des dépendances redistribuées ;
+- fonctionner hors ligne sans téléchargement de modèle pendant une conversion ;
+- fournir un paquet réel et testé pour Windows x64, macOS Apple Silicon + Intel et Linux x64 ;
+- appliquer des limites sur la taille source, le nombre de pages, les pixels décodés, le temps, la mémoire et les fichiers temporaires ;
+- être couvert par un validateur de manifeste et par les matrices décrites dans `docs/V1_0_7_OCR.md`.
+
+Les ressources OCR générées, téléchargées ou extraites restent hors Git tant qu'un mainteneur n'approuve pas explicitement leur ajout. Consultez aussi `docs/THIRD_PARTY_ENGINES.md` et `docs/V1_0_7_PLAN.md`.
 
 ## Entrées locales
 
@@ -23,7 +39,7 @@ engine-sources/windows-x64/ffmpeg/
     THIRD_PARTY_NOTICES.txt
 ```
 
-For the planned universal macOS DMG, stage both Darwin sidecar architectures before packaging:
+For a universal macOS DMG, stage both Darwin sidecar architectures before packaging:
 
 ```text
 engine-sources/macos-universal/ffmpeg/
@@ -42,7 +58,7 @@ The release build needs the `*-universal-apple-darwin` sidecars because Tauri's 
 
 ## Sources macOS à préparer
 
-Le packaging macOS utilise une configuration séparée : `tools/engine-packages.macos.config.json`. Elle sert de contrat pour le futur paquet `macos-universal` sans modifier le manifeste public tant que les archives ne sont pas publiées.
+Le packaging macOS utilise une configuration séparée : `tools/engine-packages.macos.config.json`. Elle sert de contrat pour les paquets `macos-universal` sans modifier le manifeste public tant que de nouvelles archives ne sont pas publiées.
 
 Sources candidates vérifiées au 12 juin 2026 :
 
@@ -189,7 +205,7 @@ Cette commande prépare FFmpeg/ffprobe depuis gyan.dev et génère `dist-engines
 
 Packaging macOS is not considered release-ready until the final DMG has been produced and tested on macOS. Do not modify the generated `.app` after the Tauri bundle step; change source files, config or staged engines, then rebuild.
 
-The current embedded manifest still declares advanced engines for `windows-x64` only. Add reviewed `macos-universal` engine entries and archives before advertising PDFium, LibreOffice, Pandoc or libvips support on macOS.
+The embedded manifest used for a release must contain only the reviewed engines for its target platform. V1.0.6 established the current Windows, macOS and Linux baseline; V1.0.7 must restage that baseline together with the editor and OCR resources before advertising the new capabilities.
 
 `prepare:bundled-engines` prunes stale entries in `src-tauri/bundled-engines` that do not match the current platform before packaging. `validate:bundled-engines` must fail if a platform build would carry engine resources from another platform.
 

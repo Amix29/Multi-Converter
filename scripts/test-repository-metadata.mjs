@@ -8,6 +8,9 @@ const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
 const securityPolicy = fs.readFileSync(path.join(root, "SECURITY.md"), "utf8");
 const githubTopics = fs.readFileSync(path.join(root, "docs", "GITHUB_TOPICS.md"), "utf8");
 const testingDocs = fs.readFileSync(path.join(root, "docs", "TESTING.md"), "utf8");
+const v107Plan = fs.readFileSync(path.join(root, "docs", "V1_0_7_PLAN.md"), "utf8");
+const v107Validation = fs.readFileSync(path.join(root, "docs", "V1_0_7_VALIDATION.md"), "utf8");
+const v107Ocr = fs.readFileSync(path.join(root, "docs", "V1_0_7_OCR.md"), "utf8");
 const releaseNotesDraft = fs.readFileSync(path.join(root, "docs", "RELEASE_NOTES_V1.0.5_DRAFT.md"), "utf8");
 const macosChecklist = fs.readFileSync(path.join(root, "docs", "RELEASE_CHECKLIST_MACOS.md"), "utf8");
 const secretLeakScript = fs.readFileSync(path.join(root, "scripts", "test-secret-leaks.mjs"), "utf8");
@@ -131,8 +134,9 @@ for (const secondaryTopic of ["free-file-converter", "private-file-converter", "
   assert.ok(keywords.has(secondaryTopic), `secondary GitHub discovery term is missing from package keywords: ${secondaryTopic}`);
 }
 
-assert.match(githubTopics, /Linux x64 is available for V1\.0\.5 as one AppImage with updater metadata\./, "GitHub topic docs must describe Linux release support");
-assert.match(testingDocs, /npm run status:v1\.0\.5/, "testing docs must document the V1.0.5 status audit command");
+assert.match(githubTopics, /V1\.0\.6 is the current public stable release/, "GitHub topic docs must identify the current stable release");
+assert.match(githubTopics, /Linux x64 is available as one AppImage with updater metadata/, "GitHub topic docs must describe Linux release support");
+assert.match(testingDocs, /npm run status:v1\.0\.6/, "testing docs must document the current V1.0.6 status audit command");
 assert.match(testingDocs, /npm run test:secret-leaks/, "testing docs must document the secret leak scan");
 assert.match(testingDocs, /npm run test:production-config/, "testing docs must document the production config test");
 assert.match(testingDocs, /npm run test:linux:ci/, "testing docs must document the Linux CI gate");
@@ -142,10 +146,14 @@ assert.match(testingDocs, /npm run test:linux:conversions/, "testing docs must d
 assert.match(testingDocs, /npm run verify:linux-appimage/, "testing docs must document the Linux AppImage verification gate");
 assert.match(testingDocs, /Linux AppImage Build/, "testing docs must document the Linux AppImage workflow");
 assert.match(testingDocs, /linux-x86_64/, "testing docs must document the Linux updater platform key");
-assert.match(testingDocs, /current preparation state[\s\S]*`releaseReady` should remain false[\s\S]*Linux AppImage[\s\S]*evidence/, "testing docs must state that current V1.0.5 readiness remains false until final macOS and Linux proof exists");
-assert.match(testingDocs, /same audit can report `releaseReady: true`/, "testing docs must allow the status audit to pass once final release proof exists");
+assert.match(testingDocs, /committed V1\.0\.6 evidence is complete[\s\S]*`releaseReady: true`/, "testing docs must describe the published V1.0.6 status accurately");
+assert.match(testingDocs, /future V1\.0\.7 status gate[\s\S]*editor and OCR/, "testing docs must require a new version-specific gate for V1.0.7");
 assert.match(testingDocs, /two-architecture `macOS Conversion Matrix`[\s\S]*Apple Silicon[\s\S]*Intel/, "testing docs must require macOS conversion evidence on both architectures");
-assert.match(testingDocs, /single-run macOS conversion evidence[\s\S]*not enough for final v1\.0\.5 readiness/, "testing docs must not let the older single-run matrix unlock final readiness");
+assert.match(v107Plan, /document editor powered by the open-source Tiptap\/ProseMirror stack[\s\S]*PP-OCRv6_medium/, "V1.0.7 plan must preserve both official objectives");
+assert.match(v107Plan, /repository version remains `1\.0\.6` until both objectives are implemented/, "V1.0.7 plan must keep version metadata gated");
+assert.match(v107Validation, /Overall gate:\s*\*\*blocked\*\*/, "V1.0.7 validation must not claim release readiness");
+assert.match(v107Ocr, /Implementation status:\s*\*\*not started\*\*/, "OCR documentation must not claim the engine is implemented");
+assert.match(v107Ocr, /PDF to text formats[\s\S]*Copy text from an image/, "OCR documentation must cover both required user outcomes");
 assert.match(releaseNotesDraft, /Multi-Converter_1\.0\.5_linux-x64\.AppImage/, "release notes draft must name the versioned Linux AppImage");
 assert.match(releaseNotesDraft, /Linux automatic updates are enabled/, "release notes draft must mention enabled Linux automatic updates");
 assert.match(releaseNotesDraft, /Linux AppImage Build[\s\S]*Linux Conversion Matrix[\s\S]*Linux AppImage Verification/, "release notes draft must keep final Linux proof visible before publication");

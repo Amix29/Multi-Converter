@@ -16,6 +16,15 @@ Community contributions are welcome for:
 
 Release preparation is handled by the project maintainers. Contributors are not expected to prepare new versions, installers, engine archives, release checksums, or release notes.
 
+## Current Development Priorities
+
+V1.0.7 has two official workstreams:
+
+- a local document editor built with the MIT Tiptap/ProseMirror packages;
+- local OCR with `PP-OCRv6_medium` for PDF-to-text conversion and copying text from images.
+
+Read `docs/README.md` and `docs/V1_0_7_PLAN.md` before contributing to either area. Editor work must preserve the Tiptap JSON, bounded ODT and `mc-asset://` contracts. OCR work must follow `docs/V1_0_7_OCR.md`, remain offline and must not add a cloud fallback.
+
 ## Development Setup
 
 ```bash
@@ -45,6 +54,22 @@ npm run fmt:rust:check
 npm run clippy:rust
 npm run clippy:pdfium-wrapper
 ```
+
+Editor changes also require:
+
+```bash
+npm run test:editor
+```
+
+Marketing-site changes require the site dependencies and its complete local
+gate:
+
+```bash
+npm --prefix site install
+npm run site:check
+```
+
+Real document import/export and future OCR inference must be tested in Tauri or Rust. The Vite preview only proves mocked UI behavior.
 
 ## Third-Party Engines
 

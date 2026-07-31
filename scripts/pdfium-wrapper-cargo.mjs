@@ -12,9 +12,18 @@ const workDir = await fs.mkdtemp(path.join(tempRoot, "multi-converter-pdfium-wra
 const targetDir = await fs.mkdtemp(path.join(tempRoot, "mc-cargo-target-pdfium-wrapper-"));
 const manifest = path.join(workDir, "Cargo.toml");
 const args = process.argv.slice(2);
+const expectedPdfiumRenderVersion = "=0.9.1";
 
 if (args.length === 0) {
   throw new Error("Missing cargo command for PDFium wrapper.");
+}
+
+const sourceManifest = await fs.readFile(path.join(sourceDir, "Cargo.toml"), "utf8");
+const configuredPdfiumRenderVersion = sourceManifest.match(/^pdfium-render\s*=\s*"([^"]+)"/m)?.[1];
+if (configuredPdfiumRenderVersion !== expectedPdfiumRenderVersion) {
+  throw new Error(
+    `The PDFium wrapper must pin pdfium-render to ${expectedPdfiumRenderVersion}; found ${configuredPdfiumRenderVersion ?? "no version"}.`,
+  );
 }
 
 let exitCode = 1;

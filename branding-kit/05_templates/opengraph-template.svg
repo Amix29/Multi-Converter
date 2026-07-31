@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Multi-Converter Open Graph template">
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M 32 0 L 0 0 0 32" fill="none" stroke="#23201c" stroke-opacity="0.07" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#f8f2e9"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <circle cx="900" cy="80" r="230" fill="#c86a34" opacity="0.08"/>
+  <rect x="72" y="66" width="1056" height="498" rx="18" fill="#fffdf8" opacity="0.62" stroke="#ded9cc"/>
+  <g transform="translate(112 120)">
+    <g transform="rotate(-1.5 62 62)">
+      <rect x="9" y="9" width="124" height="124" rx="26" fill="#23201c" opacity="0.10"/>
+      <rect x="0" y="0" width="124" height="124" rx="26" fill="#fffdf8" stroke="#23201c" stroke-width="5"/>
+      <rect x="32" y="59" width="60" height="7" rx="3.5" fill="#23201c"/>
+      <rect x="59" y="32" width="7" height="60" rx="3.5" fill="#23201c"/>
+      <circle cx="88" cy="91" r="13" fill="#c86a34"/>
+    </g>
+  </g>
+  <text x="112" y="320" fill="#23201c" font-family="Segoe UI, system-ui, sans-serif" font-size="82" font-weight="900">Convertissez sans</text>
+  <text x="112" y="405" fill="#23201c" font-family="Segoe UI, system-ui, sans-serif" font-size="82" font-weight="900">envoyer ailleurs.</text>
+  <line x1="116" y1="444" x2="400" y2="444" stroke="#c86a34" stroke-width="5" stroke-linecap="round"/>
+  <text x="112" y="498" fill="#746d63" font-family="Segoe UI, system-ui, sans-serif" font-size="28" font-weight="750">Gratuit · local · open source</text>
+  <text x="840" y="510" fill="#746d63" font-family="Segoe UI, system-ui, sans-serif" font-size="18" font-weight="750">paper / ink / accent</text>
+</svg>

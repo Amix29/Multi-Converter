@@ -2749,12 +2749,14 @@ dependencies = [
 name = "multi-converter"
 version = "1.0.6"
 dependencies = [
+ "base64 0.22.1",
  "csv",
  "dirs",
  "encoding_rs",
  "html-escape",
  "image",
  "pdf-extract",
+ "quick-xml 0.41.0",
  "resvg",
  "rfd",
  "serde",
