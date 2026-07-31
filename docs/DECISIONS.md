@@ -86,12 +86,17 @@ lockfile under `site/` and is checked independently with
 ## 2026-07-31 — Close the workspace transition locally
 
 **Decision:** record the Atelier governance, marketing site, branding kit and
-their documentation in one local transition commit after validation.
+the current unfinished V1.0.7 development checkpoint together in local commit
+`1be6b840` on `codex/test` after validation.
 
-**Reason:** these files form one maintainable workspace boundary, while the
-pre-existing V1.0.7 application implementation remains separate work on
-`codex/test`.
+**Reason:** the transition rules and documentation depend on the active editor
+contracts, commands and package state. A transition-only commit would have
+left an incoherent snapshot with documented V1.0.7 paths that were not present
+in that commit.
 
-**Consequences:** the transition commit is not pushed without explicit
-authorization. The former standalone site history remains recoverable from the
+**Consequences:** the commit is a development checkpoint, not V1.0.7 release
+evidence. V1.0.7 remains blocked by the real Tauri editor matrix, OCR and the
+platform release gates. The commit is local and is not pushed without explicit
+authorization. Generated `output/` and `release-direct/` artifacts were not
+included. The former standalone site history remains recoverable from the
 verified external Git bundle retained by the maintainer.

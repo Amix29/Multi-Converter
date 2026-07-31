@@ -97,6 +97,30 @@ Le bouton Windows lit dynamiquement la dernière release GitHub et choisit le pr
 
 Le site concentre les informations produit sur la page d’accueil et ses sections d’ancrage.
 
+## Plateformes publiées
+
+La version publique V1.0.6 est disponible pour Windows x64, macOS universel
+(Apple Silicon et Intel) et Linux x64. La page de téléchargement expose :
+
+- l’installateur Windows détecté dans la dernière release GitHub ;
+- l’alias stable `Multi-Converter_macos-universal.dmg` ;
+- l’alias stable `Multi-Converter_linux-x64.AppImage`.
+
+Le build macOS V1.0.6 n’est ni signé par Apple ni notarialisé. La page de
+téléchargement conserve donc le parcours utilisateur
+`System Settings > Privacy & Security > Open Anyway`, puis `Open`.
+
+## Dernière validation locale
+
+Le 31 juillet 2026, `npm run site:check` a généré 114 pages statiques et validé
+120 routes, 111 pages HTML et 110 pages HTML SEO. L’audit de production
+`npm --prefix site audit --omit=dev` a signalé zéro vulnérabilité connue.
+
+Un profil Playwright isolé a aussi vérifié l’accueil et la page de
+téléchargement sur desktop et à 390 × 844 px, le filtre de formats, l’aperçu
+d’image et la présence des liens Windows, macOS et Linux. Aucun navigateur ou
+profil utilisateur principal n’a été utilisé.
+
 ## Déploiement GitHub Pages
 
 Le workflow [`../.github/workflows/deploy-pages.yml`](../.github/workflows/deploy-pages.yml)

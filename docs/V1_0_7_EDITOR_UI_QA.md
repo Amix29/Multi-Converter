@@ -67,3 +67,21 @@ Les dimensions diffèrent, mais les trois défauts contrôlés sont indépendant
 Aucun écart P0, P1 ou P2 ne reste sur les deux états signalés.
 
 final result: passed
+
+## 2026-07-31 — Smoke test après consolidation
+
+Un second passage a utilisé un profil Playwright isolé, sans ouvrir le
+navigateur principal de l’utilisateur. L’aperçu compilé `dist` a été servi par
+Vite à `127.0.0.1`, puis vérifié à 390 × 844 px :
+
+- fermeture de l’accueil guidé ;
+- passage du Convertisseur à l’Éditeur ;
+- création d’un document ;
+- rendu de la barre d’outils et de la page ;
+- saisie de `Test de transition Atelier IA` dans le document.
+
+Ce smoke test confirme le rendu et ces interactions simulées uniquement. Il ne
+prouve pas l’enregistrement Tauri, la persistance après redémarrage, les imports
+ou exports Office, les sidecars ou OCR. Le serveur Vite de développement étant
+resté sur l’optimisation initiale des dépendances, cette vérification a utilisé
+l’aperçu compilé existant et ne remplace pas un nouveau build de production.

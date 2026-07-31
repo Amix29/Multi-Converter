@@ -6,6 +6,7 @@
 - Platforms: Windows x64, universal macOS and Linux x64
 - Repository surfaces: desktop application, static marketing site and branding kit
 - Development release: **V1.0.7**
+- Workspace checkpoint: local commit **`1be6b840`** on `codex/test`, not pushed
 - V1.0.7 objectives:
   - local Tiptap document editor;
   - local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images.

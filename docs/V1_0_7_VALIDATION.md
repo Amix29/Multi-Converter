@@ -4,9 +4,10 @@
 
 - Target version: **V1.0.7**
 - Published baseline: **V1.0.6**
-- Last documentation review: **2026-07-30**
+- Last documentation review: **2026-07-31**
 - Overall gate: **blocked**
 - Version metadata: **1.0.6**
+- Development checkpoint: local commit **`1be6b840`** on `codex/test`, not pushed
 
 This is the combined release-validation ledger for V1.0.7. It does not replace the detailed editor or OCR documents:
 
@@ -15,6 +16,32 @@ This is the combined release-validation ledger for V1.0.7. It does not replace t
 - [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md) defines the complete scope and sequencing.
 
 V1.0.6 results prove the existing release baseline only. They do not validate V1.0.7.
+
+## 2026-07-31 Workspace Consolidation Evidence
+
+The local checkpoint combines the Atelier IA transition with the unfinished
+V1.0.7 development tree so its rules, commands, documentation and source stay
+coherent. It is not a release candidate and does not close any pending host or
+OCR gate.
+
+Verified during consolidation:
+
+- `npm run site:check` passed with 114 generated static pages, 120 checked
+  routes, 111 HTML pages and 110 indexable SEO HTML pages;
+- `npm --prefix site audit --omit=dev` reported zero known vulnerabilities;
+- the repository secret-leak scan and staged diff checks passed;
+- the former standalone site bundle was verified as a complete Git history;
+- an isolated Playwright profile exercised the marketing home/download pages
+  at desktop and 390 × 844 px, including screenshot preview, format search and
+  the Windows, macOS and Linux download links;
+- the compiled editor preview opened, switched to Editor mode, created a local
+  mock document and accepted text at 390 × 844 px.
+
+The editor browser smoke used the existing compiled `dist` preview because the
+Vite development server remained in dependency optimization during this pass.
+It proves only the rendered mock-browser flow: it does not validate current
+Tauri persistence, native file access, Office import/export, sidecars, updater
+behavior or OCR.
 
 ## Gate Summary
 
