@@ -1,177 +1,73 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/plugin-notification";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { ImportToast, PageNotice } from "./app/components/AppNotices";
 import {
-  api,
-  type ConversionResult,
-  type ClipboardFileInput,
-  type ExportResult,
-  type FileDescription,
-  type TargetFormat,
-  type AppMode,
-} from "./lib/api";
-import { UpdateDialog, UpdateInstallDialog, UpdateProgress, UpdateReminder } from "./components/UpdateFlow";
+  appModeStorageKey,
+  feedbackPrivacyStorageKey,
+  notificationsStorageKey,
+  readStoredFeedbackPrivacyAccepted,
+  readStoredNotificationsEnabled,
+  shouldShowWelcome,
+  welcomeStorageKey,
+} from "./app/conversion/model";
+import { useConversionWorkflow } from "./app/conversion/useConversionWorkflow";
+import { useFileWorkflow } from "./app/conversion/useFileWorkflow";
+import { FeedbackDialog, FeedbackPrivacyDialog } from "./app/feedback/FeedbackOverlays";
+import { AppTopbar } from "./app/layout/AppTopbar";
+import { FilesScreen } from "./app/screens/FilesScreen";
+import { FormatScreen } from "./app/screens/FormatScreen";
+import { ProgressScreen } from "./app/screens/ProgressScreen";
+import { SettingsPanel } from "./app/settings/SettingsPanel";
+import type { Notice, NoticeTone } from "./app/types";
+import { WelcomePanel } from "./app/welcome/WelcomePanel";
+import { UpdateDialog, UpdateInstallDialog, UpdateReminder } from "./components/UpdateFlow";
 import { useAppUpdater } from "./hooks/useAppUpdater";
-import {
-  languageLabel,
-  languageOptions,
-  pluralKey,
-  t,
-  translateBackendMessage,
-  translateCategory,
-  useI18n,
-  type LanguageCode,
-} from "./i18n";
-import { minimumReportVersion, repositoryUrl, type AppUpdateInfo, type UpdateDownloadSize, type UpdateStatus } from "./lib/updateService";
-import brandLogoUrl from "./assets/multi-converter-icon-brand-orange.svg";
+import { t, useI18n } from "./i18n";
+import { api, type AppMode } from "./lib/api";
+import { repositoryUrl } from "./lib/updateService";
 import "./editor/editor.css";
 
 const EditorWorkspace = lazy(() => import("./editor/EditorWorkspace").then((module) => ({ default: module.EditorWorkspace })));
-
-type Step = 1 | 2 | 3;
-type Status = "pending" | "ready" | "queued" | "working" | "canceling" | "canceled" | "done" | "error" | "unsupported";
-type NoticeTone = "info" | "success" | "error";
-type ExportKind = "downloads" | "folder";
-type FeedbackKind = "bug" | "feature" | "other";
-type ImportFeedback =
-  | { state: "analyzing"; count: number | null; visible: boolean }
-  | { state: "done"; count: number; visible: boolean }
-  | null;
-
-interface FileItem extends FileDescription {
-  id: string;
-  jobId: string;
-  selectedFormat: string | null;
-  progress: number;
-  phase: string;
-  status: Status;
-  result: ConversionResult | null;
-  convertedFormat: string | null;
-  error: string | null;
-}
-
-interface ConversionIntent {
-  id: string;
-  labelKey: Parameters<typeof t>[1];
-  target: TargetFormat;
-  priority: number;
-}
-
-const statusLabelKeys: Record<Status, Parameters<typeof t>[1]> = {
-  pending: "status.pending",
-  ready: "status.ready",
-  queued: "status.queued",
-  working: "status.working",
-  canceling: "status.canceling",
-  canceled: "status.canceled",
-  done: "status.done",
-  error: "status.error",
-  unsupported: "status.unsupported",
-};
-
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
-const welcomeStorageKey = "multi-converter-welcome-seen";
-const notificationsStorageKey = "multi-converter-notifications-enabled";
-const feedbackPrivacyStorageKey = "multi-converter-feedback-public-warning-seen";
-const appModeStorageKey = "multi-converter-app-mode";
-const issueNewUrl = `${repositoryUrl}/issues/new`;
-const maxClipboardMemoryFileBytes = 128 * 1024 * 1024;
-
-const feedbackKinds: FeedbackKind[] = ["bug", "feature", "other"];
-const feedbackLabels: Record<FeedbackKind, string> = {
-  bug: "Bug",
-  feature: "Feature",
-  other: "Other",
-};
-const feedbackTemplates: Record<FeedbackKind, string> = {
-  bug: "bug_report.yml",
-  feature: "feature_request.yml",
-  other: "other.md",
-};
-const feedbackTitlePrefixes: Record<FeedbackKind, string> = {
-  bug: "[Bug]: ",
-  feature: "[Feature]: ",
-  other: "",
-};
-
-function stepLabels(language: LanguageCode): Array<{ id: Step; label: string; title: string }> {
-  return [
-    { id: 1, label: "01", title: t(language, "step.files") },
-    { id: 2, label: "02", title: t(language, "step.format") },
-    { id: 3, label: "03", title: t(language, "step.output") },
-  ];
-}
 
 export default function App() {
   const { language, setLanguage } = useI18n();
   const bootStarted = useRef(false);
-
-  const [notificationsEnabled, setNotificationsEnabled] = useState(() => readStoredNotificationsEnabled());
+  const [notificationsEnabled, setNotificationsEnabled] = useState(readStoredNotificationsEnabled);
   const [bootInfoLoaded, setBootInfoLoaded] = useState(false);
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => shouldShowWelcome());
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(shouldShowWelcome);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFeedbackPrivacyOpen, setIsFeedbackPrivacyOpen] = useState(false);
-  const [feedbackPrivacyAccepted, setFeedbackPrivacyAccepted] = useState(() => readStoredFeedbackPrivacyAccepted());
-  const [step, setStep] = useState<Step>(1);
+  const [feedbackPrivacyAccepted, setFeedbackPrivacyAccepted] = useState(readStoredFeedbackPrivacyAccepted);
   const [appMode, setAppMode] = useState<AppMode>(() => localStorage.getItem(appModeStorageKey) === "editor" ? "editor" : "converter");
   const [editorWasOpened, setEditorWasOpened] = useState(appMode === "editor");
-  const [files, setFiles] = useState<FileItem[]>([]);
-  const [outputDir, setOutputDir] = useState<string | null>(null);
-  const [isConverting, setIsConverting] = useState(false);
-  const [isCancelling, setIsCancelling] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const [isTempOutputCleaned, setIsTempOutputCleaned] = useState(false);
-  const [exportResult, setExportResult] = useState<ExportResult | null>(null);
-  const [notice, setNotice] = useState<{ id: number; tone: NoticeTone; message: string } | null>(null);
-  const [importFeedback, setImportFeedback] = useState<ImportFeedback>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [editorDropRequest, setEditorDropRequest] = useState<{ id: number; paths: string[] } | null>(null);
-  const canImportDroppedFiles = appMode === "converter" && (step === 1 || step === 2);
-  const canImportDroppedFilesRef = useRef(canImportDroppedFiles);
-  const appModeRef = useRef(appMode);
-  const wasConverting = useRef(false);
-  const cancellationRequested = useRef(false);
+  const [notice, setNotice] = useState<Notice | null>(null);
 
-  const {
-    cancelUpdateDialog,
-    checkForAppUpdate,
-    currentVersion,
-    installAvailableUpdate,
-    internetAvailable,
-    isUpdateDialogOpen,
-    setInternetAvailable,
-    setIsUpdateDialogOpen,
-    showAvailableUpdateReminder,
-    updateDownloadProgress,
-    updateDownloadSize,
-    updateInfo,
-    updateReminderVisible,
-    updateStatus,
-  } = useAppUpdater({
-    bootInfoLoaded,
-    isTauriRuntime,
-    isWelcomeOpen,
+  const fileWorkflow = useFileWorkflow({ appMode, language, showNotice });
+  const conversionWorkflow = useConversionWorkflow({
+    files: fileWorkflow.files,
     language,
+    notificationsEnabled,
+    setFiles: fileWorkflow.setFiles,
+    setStep: fileWorkflow.setStep,
     showNotice,
   });
-  const updateReminderActive = updateReminderVisible && Boolean(updateInfo) && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen;
-  const feedbackLauncherActive = appMode === "converter" && step === 1 && !isSettingsOpen && !isWelcomeOpen && !isUpdateDialogOpen && updateStatus !== "installing" && !isFeedbackOpen && !isFeedbackPrivacyOpen;
-  const importToastActive = Boolean(importFeedback?.visible);
+  const updater = useAppUpdater({ bootInfoLoaded, isTauriRuntime, isWelcomeOpen, language, showNotice });
 
-  function openFeedback() {
-    if (feedbackPrivacyAccepted) {
-      setIsFeedbackOpen(true);
-      return;
-    }
-    setIsFeedbackPrivacyOpen(true);
-  }
-
-  function acceptFeedbackPrivacy() {
-    localStorage.setItem(feedbackPrivacyStorageKey, "true");
-    setFeedbackPrivacyAccepted(true);
-    setIsFeedbackPrivacyOpen(false);
-    setIsFeedbackOpen(true);
-  }
+  const updateReminderActive = updater.updateReminderVisible
+    && Boolean(updater.updateInfo)
+    && !isSettingsOpen
+    && !isWelcomeOpen
+    && !updater.isUpdateDialogOpen;
+  const feedbackLauncherActive = appMode === "converter"
+    && fileWorkflow.step === 1
+    && !isSettingsOpen
+    && !isWelcomeOpen
+    && !updater.isUpdateDialogOpen
+    && updater.updateStatus !== "installing"
+    && !isFeedbackOpen
+    && !isFeedbackPrivacyOpen;
+  const importToastActive = Boolean(fileWorkflow.importFeedback?.visible);
 
   useEffect(() => {
     localStorage.setItem(notificationsStorageKey, notificationsEnabled ? "true" : "false");
@@ -179,14 +75,8 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem(appModeStorageKey, appMode);
-    appModeRef.current = appMode;
     if (appMode === "editor") setEditorWasOpened(true);
   }, [appMode]);
-
-  useEffect(() => {
-    canImportDroppedFilesRef.current = canImportDroppedFiles;
-    if (!canImportDroppedFiles) setIsDragOver(false);
-  }, [canImportDroppedFiles]);
 
   useEffect(() => {
     if (!notice) return;
@@ -195,123 +85,16 @@ export default function App() {
   }, [notice]);
 
   useEffect(() => {
-    if (!importFeedback || importFeedback.state !== "done") return;
-    const timeout = window.setTimeout(() => setImportFeedback(null), 2600);
-    return () => window.clearTimeout(timeout);
-  }, [importFeedback]);
-
-  useEffect(() => {
     if (bootStarted.current) return;
     bootStarted.current = true;
-
     api.welcomeState()
       .then((state) => setIsWelcomeOpen(state.show))
       .catch(() => setIsWelcomeOpen(shouldShowWelcome()));
-
     api.bootstrapDependencies()
-      .then((dependencies) => {
-        setInternetAvailable(dependencies.internetAvailable);
-      })
-      .catch(() => {
-        setInternetAvailable(navigator.onLine);
-      })
+      .then((dependencies) => updater.setInternetAvailable(dependencies.internetAvailable))
+      .catch(() => updater.setInternetAvailable(navigator.onLine))
       .finally(() => setBootInfoLoaded(true));
   }, [language]);
-
-  useEffect(() => {
-    function onPaste(event: ClipboardEvent) {
-      if (!canImportDroppedFilesRef.current || isEditablePasteTarget(event.target)) return;
-      const files = clipboardEventFiles(event.clipboardData);
-      const text = event.clipboardData?.getData("text/plain") ?? "";
-      if (!files.length && !text.trim()) return;
-      event.preventDefault();
-      void importClipboardContent(files, text);
-    }
-
-    window.addEventListener("paste", onPaste);
-    return () => window.removeEventListener("paste", onPaste);
-  }, [language]);
-
-  useEffect(() => {
-    let progressUnlisten: (() => void) | undefined;
-    let dropUnlisten: (() => void) | undefined;
-    let disposed = false;
-
-    api.onProgress((payload) => {
-      setFiles((items) =>
-        items.map((file) =>
-          file.jobId === payload.jobId
-            ? { ...file, progress: Math.max(clamp(file.progress, 0, 100), clamp(payload.progress, 0, 100)), phase: payload.phase || "phase.conversion" }
-            : file,
-        ),
-      );
-    }).then((unlisten) => {
-      if (disposed) {
-        unlisten();
-        return;
-      }
-      progressUnlisten = unlisten;
-    });
-
-    api.onFileDrop(async (paths) => {
-      if (!paths.length) return;
-      if (appModeRef.current === "editor") {
-        setEditorDropRequest({ id: Date.now(), paths });
-        return;
-      }
-      if (canImportDroppedFilesRef.current) await addFilePaths(paths);
-    }).then((unlisten) => {
-      if (disposed) {
-        unlisten();
-        return;
-      }
-      dropUnlisten = unlisten;
-    });
-
-    return () => {
-      disposed = true;
-      progressUnlisten?.();
-      dropUnlisten?.();
-    };
-  }, [language]);
-
-  useEffect(() => {
-    if (isConverting) {
-      wasConverting.current = true;
-      return;
-    }
-
-    if (!wasConverting.current) return;
-    wasConverting.current = false;
-
-    const selectedFiles = files.filter((file) => file.selectedFormat);
-    const allFinished = selectedFiles.length > 0 && selectedFiles.every((file) => file.status === "done" || file.status === "error" || file.status === "canceled");
-    if (!allFinished) return;
-
-    const failed = selectedFiles.some((file) => file.status === "error");
-    void notifyConversionFinished(language, failed, notificationsEnabled);
-  }, [files, isConverting, language, notificationsEnabled]);
-
-  useEffect(() => {
-    if (!isConverting) return;
-    const interval = window.setInterval(() => {
-      setFiles((items) =>
-        items.map((file) => {
-          if (file.status === "queued") {
-            return { ...file, progress: Math.max(file.progress, 5) };
-          }
-          if (file.status !== "working") return file;
-          const current = clamp(file.progress, 0, 100);
-          const optimisticCap = file.size > 700 * 1024 * 1024 ? 78 : file.size > 120 * 1024 * 1024 ? 88 : 94;
-          if (current >= optimisticCap) return file;
-          const sizeFactor = file.size > 700 * 1024 * 1024 ? 0.55 : file.size > 120 * 1024 * 1024 ? 0.75 : 1;
-          const pace = current < 45 ? 2.8 : current < 75 ? 1.7 : 0.65;
-          return { ...file, progress: Math.max(current, Math.min(optimisticCap, current + pace * sizeFactor)) };
-        }),
-      );
-    }, 900);
-    return () => window.clearInterval(interval);
-  }, [isConverting]);
 
   function showNotice(tone: NoticeTone, message: string) {
     setNotice({ id: Date.now(), tone, message });
@@ -321,517 +104,79 @@ export default function App() {
     localStorage.setItem(welcomeStorageKey, "true");
     void api.markWelcomeSeen().catch(() => undefined);
     setIsWelcomeOpen(false);
-    showAvailableUpdateReminder();
+    updater.showAvailableUpdateReminder();
   }
 
-  function addFiles(incomingFiles: FileDescription[]) {
-    setFiles((existing) => {
-      const knownPaths = new Set(existing.map((file) => file.path));
-      const incoming = incomingFiles
-        .filter((file) => file && !knownPaths.has(file.path))
-        .map<FileItem>((file) => ({
-          ...file,
-          id: crypto.randomUUID(),
-          jobId: crypto.randomUUID(),
-          selectedFormat: null,
-          progress: 0,
-          phase: "phase.waiting",
-          status: hasAvailableDescriptionTargets(file) ? "pending" : "unsupported",
-          result: null,
-          convertedFormat: null,
-          error: null,
-        }));
-      return [...existing, ...incoming];
-    });
+  function openFeedback() {
+    if (feedbackPrivacyAccepted) setIsFeedbackOpen(true);
+    else setIsFeedbackPrivacyOpen(true);
   }
 
-  async function addFilePaths(paths: string[]) {
-    await importFiles(paths.length, async () => {
-      const descriptions = await api.describePaths(paths);
-      if (!descriptions.length && paths.length) showNotice("error", skippedFilesText(language, paths.length));
-      return descriptions;
-    });
+  function acceptFeedbackPrivacy() {
+    localStorage.setItem(feedbackPrivacyStorageKey, "true");
+    setFeedbackPrivacyAccepted(true);
+    setIsFeedbackPrivacyOpen(false);
+    setIsFeedbackOpen(true);
   }
-
-  async function addPickedFiles() {
-    try {
-      const paths = await api.pickFilePaths();
-      if (paths.length) await addFilePaths(paths);
-    } catch (error) {
-      setImportFeedback(null);
-      showNotice("error", translateBackendMessage(language, error instanceof Error ? error.message : String(error || "")));
-    }
-  }
-
-  async function importClipboardContent(files: File[], text: string) {
-    const nativePaths = files
-      .map((file) => (file as File & { path?: string }).path)
-      .filter((path): path is string => Boolean(path));
-    const localFiles = files.filter((file) => !(file as File & { path?: string }).path);
-    if (!localFiles.length && !nativePaths.length && text.trim()) {
-      localFiles.push(new File([text], clipboardFileName("text/plain"), { type: "text/plain" }));
-    }
-
-    await importFiles(nativePaths.length + localFiles.length, async () => {
-      const savedPaths = localFiles.length ? await api.saveClipboardFiles(await Promise.all(localFiles.map(toClipboardFileInput))) : [];
-      const paths = [...nativePaths, ...savedPaths];
-      const descriptions = await api.describePaths(paths);
-      if (!descriptions.length && paths.length) showNotice("error", skippedFilesText(language, paths.length));
-      return descriptions;
-    });
-  }
-
-  async function importFiles(count: number | null, loader: () => Promise<FileDescription[]>) {
-    let feedbackShown = false;
-    const timer = window.setTimeout(() => {
-      feedbackShown = true;
-      setImportFeedback({ state: "analyzing", count, visible: true });
-    }, 280);
-    try {
-      const descriptions = await loader();
-      window.clearTimeout(timer);
-      if (descriptions.length) addFiles(descriptions);
-      if (feedbackShown || descriptions.length > 6) {
-        setImportFeedback({ state: "done", count: descriptions.length, visible: true });
-      }
-    } catch (error) {
-      window.clearTimeout(timer);
-      setImportFeedback(null);
-      showNotice("error", translateBackendMessage(language, error instanceof Error ? error.message : String(error || "")));
-    }
-  }
-
-  async function refreshImportedFilesForCurrentEngines() {
-    const paths = files.map((file) => file.path);
-    if (!paths.length) return;
-    try {
-      const descriptions = await api.describePaths(paths);
-      const byPath = new Map(descriptions.map((description) => [description.path, description]));
-      setFiles((items) =>
-        items.map((file) => {
-          const refreshed = byPath.get(file.path);
-          if (!refreshed) return file;
-          const previousTarget = file.selectedFormat ? getSelectedTarget(file) : null;
-          const refreshedStatus: Status = hasAvailableDescriptionTargets(refreshed)
-            ? file.status === "unsupported"
-              ? "pending"
-              : file.status
-            : "unsupported";
-          const merged = {
-            ...file,
-            ...refreshed,
-            status: refreshedStatus,
-          };
-          if (!file.selectedFormat) return merged;
-          const nextTarget = targetForFormat(merged, file.selectedFormat);
-          if (!nextTarget) {
-            return { ...merged, selectedFormat: null, progress: 0, phase: "phase.waiting", result: null, convertedFormat: null, error: null };
-          }
-          const engineChanged =
-            previousTarget &&
-            file.status === "done" &&
-            file.convertedFormat === file.selectedFormat &&
-            (previousTarget.engine !== nextTarget.engine || previousTarget.engineLabel !== nextTarget.engineLabel);
-          return engineChanged
-            ? { ...merged, progress: 0, phase: "phase.waiting", status: "ready", result: null, convertedFormat: null, error: null }
-            : merged;
-        }),
-      );
-    } catch (error) {
-      showNotice("error", translateBackendMessage(language, error instanceof Error ? error.message : String(error || "")));
-    }
-  }
-
-  async function handleHtmlDrop(event: React.DragEvent<HTMLElement>) {
-    event.preventDefault();
-    setIsDragOver(false);
-    if (!canImportDroppedFiles) return;
-    const paths = Array.from(event.dataTransfer.files)
-      .map((file) => (file as File & { path?: string }).path)
-      .filter((path): path is string => Boolean(path));
-    if (paths.length) {
-      await addFilePaths(paths);
-    }
-  }
-
-  function resetFiles() {
-    setFiles([]);
-  }
-
-  async function cleanupCurrentTempFolder(options: { notifyOnError?: boolean } = {}) {
-    if (!outputDir || isTempOutputCleaned) return false;
-    try {
-      const removed = await api.cleanupTempOutputFolder(outputDir);
-      if (removed) setIsTempOutputCleaned(true);
-      return removed;
-    } catch (error) {
-      if (options.notifyOnError === false) {
-        console.warn("Temporary cleanup failed", error);
-      } else {
-        showNotice("error", t(language, "notice.tempCleanupFailed"));
-      }
-      return false;
-    }
-  }
-
-  function resetAll() {
-    void cleanupCurrentTempFolder();
-    setStep(1);
-    setFiles([]);
-    setOutputDir(null);
-    setIsTempOutputCleaned(false);
-    setIsConverting(false);
-    setIsExporting(false);
-    setIsCancelling(false);
-    cancellationRequested.current = false;
-    setExportResult(null);
-  }
-
-  function removeFile(fileId: string) {
-    setFiles((items) => {
-      const next = items.filter((file) => file.id !== fileId);
-      if (!next.length) {
-        setStep(1);
-      }
-      return next;
-    });
-  }
-
-  function applyFileFormat(fileId: string, format: string) {
-    setFiles((items) =>
-      items.map((file) => {
-        if (file.id !== fileId || !targetForFormat(file, format)) return file;
-        return updateFileSelection(file, format);
-      }),
-    );
-  }
-
-  async function startConversion() {
-    if (isConverting) return;
-    const hasSelectedFiles = files.some((file) => file.selectedFormat && file.status !== "unsupported");
-    if (!hasSelectedFiles) return;
-
-    const replacesExistingOutputDir = Boolean(outputDir);
-    if (outputDir && !isTempOutputCleaned) {
-      await cleanupCurrentTempFolder();
-    }
-    const tempWasCleanedForBatch = replacesExistingOutputDir || isTempOutputCleaned;
-    const jobs = files.filter((file) => shouldConvertFile(file) || shouldReconvertCleanedResult(file, tempWasCleanedForBatch));
-
-    if (!jobs.length) {
-      setExportResult(null);
-      setStep(3);
-      return;
-    }
-
-    await runConversionBatch(jobs, true);
-  }
-
-  async function retryFile(fileId: string) {
-    if (isConverting) return;
-    const file = files.find((item) => item.id === fileId);
-    if (!file || file.status !== "error" || !file.selectedFormat) return;
-    await runConversionBatch([file], false);
-  }
-
-  async function retryFailedConversions() {
-    if (isConverting) return;
-    const jobs = files.filter((file) => file.status === "error" && file.selectedFormat);
-    if (!jobs.length) return;
-    await runConversionBatch(jobs, false);
-  }
-
-  async function continueConversions() {
-    if (isConverting) return;
-    const jobs = files.filter((file) => file.selectedFormat && file.status !== "done" && file.status !== "unsupported");
-    if (!jobs.length) return;
-    await runConversionBatch(jobs, false);
-  }
-
-  async function runConversionBatch(jobs: FileItem[], resetExportState: boolean) {
-    let targetOutputDir: string;
-    try {
-      targetOutputDir = !resetExportState && outputDir && !isTempOutputCleaned ? outputDir : await api.createTempOutputFolder();
-    } catch (error) {
-      showNotice("error", translateBackendMessage(language, error instanceof Error ? error.message : String(error || "")));
-      return;
-    }
-    if (!targetOutputDir) return;
-
-    setOutputDir(targetOutputDir);
-    setIsTempOutputCleaned(false);
-    setExportResult(null);
-    setIsConverting(true);
-    setIsCancelling(false);
-    cancellationRequested.current = false;
-    setStep(3);
-
-    const concurrency = conversionConcurrency(jobs);
-    const jobIds = new Map(jobs.map((job) => [job.id, crypto.randomUUID()]));
-    setFiles((items) =>
-      items.map((file) => {
-        const jobId = jobIds.get(file.id);
-        if (!jobId) return file;
-        return {
-          ...file,
-          progress: 0,
-          phase: "phase.waiting",
-          status: "queued",
-          result: null,
-          convertedFormat: null,
-          error: null,
-          jobId,
-        };
-      }),
-    );
-
-    try {
-      await runWithConcurrency(jobs, concurrency, async (file) => {
-        const jobId = jobIds.get(file.id) ?? crypto.randomUUID();
-        if (cancellationRequested.current) {
-          setFiles((items) =>
-            items.map((item) => (item.id === file.id ? { ...item, status: "canceled", phase: "phase.canceled", jobId } : item)),
-          );
-          return;
-        }
-        setFiles((items) =>
-          items.map((item) => (item.id === file.id ? { ...item, status: "working", phase: "phase.starting", jobId } : item)),
-        );
-        try {
-          const result = await api.convert({
-            id: jobId,
-            inputPath: file.path,
-            targetFormat: file.selectedFormat as string,
-            outputDir: targetOutputDir,
-            batchConcurrency: concurrency,
-          });
-          setFiles((items) =>
-            items.map((item) =>
-              item.id === file.id
-                ? {
-                    ...item,
-                    result,
-                    convertedFormat: file.selectedFormat,
-                    progress: 100,
-                    phase: "phase.done",
-                    status: "done",
-                    error: null,
-                  }
-                : item,
-            ),
-          );
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error || "phase.conversion");
-          const canceled = message.includes("Conversion annulée") || message.includes("Conversion canceled");
-          setFiles((items) =>
-            items.map((item) =>
-              item.id === file.id
-                ? { ...item, result: null, convertedFormat: null, error: message, phase: canceled ? "phase.canceled" : message, status: canceled ? "canceled" : "error" }
-                : item,
-            ),
-          );
-        }
-      });
-    } finally {
-      setIsConverting(false);
-      setIsCancelling(false);
-    }
-  }
-
-  async function cancelConversions() {
-    if (!isConverting || isCancelling) return;
-    cancellationRequested.current = true;
-    setIsCancelling(true);
-    const activeJobs = files.filter((file) => file.selectedFormat && ["queued", "working"].includes(file.status));
-    setFiles((items) =>
-      items.map((file) =>
-        file.selectedFormat && ["queued", "working"].includes(file.status)
-          ? { ...file, status: "canceling", phase: "phase.canceling" }
-          : file,
-      ),
-    );
-    await Promise.allSettled(activeJobs.map((file) => api.cancelConversion(file.jobId)));
-  }
-
-  async function finalizeSuccessfulExport(kind: ExportKind, result: ExportResult) {
-    setExportResult(result);
-    showNotice("success", exportNoticeMessage(language, kind, result));
-    await cleanupCurrentTempFolder({ notifyOnError: false });
-  }
-
-  async function exportResults(kind: ExportKind, exporter: (paths: string[]) => Promise<ExportResult | null>) {
-    const paths = getConvertedOutputPaths(files);
-    if (!paths.length || isConverting || isExporting || isTempOutputCleaned) return;
-    setIsExporting(true);
-    showNotice("info", kind === "downloads" ? t(language, "notice.exportDownloadsPreparing") : t(language, "notice.exportFolderChoosing"));
-    try {
-      const result = await exporter(paths);
-      if (!result) {
-        showNotice("info", t(language, "notice.exportCancelled"));
-        return;
-      }
-      await finalizeSuccessfulExport(kind, result);
-    } catch (error) {
-      showNotice("error", translateBackendMessage(language, error instanceof Error ? error.message : String(error || "")));
-    } finally {
-      setIsExporting(false);
-    }
-  }
-
-  async function exportResultsToFolder() {
-    const paths = getConvertedOutputPaths(files);
-    if (!paths.length || isConverting || isExporting || isTempOutputCleaned) return;
-    setIsExporting(true);
-    showNotice("info", t(language, "notice.exportFolderChoosing"));
-    try {
-      const destinationDir = await api.pickOutputFolder();
-      if (!destinationDir) {
-        showNotice("info", t(language, "notice.exportCancelled"));
-        return;
-      }
-      const result = await api.exportToFolder(paths, destinationDir, outputDir);
-      await finalizeSuccessfulExport("folder", result);
-    } catch (error) {
-      showNotice("error", translateBackendMessage(language, error instanceof Error ? error.message : String(error || "")));
-    } finally {
-      setIsExporting(false);
-    }
-  }
-
-  async function revealCurrentFolder() {
-    if (!exportResult) return;
-    const target = exportResult.files.length === 1 ? exportResult.files[0] : exportResult.destinationDir;
-    try {
-      await api.revealFile(target);
-    } catch {
-      showNotice("error", t(language, "notice.revealFailed"));
-    }
-  }
-
-  const hasFiles = files.length > 0;
-  const hasConvertibleFiles = files.some(hasAvailableTargets);
 
   return (
-    <main className={`app-shell ${appMode === "editor" ? "is-editor-mode" : ""} ${updateReminderActive ? "has-update-reminder" : ""} ${feedbackLauncherActive ? "has-feedback-launcher" : ""} ${importToastActive ? "has-import-toast" : ""}`}>
-      <header className="topbar">
-        <div className="brand">
-          <div className="brand-mark" aria-hidden="true">
-            <img src={brandLogoUrl} alt="" />
-          </div>
-          <div className="brand-copy">
-            <h1>Multi-Converter</h1>
-            <div className="mode-toggle" role="tablist" aria-label={t(language, "mode.label")}>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={appMode === "converter"}
-                className={appMode === "converter" ? "is-converter" : ""}
-                onClick={() => setAppMode("converter")}
-              >
-                {t(language, "mode.converter")}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={appMode === "editor"}
-                className={appMode === "editor" ? "is-editor" : ""}
-                onClick={() => setAppMode("editor")}
-              >
-                {t(language, "mode.editor")}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {appMode === "converter" ? (
-          <nav className="process-strip" aria-label={t(language, "app.progress")}>
-            {stepLabels(language).map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`process-step ${step === item.id ? "is-active" : ""} ${step > item.id ? "is-done" : ""}`}
-                disabled={item.id > step || isConverting}
-                onClick={() => setStep(item.id)}
-              >
-                <span>{item.label}</span>
-                <strong>{item.title}</strong>
-              </button>
-            ))}
-          </nav>
-        ) : (
-          <div className="editor-context-pill"><DocumentModeIcon />{t(language, "editor.contextTitle")}</div>
-        )}
-
-        <div className="topbar-actions">
-          <button
-            className="icon-button"
-            type="button"
-            aria-label={t(language, "app.settings")}
-            title={t(language, "app.settings")}
-            onClick={() => setIsSettingsOpen(true)}
-          >
-            <SettingsIcon />
-          </button>
-        </div>
-      </header>
-
-      <WelcomePanel
-        isOpen={isWelcomeOpen}
+    <main className={`app-shell ${appMode === "editor" ? "is-editor-mode" : ""} ${updateReminderActive ? "has-update-reminder" : ""} ${importToastActive ? "has-import-toast" : ""}`}>
+      <AppTopbar
+        appMode={appMode}
+        step={fileWorkflow.step}
         language={language}
-        onClose={closeWelcome}
+        isConverting={conversionWorkflow.isConverting}
+        feedbackVisible={feedbackLauncherActive}
+        onAppMode={setAppMode}
+        onFeedback={openFeedback}
+        onSettings={() => setIsSettingsOpen(true)}
+        onStep={(step) => fileWorkflow.setStep(step)}
       />
 
+      <WelcomePanel isOpen={isWelcomeOpen} language={language} onClose={closeWelcome} />
       <SettingsPanel
         isOpen={isSettingsOpen}
         language={language}
         notificationsEnabled={notificationsEnabled}
-        internetAvailable={internetAvailable}
-        currentVersion={currentVersion}
-        updateInfo={updateInfo}
-        updateStatus={updateStatus}
-        updateDownloadProgress={updateDownloadProgress}
-        updateDownloadSize={updateDownloadSize}
+        internetAvailable={updater.internetAvailable}
+        currentVersion={updater.currentVersion}
+        updateInfo={updater.updateInfo}
+        updateStatus={updater.updateStatus}
+        updateDownloadProgress={updater.updateDownloadProgress}
+        updateDownloadSize={updater.updateDownloadSize}
         onClose={() => setIsSettingsOpen(false)}
         onLanguage={setLanguage}
         onNotificationsEnabled={setNotificationsEnabled}
-        onCheckForUpdate={() => void checkForAppUpdate(true)}
-        onInstallUpdate={() => void installAvailableUpdate()}
+        onCheckForUpdate={() => void updater.checkForAppUpdate(true)}
+        onInstallUpdate={() => void updater.installAvailableUpdate()}
       />
-
       <UpdateDialog
-        isOpen={isUpdateDialogOpen}
+        isOpen={updater.isUpdateDialogOpen}
         language={language}
-        updateInfo={updateInfo}
-        updateStatus={updateStatus}
-        updateDownloadProgress={updateDownloadProgress}
-        updateDownloadSize={updateDownloadSize}
-        onInstall={() => void installAvailableUpdate()}
-        onCancel={cancelUpdateDialog}
+        updateInfo={updater.updateInfo}
+        updateStatus={updater.updateStatus}
+        updateDownloadProgress={updater.updateDownloadProgress}
+        updateDownloadSize={updater.updateDownloadSize}
+        onInstall={() => void updater.installAvailableUpdate()}
+        onCancel={updater.cancelUpdateDialog}
       />
-
       <UpdateInstallDialog
-        isVisible={updateStatus === "installing"}
+        isVisible={updater.updateStatus === "installing"}
         language={language}
-        updateInfo={updateInfo}
-        progress={updateDownloadProgress}
-        size={updateDownloadSize}
+        updateInfo={updater.updateInfo}
+        progress={updater.updateDownloadProgress}
+        size={updater.updateDownloadSize}
       />
 
-      {(updateReminderActive || feedbackLauncherActive) && (
+      {updateReminderActive && (
         <div className="floating-corner" data-testid="floating-corner">
           <UpdateReminder
-            isVisible={updateReminderActive}
+            isVisible
             language={language}
-            updateInfo={updateInfo}
-            updateStatus={updateStatus}
-            onInstall={() => void installAvailableUpdate()}
-            onOpenDetails={() => setIsUpdateDialogOpen(true)}
-          />
-
-          <FeedbackButton
-            isVisible={feedbackLauncherActive}
-            language={language}
-            onOpen={openFeedback}
+            updateInfo={updater.updateInfo}
+            updateStatus={updater.updateStatus}
+            onInstall={() => void updater.installAvailableUpdate()}
+            onOpenDetails={() => updater.setIsUpdateDialogOpen(true)}
           />
         </div>
       )}
@@ -843,1523 +188,71 @@ export default function App() {
         onAccept={acceptFeedbackPrivacy}
         onClose={() => setIsFeedbackPrivacyOpen(false)}
       />
-
       <FeedbackDialog
         isOpen={isFeedbackOpen}
         language={language}
-        currentVersion={currentVersion}
+        currentVersion={updater.currentVersion}
         onClose={() => setIsFeedbackOpen(false)}
       />
-
       <PageNotice language={language} notice={notice} onDismiss={() => setNotice(null)} />
 
-      {appMode === "converter" ? <>
-      <section className={`screen upload-screen ${step === 1 ? "is-active" : ""}`} aria-labelledby="upload-title">
-        <h2 id="upload-title" className="visually-hidden">{t(language, "step.files")}</h2>
-
-        <div className="upload-grid">
-          <section
-            className={`drop-zone ${isDragOver ? "is-over" : ""}`}
-            aria-label={t(language, "upload.dropZone")}
-            onDragEnter={(event) => {
-              event.preventDefault();
-              setIsDragOver(true);
-            }}
-            onDragLeave={(event) => {
-              event.preventDefault();
-              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-                setIsDragOver(false);
-              }
-            }}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => void handleHtmlDrop(event)}
-          >
-            <div className="sketch-orbit" aria-hidden="true">
-              <img src={brandLogoUrl} alt="" />
-            </div>
-            <div>
-              <strong>{isDragOver ? t(language, "upload.dropFiles") : t(language, "upload.dragDrop")}</strong>
-            </div>
-            <button className="primary-button" type="button" onClick={() => void addPickedFiles()}>
-              {t(language, "upload.browse")}
-            </button>
-          </section>
-        </div>
-
-        {files.length > 0 && (
-          <p className="file-summary" aria-live="polite">
-            {uploadedFilesSummary(language, files.length, fileSummary(files, language))}
-          </p>
-        )}
-
-        <section className="file-lane" aria-label={t(language, "upload.selectedFiles")}>
-          {!files.length && <div className="empty-state">{t(language, "upload.empty")}</div>}
-          {files.map((file) => (
-            <article className="file-ticket" key={file.id}>
-              <div>
-                <strong>{displayFileName(file)}</strong>
-                <span>{compactFileMeta(file, language)}</span>
-              </div>
-              {!file.targets.length && <span className="ticket-status is-error">{t(language, "upload.unsupported")}</span>}
-              <button className="remove-file-button" type="button" aria-label={`${t(language, "upload.removeFile")} ${file.name}`} onClick={() => removeFile(file.id)}>
-                ×
-              </button>
-            </article>
-          ))}
-        </section>
-
-        {hasFiles && (
-          <footer className="screen-actions">
-            <button className="ghost-button" type="button" disabled={isConverting} onClick={resetFiles}>
-              {t(language, "upload.clear")}
-            </button>
-            {hasConvertibleFiles && (
-              <button
-                className="primary-button"
-                type="button"
-                disabled={isConverting}
-                onClick={() => setStep(2)}
-              >
-                {t(language, "upload.goFormat")}
-              </button>
-            )}
-          </footer>
-        )}
-      </section>
-
-      <ImportToast language={language} feedback={importFeedback} />
-
-      <FormatScreen
-        isActive={step === 2}
-        language={language}
-        files={files}
-        isConverting={isConverting}
-        onBack={() => setStep(1)}
-        onChooseFileFormat={applyFileFormat}
-        onStart={startConversion}
-      />
-
-      <ProgressScreen
-        isActive={step === 3}
-        language={language}
-        files={files}
-        exportResult={exportResult}
-        isConverting={isConverting}
-        isCancelling={isCancelling}
-        isExporting={isExporting}
-        isTempOutputCleaned={isTempOutputCleaned}
-        onNew={resetAll}
-        onCancel={cancelConversions}
-        onContinue={continueConversions}
-        onBackToSettings={() => setStep(2)}
-        onExportDownloads={() => exportResults("downloads", (paths) => api.exportToDownloads(paths, outputDir))}
-        onExportFolder={exportResultsToFolder}
-        onRevealFolder={revealCurrentFolder}
-        onRetryFile={retryFile}
-        onRetryFailed={retryFailedConversions}
-      />
-      </> : null}
+      {appMode === "converter" && (
+        <>
+          <FilesScreen
+            isActive={fileWorkflow.step === 1}
+            language={language}
+            files={fileWorkflow.files}
+            isConverting={conversionWorkflow.isConverting}
+            isDragOver={fileWorkflow.isDragOver}
+            onAddFiles={() => void fileWorkflow.addPickedFiles()}
+            onClear={fileWorkflow.resetFiles}
+            onDragOver={fileWorkflow.setIsDragOver}
+            onDrop={(event) => void fileWorkflow.handleHtmlDrop(event)}
+            onFormats={() => fileWorkflow.setStep(2)}
+            onRemove={fileWorkflow.removeFile}
+          />
+          <ImportToast language={language} feedback={fileWorkflow.importFeedback} />
+          <FormatScreen
+            isActive={fileWorkflow.step === 2}
+            language={language}
+            files={fileWorkflow.files}
+            isConverting={conversionWorkflow.isConverting}
+            onBack={() => fileWorkflow.setStep(1)}
+            onChooseFileFormat={fileWorkflow.applyFileFormat}
+            onStart={() => void conversionWorkflow.startConversion()}
+          />
+          <ProgressScreen
+            isActive={fileWorkflow.step === 3}
+            language={language}
+            files={fileWorkflow.files}
+            exportResult={conversionWorkflow.exportResult}
+            isConverting={conversionWorkflow.isConverting}
+            isCancelling={conversionWorkflow.isCancelling}
+            isExporting={conversionWorkflow.isExporting}
+            isTempOutputCleaned={conversionWorkflow.isTempOutputCleaned}
+            onNew={conversionWorkflow.resetAll}
+            onCancel={() => void conversionWorkflow.cancelConversions()}
+            onContinue={() => void conversionWorkflow.continueConversions()}
+            onBackToSettings={() => fileWorkflow.setStep(2)}
+            onExportDownloads={() => void conversionWorkflow.exportResults("downloads", (paths) => api.exportToDownloads(paths, conversionWorkflow.outputDir))}
+            onExportFolder={() => void conversionWorkflow.exportResultsToFolder()}
+            onRevealFolder={() => void conversionWorkflow.revealCurrentFolder()}
+            onRetryFile={(fileId) => void conversionWorkflow.retryFile(fileId)}
+            onRetryFailed={() => void conversionWorkflow.retryFailedConversions()}
+          />
+        </>
+      )}
 
       {editorWasOpened && (
         <Suspense fallback={appMode === "editor" ? <div className="editor-loading">{t(language, "editor.loading")}</div> : null}>
           <EditorWorkspace
             isActive={appMode === "editor"}
             language={language}
-            nativeDropRequest={editorDropRequest}
+            nativeDropRequest={fileWorkflow.editorDropRequest}
             onNotice={showNotice}
           />
         </Suspense>
       )}
     </main>
   );
-}
-
-function FormatScreen(props: {
-  isActive: boolean;
-  language: LanguageCode;
-  files: FileItem[];
-  isConverting: boolean;
-  onBack(): void;
-  onChooseFileFormat(fileId: string, format: string): void;
-  onStart(): void;
-}) {
-  const language = props.language;
-  const [activeFileId, setActiveFileId] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [categoryByFileId, setCategoryByFileId] = useState<Record<string, string>>({});
-  const configurable = props.files.filter(hasAvailableTargets);
-  const readyCount = configurable.filter((file) => file.selectedFormat).length;
-  const canStart = configurable.length > 0 && readyCount === configurable.length && !props.isConverting;
-  const activeFile = configurable.find((file) => file.id === activeFileId) ?? configurable.find((file) => !file.selectedFormat) ?? configurable[0] ?? null;
-  const optionGroups = activeFile ? groupedFormatOptions(activeFile) : { recommended: [], other: [] };
-  const allIntents = uniqueIntents([...optionGroups.recommended, ...optionGroups.other]);
-  const availableCategories = Array.from(new Map(allIntents.map((intent) => [intent.target.categoryId, translateCategory(language, intent.target.categoryId || intent.target.category)])).entries());
-  const requestedCategory = activeFile ? categoryByFileId[activeFile.id] ?? "all" : "all";
-  const category = requestedCategory === "all" || availableCategories.some(([id]) => id === requestedCategory) ? requestedCategory : "all";
-  const normalizedQuery = query.trim().toLowerCase();
-  const filteredIntents = allIntents.filter((intent) => {
-    const matchesCategory = category === "all" || intent.target.categoryId === category;
-    const extension = intent.target.extension || intent.target.format;
-    const matchesQuery =
-      !normalizedQuery ||
-      intent.target.format.toLowerCase().includes(normalizedQuery) ||
-      intent.target.label.toLowerCase().includes(normalizedQuery) ||
-      extension.toLowerCase().includes(normalizedQuery);
-    return matchesCategory && matchesQuery;
-  });
-  const selectedIntent = activeFile?.selectedFormat ? allIntents.find((intent) => intent.target.format === activeFile.selectedFormat) ?? null : null;
-  const compatibleForSelection =
-    activeFile && selectedIntent
-      ? props.files.filter((file) => file.id !== activeFile.id && targetForFormat(file, selectedIntent.target.format) && file.selectedFormat !== selectedIntent.target.format)
-      : [];
-
-  useEffect(() => {
-    if (!activeFileId && configurable[0]) setActiveFileId(configurable[0].id);
-    if (activeFileId && !configurable.some((file) => file.id === activeFileId)) setActiveFileId(configurable[0]?.id ?? null);
-  }, [activeFileId, configurable]);
-
-  function chooseFormat(file: FileItem, format: string) {
-    props.onChooseFileFormat(file.id, format);
-  }
-
-  function applyCompatible(format: string) {
-    props.files.forEach((file) => {
-      if (file.id !== activeFile?.id && targetForFormat(file, format) && file.selectedFormat !== format) props.onChooseFileFormat(file.id, format);
-    });
-  }
-
-  function chooseCategory(nextCategory: string) {
-    if (!activeFile) return;
-    setCategoryByFileId((current) => ({ ...current, [activeFile.id]: nextCategory }));
-  }
-
-  function renderFormatCard(intent: ConversionIntent, file: FileItem) {
-    const isSelected = file.selectedFormat === intent.target.format;
-    return (
-      <button
-        className={`format-card ${isSelected ? "is-selected" : ""}`}
-        key={intent.target.format}
-        type="button"
-        aria-pressed={isSelected}
-        onClick={() => chooseFormat(file, intent.target.format)}
-      >
-        <strong>{intent.target.label}</strong>
-        <span className="format-extension">{intent.target.extension || intent.target.format}</span>
-      </button>
-    );
-  }
-
-  return (
-    <section className={`screen format-screen ${props.isActive ? "is-active" : ""}`} aria-labelledby="format-title">
-      <section className="format-board format-choice-board">
-        <div className="screen-copy compact">
-          <h2 id="format-title">{t(language, "format.title")}</h2>
-        </div>
-
-        <section className="format-workspace">
-          <aside className="file-rail" aria-label={t(language, "format.files")}>
-            <div className="format-rail-header">
-              <span className="label">{readyCountText(language, readyCount, configurable.length)}</span>
-            </div>
-            <div className="rail-scroll">
-              {props.files.map((file) => {
-                const isActive = activeFile?.id === file.id;
-                const isDone = Boolean(file.selectedFormat);
-                const selectedTarget = file.selectedFormat ? targetForFormat(file, file.selectedFormat) : null;
-                const selectedFormatLabel = file.selectedFormat ? (selectedTarget?.extension || selectedTarget?.label || file.selectedFormat).toUpperCase() : null;
-                return (
-                  <button
-                    className={`rail-button ${isActive ? "is-active" : ""} ${isDone ? "is-done" : ""}`}
-                    key={file.id}
-                    type="button"
-                    disabled={!hasAvailableTargets(file)}
-                    onClick={() => setActiveFileId(file.id)}
-                  >
-                    <strong>{displayFileName(file)}</strong>
-                    <span className="rail-meta">{hasAvailableTargets(file) ? compactFileMeta(file, language) : t(language, "format.unsupported")}</span>
-                    {hasAvailableTargets(file) && (
-                      <span className={`rail-format ${selectedFormatLabel ? "is-selected" : ""}`}>
-                        {selectedFormatLabel ?? t(language, "format.choose")}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
-
-          <section className="format-picker" aria-label={t(language, "format.available")}>
-            {activeFile ? (
-              <>
-                <div className="format-tools">
-                  <label className="search-box">
-                    <span>{t(language, "format.filter")}</span>
-                    <input value={query} placeholder={t(language, "format.searchPlaceholder")} onChange={(event) => setQuery(event.target.value)} />
-                  </label>
-                  {availableCategories.length > 1 && (
-                    <div className="category-filter" aria-label={t(language, "format.categories")}>
-                      <button className={category === "all" ? "is-active" : ""} type="button" onClick={() => chooseCategory("all")}>
-                        {t(language, "format.all")}
-                      </button>
-                      {availableCategories.map(([id, label]) => (
-                        <button className={category === id ? "is-active" : ""} key={id} type="button" onClick={() => chooseCategory(id)}>
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {selectedIntent && compatibleForSelection.length > 0 && (
-                  <button className="apply-compatible-button" type="button" onClick={() => applyCompatible(selectedIntent.target.format)}>
-                    {fileGroupId(activeFile) === "video" ? t(language, "format.applyVideoCompatible") : t(language, "format.batchApply")}
-                  </button>
-                )}
-
-                <div className="format-results">
-                  {filteredIntents.length > 0 && <div className="format-card-grid">{filteredIntents.map((intent) => renderFormatCard(intent, activeFile))}</div>}
-                  {!filteredIntents.length && <div className="empty-state">{allIntents.length ? t(language, "format.noResult") : t(language, "format.noFormat")}</div>}
-                </div>
-              </>
-            ) : (
-              <div className="empty-state">{props.files.length ? t(language, "format.noRecommendation") : t(language, "format.addFilesFirst")}</div>
-            )}
-          </section>
-        </section>
-
-        <footer className="screen-actions">
-          <button className="ghost-button" type="button" onClick={props.onBack}>
-            {t(language, "format.back")}
-          </button>
-          {canStart && (
-            <button className="primary-button" type="button" onClick={props.onStart}>
-              {t(language, "format.start")}
-            </button>
-          )}
-        </footer>
-      </section>
-    </section>
-  );
-}
-
-
-function PageNotice(props: { language: LanguageCode; notice: { tone: NoticeTone; message: string } | null; onDismiss(): void }) {
-  if (!props.notice) return null;
-
-  return (
-    <aside className={`page-notice is-${props.notice.tone}`} role="status" aria-live="polite">
-      <span />
-      <p>{props.notice.message}</p>
-      <button type="button" aria-label={t(props.language, "app.close")} onClick={props.onDismiss}>
-        <CloseIcon />
-      </button>
-    </aside>
-  );
-}
-
-function ImportToast(props: { language: LanguageCode; feedback: ImportFeedback }) {
-  if (!props.feedback?.visible) return null;
-  const label =
-    props.feedback.state === "analyzing"
-      ? props.feedback.count
-        ? importAnalyzingText(props.language, props.feedback.count)
-        : t(props.language, "import.analyzingUnknown")
-      : importedFilesText(props.language, props.feedback.count);
-
-  return (
-    <aside className={`import-toast is-${props.feedback.state}`} role="status" aria-live="polite">
-      <span className="import-spinner" aria-hidden="true" />
-      <div>
-        <strong>{label}</strong>
-        {props.feedback.state === "analyzing" && (
-          <div className="import-progress" aria-hidden="true">
-            <span />
-          </div>
-        )}
-      </div>
-    </aside>
-  );
-}
-
-function FeedbackButton(props: { isVisible: boolean; language: LanguageCode; onOpen(): void }) {
-  if (!props.isVisible) return null;
-  return (
-    <button className="feedback-launcher" data-testid="feedback-launcher" type="button" onClick={props.onOpen} aria-label={t(props.language, "feedback.open")}>
-      <span aria-hidden="true">!</span>
-      <strong>{t(props.language, "feedback.launcher")}</strong>
-    </button>
-  );
-}
-
-function FeedbackPrivacyDialog(props: {
-  isOpen: boolean;
-  language: LanguageCode;
-  repositoryUrl: string;
-  onAccept(): void;
-  onClose(): void;
-}) {
-  const [remainingSeconds, setRemainingSeconds] = useState(5);
-  const canClose = remainingSeconds <= 0;
-
-  useEffect(() => {
-    if (!props.isOpen) return;
-    setRemainingSeconds(5);
-    const startedAt = Date.now();
-    const interval = window.setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-      setRemainingSeconds(Math.max(0, 5 - elapsed));
-    }, 250);
-    return () => window.clearInterval(interval);
-  }, [props.isOpen]);
-
-  if (!props.isOpen) return null;
-
-  return (
-    <div className="feedback-overlay" role="presentation">
-      <section className="feedback-warning-panel" role="alertdialog" aria-modal="true" aria-labelledby="feedback-warning-title">
-        <header className="feedback-dialog-header">
-          <div>
-            <span className="label">{t(props.language, "feedback.publicLabel")}</span>
-            <h2 id="feedback-warning-title">{t(props.language, "feedback.warningTitle")}</h2>
-          </div>
-          <button className="icon-button" type="button" aria-label={t(props.language, "app.close")} disabled={!canClose} onClick={props.onClose}>
-            <CloseIcon />
-          </button>
-        </header>
-
-        <div className="feedback-warning-copy">
-          <p>
-            {t(props.language, "feedback.warningBodyBefore")}{" "}
-            <button className="inline-link-button" type="button" onClick={() => void openExternalUrl(props.repositoryUrl)}>
-              Multi-Converter
-            </button>
-            {t(props.language, "feedback.warningBodyAfter")}
-          </p>
-          <p>{t(props.language, "feedback.warningPrivacy")}</p>
-        </div>
-
-        <footer className="feedback-actions">
-          <button className="ghost-button" type="button" disabled={!canClose} onClick={props.onClose}>
-            {canClose ? t(props.language, "feedback.close") : t(props.language, "feedback.wait", { seconds: remainingSeconds })}
-          </button>
-          <button className="primary-button" type="button" disabled={!canClose} onClick={props.onAccept}>
-            {canClose ? t(props.language, "feedback.accept") : t(props.language, "feedback.wait", { seconds: remainingSeconds })}
-          </button>
-        </footer>
-      </section>
-    </div>
-  );
-}
-
-function FeedbackDialog(props: { isOpen: boolean; language: LanguageCode; currentVersion: string; onClose(): void }) {
-  const reportVersion = effectiveAppVersion(props.currentVersion);
-
-  useEffect(() => {
-    if (!props.isOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") props.onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [props.isOpen, props.onClose]);
-
-  if (!props.isOpen) return null;
-
-  async function openIssue(kind: FeedbackKind) {
-    const params = new URLSearchParams({
-      template: feedbackTemplates[kind],
-      labels: feedbackLabels[kind],
-    });
-    if (feedbackTitlePrefixes[kind]) params.set("title", feedbackTitlePrefixes[kind]);
-    if (kind !== "other") {
-      params.set("app-version", reportVersion);
-      params.set("operating-system", detectedOperatingSystem());
-    }
-    await openExternalUrl(`${issueNewUrl}?${params.toString()}`);
-  }
-
-  return (
-    <div className="feedback-overlay" role="presentation" onMouseDown={props.onClose}>
-      <section
-        className="feedback-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="feedback-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <header className="feedback-dialog-header">
-          <div>
-            <span className="label">{t(props.language, "feedback.publicLabel")}</span>
-            <h2 id="feedback-title">{t(props.language, "feedback.title")}</h2>
-          </div>
-          <button className="icon-button" type="button" aria-label={t(props.language, "app.close")} onClick={props.onClose}>
-            <CloseIcon />
-          </button>
-        </header>
-
-        <p className="feedback-choice-intro">{t(props.language, "feedback.chooseKindHelp")}</p>
-
-        <div className="feedback-kind-grid" aria-label={t(props.language, "feedback.kindLabel")}>
-          {feedbackKinds.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className="feedback-kind"
-              onClick={() => void openIssue(item)}
-            >
-              <strong>{t(props.language, feedbackKindLabelKey(item))}</strong>
-              <span>{t(props.language, feedbackKindDescriptionKey(item))}</span>
-            </button>
-          ))}
-        </div>
-
-        <p className="feedback-github-note">{t(props.language, "feedback.githubLoginNote")}</p>
-
-        <footer className="feedback-actions">
-          <button className="ghost-button" type="button" onClick={props.onClose}>{t(props.language, "feedback.cancel")}</button>
-        </footer>
-      </section>
-    </div>
-  );
-}
-
-function feedbackKindLabelKey(kind: FeedbackKind): Parameters<typeof t>[1] {
-  if (kind === "bug") return "feedback.kindBug";
-  if (kind === "feature") return "feedback.kindFeature";
-  return "feedback.kindOther";
-}
-
-function feedbackKindDescriptionKey(kind: FeedbackKind): Parameters<typeof t>[1] {
-  if (kind === "bug") return "feedback.kindBugDescription";
-  if (kind === "feature") return "feedback.kindFeatureDescription";
-  return "feedback.kindOtherDescription";
-}
-
-function effectiveAppVersion(version: string) {
-  return compareVersions(version, minimumReportVersion) >= 0 ? version : minimumReportVersion;
-}
-
-function compareVersions(left: string, right: string) {
-  const leftParts = versionParts(left);
-  const rightParts = versionParts(right);
-  for (let index = 0; index < Math.max(leftParts.length, rightParts.length); index += 1) {
-    const delta = (leftParts[index] ?? 0) - (rightParts[index] ?? 0);
-    if (delta !== 0) return delta;
-  }
-  return 0;
-}
-
-function versionParts(version: string) {
-  return version
-    .replace(/^v/i, "")
-    .split(/[.-]/)
-    .map((part) => Number.parseInt(part, 10))
-    .map((part) => (Number.isFinite(part) ? part : 0));
-}
-
-function detectedOperatingSystem() {
-  const userAgentData = navigator as Navigator & { userAgentData?: { platform?: string } };
-  const platform = userAgentData.userAgentData?.platform || navigator.platform || "";
-  const agent = navigator.userAgent || "";
-  const value = `${platform} ${agent}`.toLowerCase();
-  if (value.includes("windows") || value.includes("win32") || value.includes("win64")) return "Windows";
-  if (value.includes("mac")) return "macOS";
-  if (value.includes("linux")) return "Linux";
-  return platform || "Inconnu";
-}
-
-async function openExternalUrl(url: string) {
-  try {
-    await api.openExternalUrl(url);
-  } catch {
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-}
-
-function SettingsPanel(props: {
-  isOpen: boolean;
-  language: LanguageCode;
-  notificationsEnabled: boolean;
-  internetAvailable: boolean;
-  currentVersion: string;
-  updateInfo: AppUpdateInfo | null;
-  updateStatus: UpdateStatus;
-  updateDownloadProgress: number | null;
-  updateDownloadSize: UpdateDownloadSize | null;
-  onClose(): void;
-  onLanguage(language: LanguageCode): void;
-  onNotificationsEnabled(enabled: boolean): void;
-  onCheckForUpdate(): void;
-  onInstallUpdate(): void;
-}) {
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (!props.isOpen) return;
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    window.setTimeout(() => closeButtonRef.current?.focus(), 0);
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") props.onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      previousFocus?.focus();
-    };
-  }, [props.isOpen, props.onClose]);
-
-  if (!props.isOpen) return null;
-  const internetAvailable = props.internetAvailable;
-  const handleLanguageSelection = (value: string) => {
-    if (languageOptions.includes(value as LanguageCode)) {
-      props.onLanguage(value as LanguageCode);
-    }
-  };
-
-  return (
-    <div className="settings-overlay" role="presentation" onMouseDown={props.onClose}>
-      <section
-        className="settings-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="settings-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <header className="settings-header">
-          <div>
-            <h2 id="settings-title">{t(props.language, "settings.title")}</h2>
-          </div>
-          <button ref={closeButtonRef} className="icon-button" type="button" aria-label={t(props.language, "app.close")} onClick={props.onClose}>
-            <CloseIcon />
-          </button>
-        </header>
-
-        <div className="settings-grid">
-          <section className="settings-column">
-            <section className="setting-select language-setting" aria-labelledby="language-setting-title">
-              <span className="label" id="language-setting-title">{t(props.language, "settings.language")}</span>
-              <div className="language-choice-grid" role="radiogroup" aria-labelledby="language-setting-title">
-                {languageOptions.map((languageOption) => (
-                  <button
-                    key={languageOption}
-                    type="button"
-                    className={`language-choice ${props.language === languageOption ? "is-selected" : ""}`}
-                    role="radio"
-                    aria-checked={props.language === languageOption}
-                    onClick={() => handleLanguageSelection(languageOption)}
-                  >
-                    {languageLabel(props.language, languageOption)}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="setting-toggle" aria-labelledby="notifications-setting-title">
-              <div>
-                <span className="label" id="notifications-setting-title">{t(props.language, "settings.notifications")}</span>
-                <p>{t(props.language, "settings.notificationsDetail")}</p>
-              </div>
-              <label className="switch-control">
-                <input
-                  type="checkbox"
-                  checked={props.notificationsEnabled}
-                  onChange={(event) => props.onNotificationsEnabled(event.currentTarget.checked)}
-                />
-                <span aria-hidden="true" />
-              </label>
-            </section>
-
-          </section>
-
-          <section className="settings-side">
-            <section className="update-settings-card" aria-labelledby="update-settings-title">
-              <div className="update-settings-heading">
-                <div>
-                  <span className="label">{t(props.language, "update.label")}</span>
-                  <strong id="update-settings-title">{t(props.language, "update.settingsTitle")}</strong>
-                </div>
-                {props.updateStatus === "available" && <b>{t(props.language, "update.availableBadge")}</b>}
-              </div>
-              <p>{t(props.language, "update.currentVersion", { version: props.currentVersion })}</p>
-              {props.updateInfo ? (
-                <div className="update-version-inline">
-                  <span>{t(props.language, "update.latestVersion", { version: props.updateInfo.version })}</span>
-                  <strong>{props.updateInfo.version}</strong>
-                </div>
-              ) : (
-                <p>{props.updateStatus === "notAvailable" ? t(props.language, "update.none") : t(props.language, "update.unknown")}</p>
-              )}
-              {props.updateStatus === "installing" && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} size={props.updateDownloadSize} />}
-              <div className="settings-actions">
-                {props.updateInfo ? (
-                  <button className="primary-button" type="button" disabled={props.updateStatus === "installing"} onClick={props.onInstallUpdate}>
-                    {props.updateStatus === "installing" ? t(props.language, "update.installing") : t(props.language, "update.install")}
-                  </button>
-                ) : (
-                  <button className="secondary-button" type="button" disabled={props.updateStatus === "checking" || !internetAvailable} onClick={props.onCheckForUpdate}>
-                    {props.updateStatus === "checking" ? t(props.language, "update.checking") : t(props.language, "update.check")}
-                  </button>
-                )}
-              </div>
-              {!internetAvailable && <small>{t(props.language, "update.internetRequired")}</small>}
-            </section>
-          </section>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function WelcomePanel(props: {
-  isOpen: boolean;
-  language: LanguageCode;
-  onClose(): void;
-}) {
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const [slideIndex, setSlideIndex] = useState(0);
-  const [furthestSlideIndex, setFurthestSlideIndex] = useState(0);
-  const slides = useMemo(() => welcomeSlides(), []);
-  const slide = slides[slideIndex];
-  const isFirstSlide = slideIndex === 0;
-  const isLastSlide = slideIndex === slides.length - 1;
-
-  useEffect(() => {
-    if (props.isOpen) {
-      setSlideIndex(0);
-      setFurthestSlideIndex(0);
-    }
-  }, [props.isOpen]);
-
-  useEffect(() => {
-    if (!props.isOpen) return;
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    window.setTimeout(() => closeButtonRef.current?.focus(), 0);
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowRight") advanceWelcomeStep(slides.length, setSlideIndex, setFurthestSlideIndex);
-      if (event.key === "ArrowLeft") setSlideIndex((index) => Math.max(0, index - 1));
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      previousFocus?.focus();
-    };
-  }, [props.isOpen, slides.length]);
-
-  if (!props.isOpen) return null;
-
-  return (
-    <div className="welcome-overlay" role="presentation">
-      <section
-        className="welcome-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="welcome-title"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <header className="welcome-header">
-          <div className="welcome-brand-mark" aria-hidden="true">
-            <img src={brandLogoUrl} alt="" />
-          </div>
-          <div className="welcome-progress" aria-label={t(props.language, "welcome.progress", { current: slideIndex + 1, total: slides.length })}>
-            {slides.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                className={index === slideIndex ? "is-active" : ""}
-                aria-label={t(props.language, "welcome.goToStep", { step: index + 1 })}
-                aria-current={index === slideIndex ? "step" : undefined}
-                disabled={index > furthestSlideIndex}
-                onClick={() => {
-                  if (index <= furthestSlideIndex) setSlideIndex(index);
-                }}
-              />
-            ))}
-          </div>
-          <button ref={closeButtonRef} className="icon-button" type="button" aria-label={t(props.language, "app.close")} onClick={props.onClose}>
-            <CloseIcon />
-          </button>
-        </header>
-
-        <div className="welcome-layout">
-          <div className="welcome-copy">
-            <span className="eyebrow">{t(props.language, slide.eyebrowKey)}</span>
-            <h2 id="welcome-title">{t(props.language, slide.titleKey)}</h2>
-            <p>{t(props.language, slide.bodyKey)}</p>
-          </div>
-
-          <WelcomePreview kind={slide.preview} language={props.language} />
-        </div>
-
-        <footer className="welcome-actions">
-          <button className="secondary-button" type="button" disabled={isFirstSlide} onClick={() => setSlideIndex((index) => Math.max(0, index - 1))}>
-            {t(props.language, "welcome.back")}
-          </button>
-          <button
-            className="primary-button"
-            type="button"
-            onClick={() => {
-              if (isLastSlide) {
-                props.onClose();
-                return;
-              }
-              advanceWelcomeStep(slides.length, setSlideIndex, setFurthestSlideIndex);
-            }}
-          >
-            {isLastSlide ? t(props.language, "welcome.start") : t(props.language, "welcome.next")}
-          </button>
-        </footer>
-      </section>
-    </div>
-  );
-}
-
-function advanceWelcomeStep(
-  slideCount: number,
-  setSlideIndex: (updater: (index: number) => number) => void,
-  setFurthestSlideIndex: (updater: (index: number) => number) => void,
-) {
-  setSlideIndex((index) => {
-    const nextIndex = Math.min(slideCount - 1, index + 1);
-    setFurthestSlideIndex((furthestIndex) => Math.max(furthestIndex, nextIndex));
-    return nextIndex;
-  });
-}
-
-type WelcomePreviewKind = "hello" | "language" | "convert";
-
-function welcomeSlides(): Array<{
-  id: WelcomePreviewKind;
-  eyebrowKey: Parameters<typeof t>[1];
-  titleKey: Parameters<typeof t>[1];
-  bodyKey: Parameters<typeof t>[1];
-  preview: WelcomePreviewKind;
-}> {
-  return [
-    { id: "hello", eyebrowKey: "welcome.eyebrow", titleKey: "welcome.helloTitle", bodyKey: "welcome.helloBody", preview: "hello" },
-    { id: "language", eyebrowKey: "welcome.stepSettings", titleKey: "welcome.languageTitle", bodyKey: "welcome.languageText", preview: "language" },
-    { id: "convert", eyebrowKey: "welcome.stepStart", titleKey: "welcome.convertTitle", bodyKey: "welcome.convertText", preview: "convert" },
-  ];
-}
-
-function WelcomePreview(props: { kind: WelcomePreviewKind; language: LanguageCode }) {
-  if (props.kind === "hello") {
-    return (
-      <div className="welcome-preview welcome-preview-app is-hello" aria-label={t(props.language, "welcome.previewLabel")}>
-        <div className="mini-capture-frame mini-app-capture">
-          <MiniAppTopbar language={props.language} />
-          <MiniUploadArea language={props.language} />
-        </div>
-      </div>
-    );
-  }
-
-  if (props.kind === "language") {
-    return (
-      <div className="welcome-preview welcome-preview-settings is-language" aria-label={t(props.language, "welcome.previewLabel")}>
-        <div className="mini-capture-frame mini-settings-capture">
-          <MiniSettingsPanel language={props.language} focus="language" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="welcome-preview welcome-preview-app is-convert" aria-label={t(props.language, "welcome.previewLabel")}>
-      <div className="mini-capture-frame mini-app-capture">
-        <MiniAppTopbar language={props.language} />
-        <MiniUploadArea language={props.language} />
-        <div className="empty-state">{t(props.language, "upload.empty")}</div>
-      </div>
-    </div>
-  );
-}
-
-function MiniAppTopbar(props: { language: LanguageCode }) {
-  return (
-    <div className="topbar mini-topbar" aria-hidden="true">
-      <div className="brand">
-        <div className="brand-mark">
-          <img src={brandLogoUrl} alt="" />
-        </div>
-        <div>
-          <h1>Multi-Converter</h1>
-        </div>
-      </div>
-      <nav className="process-strip">
-        {stepLabels(props.language).map((item) => (
-          <button key={item.id} type="button" className={`process-step ${item.id === 1 ? "is-active" : ""}`} disabled>
-            <span>{item.label}</span>
-            <strong>{item.title}</strong>
-          </button>
-        ))}
-      </nav>
-      <div className="topbar-actions">
-        <button className="icon-button" type="button" disabled>
-          <SettingsIcon />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function MiniUploadArea(props: { language: LanguageCode }) {
-  return (
-    <section className="drop-zone mini-drop-zone" aria-hidden="true">
-      <div className="sketch-orbit">
-        <img src={brandLogoUrl} alt="" />
-      </div>
-      <div>
-        <strong>{t(props.language, "upload.dragDrop")}</strong>
-      </div>
-      <button className="primary-button" type="button" disabled>
-        {t(props.language, "upload.browse")}
-      </button>
-    </section>
-  );
-}
-
-function MiniSettingsPanel(props: { language: LanguageCode; focus: "language" }) {
-  return (
-    <section className={`settings-panel mini-settings-panel is-${props.focus}`} aria-hidden="true">
-      <header className="settings-header">
-        <div>
-          <h2>{t(props.language, "settings.title")}</h2>
-        </div>
-        <button className="icon-button" type="button" disabled>
-          <CloseIcon />
-        </button>
-      </header>
-
-      <div className="settings-grid">
-        <section className="settings-column">
-          <section className={`setting-select language-setting ${props.focus === "language" ? "mini-focus" : ""}`}>
-            <span className="label">{t(props.language, "settings.language")}</span>
-            <div className="language-choice-grid">
-              {languageOptions.map((languageOption) => (
-                <button key={languageOption} type="button" className={`language-choice ${props.language === languageOption ? "is-selected" : ""}`} disabled>
-                  {languageLabel(props.language, languageOption)}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="setting-toggle">
-            <div>
-              <span className="label">{t(props.language, "settings.notifications")}</span>
-              <p>{t(props.language, "settings.notificationsDetail")}</p>
-            </div>
-            <label className="switch-control">
-              <input type="checkbox" checked readOnly />
-              <span aria-hidden="true" />
-            </label>
-          </section>
-
-        </section>
-
-        <section className="settings-side">
-          <section className="update-settings-card">
-            <div className="update-settings-heading">
-              <div>
-                <span className="label">{t(props.language, "update.label")}</span>
-                <strong>{t(props.language, "update.settingsTitle")}</strong>
-              </div>
-            </div>
-            <p>{t(props.language, "update.currentVersion", { version: minimumReportVersion })}</p>
-            <p>{t(props.language, "update.unknown")}</p>
-            <div className="settings-actions">
-              <button className="secondary-button" type="button" disabled>
-                {t(props.language, "update.checking")}
-              </button>
-            </div>
-          </section>
-        </section>
-      </div>
-    </section>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" />
-      <path d="M19.4 13.5c.1-.5.1-1 .1-1.5s0-1-.1-1.5l2-1.6-2-3.4-2.4 1a8 8 0 0 0-2.6-1.5L14 2.5h-4L9.6 5a8 8 0 0 0-2.6 1.5l-2.4-1-2 3.4 2 1.6c-.1.5-.1 1-.1 1.5s0 1 .1 1.5l-2 1.6 2 3.4 2.4-1a8 8 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a8 8 0 0 0 2.6-1.5l2.4 1 2-3.4-2-1.6Z" />
-    </svg>
-  );
-}
-
-function DocumentModeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M6 2.75h8.5L19 7.25v14H6z" />
-      <path d="M14.5 2.75v4.5H19M9 11h7M9 14.5h7M9 18h5" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5Z" />
-    </svg>
-  );
-}
-
-function ProgressScreen(props: {
-  isActive: boolean;
-  language: LanguageCode;
-  files: FileItem[];
-  exportResult: ExportResult | null;
-  isConverting: boolean;
-  isCancelling: boolean;
-  isExporting: boolean;
-  isTempOutputCleaned: boolean;
-  onNew(): void;
-  onCancel(): void;
-  onContinue(): void;
-  onBackToSettings(): void;
-  onExportDownloads(): void;
-  onExportFolder(): void;
-  onRevealFolder(): void;
-  onRetryFile(fileId: string): void;
-  onRetryFailed(): void;
-}) {
-  const language = props.language;
-  const convertibles = props.files.filter((file) => file.selectedFormat);
-  const completed = convertibles.filter((file) => file.status === "done").length;
-  const failed = convertibles.filter((file) => file.status === "error").length;
-  const canceled = convertibles.filter((file) => file.status === "canceled" || file.status === "canceling").length;
-  const total = convertibles.length;
-  const rawAverage = total
-    ? Math.round(convertibles.reduce((sum, file) => sum + (file.status === "done" ? 100 : clamp(file.progress || 0, 0, 100)), 0) / total)
-    : 0;
-  const canExport = completed > 0 && !props.isConverting && !props.isExporting && !props.isTempOutputCleaned;
-  const isFinished = total > 0 && !props.isConverting && completed + failed + canceled === total;
-  const canContinue = !props.isConverting && convertibles.some((file) => file.status !== "done" && file.status !== "unsupported");
-  const activeFile = convertibles.find((file) => file.status === "working" || file.status === "canceling") ?? convertibles.find((file) => file.status === "queued") ?? null;
-  const progressSessionKey = convertibles.map((file) => file.jobId).join("|");
-  const lastGlobalProgressRef = useRef({ key: progressSessionKey, value: 0 });
-  if (lastGlobalProgressRef.current.key !== progressSessionKey) {
-    lastGlobalProgressRef.current = { key: progressSessionKey, value: 0 };
-  }
-  const average = isFinished && completed + failed + canceled === total && failed + canceled === 0
-    ? 100
-    : Math.max(lastGlobalProgressRef.current.value, rawAverage);
-  lastGlobalProgressRef.current.value = average;
-  const progressValue = `${average}%`;
-
-  let title = t(language, "progress.pendingTitle");
-  let subtitle = t(language, "progress.pendingSubtitle");
-  if (total && props.isConverting) {
-    title = props.isCancelling ? t(language, "progress.cancelingTitle") : t(language, "progress.workingTitle");
-    subtitle = "";
-  } else if (canceled && completed + failed + canceled === total) {
-    title = t(language, "progress.canceledTitle");
-    subtitle = "";
-  } else if (failed) {
-    title = t(language, "progress.errorTitle");
-    subtitle = progressErrorSummary(language, completed, failed);
-  } else if (props.exportResult) {
-    title = t(language, "progress.savedTitle");
-    subtitle = t(language, "progress.exportReady");
-  } else if (completed === total && total > 0) {
-    title = t(language, "progress.doneTitle");
-    subtitle = "";
-  }
-
-  return (
-    <section className={`screen progress-screen ${props.isActive ? "is-active" : ""}`} aria-labelledby="progress-title">
-      <section className="progress-panel">
-        <section className="progress-hero">
-          <div className="progress-dial-cluster">
-            <div className="conversion-dial" aria-hidden="true">
-              <span style={{ "--value": `${average}%` } as React.CSSProperties} />
-              <strong>{progressValue}</strong>
-            </div>
-          </div>
-          <div className="screen-copy compact">
-            <h2 id="progress-title">{title}</h2>
-            {subtitle && <p>{subtitle}</p>}
-            {props.exportResult && <p>{exportedFilesText(language, props.exportResult.files.length)}</p>}
-            {total > 0 && <p className="conversion-count">{progressSummaryText(language, completed, failed, canceled, total)}</p>}
-          </div>
-        </section>
-
-        <section className="job-list" aria-label={t(language, "app.progress")}>
-          {!convertibles.length && <div className="empty-state">{t(language, "progress.empty")}</div>}
-          {convertibles.map((file) => {
-            const fileProgress = file.status === "done" ? 100 : file.status === "error" || file.status === "canceled" ? file.progress : clamp(file.progress, 0, 100);
-            const progressLabel = `${Math.floor(fileProgress)}%`;
-            return (
-              <article className="job-row" key={file.id}>
-                <div className="job-main">
-                  <div>
-                    <strong>{displayFileName(file)}</strong>
-                    <span>→ {(file.convertedFormat || file.selectedFormat || "").toUpperCase()}</span>
-                  </div>
-                  <em className={`job-state ${file.status === "done" ? "is-done" : ""} ${file.status === "error" ? "is-error" : ""}`}>
-                    {t(language, statusLabelKeys[file.status])}
-                  </em>
-                </div>
-                <div className="file-progress-line">
-                  <div className="progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={fileProgress}>
-                    <div className={`progress-bar ${file.status === "error" ? "is-error" : ""}`} style={{ width: `${fileProgress}%` }} />
-                  </div>
-                  <span>{file.status === "done" ? "100%" : progressLabel}</span>
-                </div>
-                {file.status === "error" && isFinished && (
-                  <button className="secondary-button retry-button" type="button" disabled={props.isExporting} onClick={() => props.onRetryFile(file.id)}>
-                    {t(language, "progress.retry")}
-                  </button>
-                )}
-              </article>
-            );
-          })}
-        </section>
-
-        <footer className="screen-actions progress-actions">
-          <div className="conversion-actions">
-            {props.isConverting ? (
-              <button className="primary-button" type="button" disabled={props.isCancelling} onClick={props.onCancel}>
-                {props.isCancelling ? t(language, "progress.canceling") : t(language, "progress.cancel")}
-              </button>
-            ) : (
-              <>
-                {props.files.length > 0 && (
-                  <button className="ghost-button" type="button" disabled={props.isExporting} onClick={props.onNew}>
-                    {t(language, "progress.newConversion")}
-                  </button>
-                )}
-                {canContinue && canceled > 0 && (
-                  <button className="primary-button" type="button" disabled={props.isExporting} onClick={props.onContinue}>
-                    {t(language, "progress.continue")}
-                  </button>
-                )}
-                {!isFinished && props.files.length > 0 && (
-                  <button className="secondary-button" type="button" disabled={props.isExporting} onClick={props.onBackToSettings}>
-                    {t(language, "progress.modify")}
-                  </button>
-                )}
-                {failed > 0 && (
-                  <button className="secondary-button" type="button" disabled={props.isExporting} onClick={props.onRetryFailed}>
-                    {t(language, "progress.retryFailed")}
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-          {!props.isConverting && completed > 0 && (
-            <div className="destination-actions">
-              {props.exportResult ? (
-                <button className="primary-button" type="button" disabled={props.isExporting} onClick={props.onRevealFolder}>
-                  {t(language, "progress.openFolder")}
-                </button>
-              ) : (
-                <>
-                  {canExport && (
-                    <button className="primary-button" type="button" onClick={props.onExportDownloads}>
-                      {props.isExporting ? t(language, "progress.copying") : t(language, "progress.download")}
-                    </button>
-                  )}
-                  {canExport && (
-                    <button className="secondary-button" type="button" onClick={props.onExportFolder}>
-                      {props.isExporting ? t(language, "progress.copying") : t(language, "progress.folder")}
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </footer>
-      </section>
-    </section>
-  );
-}
-
-function isAvailableTarget(target: TargetFormat) {
-  return target.engineAvailable && (!target.availability || target.availability === "available");
-}
-
-function hasAvailableDescriptionTargets(file: FileDescription) {
-  return file.targets.some(isAvailableTarget);
-}
-
-function hasAvailableTargets(file: FileItem) {
-  return hasAvailableDescriptionTargets(file);
-}
-
-function displayFileName(file: FileDescription) {
-  const extension = (file.extension || file.sourceFormat || "").replace(/^\./, "").toLowerCase();
-  if (!extension) return file.name;
-  const suffix = `.${extension}`;
-  return file.name.toLowerCase().endsWith(suffix) ? file.name.slice(0, -suffix.length) || file.name : file.name;
-}
-
-function availableTargetsForFile(file: FileItem) {
-  return file.targets.filter(isAvailableTarget);
-}
-
-function targetForFormat(file: FileItem, format: string) {
-  return availableTargetsForFile(file).find((target) => target.format === format) ?? null;
-}
-
-function updateFileSelection(file: FileItem, format: string): FileItem {
-  const isCached = isConvertedForSelection({ ...file, selectedFormat: format });
-  return {
-    ...file,
-    selectedFormat: format,
-    progress: isCached ? 100 : 0,
-    phase: isCached ? "phase.done" : "phase.waiting",
-    status: isCached ? "done" : "ready",
-    result: isCached ? file.result : null,
-    convertedFormat: isCached ? file.convertedFormat : null,
-    error: null,
-  };
-}
-
-function fileGroupId(file: FileDescription) {
-  if (file.categoryId === "documents") return "documents";
-  if (file.categoryId === "images") return "images";
-  if (file.categoryId === "audio") return "audio";
-  if (file.categoryId === "video") return "video";
-  return "other";
-}
-
-function uniqueIntents(intents: ConversionIntent[]) {
-  const byFormat = new Map<string, ConversionIntent>();
-  intents.forEach((intent) => {
-    const existing = byFormat.get(intent.target.format);
-    if (!existing || intent.priority < existing.priority) byFormat.set(intent.target.format, intent);
-  });
-  return Array.from(byFormat.values()).sort((a, b) => a.priority - b.priority || a.target.rank - b.target.rank);
-}
-
-function groupedFormatOptions(file: FileItem) {
-  const intents = uniqueIntents(availableTargetsForFile(file).map((target) => intentForTarget(target, file)));
-  const recommendedFormats = new Set(preferredFormatsForGroup(fileGroupId(file), [file]));
-  const recommended = intents.filter((intent) => recommendedFormats.has(intent.target.format) || isPrimaryIntent(intent));
-  const recommendedFormatSet = new Set(recommended.map((intent) => intent.target.format));
-  return {
-    recommended,
-    other: intents.filter((intent) => !recommendedFormatSet.has(intent.target.format)),
-  };
-}
-
-function preferredFormatsForGroup(groupId: string, files: FileItem[]) {
-  const formats = new Set(files.map((file) => file.sourceFormat).filter((format): format is string => Boolean(format)));
-  if (groupId === "images") return formats.size === 1 && (formats.has("jpg") || formats.has("jpeg")) ? ["png", "webp"] : ["jpg", "png", "webp"];
-  if (groupId === "audio") return formats.size === 1 && formats.has("mp3") ? ["m4a", "wav", "flac"] : ["mp3", "m4a", "wav"];
-  if (groupId === "video") return formats.size === 1 && formats.has("mp4") ? ["webm", "mov", "mkv"] : ["mp4", "webm", "mov"];
-  if (groupId === "documents") {
-    const onlyPdf = files.length > 0 && files.every((file) => file.sourceFormat === "pdf");
-    if (onlyPdf) return ["txt", "html", "png", "jpg"];
-    return formats.size === 1 && formats.has("pdf") ? ["txt", "odt", "docx"] : ["pdf", "odt", "txt", "docx"];
-  }
-  return [];
-}
-
-function isPrimaryIntent(intent: ConversionIntent) {
-  return intent.priority < 50;
-}
-
-function intentForTarget(target: TargetFormat, file: FileDescription): ConversionIntent {
-  const format = target.format;
-  let labelKey: Parameters<typeof t>[1] = "format.intent.other";
-  let priority = 90 + target.rank;
-
-  if (target.categoryId === "audio" && file.categoryId === "video") {
-    labelKey = "format.intent.audio";
-    priority = formatPopularityPriority("audio", format, target.rank);
-  } else if (target.categoryId === "video" && file.categoryId !== "video") {
-    labelKey = "format.intent.video";
-    priority = formatPopularityPriority("video", format, target.rank);
-  } else if (format === "jpg" || format === "mp4" || format === "mp3") {
-    labelKey = "format.intent.compatibility";
-    priority = 10;
-  } else if (format === "webp") {
-    labelKey = "format.intent.lighter";
-    priority = file.categoryId === "images" ? formatPopularityPriority("images", format, target.rank) : 80 + target.rank;
-  } else if (format === "png") {
-    labelKey = "format.intent.quality";
-    priority = file.categoryId === "images" || file.sourceFormat === "pdf" ? formatPopularityPriority("images", format, target.rank) : 80 + target.rank;
-  } else if (format === "pdf") {
-    labelKey = "format.intent.document";
-    priority = 10;
-  } else if (format === "txt") {
-    labelKey = "format.intent.text";
-    priority = file.categoryId === "documents" ? formatPopularityPriority("documents", format, target.rank) : file.sourceFormat === "pdf" ? 10 : 35;
-  } else if (format === "odt" || format === "docx" || format === "rtf") {
-    labelKey = "format.intent.editable";
-    priority = file.categoryId === "documents" ? formatPopularityPriority("documents", format, target.rank) : 80 + target.rank;
-  } else if (format === "m4a" || format === "wav" || format === "flac" || format === "ogg") {
-    labelKey = "format.intent.audio";
-    priority = formatPopularityPriority("audio", format, target.rank);
-  } else if (format === "webm" || format === "mov" || format === "mkv") {
-    labelKey = "format.intent.video";
-    priority = formatPopularityPriority("video", format, target.rank);
-  } else if (file.categoryId === "documents" && ["html", "csv", "json", "xml"].includes(format)) {
-    priority = formatPopularityPriority("documents", format, target.rank);
-  }
-
-  return {
-    id: `${labelKey}-${target.format}`,
-    labelKey,
-    target,
-    priority,
-  };
-}
-
-function formatPopularityPriority(groupId: string, format: string, fallbackRank: number) {
-  const preferred: Record<string, string[]> = {
-    documents: ["pdf", "docx", "odt", "rtf", "txt", "html", "csv", "json", "xml"],
-    images: ["jpg", "jpeg", "png", "webp", "tiff", "bmp", "ico"],
-    video: ["mp4", "webm", "mkv", "mov", "avi", "wmv", "mpg"],
-    audio: ["mp3", "m4a", "aac", "wav", "flac", "ogg", "opus", "wma"],
-  };
-  const index = preferred[groupId]?.indexOf(format.toLowerCase()) ?? -1;
-  return index >= 0 ? 10 + index : 80 + fallbackRank;
-}
-
-function intentText(intent: ConversionIntent, language: LanguageCode) {
-  return `${t(language, intent.labelKey)} → ${intent.target.label}`;
-}
-
-function groupLabel(groupId: string, language: LanguageCode) {
-  if (groupId === "other") return t(language, "category.unknown");
-  return translateCategory(language, groupId);
-}
-
-function fileSummary(files: FileDescription[], language: LanguageCode) {
-  const counts = new Map<string, number>();
-  files.forEach((file) => {
-    const label = groupLabel(fileGroupId(file), language).toLowerCase();
-    counts.set(label, (counts.get(label) ?? 0) + 1);
-  });
-  return Array.from(counts, ([label, count]) => `${count} ${label}`).join(", ");
-}
-
-function fileCountText(language: LanguageCode, count: number) {
-  return t(language, pluralKey("file.count", count), { count });
-}
-
-function uploadedFilesSummary(language: LanguageCode, count: number, summary: string) {
-  return t(language, "upload.summaryByCategory", { countText: fileCountText(language, count), summary });
-}
-
-function readyCountText(language: LanguageCode, ready: number, total: number) {
-  return t(language, pluralKey("progress.readyCount", ready), { ready, total });
-}
-
-function importAnalyzingText(language: LanguageCode, count: number) {
-  return t(language, "import.analyzingCount", { countText: fileCountText(language, count) });
-}
-
-function importedFilesText(language: LanguageCode, count: number) {
-  return t(language, pluralKey("file.added", count), { count });
-}
-
-function convertedFilesText(language: LanguageCode, count: number) {
-  return t(language, pluralKey("file.converted", count), { count });
-}
-
-function exportedFilesText(language: LanguageCode, count: number) {
-  return t(language, pluralKey("file.exported", count), { count });
-}
-
-function skippedFilesText(language: LanguageCode, count: number) {
-  return t(language, pluralKey("file.skipped", count), { count });
-}
-
-function progressErrorSummary(language: LanguageCode, completed: number, failed: number) {
-  return t(language, "progress.errorSummary", { completed, failed });
-}
-
-function progressSummaryText(language: LanguageCode, completed: number, failed: number, canceled: number, total: number) {
-  const parts = [convertedFilesText(language, completed)];
-  if (failed > 0) parts.push(t(language, "progress.summaryFailed", { count: failed }));
-  if (canceled > 0) parts.push(t(language, pluralKey("file.canceled", canceled), { count: canceled }));
-  parts.push(t(language, "progress.ofTotal", { total: fileCountText(language, total) }));
-  return parts.join(t(language, "progress.summarySeparator"));
-}
-
-function isConvertedForSelection(file: FileItem) {
-  return Boolean(file.selectedFormat && file.result && file.status === "done" && file.convertedFormat === file.selectedFormat);
-}
-
-function shouldConvertFile(file: FileItem) {
-  return Boolean(file.selectedFormat && file.status !== "unsupported" && !isConvertedForSelection(file));
-}
-
-function shouldReconvertCleanedResult(file: FileItem, isTempOutputCleaned: boolean) {
-  return Boolean(isTempOutputCleaned && file.selectedFormat && file.status === "done");
-}
-
-function getConvertedOutputPaths(files: FileItem[]) {
-  return files.filter((file) => file.status === "done" && file.result?.outputPath).map((file) => file.result!.outputPath);
-}
-
-function isEditablePasteTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) return false;
-  return target.isContentEditable || target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT";
-}
-
-function clipboardEventFiles(data: DataTransfer | null) {
-  if (!data) return [];
-  const files = Array.from(data.files);
-  if (files.length) return files;
-  return Array.from(data.items)
-    .filter((item) => item.kind === "file")
-    .map((item) => item.getAsFile())
-    .filter((file): file is File => file !== null);
-}
-
-function clipboardFileName(mimeType: string) {
-  const extension = clipboardExtension(mimeType);
-  return `clipboard-${new Date().toISOString().replace(/[:.]/g, "-")}.${extension}`;
-}
-
-function clipboardExtension(mimeType: string) {
-  const extensions: Record<string, string> = {
-    "text/plain": "txt",
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/gif": "gif",
-    "image/webp": "webp",
-    "image/bmp": "bmp",
-    "image/tiff": "tiff",
-    "audio/mpeg": "mp3",
-    "audio/wav": "wav",
-    "audio/x-wav": "wav",
-    "audio/ogg": "ogg",
-    "audio/flac": "flac",
-    "audio/mp4": "m4a",
-    "video/mp4": "mp4",
-    "video/quicktime": "mov",
-    "video/webm": "webm",
-    "video/x-matroska": "mkv",
-  };
-  return extensions[mimeType.toLowerCase()] ?? "bin";
-}
-
-async function toClipboardFileInput(file: File): Promise<ClipboardFileInput> {
-  if (file.size > maxClipboardMemoryFileBytes) {
-    throw new Error("clipboard.fileTooLarge");
-  }
-  return {
-    name: file.name || clipboardFileName(file.type),
-    mimeType: file.type || "application/octet-stream",
-    bytes: Array.from(new Uint8Array(await file.arrayBuffer())),
-  };
-}
-
-async function notifyConversionFinished(language: LanguageCode, failed: boolean, enabled: boolean) {
-  if (!isTauriRuntime || !enabled) return;
-
-  try {
-    let permissionGranted = await isPermissionGranted();
-    if (!permissionGranted) {
-      permissionGranted = (await requestPermission()) === "granted";
-    }
-    if (!permissionGranted) return;
-
-    sendNotification({
-      title: "Multi-Converter",
-      body: failed ? t(language, "notice.conversionsFinishedWithErrors") : t(language, "notice.conversionsFinished"),
-    });
-  } catch (error) {
-    console.warn("System notification failed", error);
-  }
-}
-
-function exportNoticeMessage(language: LanguageCode, kind: ExportKind, result: ExportResult) {
-  if (kind === "downloads") {
-    return result.destinationCreated ? t(language, "notice.exportDownloadsCreated") : t(language, "notice.exportDownloadsReady");
-  }
-  return result.destinationCreated
-    ? t(language, "notice.exportFolderCreated", { folder: folderName(result.destinationDir) })
-    : t(language, "notice.exportFolderReady", { folder: folderName(result.destinationDir) });
-}
-
-function folderName(path: string) {
-  return path.split(/[\\/]/).filter(Boolean).pop() || path;
-}
-
-function getSelectedTarget(file: FileItem) {
-  return file.targets.find((target) => target.format === file.selectedFormat) ?? null;
-}
-
-function conversionLabel(file: FileItem, language: LanguageCode) {
-  const target = getSelectedTarget(file);
-  if (!target) return t(language, "common.notConverted");
-  return `${target.label} · ${translateCategory(language, target.categoryId || target.category)}`;
-}
-
-function compactFileMeta(file: FileDescription, language: LanguageCode) {
-  const extension = file.extension || t(language, "format.noExtension");
-  const warnings = file.warnings?.map((warning) => fileWarningText(warning.code, language)) ?? [];
-  return [extension, formatBytes(file.size, language), ...warnings].join(" · ");
-}
-
-function fileWarningText(code: string, language: LanguageCode) {
-  if (code === "largeFile") return t(language, "file.warningLarge");
-  if (code === "memoryIntensive") return t(language, "file.warningMemory");
-  if (code === "partialFolderImport") return t(language, "file.warningPartialImport");
-  return t(language, "file.warningGeneric");
-}
-
-function formatBytes(bytes: number, language: LanguageCode) {
-  if (!Number.isFinite(bytes) || bytes <= 0) return `0 ${t(language, "common.bytes")}`;
-  const units = [
-    t(language, "common.bytes"),
-    t(language, "common.kilobytes"),
-    t(language, "common.megabytes"),
-    t(language, "common.gigabytes"),
-  ];
-  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
-  const value = bytes / 1024 ** index;
-  return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`;
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, Number(value) || 0));
-}
-
-function readStoredNotificationsEnabled() {
-  return localStorage.getItem(notificationsStorageKey) !== "false";
-}
-
-function readStoredFeedbackPrivacyAccepted() {
-  return localStorage.getItem(feedbackPrivacyStorageKey) === "true";
-}
-
-function shouldShowWelcome() {
-  if (import.meta.env.DEV) {
-    return new URLSearchParams(window.location.search).get("mockWelcomeSeen") !== "1";
-  }
-  return false;
-}
-
-function conversionConcurrency(jobs: FileItem[]) {
-  const total = jobs.length;
-  if (total <= 1) return total;
-  const cores = Math.max(1, Math.floor(navigator.hardwareConcurrency || 2));
-  const totalBytes = jobs.reduce((sum, file) => sum + Math.max(0, file.size || 0), 0);
-  const largestBytes = jobs.reduce((max, file) => Math.max(max, file.size || 0), 0);
-  const videoJobs = jobs.filter((file) => file.categoryId === "video").length;
-  const heavyBatch = totalBytes > 1.4 * 1024 * 1024 * 1024 || largestBytes > 850 * 1024 * 1024;
-  const coreLimit = cores <= 2 ? 1 : cores <= 4 ? 2 : cores <= 8 ? 3 : 4;
-  const videoLimit = videoJobs > 0 ? Math.max(1, Math.min(coreLimit, Math.floor(cores / 3) || 1)) : coreLimit;
-  const heavyLimit = heavyBatch ? Math.min(videoJobs > 0 ? 1 : 2, videoLimit) : videoLimit;
-  return Math.max(1, Math.min(total, heavyLimit));
-}
-
-async function runWithConcurrency<T>(items: T[], limit: number, worker: (item: T) => Promise<void>) {
-  let cursor = 0;
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (cursor < items.length) {
-      const item = items[cursor];
-      cursor += 1;
-      await worker(item);
-    }
-  });
-  await Promise.all(workers);
 }

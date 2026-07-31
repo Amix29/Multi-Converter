@@ -1,0 +1,84 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  min-width: 0;
+  min-height: 100vh;
+  color: var(--vlm-text);
+  background: var(--vlm-canvas);
+  font-family: var(--vlm-font-sans);
+  font-size: var(--vlm-text-body);
+  line-height: var(--vlm-leading-body);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  touch-action: manipulation;
+}
+
+button,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+a:focus-visible,
+[contenteditable="true"]:focus-visible {
+  outline: 2px solid var(--vlm-focus);
+  outline-offset: 3px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app-shell {
+  --floating-toast-offset: 24px;
+  --page-notice-offset: var(--floating-toast-offset);
+  display: grid;
+  grid-template-rows: 72px minmax(0, 1fr);
+  width: min(var(--vlm-container-product), 100%);
+  height: 100vh;
+  margin: 0 auto;
+  overflow: hidden;
+  padding: var(--vlm-space-5) clamp(var(--vlm-gutter-mobile), 3vw, var(--vlm-gutter-desktop)) var(--vlm-space-6);
+}
+
+.app-shell.has-update-reminder {
+  --floating-toast-offset: 190px;
+}
+
+.app-shell.has-import-toast {
+  --page-notice-offset: calc(var(--floating-toast-offset) + 86px);
+}

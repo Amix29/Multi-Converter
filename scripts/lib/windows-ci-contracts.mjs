@@ -8,9 +8,20 @@ export function assertWindowsCiContracts({ packageJson, buildWorkflow, windowsBu
   );
   assert.equal(
     packageJson.scripts["test:ui:preview"],
-    "npm run build:frontend && playwright test",
-    "preview UI tests must build the current frontend before using the installed Playwright runner",
+    "npm run build:frontend:preview && playwright test",
+    "preview UI tests must build the explicit browser-preview frontend before using the installed Playwright runner",
   );
+  assert.equal(
+    packageJson.scripts["build:frontend:preview"],
+    "npm run validate:i18n && npm run typecheck && vite build --mode preview",
+    "browser-preview builds must opt into preview fixtures without changing the production frontend build",
+  );
+  assert.equal(
+    packageJson.scripts["build:frontend"],
+    "npm run validate:i18n && npm run typecheck && vite build",
+    "the production frontend build must not opt into browser-preview fixtures",
+  );
+  assert.doesNotMatch(packageJson.scripts.build, /vite build\s+--mode preview/, "the packaged Tauri build must never include browser-preview fixtures");
   assert.match(packageJson.scripts.check, /(?:^|&&\s*)npm run typecheck:tests(?:\s*&&|$)/, "the canonical check command must typecheck test and runner configuration files");
   assert.match(packageJson.scripts.check, /(?:^|&&\s*)npm run test:unit(?:\s*&&|$)/, "the canonical check command must include Vitest unit tests");
   assert.equal(packageJson.scripts["test:windows:ci"], "node scripts/test-windows-ci-gate.mjs", "Windows CI validation wrapper must be exposed through npm");

@@ -6,7 +6,8 @@
 - Platforms: Windows x64, universal macOS and Linux x64
 - Repository surfaces: desktop application, static marketing site and branding kit
 - Development release: **V1.0.7**
-- Workspace checkpoint: local commit **`1be6b840`** on `codex/test`, not pushed
+- Phase 1 checkpoint: local commit **`9f89a8d2`** on `codex/phase-1-guardrails`, not pushed
+- Phase 2 workspace: `codex/phase-2-frontend-vellum`, based on the Phase 1 checkpoint, not merged or pushed
 - V1.0.7 objectives:
   - local Tiptap document editor;
   - local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images.
@@ -18,8 +19,9 @@
 | [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md) | Active source of truth | Complete V1.0.7 scope, sequencing and release gates |
 | [`V1_0_7_VALIDATION.md`](V1_0_7_VALIDATION.md) | Active, overall gate blocked | Combined editor, OCR and platform release ledger |
 | [`V1_0_7_EDITOR_VALIDATION.md`](V1_0_7_EDITOR_VALIDATION.md) | Active, gate open | Editor implementation and real Tauri validation |
-| [`V1_0_7_EDITOR_UI_QA.md`](V1_0_7_EDITOR_UI_QA.md) | Passed, focused scope | Editor-home menu/dialog regression evidence |
+| [`V1_0_7_EDITOR_UI_QA.md`](V1_0_7_EDITOR_UI_QA.md) | Active, Phase 2 preview scope | Historical editor regressions and Vellum Paper responsive evidence |
 | [`V1_0_7_OCR.md`](V1_0_7_OCR.md) | Planned, not implemented | OCR behavior, architecture, security and test contract |
+| [`REFACTOR_BASELINE.md`](REFACTOR_BASELINE.md) | Active | Phase 1 measurements and Phase 2 refactor budgets |
 | [`TESTING.md`](TESTING.md) | Active | Commands and platform validation procedures |
 | [`THIRD_PARTY_ENGINES.md`](THIRD_PARTY_ENGINES.md) | Active | Engine licensing, checksums, notices and packaging rules |
 
@@ -27,6 +29,9 @@
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) defines the desktop, site, branding,
   conversion, editor, OCR and Atelier IA boundaries.
+- [`SECURITY.md`](SECURITY.md) documents the local desktop threat model, the
+  editor HTML boundary, local asset rules and the enforced Tauri CSP. Repository
+  vulnerability reporting remains in [`../SECURITY.md`](../SECURITY.md).
 - [`DECISIONS.md`](DECISIONS.md) records the workspace consolidation, retained
   stacks and handling of the active V1.0.7 development tree.
 - [`../site/README.md`](../site/README.md) documents the static site commands

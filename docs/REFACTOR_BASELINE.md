@@ -1,10 +1,10 @@
-# Phase 1 Refactor Baseline
+# Frontend Refactor Baseline — Phases 1 And 2
 
 ## Purpose
 
-This document fixes the measurable starting point for the Multi-Converter
-application refactor. It covers the desktop application only; the marketing
-site in `site/` is outside this audit.
+This document fixes the measurable starting point and the Phase 1 and Phase 2
+checkpoints for the Multi-Converter application refactor. It covers the
+desktop application only; the marketing site in `site/` is outside this audit.
 
 Phase 1 adds measurement and regression guardrails. It does not remove,
 replace or reduce any conversion engine, advertised format, offline behavior
@@ -136,6 +136,8 @@ new test stack:
   work, not Phase 1 proof.
 
 Neither observation changes conversion capacity or conversion output quality.
+Both frontend defects are resolved and covered by rendered regression tests in
+the Phase 2 checkpoint below.
 
 ## Remaining Organization Debt
 
@@ -212,3 +214,84 @@ updater behavior may run during the probe.
 A passing gate does not prove unmeasured native interaction performance,
 security, OCR accuracy, macOS packaging or Linux packaging. Those gates remain
 open in `V1_0_7_VALIDATION.md`.
+
+## After Phase 2
+
+The final Phase 2 snapshot was captured on 2026-07-31 in the isolated
+`codex/phase-2-frontend-vellum` worktree, based on the committed Phase 1
+checkpoint `9f89a8d2`. Its ignored machine-readable reports and reviewed
+captures are stored locally at:
+
+- `test-results/phase-2-baseline/after.json`;
+- `test-results/phase-2-vellum/vellum-paper-*.png`.
+
+The snapshot can be reproduced with:
+
+```powershell
+npm run measure:baseline -- --output test-results/phase-2-baseline/after.json --gate-status tmp/phase2-windows-ci-final.json
+```
+
+### Structure And Vellum
+
+- `App.tsx`, the conversion workflow, editor, API facade/adapters and styles
+  are split by responsibility while the public API import path and persistent
+  contracts remain compatible;
+- every current TypeScript, TSX and CSS file under `src/` is below the hard
+  500-non-blank-line limit; the largest is 416 lines. The 300-line objective
+  remains an optimization target rather than a claim that every file reached
+  it;
+- the vendored Vellum 1.0 token file exactly matches the Atelier source at
+  SHA-256
+  `FA4C4754834756896E610CFB751170654B09BBBD543606149B1866513B8A44BE`;
+- the floating feedback overlap and unreliable preview recent-document return
+  observed in Phase 1 are fixed and covered by real touch and autosave/refresh
+  scenarios;
+- the production bundle excludes preview fixtures; searches for the preview
+  switches and seeded document/error strings returned no match in `dist`.
+
+### Final Measurements And Budgets
+
+| Measurement | After Phase 2 | Difference from Phase 1 | Exit budget |
+| --- | ---: | ---: | --- |
+| Measured source | 185 files / 42,126 lines | +43 files / +1,778 lines | Informational; modular extraction increases file count |
+| Frontend production bundle | 1,087,591 bytes / 9 files | +37,548 bytes (+3.58%) | **Missed**: target <= 1,050,043 bytes |
+| Frontend bundle, independent gzip method | 311,726 bytes | +11,972 bytes | Informational |
+| Initial main JavaScript chunk | 206,028 bytes | -192,147 bytes | **Passed**: target <= 398,175 bytes |
+| Largest JavaScript chunk | 496,337 bytes | Editor chunk was 529,855 bytes before Phase 1 | **Passed**: target <= 500,000 bytes, 3,663-byte margin |
+| Windows application executable | 25,656,320 bytes | +12,288 bytes | Informational local build |
+| Windows NSIS installer | 612,397,457 bytes | +49,033 bytes | Informational local build |
+| Advanced engine resources | 1,785,947,516 bytes / 19,571 files | 0 bytes / 0 files | **Passed**: unchanged |
+| All local engine resources | 1,988,656,508 bytes / 19,573 files | 0 bytes / 0 files | **Passed**: unchanged |
+
+The raw-total bundle objective was not reached and is not reported as an
+optimization success. The mandatory pinned DOMPurify chunk accounts for
+26,853 raw bytes; Vellum, accessibility and the refactored UI account for the
+remaining net increase. Chunking still brings the initial and largest chunks
+under their explicit limits without removing editor or conversion capability.
+Controlled minifier experiments found only a 242-byte Oxc gain and a 686-byte
+out-of-band Terser gain; a `marked` wrapper increased its chunk by 45 bytes.
+Removing the 41,174-byte `marked` parser would cross the target only by reducing
+GFM release-note capability, so that tradeoff was rejected.
+
+### Final Validation
+
+The final 15-step Windows gate passed in **647,789 ms** (about 10 min 48 s):
+
+- both npm audits reported zero known vulnerabilities;
+- 44 Vitest tests passed;
+- 8 routed Playwright scenarios passed and 8 duplicate cross-project routes
+  were intentionally skipped; the suite covers all key application states at
+  375, 768, 1024 and 1440 CSS px plus the deterministic 200% zoom equivalent;
+- 95 Rust tests passed, with the 6 heavy conversion-matrix cases intentionally
+  separated; those 6/6 cases then passed through `npm run test:conversions`;
+- 5 PDFium wrapper tests and both Rust/PDFium Clippy gates passed;
+- deterministic engine preparation reproduced exactly 19,573 engine files and
+  1,988,656,508 bytes;
+- the production frontend, Windows executable and local unsigned NSIS package
+  built successfully.
+
+The shorter duration relative to Phase 1 reflects warm build caches and NSIS
+run variability, not an application performance improvement. The reviewed
+Vellum captures and compiled preview prove rendered Chromium behavior only;
+the real Tauri Office matrix, restart persistence, OCR and native macOS/Linux
+gates remain open.

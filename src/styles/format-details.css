@@ -1,0 +1,86 @@
+.format-results {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-content: start;
+  gap: 10px;
+  min-height: 0;
+  overflow: auto;
+  padding: 2px 6px 14px 0;
+}
+
+.format-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.format-card {
+  position: relative;
+  display: grid;
+  align-items: center;
+  min-height: 58px;
+  padding: 12px 58px 12px 13px;
+  color: var(--vlm-text);
+  text-align: left;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-md);
+  background: var(--vlm-surface);
+  box-shadow: var(--vlm-edge-paper);
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  animation: formatCardIn 170ms ease both;
+}
+
+.format-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--vlm-accent-border);
+  box-shadow: var(--vlm-shadow-xs);
+}
+
+.format-card.is-selected {
+  border-color: var(--vlm-accent-border);
+  background: var(--vlm-accent-soft);
+  color: var(--vlm-text-strong);
+  box-shadow: inset 3px 0 0 var(--vlm-accent), var(--vlm-shadow-xs);
+}
+
+.format-card.is-selected span,
+.format-card.is-selected small,
+.format-card.is-selected em {
+  color: var(--vlm-text-muted);
+}
+
+.format-card strong {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 820;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.format-extension {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  min-width: 38px;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-pill);
+  background: var(--vlm-canvas-deep);
+  color: var(--vlm-info-text);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: lowercase;
+}
+
+.format-card.is-selected .format-extension {
+  border-color: var(--vlm-accent-border);
+  background: var(--vlm-surface);
+  color: var(--vlm-accent-strong);
+}

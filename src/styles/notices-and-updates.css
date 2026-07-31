@@ -1,0 +1,376 @@
+.page-notice {
+  position: fixed;
+  right: 24px;
+  bottom: var(--page-notice-offset);
+  z-index: 30;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: min(430px, calc(100vw - 32px));
+  min-height: 58px;
+  padding: 12px 12px 12px 14px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-lg);
+  background: var(--vlm-surface-raised);
+  box-shadow: var(--vlm-shadow-sm);
+  animation: noticeIn var(--vlm-motion-fast) var(--vlm-ease-standard) both;
+  transition: bottom var(--vlm-motion-base) var(--vlm-ease-standard);
+}
+
+.page-notice > span {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--vlm-info-text);
+}
+
+.page-notice.is-success > span {
+  background: var(--vlm-success-text);
+}
+
+.page-notice.is-error > span {
+  background: var(--vlm-danger-text);
+}
+
+.page-notice p {
+  min-width: 0;
+  margin: 0;
+  color: var(--vlm-text);
+  font-size: 14px;
+  font-weight: 720;
+  line-height: 1.35;
+}
+
+.page-notice button {
+  display: grid;
+  width: var(--vlm-target-min);
+  height: var(--vlm-target-min);
+  place-items: center;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-sm);
+  background: transparent;
+  color: var(--vlm-text-muted);
+  cursor: pointer;
+}
+
+.page-notice svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+.floating-corner {
+  position: fixed;
+  right: 24px;
+  bottom: 22px;
+  z-index: 29;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  width: min(430px, calc(100vw - 32px));
+  max-height: calc(100vh - 44px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+.floating-corner > * {
+  pointer-events: auto;
+  transform-origin: right bottom;
+}
+
+.update-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: var(--vlm-overlay);
+  animation: screenIn var(--vlm-motion-base) var(--vlm-ease-standard) both;
+}
+
+.update-dialog {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 260px);
+  align-items: start;
+  gap: 20px 28px;
+  width: min(1120px, calc(100vw - 56px));
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
+  padding: 32px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-xs) var(--vlm-radius-2xl) var(--vlm-radius-2xl) var(--vlm-radius-2xl);
+  background: var(--vlm-surface-raised);
+  box-shadow: var(--vlm-edge-paper), var(--vlm-shadow-overlay);
+}
+
+.update-dialog header {
+  min-width: 0;
+}
+
+.update-dialog h2 {
+  margin: 4px 0 0;
+  font-size: var(--vlm-text-h3);
+  line-height: var(--vlm-leading-h3);
+  letter-spacing: var(--vlm-tracking-h3);
+}
+
+.update-dialog > p,
+.update-release-notes p,
+.update-release-notes li {
+  margin: 0;
+  color: var(--vlm-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.update-dialog > p {
+  max-width: 58ch;
+}
+
+.update-version-hero {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  gap: 6px;
+  min-height: 132px;
+  align-content: center;
+  padding: 18px;
+  border: 1px solid var(--vlm-accent-border);
+  border-radius: var(--vlm-radius-lg);
+  background: var(--vlm-surface-raised);
+  box-shadow: inset 4px 0 0 var(--vlm-accent), var(--vlm-shadow-sm);
+}
+
+.update-version-hero span {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: var(--vlm-radius-pill);
+  background: var(--vlm-surface);
+  color: var(--vlm-accent-strong);
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.update-version-hero strong {
+  color: var(--vlm-text);
+  font-size: 44px;
+  font-weight: 880;
+  line-height: 0.95;
+}
+
+.update-release-notes {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 12px;
+  min-height: min(520px, 54vh);
+  max-height: min(660px, calc(100vh - 300px));
+  overflow: auto;
+  padding: 18px 20px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-md);
+  background: var(--vlm-canvas-subtle);
+  scrollbar-color: var(--vlm-accent) var(--vlm-accent-soft);
+  scrollbar-width: thin;
+}
+
+.update-release-notes strong {
+  color: var(--vlm-text);
+  font-size: 14px;
+}
+
+.update-release-notes::-webkit-scrollbar {
+  width: 12px;
+}
+
+.update-release-notes::-webkit-scrollbar-track {
+  margin: 12px 0;
+  border-radius: var(--vlm-radius-pill);
+  background: var(--vlm-accent-soft);
+}
+
+.update-release-notes::-webkit-scrollbar-thumb {
+  min-height: 54px;
+  border: 3px solid var(--vlm-canvas-subtle);
+  border-radius: var(--vlm-radius-pill);
+  background: var(--vlm-accent);
+}
+
+.update-release-notes::-webkit-scrollbar-thumb:hover {
+  background: var(--vlm-accent-hover);
+}
+
+.update-release-notes::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.release-note-content {
+  display: grid;
+  max-width: 92ch;
+  gap: 10px;
+}
+
+.release-note-content h3,
+.release-note-content h4 {
+  margin: 8px 0 0;
+  color: var(--vlm-text);
+  line-height: 1.3;
+}
+
+.release-note-content h3 {
+  font-size: 15px;
+}
+
+.release-note-content h4 {
+  font-size: 14px;
+}
+
+.release-note-content ul,
+.release-note-content ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.release-note-content li input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin: 0 7px 0 0;
+  accent-color: var(--vlm-accent);
+  vertical-align: -2px;
+}
+
+.release-note-content blockquote {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--vlm-accent);
+  border-radius: 0 var(--vlm-radius-sm) var(--vlm-radius-sm) 0;
+  background: var(--vlm-surface-raised);
+}
+
+.release-note-content code {
+  padding: 1px 4px;
+  border-radius: var(--vlm-radius-xs);
+  background: var(--vlm-surface-sunken);
+  color: var(--vlm-text);
+  font-size: 0.92em;
+}
+
+.release-note-content pre {
+  margin: 0;
+  max-width: 100%;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-sm);
+  background: var(--vlm-surface-sunken);
+}
+
+.release-note-content pre code {
+  display: block;
+  padding: 0;
+  background: transparent;
+  white-space: pre;
+}
+
+.release-note-content a {
+  color: var(--vlm-accent-strong);
+  font-weight: 760;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.release-note-content del {
+  color: var(--vlm-text-subtle);
+}
+
+.release-note-table-wrap {
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-sm);
+}
+
+.release-note-content table {
+  width: 100%;
+  min-width: 420px;
+  border-collapse: collapse;
+  background: var(--vlm-surface-raised);
+}
+
+.release-note-content th,
+.release-note-content td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--vlm-border);
+  color: var(--vlm-text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.release-note-content th {
+  color: var(--vlm-text);
+  font-weight: 820;
+}
+
+.release-note-content tr:last-child td {
+  border-bottom: 0;
+}
+
+.release-link {
+  grid-column: 1;
+  width: fit-content;
+  color: var(--vlm-accent-strong);
+  font-size: 13px;
+  font-weight: 780;
+}
+
+.update-actions {
+  grid-column: 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.update-install-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--vlm-overlay);
+  animation: screenIn var(--vlm-motion-fast) var(--vlm-ease-standard) both;
+}
+
+.update-install-dialog {
+  display: grid;
+  gap: 16px;
+  width: min(640px, calc(100vw - 48px));
+  padding: 30px;
+  border: 1px solid var(--vlm-border-strong);
+  border-radius: var(--vlm-radius-xl);
+  background: var(--vlm-surface-raised);
+  box-shadow: var(--vlm-shadow-overlay);
+}
+
+.update-install-dialog h2 {
+  margin: 0;
+  color: var(--vlm-text);
+  font-size: var(--vlm-text-h3);
+  line-height: var(--vlm-leading-h3);
+}
+
+.update-install-dialog p {
+  margin: 0;
+  color: var(--vlm-text-muted);
+  font-size: 15px;
+  line-height: 1.55;
+}

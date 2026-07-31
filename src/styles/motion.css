@@ -1,0 +1,110 @@
+@keyframes screenIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes welcomePanelIn {
+  from {
+    transform: translateY(7px);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes noticeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes importToastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes importProgress {
+  0% {
+    transform: translateX(-105%);
+  }
+
+  50% {
+    transform: translateX(72%);
+  }
+
+  100% {
+    transform: translateX(245%);
+  }
+}
+
+@keyframes dropIconFloat {
+  from {
+    transform: rotate(-1deg) translateY(0);
+  }
+
+  to {
+    transform: rotate(1deg) translateY(-4px);
+  }
+}
+
+@keyframes ticketIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes formatCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

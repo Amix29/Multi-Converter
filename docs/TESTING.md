@@ -129,9 +129,11 @@ The dedicated TypeScript project covers `tests/**/*.ts`,
 `playwright.config.ts` and `vitest.config.ts`; the application `tsconfig.json`
 continues to cover `src` only.
 
-Vitest currently exercises the DOM-independent editor pagination planner,
-including empty input, overflow, forced page breaks, oversized blocks and
-invalid measurements. Add pure logic here rather than extending a source-text
+Vitest exercises the DOM-independent editor pagination planner and the pure
+conversion workflow. Coverage includes empty input, overflow, forced page
+breaks, oversized blocks, invalid measurements, format selection and grouping,
+intent priority, concurrency limits, conversion-state transitions and isolated
+preview fixtures. Add pure logic here rather than extending a source-text
 contract with behavior that can be executed directly.
 
 Use the compiled-preview behavior suite after changing application flows,
@@ -142,10 +144,36 @@ npx playwright install chromium
 npm run test:ui:preview
 ```
 
-Playwright builds the frontend, serves `dist` on `127.0.0.1:4173`, and runs the
-same scenarios in desktop Chromium and a 390 x 844 mobile viewport. Reports,
-traces and failure screenshots are written under `output/playwright/` and stay
-local.
+Playwright builds the explicit browser-preview bundle, serves `dist` on
+`127.0.0.1:4173` and routes scenarios to the relevant Chromium project. The
+desktop project covers conversion cancellation, failure/retry/export, editor
+autosave and recents, refresh failure, menu/dialog stacking, hostile HTML,
+settings, feedback, keyboard focus and responsive widths. The mobile project
+performs a real touch on `Prepare conversion` at 390 x 844. Reports, traces and
+failure screenshots are written under `output/playwright/` and stay local.
+
+Production and preview builds intentionally have different API boundaries:
+
+```bash
+npm run build:frontend
+npm run build:frontend:preview
+```
+
+The first is the normal Tauri production bundle and must exclude browser mock
+fixtures. The second opts into the in-memory preview adapter. Static Windows CI
+contracts lock the two commands and keep the packaged build out of preview
+mode. Inspect the production output again whenever this selection boundary
+changes.
+
+The responsive scenario checks 375, 768, 1024 and 1440 CSS-pixel widths. It
+also checks a 720 CSS-pixel viewport as the deterministic headless equivalent
+of the usable width at 200% zoom on a 1440-pixel display; it is not a native
+browser-zoom measurement. To retain the five local Vellum review captures:
+
+```powershell
+$env:MC_CAPTURE_VELLUM = "1"
+npm run test:ui:preview
+```
 
 The preview API is an in-memory browser simulation. These tests do not prove
 native Tauri file access, real conversion output, durable editor persistence,
@@ -164,7 +192,7 @@ Capture a structured local engineering snapshot without recording user
 content or sending measurement telemetry:
 
 ```powershell
-npm run measure:baseline -- --output test-results/phase-1-baseline/current.json --gate-status tmp/windows-ci-gate-status.json
+npm run measure:baseline -- --output test-results/phase-2-baseline/current.json --gate-status tmp/phase2-windows-ci.json
 ```
 
 Pass `--artifact <exact-path>` to include a known installer or executable.
@@ -204,8 +232,10 @@ npm run typecheck
 
 `npm run test:editor` verifies that all Tiptap packages stay on one exact
 open-source version, rejects `@tiptap-pro/*`, checks the shared
-frontend/backend command contract and forbids Office-to-HTML routing.
-`npm run test:unit` executes the DOM-independent pagination planner. The Rust
+frontend/backend command contract, pins DOMPurify, requires sanitization on
+every rich-HTML entry point and forbids Office-to-HTML routing. `npm run
+test:unit` executes the DOM-independent pagination planner plus format,
+grouping, concurrency, workflow-transition and preview-state cases. The Rust
 suite covers local draft paths, atomic writes, the bounded ODT parser, hostile
 XML/archive inputs, `mc-asset://` validation, rich ODT round trips, page layout,
 headers, footers and numbering.
@@ -215,12 +245,15 @@ After an editor UI change, also run the Vite preview and verify:
 - the landing screen, mode switching, document creation, text entry and autosave state;
 - HTML drag and drop on the editor landing area, including the visible drag-active state, unsupported extensions and the one-document limit;
 - recent-document rename, duplicate and delete actions;
+- returning from an edited document only after autosave and recent-document refresh, with the document kept open when either step fails;
 - deletion cancellation and the confirmation text explaining that the original source is not removed;
 - a recent-document menu opened on an upper grid row with enough cards to create a second row;
 - the open menu remains above later cards and its destructive item remains visible and clickable;
 - rename, delete, header and footer dialogs cover the full viewport rather than being constrained by the animated editor workspace;
 - destructive buttons keep a readable danger background and text contrast;
-- keyboard focus, reduced-motion behavior, console output and a 390 px viewport without horizontal overflow.
+- hostile imported and pasted HTML is stripped in the document body and header/footer surfaces while supported content remains;
+- welcome, settings and feedback dialogs close with Escape, trap focus and return it to their trigger;
+- keyboard focus, reduced-motion behavior, console output and the target widths remain free of unintended horizontal overflow.
 
 `npm run test:ui-layout` contains regression contracts for editor drop routing, the active recent-card stacking layer, React portal dialogs and destructive-button styling.
 
@@ -231,7 +264,7 @@ the automated preview suite or build and serve `dist` manually:
 
 ```bash
 npm run test:ui:preview
-npm run build:frontend
+npm run build:frontend:preview
 npm run preview:test
 ```
 
@@ -576,6 +609,8 @@ For visual QA in dev preview, use:
 http://127.0.0.1:1420/?mockUpdate=1&mockWelcomeSeen=1
 ```
 
-This shows the update reminder and feedback launcher together without the welcome dialog, so the floating-corner layout can be inspected directly.
+This shows the update reminder and the topbar feedback action together without
+the welcome dialog. Feedback must remain in normal navigation flow; only the
+update reminder and transient notices use floating presentation.
 
 For the editor recent-document regression state, create at least five mock drafts, return to the editor home, open the action menu on the second card, then open and cancel the delete confirmation. Do not press the final destructive action unless the document is a disposable test draft.

@@ -1,0 +1,143 @@
+.welcome-preview .mini-topbar {
+  grid-template-columns: minmax(180px, 1fr) auto auto;
+  gap: 16px;
+  width: 100%;
+}
+
+.welcome-preview .mini-topbar .brand-mark {
+  width: 42px;
+  height: 42px;
+}
+
+.welcome-preview .mini-topbar .brand-mark img {
+  width: 38px;
+  height: 38px;
+}
+
+.welcome-preview .mini-topbar .brand h1 {
+  font-size: 18px;
+}
+
+.welcome-preview .mini-topbar .process-strip {
+  gap: 4px;
+  padding: 4px;
+  box-shadow: var(--vlm-shadow-xs);
+}
+
+.welcome-preview .mini-topbar .process-step {
+  min-width: 84px;
+  min-height: 32px;
+  gap: 5px;
+  padding: 0 10px;
+}
+
+.welcome-preview .mini-topbar .process-step span,
+.welcome-preview .mini-topbar .process-step strong {
+  font-size: 10px;
+}
+
+.welcome-preview .mini-topbar .icon-button {
+  width: 36px;
+  height: 36px;
+}
+
+.welcome-preview .mini-drop-zone {
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 22px;
+  min-height: 150px;
+  padding: 22px 24px;
+  border-radius: var(--vlm-radius-xl);
+}
+
+.welcome-preview .mini-drop-zone .sketch-orbit {
+  width: 76px;
+  height: 76px;
+}
+
+.welcome-preview .mini-drop-zone strong {
+  font-size: clamp(25px, 3vw, 36px);
+}
+
+.welcome-preview .mini-drop-zone .primary-button {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+.welcome-preview .mini-settings-panel {
+  width: 900px;
+  max-height: none;
+  padding: 28px;
+  border-radius: var(--vlm-radius-xl);
+  box-shadow: var(--vlm-shadow-xs);
+  overflow: hidden;
+}
+
+.welcome-preview .mini-settings-panel .settings-header h2 {
+  font-size: 26px;
+}
+
+.welcome-preview .mini-settings-panel .settings-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.92fr);
+  gap: 16px;
+}
+
+.welcome-preview .mini-settings-panel .settings-column {
+  gap: 10px;
+}
+
+.welcome-preview .mini-settings-panel .language-choice {
+  min-height: 42px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.welcome-preview .mini-settings-panel .setting-toggle,
+.welcome-preview .mini-settings-panel .update-settings-card {
+  padding: 14px;
+}
+
+.welcome-preview .mini-settings-panel .setting-toggle p,
+.welcome-preview .mini-settings-panel .update-settings-card p {
+  font-size: 12px;
+}
+
+.welcome-preview .mini-settings-panel .settings-actions button {
+  min-height: 34px;
+}
+
+.welcome-preview .mini-focus {
+  position: relative;
+  z-index: 2;
+  border-color: var(--vlm-accent-border);
+  box-shadow: 0 0 0 3px var(--vlm-selection), var(--vlm-shadow-sm);
+}
+
+.welcome-preview .mini-focus::after,
+.welcome-preview .mini-drop-zone::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border: 2px solid var(--vlm-accent-border);
+  border-radius: inherit;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.welcome-preview .mini-drop-zone {
+  position: relative;
+  z-index: 2;
+  border-color: var(--vlm-accent-border);
+  box-shadow: var(--vlm-shadow-sm);
+}
+
+.welcome-preview button:disabled,
+.welcome-preview input:disabled,
+.welcome-preview select:disabled {
+  opacity: 1;
+}
+
+.welcome-actions {
+  justify-content: flex-end;
+  padding-top: 2px;
+}

@@ -32,6 +32,11 @@ Tiptap is distributed under the MIT License. Multi-Converter does not include
 Tiptap Pro packages or depend on Tiptap Cloud. The applicable package license
 texts are retained in the installed dependency distribution and source tree.
 
+HTML imports and pastes in the document editor are sanitized with DOMPurify
+3.4.12, distributed under the MPL-2.0 OR Apache-2.0 license. The installed npm
+package contains both `LICENSE` and `LICENSE-MPL`; the exact package version,
+registry artifact and integrity hash are pinned in `package-lock.json`.
+
 The bounded OpenDocument parser uses quick-xml 0.41.0 under the MIT License.
 Standalone HTML export uses base64 0.22.1 under the MIT OR Apache-2.0 License
 to embed local editor assets without exposing file-system paths. The applicable

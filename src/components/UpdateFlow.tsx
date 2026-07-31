@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useModalAccessibility } from "../hooks/useModalAccessibility";
 import { t, type LanguageCode } from "../i18n";
-import { releaseNotesForLanguage, translateReleaseNotesForLanguage } from "../lib/releaseNotes";
+import {
+  releaseNotesForLanguage,
+  translateReleaseNotesForLanguage,
+} from "../lib/releaseNotes";
 import {
   releasePageUrl,
   type AppUpdateInfo,
@@ -19,8 +23,19 @@ export function UpdateDialog(props: {
   onInstall(): void;
   onCancel(): void;
 }) {
+  const dialogRef = useRef<HTMLElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const rawReleaseNotes = props.updateInfo?.body?.trim() ?? "";
   const [localizedReleaseNotes, setLocalizedReleaseNotes] = useState("");
+  const installing = props.updateStatus === "installing";
+
+  useModalAccessibility({
+    isOpen: props.isOpen && Boolean(props.updateInfo),
+    surfaceRef: dialogRef,
+    initialFocusRef: cancelButtonRef,
+    onEscape: installing ? undefined : props.onCancel,
+    returnFocus: updateDetailsTrigger,
+  });
 
   useEffect(() => {
     if (!props.isOpen || !rawReleaseNotes) {
@@ -29,10 +44,14 @@ export function UpdateDialog(props: {
     }
 
     let disposed = false;
-    setLocalizedReleaseNotes(releaseNotesForLanguage(rawReleaseNotes, props.language));
-    translateReleaseNotesForLanguage(rawReleaseNotes, props.language).then((translated) => {
-      if (!disposed) setLocalizedReleaseNotes(translated);
-    });
+    setLocalizedReleaseNotes(
+      releaseNotesForLanguage(rawReleaseNotes, props.language),
+    );
+    translateReleaseNotesForLanguage(rawReleaseNotes, props.language).then(
+      (translated) => {
+        if (!disposed) setLocalizedReleaseNotes(translated);
+      },
+    );
 
     return () => {
       disposed = true;
@@ -40,35 +59,91 @@ export function UpdateDialog(props: {
   }, [props.isOpen, props.language, rawReleaseNotes]);
 
   if (!props.isOpen || !props.updateInfo) return null;
-  const installing = props.updateStatus === "installing";
   const releaseNotes = localizedReleaseNotes.trim();
 
   return (
-    <div className="update-overlay" role="presentation" onMouseDown={installing ? undefined : props.onCancel}>
-      <section className="update-dialog" role="dialog" aria-modal="true" aria-labelledby="update-dialog-title" onMouseDown={(event) => event.stopPropagation()}>
+    <div
+      className="update-overlay"
+      role="presentation"
+      onMouseDown={installing ? undefined : props.onCancel}
+    >
+      <section
+        ref={dialogRef}
+        className="update-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="update-dialog-title"
+        tabIndex={-1}
+        onMouseDown={(event) => event.stopPropagation()}
+      >
         <header>
           <span className="label">{t(props.language, "update.label")}</span>
-          <h2 id="update-dialog-title">{t(props.language, "update.dialogTitle", { version: props.updateInfo.version })}</h2>
+          <h2 id="update-dialog-title">
+            {t(props.language, "update.dialogTitle", {
+              version: props.updateInfo.version,
+            })}
+          </h2>
         </header>
-        <div className="update-version-hero" aria-label={t(props.language, "update.latestVersion", { version: props.updateInfo.version })}>
+        <div
+          className="update-version-hero"
+          aria-label={t(props.language, "update.latestVersion", {
+            version: props.updateInfo.version,
+          })}
+        >
           <span>{t(props.language, "update.availableBadge")}</span>
           <strong>{props.updateInfo.version}</strong>
         </div>
-        <p>{t(props.language, "update.dialogBody", { current: props.updateInfo.currentVersion, latest: props.updateInfo.version })}</p>
-        <section className="update-release-notes" aria-label={t(props.language, "update.releaseNotes")}>
+        <p>
+          {t(props.language, "update.dialogBody", {
+            current: props.updateInfo.currentVersion,
+            latest: props.updateInfo.version,
+          })}
+        </p>
+        <section
+          className="update-release-notes"
+          aria-label={t(props.language, "update.releaseNotes")}
+        >
           <strong>{t(props.language, "update.releaseNotes")}</strong>
-          {releaseNotes ? <ReleaseNotesMarkdown body={releaseNotes} /> : <p>{t(props.language, "update.noReleaseNotes")}</p>}
+          {releaseNotes ? (
+            <ReleaseNotesMarkdown body={releaseNotes} />
+          ) : (
+            <p>{t(props.language, "update.noReleaseNotes")}</p>
+          )}
         </section>
-        {installing && <UpdateProgress language={props.language} progress={props.updateDownloadProgress} size={props.updateDownloadSize} />}
-        <a className="release-link" href={releasePageUrl(props.updateInfo.version)} target="_blank" rel="noreferrer">
+        {installing && (
+          <UpdateProgress
+            language={props.language}
+            progress={props.updateDownloadProgress}
+            size={props.updateDownloadSize}
+          />
+        )}
+        <a
+          className="release-link"
+          href={releasePageUrl(props.updateInfo.version)}
+          target="_blank"
+          rel="noreferrer"
+        >
           {t(props.language, "update.openRelease")}
         </a>
         <div className="update-actions">
-          <button className="secondary-button" type="button" disabled={installing} onClick={props.onCancel}>
+          <button
+            ref={cancelButtonRef}
+            className="secondary-button"
+            type="button"
+            disabled={installing}
+            onClick={props.onCancel}
+          >
             {t(props.language, "update.cancel")}
           </button>
-          <button className="primary-button" type="button" disabled={installing} onClick={props.onInstall}>
-            {installing ? t(props.language, "update.installing") : t(props.language, "update.install")}
+          <button
+            className="primary-button"
+            type="button"
+            disabled={installing}
+            onClick={props.onInstall}
+          >
+            {installing
+              ? t(props.language, "update.installing")
+              : t(props.language, "update.install")}
           </button>
         </div>
       </section>
@@ -83,16 +158,36 @@ export function UpdateInstallDialog(props: {
   progress: number | null;
   size: UpdateDownloadSize | null;
 }) {
+  const dialogRef = useRef<HTMLElement>(null);
+
+  useModalAccessibility({
+    isOpen: props.isVisible,
+    surfaceRef: dialogRef,
+  });
+
   if (!props.isVisible) return null;
   const version = props.updateInfo?.version ?? "";
 
   return (
     <div className="update-install-overlay" role="presentation">
-      <section className="update-install-dialog" role="alertdialog" aria-modal="true" aria-labelledby="update-install-title">
+      <section
+        ref={dialogRef}
+        className="update-install-dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="update-install-title"
+        tabIndex={-1}
+      >
         <span className="label">{t(props.language, "update.label")}</span>
-        <h2 id="update-install-title">{t(props.language, "update.installingTitle", { version })}</h2>
+        <h2 id="update-install-title">
+          {t(props.language, "update.installingTitle", { version })}
+        </h2>
         <p>{t(props.language, "update.installingBody")}</p>
-        <UpdateProgress language={props.language} progress={props.progress} size={props.size} />
+        <UpdateProgress
+          language={props.language}
+          progress={props.progress}
+          size={props.size}
+        />
       </section>
     </div>
   );
@@ -110,30 +205,74 @@ export function UpdateReminder(props: {
   const installing = props.updateStatus === "installing";
 
   return (
-    <aside className="update-reminder" data-testid="update-reminder" role="status" aria-live="polite">
+    <aside
+      className="update-reminder"
+      data-testid="update-reminder"
+      role="status"
+      aria-live="polite"
+    >
       <div>
         <span>{t(props.language, "update.availableBadge")}</span>
-        <strong>{t(props.language, "update.reminderTitle", { version: props.updateInfo.version })}</strong>
-        <button type="button" onClick={props.onOpenDetails}>{t(props.language, "update.details")}</button>
+        <strong>
+          {t(props.language, "update.reminderTitle", {
+            version: props.updateInfo.version,
+          })}
+        </strong>
+        <button
+          data-update-details-trigger
+          type="button"
+          onClick={props.onOpenDetails}
+        >
+          {t(props.language, "update.details")}
+        </button>
       </div>
-      <button className="primary-button" type="button" disabled={installing} onClick={props.onInstall}>
-        {installing ? t(props.language, "update.installing") : t(props.language, "update.install")}
+      <button
+        className="primary-button"
+        type="button"
+        disabled={installing}
+        onClick={props.onInstall}
+      >
+        {installing
+          ? t(props.language, "update.installing")
+          : t(props.language, "update.install")}
       </button>
     </aside>
   );
 }
 
-export function UpdateProgress(props: { language: LanguageCode; progress: number | null; size?: UpdateDownloadSize | null }) {
-  const label = props.progress === null ? t(props.language, "update.installing") : t(props.language, "update.progress", { progress: props.progress });
+export function UpdateProgress(props: {
+  language: LanguageCode;
+  progress: number | null;
+  size?: UpdateDownloadSize | null;
+}) {
+  const label =
+    props.progress === null
+      ? t(props.language, "update.installing")
+      : t(props.language, "update.progress", { progress: props.progress });
   const sizeLabel = props.size ? updateDownloadSizeLabel(props.size) : null;
   return (
-    <div className={`update-progress ${props.progress === null ? "is-indeterminate" : ""}`}>
+    <div
+      className={`update-progress ${props.progress === null ? "is-indeterminate" : ""}`}
+    >
       <div className="update-progress-header">
         <span>{label}</span>
         {sizeLabel && <strong>{sizeLabel}</strong>}
       </div>
-      <div className="progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={props.progress ?? undefined}>
-        <div className="progress-bar" style={props.progress === null ? undefined : { width: `${props.progress}%` }} />
+      <div
+        className="progress-track"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={props.progress ?? undefined}
+      >
+        <div
+          className="progress-bar"
+          style={
+            props.progress === null
+              ? undefined
+              : { width: `${props.progress}%` }
+          }
+        />
       </div>
     </div>
   );
@@ -141,10 +280,16 @@ export function UpdateProgress(props: { language: LanguageCode; progress: number
 
 function updateDownloadSizeLabel(size: UpdateDownloadSize) {
   const downloaded = formatMegabytes(size.downloaded);
-  return size.total ? `${downloaded} / ${formatMegabytes(size.total)}` : downloaded;
+  return size.total
+    ? `${downloaded} / ${formatMegabytes(size.total)}`
+    : downloaded;
 }
 
 function formatMegabytes(bytes: number) {
   const value = bytes / (1024 * 1024);
   return `${Math.max(0, Math.round(value))} Mo`;
+}
+
+function updateDetailsTrigger() {
+  return document.querySelector<HTMLElement>("[data-update-details-trigger]");
 }

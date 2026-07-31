@@ -1,0 +1,393 @@
+/**
+ * AMIX VELLUM — Design Tokens v1.0
+ * Juillet 2026
+ *
+ * Les primitives décrivent la palette. Les composants doivent consommer
+ * les tokens sémantiques afin de rester compatibles avec les thèmes Paper
+ * et Carbon, les densités et les futurs ajustements de marque.
+ */
+
+:root {
+  /* ------------------------------------------------------------
+     Primitives — papier, pierre et encre
+     ------------------------------------------------------------ */
+  --vlm-paper-0: #fffdf8;
+  --vlm-paper-50: #faf9f5;
+  --vlm-paper-100: #f0efe9;
+  --vlm-paper-150: #ebe9e1;
+  --vlm-paper-200: #e4e1d8;
+  --vlm-paper-300: #dad9d2;
+  --vlm-paper-400: #c9c7bd;
+
+  --vlm-stone-450: #aaa89f;
+  --vlm-stone-500: #8c8a83;
+  --vlm-stone-600: #6b6b66;
+  --vlm-stone-700: #51514d;
+  --vlm-stone-800: #3d3d3a;
+
+  --vlm-ink-850: #2a2a27;
+  --vlm-ink-900: #191919;
+  --vlm-ink-950: #141413;
+  --vlm-ink-1000: #0d0d0c;
+
+  /* ------------------------------------------------------------
+     Primitives — corail argile
+     Les deux ancres historiques sont conservées exactement :
+     #CC785C et #D97757.
+     ------------------------------------------------------------ */
+  --vlm-coral-50: #fff3ee;
+  --vlm-coral-100: #fce4da;
+  --vlm-coral-200: #f4c7b6;
+  --vlm-coral-300: #e9a48b;
+  --vlm-coral-400: #d97757;
+  --vlm-coral-500: #cc785c;
+  --vlm-coral-600: #b65f44;
+  --vlm-coral-700: #934631;
+  --vlm-coral-800: #713528;
+  --vlm-coral-900: #4e251e;
+
+  /* ------------------------------------------------------------
+     Primitives — mode Carbon
+     Les surfaces Anthropic d'origine restent les ancres centrales.
+     ------------------------------------------------------------ */
+  --vlm-carbon-1000: #11110f;
+  --vlm-carbon-950: #181715;
+  --vlm-carbon-900: #1f1e1d;
+  --vlm-carbon-850: #262624;
+  --vlm-carbon-800: #30302e;
+  --vlm-carbon-750: #3a3a37;
+  --vlm-carbon-700: #474640;
+  --vlm-carbon-500: #77756d;
+  --vlm-carbon-400: #a8a79e;
+  --vlm-carbon-50: #f5f4ee;
+
+  /* ------------------------------------------------------------
+     Couleurs fonctionnelles — réservées au feedback
+     ------------------------------------------------------------ */
+  --vlm-moss-50: #edf5ef;
+  --vlm-moss-200: #c9dfcf;
+  --vlm-moss-700: #2f6849;
+  --vlm-moss-900: #183b2a;
+
+  --vlm-ochre-50: #fbf1dc;
+  --vlm-ochre-200: #ead19b;
+  --vlm-ochre-700: #805614;
+  --vlm-ochre-900: #4b330d;
+
+  --vlm-rust-50: #fbeae6;
+  --vlm-rust-200: #efbbb0;
+  --vlm-rust-700: #9a3f35;
+  --vlm-rust-900: #59241f;
+
+  /* ------------------------------------------------------------
+     Typographie
+     ------------------------------------------------------------ */
+  --vlm-font-sans: "Inter Display", "Inter", "Helvetica Neue", Helvetica,
+    Arial, system-ui, -apple-system, sans-serif;
+  --vlm-font-serif: "EB Garamond", "Iowan Old Style", "Palatino Linotype",
+    Palatino, Georgia, serif;
+  --vlm-font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas,
+    "Liberation Mono", monospace;
+
+  --vlm-weight-regular: 430;
+  --vlm-weight-medium: 540;
+  --vlm-weight-semibold: 640;
+  --vlm-weight-bold: 760;
+  --vlm-weight-black: 850;
+
+  --vlm-text-hero-xl: clamp(4.5rem, 11vw, 10.5rem);
+  --vlm-text-hero: clamp(3.75rem, 8vw, 8rem);
+  --vlm-text-display: clamp(3rem, 5.6vw, 5.75rem);
+  --vlm-text-h1: clamp(2.5rem, 4.2vw, 4.5rem);
+  --vlm-text-h2: clamp(2rem, 3.2vw, 3.25rem);
+  --vlm-text-h3: clamp(1.5rem, 2.1vw, 2.125rem);
+  --vlm-text-title: 1.25rem;
+  --vlm-text-lead: clamp(1.25rem, 1.65vw, 1.625rem);
+  --vlm-text-reading-lg: 1.25rem;
+  --vlm-text-reading: 1.125rem;
+  --vlm-text-body: 1rem;
+  --vlm-text-ui: 0.9375rem;
+  --vlm-text-label: 0.8125rem;
+  --vlm-text-caption: 0.75rem;
+  --vlm-text-folio: 0.6875rem;
+
+  --vlm-leading-hero-xl: 0.86;
+  --vlm-leading-hero: 0.91;
+  --vlm-leading-display: 0.98;
+  --vlm-leading-h1: 1.02;
+  --vlm-leading-h2: 1.08;
+  --vlm-leading-h3: 1.15;
+  --vlm-leading-title: 1.28;
+  --vlm-leading-lead: 1.42;
+  --vlm-leading-reading: 1.68;
+  --vlm-leading-body: 1.58;
+  --vlm-leading-ui: 1.42;
+
+  --vlm-tracking-hero-xl: -0.062em;
+  --vlm-tracking-hero: -0.052em;
+  --vlm-tracking-display: -0.042em;
+  --vlm-tracking-h1: -0.035em;
+  --vlm-tracking-h2: -0.028em;
+  --vlm-tracking-h3: -0.019em;
+  --vlm-tracking-title: -0.012em;
+  --vlm-tracking-body: -0.004em;
+  --vlm-tracking-folio: 0.14em;
+
+  /* ------------------------------------------------------------
+     Espacement — base 4 px, paliers éditoriaux supplémentaires
+     ------------------------------------------------------------ */
+  --vlm-space-0: 0;
+  --vlm-space-0-5: 0.125rem;
+  --vlm-space-1: 0.25rem;
+  --vlm-space-2: 0.5rem;
+  --vlm-space-3: 0.75rem;
+  --vlm-space-4: 1rem;
+  --vlm-space-5: 1.25rem;
+  --vlm-space-6: 1.5rem;
+  --vlm-space-7: 1.75rem;
+  --vlm-space-8: 2rem;
+  --vlm-space-10: 2.5rem;
+  --vlm-space-12: 3rem;
+  --vlm-space-14: 3.5rem;
+  --vlm-space-16: 4rem;
+  --vlm-space-20: 5rem;
+  --vlm-space-24: 6rem;
+  --vlm-space-28: 7rem;
+  --vlm-space-32: 8rem;
+  --vlm-space-40: 10rem;
+  --vlm-space-48: 12rem;
+
+  /* ------------------------------------------------------------
+     Géométrie
+     ------------------------------------------------------------ */
+  --vlm-radius-xs: 0.375rem;
+  --vlm-radius-sm: 0.625rem;
+  --vlm-radius-md: 0.875rem;
+  --vlm-radius-lg: 1.25rem;
+  --vlm-radius-xl: 1.75rem;
+  --vlm-radius-2xl: 2.25rem;
+  --vlm-radius-3xl: 3rem;
+  --vlm-radius-pill: 999px;
+
+  --vlm-control-compact: 2rem;
+  --vlm-control-standard: 2.625rem;
+  --vlm-control-comfortable: 3rem;
+  --vlm-control-hero: 3.5rem;
+  --vlm-target-min: 2.75rem;
+
+  /* ------------------------------------------------------------
+     Élévation — papier posé, jamais flottement spectaculaire
+     ------------------------------------------------------------ */
+  --vlm-shadow-hairline: 0 1px 0 rgba(20, 20, 19, 0.05);
+  --vlm-shadow-xs: 0 1px 2px rgba(20, 20, 19, 0.06);
+  --vlm-shadow-sm: 0 8px 24px rgba(45, 38, 31, 0.07);
+  --vlm-shadow-md: 0 18px 48px rgba(45, 38, 31, 0.10);
+  --vlm-shadow-lg: 0 34px 90px rgba(32, 27, 22, 0.14);
+  --vlm-shadow-overlay: 0 42px 120px rgba(12, 11, 9, 0.24);
+  --vlm-edge-paper: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  --vlm-edge-carbon: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+
+  /* ------------------------------------------------------------
+     Mouvement — cadence éditoriale
+     ------------------------------------------------------------ */
+  --vlm-motion-instant: 90ms;
+  --vlm-motion-fast: 140ms;
+  --vlm-motion-base: 210ms;
+  --vlm-motion-calm: 320ms;
+  --vlm-motion-scene: 520ms;
+  --vlm-motion-ambient: 900ms;
+
+  --vlm-ease-standard: cubic-bezier(0.22, 0.72, 0.18, 1);
+  --vlm-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --vlm-ease-exit: cubic-bezier(0.4, 0, 0.9, 0.6);
+
+  /* ------------------------------------------------------------
+     Mise en page
+     ------------------------------------------------------------ */
+  --vlm-container-reading: 46rem;
+  --vlm-container-standard: 76rem;
+  --vlm-container-marketing: 90rem;
+  --vlm-container-product: 100rem;
+  --vlm-container-wide: 112rem;
+  --vlm-gutter-mobile: 1.25rem;
+  --vlm-gutter-tablet: 2rem;
+  --vlm-gutter-desktop: 3.5rem;
+  --vlm-section-mobile: 4.75rem;
+  --vlm-section-desktop: 8.5rem;
+  --vlm-reading-measure: 68ch;
+
+  /* ------------------------------------------------------------
+     Z-index
+     ------------------------------------------------------------ */
+  --vlm-z-base: 0;
+  --vlm-z-raised: 10;
+  --vlm-z-sticky: 100;
+  --vlm-z-dropdown: 300;
+  --vlm-z-overlay: 500;
+  --vlm-z-modal: 700;
+  --vlm-z-toast: 900;
+  --vlm-z-tooltip: 1000;
+
+  /* ------------------------------------------------------------
+     Thème sémantique — Paper
+     ------------------------------------------------------------ */
+  color-scheme: light;
+
+  --vlm-canvas: var(--vlm-paper-100);
+  --vlm-canvas-subtle: var(--vlm-paper-150);
+  --vlm-canvas-deep: var(--vlm-paper-200);
+  --vlm-surface: var(--vlm-paper-50);
+  --vlm-surface-pure: var(--vlm-paper-0);
+  --vlm-surface-raised: #fdfbf6;
+  --vlm-surface-hover: #ece9e1;
+  --vlm-surface-active: #e6e1d7;
+  --vlm-surface-sunken: #e9e6dd;
+
+  --vlm-text: var(--vlm-ink-900);
+  --vlm-text-strong: var(--vlm-ink-950);
+  --vlm-text-soft: var(--vlm-stone-800);
+  --vlm-text-muted: var(--vlm-stone-600);
+  --vlm-text-subtle: var(--vlm-stone-500);
+  --vlm-text-ghost: var(--vlm-paper-400);
+  --vlm-text-inverse: var(--vlm-carbon-50);
+  --vlm-text-link: var(--vlm-coral-700);
+
+  --vlm-border: var(--vlm-paper-300);
+  --vlm-border-strong: #c8c5bc;
+  --vlm-divider: rgba(201, 199, 189, 0.72);
+
+  --vlm-accent: var(--vlm-coral-500);
+  --vlm-accent-bright: var(--vlm-coral-400);
+  --vlm-accent-strong: var(--vlm-coral-700);
+  --vlm-accent-hover: var(--vlm-coral-600);
+  --vlm-accent-pressed: var(--vlm-coral-800);
+  --vlm-accent-soft: var(--vlm-coral-50);
+  --vlm-accent-surface: var(--vlm-coral-100);
+  --vlm-accent-border: var(--vlm-coral-200);
+  --vlm-focus: var(--vlm-coral-700);
+
+  --vlm-primary-bg: var(--vlm-ink-900);
+  --vlm-primary-text: var(--vlm-carbon-50);
+  --vlm-primary-hover: var(--vlm-ink-850);
+  --vlm-primary-pressed: var(--vlm-ink-1000);
+
+  --vlm-info-bg: var(--vlm-paper-200);
+  --vlm-info-text: var(--vlm-stone-800);
+  --vlm-success-bg: var(--vlm-moss-50);
+  --vlm-success-text: var(--vlm-moss-700);
+  --vlm-warning-bg: var(--vlm-ochre-50);
+  --vlm-warning-text: var(--vlm-ochre-700);
+  --vlm-danger-bg: var(--vlm-rust-50);
+  --vlm-danger-text: var(--vlm-rust-700);
+
+  --vlm-selection: rgba(204, 120, 92, 0.20);
+  --vlm-overlay: rgba(20, 20, 19, 0.55);
+  --vlm-paper-grain-opacity: 0.022;
+}
+
+[data-theme="carbon"] {
+  color-scheme: dark;
+
+  --vlm-canvas: var(--vlm-carbon-950);
+  --vlm-canvas-subtle: var(--vlm-carbon-900);
+  --vlm-canvas-deep: var(--vlm-carbon-1000);
+  --vlm-surface: var(--vlm-carbon-850);
+  --vlm-surface-pure: var(--vlm-carbon-900);
+  --vlm-surface-raised: var(--vlm-carbon-800);
+  --vlm-surface-hover: #363632;
+  --vlm-surface-active: #3f3e39;
+  --vlm-surface-sunken: var(--vlm-carbon-1000);
+
+  --vlm-text: var(--vlm-carbon-50);
+  --vlm-text-strong: var(--vlm-paper-0);
+  --vlm-text-soft: #d7d2c8;
+  --vlm-text-muted: var(--vlm-carbon-400);
+  --vlm-text-subtle: #8f8d85;
+  --vlm-text-ghost: #4e4c46;
+  --vlm-text-inverse: var(--vlm-ink-950);
+  --vlm-text-link: #f0a187;
+
+  --vlm-border: var(--vlm-carbon-750);
+  --vlm-border-strong: var(--vlm-carbon-700);
+  --vlm-divider: rgba(71, 70, 64, 0.82);
+
+  --vlm-accent: #e08a6c;
+  --vlm-accent-bright: #f09b7c;
+  --vlm-accent-strong: #f2ad94;
+  --vlm-accent-hover: #ee9879;
+  --vlm-accent-pressed: #c96d50;
+  --vlm-accent-soft: #38241e;
+  --vlm-accent-surface: #4a2e25;
+  --vlm-accent-border: #744333;
+  --vlm-focus: #f0a187;
+
+  --vlm-primary-bg: var(--vlm-carbon-50);
+  --vlm-primary-text: var(--vlm-ink-950);
+  --vlm-primary-hover: var(--vlm-paper-0);
+  --vlm-primary-pressed: var(--vlm-paper-300);
+
+  --vlm-info-bg: #302f2b;
+  --vlm-info-text: #d7d2c8;
+  --vlm-success-bg: #183126;
+  --vlm-success-text: #a8d7b7;
+  --vlm-warning-bg: #342912;
+  --vlm-warning-text: #e5c77b;
+  --vlm-danger-bg: #3a1f1c;
+  --vlm-danger-text: #eeaaa0;
+
+  --vlm-selection: rgba(224, 138, 108, 0.28);
+  --vlm-overlay: rgba(8, 8, 7, 0.72);
+  --vlm-paper-grain-opacity: 0.012;
+}
+
+/* Densité compacte destinée aux outils riches. */
+[data-density="compact"] {
+  --vlm-control-standard: 2.25rem;
+  --vlm-control-comfortable: 2.625rem;
+  --vlm-text-ui: 0.875rem;
+  --vlm-text-label: 0.75rem;
+}
+
+/* Utilitaires de fondation : optionnels, sans opinion de layout. */
+.vlm-focus-ring:focus-visible {
+  outline: 2px solid var(--vlm-focus);
+  outline-offset: 3px;
+}
+
+.vlm-reading {
+  max-width: var(--vlm-reading-measure);
+  font-family: var(--vlm-font-serif);
+  font-size: var(--vlm-text-reading);
+  line-height: var(--vlm-leading-reading);
+}
+
+.vlm-paper-lift {
+  border: 1px solid var(--vlm-border);
+  background: var(--vlm-surface-raised);
+  box-shadow: var(--vlm-edge-paper), var(--vlm-shadow-sm);
+}
+
+[data-theme="carbon"] .vlm-paper-lift {
+  box-shadow: var(--vlm-edge-carbon), var(--vlm-shadow-sm);
+}
+
+.vlm-ink-cut {
+  border-radius: var(--vlm-radius-xs) var(--vlm-radius-xl)
+    var(--vlm-radius-xl) var(--vlm-radius-xl);
+}
+
+::selection {
+  background: var(--vlm-selection);
+  color: var(--vlm-text-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

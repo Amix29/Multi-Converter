@@ -5,8 +5,8 @@ This document tracks the editor gate that must pass before work starts on PP-OCR
 ## Validation Environment
 
 - Initial validation date: 2026-07-13
-- Latest editor UI regression validation: 2026-07-27
-- Documentation review: 2026-07-30
+- Latest editor UI regression validation: 2026-07-31
+- Documentation review: 2026-07-31
 - Host: Windows x64
 - Application: Tauri development app and Windows release bundle
 - LibreOffice: 26.2.3.2, bundled local engine
@@ -20,13 +20,15 @@ This document tracks the editor gate that must pass before work starts on PP-OCR
 | Repository contracts | Pass | `npm run check` |
 | Editor contracts and pagination | Pass | `npm run test:editor` |
 | TypeScript and i18n | Pass | Included in `npm run check`; 415 keys in 6 languages |
+| Frontend workflow unit tests | Pass | 44 Vitest tests, including format selection/grouping, concurrency, transitions and preview state |
+| Compiled-preview editor flows | Pass | 8 routed Playwright scenarios: autosave/recents, refresh failure, stacking, hostile HTML, responsive states, keyboard focus and Escape |
 | Rust formatting | Pass | `npm run fmt:rust:check` |
 | Rust Clippy | Pass | `npm run clippy:rust` with warnings denied |
-| Rust suite | Pass | 91 passed; 6 heavy matrix tests intentionally ignored by this command |
+| Rust suite | Pass | 95 passed; 6 heavy matrix tests intentionally ignored by this command |
 | Conversion matrix | Pass | 6/6 ignored matrix tests passed through `npm run test:conversions` |
 | PDFium wrapper | Pass | 5/5 tests plus Clippy |
-| Vite production build | Pass | 107 modules transformed |
-| Tauri Windows build | Pass | Release binary, NSIS bundle and updater signature generated locally |
+| Vite production build | Pass | Production adapter selected; exact bundle measurements and the raw-total target miss live in `REFACTOR_BASELINE.md` |
+| Tauri Windows build | Pass | Final local executable and NSIS bundle generated; these are not release artifacts |
 
 The editor-specific Rust tests cover bounded XML parsing, forbidden DTD/custom entities, encrypted manifests, ZIP traversal, style inheritance cycles, atomic writes, strict `mc-asset://` references and a rich ODT round trip with an image, page break, landscape layout, header, footer and page fields.
 
@@ -51,6 +53,8 @@ The following UI regressions were reproduced and corrected:
 | The recent-document menu was covered by a card on the next row | Animated cards created separate stacking contexts | The card with an open menu receives `is-menu-open` and `z-index: 40` | Pass |
 | Editor dialogs covered only the transformed workspace area | Fixed dialogs were rendered inside an animated ancestor | Rename, delete, header and footer dialogs render through a React portal in `document.body` | Pass |
 | The destructive confirmation button was nearly invisible | Neutral modal button CSS overrode the danger style | The neutral selector now excludes `.editor-danger-button` | Pass |
+| Mobile `Prepare conversion` was covered by feedback | Feedback used an independent floating corner | Feedback now renders in the topbar navigation flow | Recorded pass in compiled preview |
+| Returning from a document could show stale recents | The landing screen could appear before save/list refresh completed | Close waits for autosave and recent refresh; either failure keeps the document open | Recorded pass in compiled preview |
 
 Browser-rendered validation used five simulated local drafts, opened the second card menu, opened and cancelled the delete confirmation, and checked the console. The menu action was the topmost element at its centre point. The modal backdrop matched the full `1280 × 720` CSS viewport. The destructive button rendered with an opaque red background and white text. No relevant console warning or error was present.
 
@@ -65,6 +69,42 @@ The focused checks passed:
 A Windows release-profile executable was rebuilt without an installer bundle and remained running during a six-second smoke launch. This proves that the executable starts, but it does not replace the manual Tauri office import/export matrix below. The local QA executable was unsigned and must not be treated as a public release artifact.
 
 The detailed visual QA record is available in [`V1_0_7_EDITOR_UI_QA.md`](V1_0_7_EDITOR_UI_QA.md).
+
+## Phase 2 Frontend And HTML Boundary
+
+The editor frontend is now split into landing, active document, canvas,
+toolbar, command row, dialogs, local assets, search and HTML sanitization
+modules. Paper is the only active Vellum theme; compact controls surround a
+neutral print-oriented document surface.
+
+The compiled-preview scenarios verify that:
+
+- an edited document is autosaved before the preview recent list is rendered;
+- a simulated recent-list refresh failure leaves the active document open and
+  exposes the error;
+- menus remain above later animated cards and dialogs cover the viewport;
+- Escape closes editor and application dialogs, and focus returns to the
+  triggering control;
+- hostile imported and pasted HTML loses scripts, embedded content, event
+  handlers, dangerous links, active CSS, remote images and unbounded table
+  spans before Tiptap renders it;
+- Base64 images pasted into the document body or header/footer are removed;
+- the feedback action no longer floats above the mobile conversion workflow.
+
+Separately, static contracts and the implemented import path keep accepted
+document-import image data behind `editorStoreAsset` and rewrite it to
+`mc-asset://` before insertion. Real persistence of those assets is still a
+native check.
+
+These are browser-preview assertions over an in-memory API. They do not prove
+that a draft, recent list or `mc-asset://` image survives a real Tauri restart.
+The native checks below remain mandatory.
+
+The final 15-step Windows gate passed on 2026-07-31 after the last CSS/test
+corrections. The status ledger records 15/15 passed steps in 647,789 ms. The
+production bundle and artifact measurements are recorded in
+`REFACTOR_BASELINE.md`; the bundle raw-total objective remains honestly marked
+as missed.
 
 ## Windows Tauri Observation
 
@@ -102,4 +142,8 @@ For every completed row, record the source fixture, output SHA-256, LibreOffice 
 
 Status: **not yet closed**.
 
-The code, automated Windows gates and reported editor-home regressions are green. The complete real Tauri office round-trip matrix, native file-drop check and clean restart/persistent-asset check remain required before starting OCR. macOS and Linux host validation remain release gates before any multiplatform publication claim.
+The final Phase 2 automated Windows gate and the reported editor-home
+regressions are green. The complete real Tauri office round-trip matrix, native
+file-drop check and clean restart/persistent-asset check nevertheless remain
+required before starting OCR. macOS and Linux host validation remain release
+gates before any multiplatform publication claim.
