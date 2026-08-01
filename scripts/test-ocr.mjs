@@ -27,6 +27,34 @@ const windowsSelection = lock.platformSelections?.find((value) => value.platform
 expect(windowsSelection?.runtime === "official", "Windows doit utiliser le runtime officiel tant que le candidat natif n’est pas validé");
 expect(windowsSelection?.provider === "cpu", "DirectML ne doit pas être activé sans preuve de parité et de gain");
 expect(/^[a-f0-9]{64}$/.test(windowsSelection?.artifact?.aggregateSha256 ?? ""), "le paquet Windows doit avoir une empreinte agrégée");
+const licenseInventory = JSON.parse(
+  fs.readFileSync(path.join(root, "src-tauri", "ocr-runtime-licenses.json"), "utf8"),
+);
+expect(licenseInventory.schemaVersion === 1, "l’inventaire des licences OCR doit utiliser le schéma 1");
+expect(licenseInventory.platform === "windows-x64", "l’inventaire des licences OCR doit viser Windows x64");
+expect(licenseInventory.runtimeFileCount === windowsSelection?.artifact?.fileCount, "l’inventaire OCR doit verrouiller chaque fichier du runtime");
+expect(licenseInventory.runtimeTotalBytes === windowsSelection?.artifact?.totalBytes, "l’inventaire OCR doit verrouiller la taille du runtime");
+expect(
+  licenseInventory.runtimeAggregateSha256 === windowsSelection?.artifact?.aggregateSha256,
+  "l’inventaire des licences OCR doit correspondre exactement au runtime verrouillé",
+);
+expect(licenseInventory.packageCount > 0, "l’inventaire des licences OCR doit contenir les distributions Python embarquées");
+expect(
+  JSON.stringify(licenseInventory.packagesWithoutLicenseFiles) === JSON.stringify(["bce-python-sdk"]),
+  "la liste verrouillée des distributions OCR sans fichier de licence a changé",
+);
+expect(licenseInventory.unresolvedMetadata?.length === 0, "chaque distribution OCR doit déclarer sa licence dans ses métadonnées");
+expect(licenseInventory.licenseFileCount >= licenseInventory.packagesWithLicenseFiles, "les fichiers de licence OCR doivent être inventoriés");
+for (const dependency of licenseInventory.packages ?? []) {
+  expect(Boolean(dependency.name && dependency.version), "chaque dépendance OCR doit avoir un nom et une version");
+  expect(
+    dependency.licenseFiles?.length > 0 || licenseInventory.packagesWithoutLicenseFiles.includes(dependency.name),
+    `${dependency.name}: absence de fichier de licence non déclarée`,
+  );
+  for (const licenseFile of dependency.licenseFiles ?? []) {
+    expect(/^[a-f0-9]{64}$/.test(licenseFile.sha256), `${dependency.name}: empreinte de licence invalide`);
+  }
+}
 const stagedRuntimeRoot = path.join(root, "src-tauri", "ocr-resources", "runtime");
 if (fs.existsSync(stagedRuntimeRoot)) {
   const stagedEntries = fs.readdirSync(stagedRuntimeRoot, { withFileTypes: true });

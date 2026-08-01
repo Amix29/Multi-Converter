@@ -70,12 +70,22 @@ The editor gate must close before OCR implementation is treated as the active re
   write-only text clipboard capability.
 - Real Tauri development-runtime evidence for image, native/scanned/mixed PDF,
   editor import, cancellation, crash and retry.
+- Extracted-NSIS packaged-resource smoke for PNG OCR, explicit copy,
+  cancellation, worker termination and retry, with a measured Windows memory
+  baseline.
+- Exact runtime inventory covering 71 Python distributions and 105 embedded
+  license files; the one missing `bce-python-sdk` license is a locked release
+  blocker.
+- Explicit selection of the official CPU sidecar; native ONNX and accelerators
+  remain unselected unless they later pass every parity, size and speed gate.
 
 ### Still required for release
 
 - Full reviewed multilingual and difficult-image corpus with threshold reports.
-- Native ONNX candidate and accelerator parity/size/speed decisions.
-- Complete dependency-license inventory for the selected runtime.
+- Native ONNX or accelerator parity/size/speed measurements only if a candidate
+  is proposed; none is selected in the current package.
+- Complete redistribution approval and `NOTICE` after adding the missing
+  `bce-python-sdk` license to the exact inventoried runtime.
 - Packaged Windows NSIS offline matrix, followed by real macOS universal and
   Linux x64 runtime/package matrices.
 

@@ -41,11 +41,15 @@ are not selected without parity evidence.
 
 This engine is active only in the Phase 3 development worktree. It is not yet
 approved for public redistribution and is intentionally absent from `NOTICE`.
-The current PyInstaller artifact includes thousands of Python wheels and native
-libraries. Before packaging or publishing it, maintainers must inventory the
-exact dependency graph, preserve every applicable license/notice and confirm
-model redistribution terms. The top-level Apache-2.0 licenses for PaddleOCR,
-PaddleX and PaddlePaddle are necessary but not sufficient.
+`src-tauri/ocr-runtime-licenses.json` inventories 71 logical Python
+distributions and 105 embedded license files, including their hashes, and ties
+them to the locked runtime aggregate. All 71 distributions declare license
+metadata. `bce-python-sdk` declares Apache License 2.0 but is the only
+distribution whose packaged `.dist-info` tree contains no license file. Add and
+review that exact upstream license, review native-library notices and confirm
+model redistribution terms before public packaging. The top-level Apache-2.0
+licenses for PaddleOCR, PaddleX and PaddlePaddle are necessary but not
+sufficient.
 
 The model artifact is 185,082,003 installed bytes. The current Windows runtime
 is 660,098,904 installed bytes and its verified package archive is 236,434,900

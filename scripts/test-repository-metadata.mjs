@@ -152,9 +152,9 @@ assert.match(testingDocs, /two-architecture `macOS Conversion Matrix`[\s\S]*Appl
 assert.match(v107Plan, /document editor powered by the open-source Tiptap\/ProseMirror stack[\s\S]*PP-OCRv6_medium/, "V1.0.7 plan must preserve both official objectives");
 assert.match(v107Plan, /repository version remains `1\.0\.6` until both objectives are implemented/, "V1.0.7 plan must keep version metadata gated");
 assert.match(v107Validation, /Overall gate:\s*\*\*blocked\*\*/, "V1.0.7 validation must not claim release readiness");
-assert.match(v107Ocr, /Windows implementation:\s*\*\*development checkpoint, real Tauri runtime exercised\*\*/, "OCR documentation must record the implemented Windows development boundary");
+assert.match(v107Ocr, /Windows implementation:\s*\*\*development checkpoint, real Tauri and extracted-package runtime exercised\*\*/, "OCR documentation must record the implemented Windows development boundary");
 assert.match(v107Ocr, /Windows NSIS build:\s*\*\*passed locally with compressed runtime resources\*\*/, "OCR documentation must record the verified local Windows build");
-assert.match(v107Ocr, /Windows packaged application behavior matrix:\s*\*\*pending\*\*/, "OCR documentation must keep installed Windows behavior proof open");
+assert.match(v107Ocr, /Windows packaged application smoke:\s*\*\*passed for PNG extraction, copy, cancellation and retry; complete installed matrix pending\*\*/, "OCR documentation must distinguish packaged smoke evidence from the installed matrix");
 assert.match(v107Ocr, /macOS universal and Linux x64 runtimes:\s*\*\*not built or host-tested\*\*/, "OCR documentation must keep untested platform claims blocked");
 assert.match(v107Ocr, /PDF Flow[\s\S]*Image Flow And Clipboard/, "OCR documentation must cover both required user outcomes");
 assert.match(releaseNotesDraft, /Multi-Converter_1\.0\.5_linux-x64\.AppImage/, "release notes draft must name the versioned Linux AppImage");

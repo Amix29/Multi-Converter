@@ -5,15 +5,16 @@
 - Target release: **V1.0.7**
 - Current metadata: **1.0.6**
 - Selected model: **PP-OCRv6_medium**
-- Windows implementation: **development checkpoint, real Tauri runtime exercised**
+- Windows implementation: **development checkpoint, real Tauri and extracted-package runtime exercised**
 - Windows NSIS build: **passed locally with compressed runtime resources**
-- Windows packaged application behavior matrix: **pending**
+- Windows packaged application smoke: **passed for PNG extraction, copy, cancellation and retry; complete installed matrix pending**
 - macOS universal and Linux x64 runtimes: **not built or host-tested**
 - Native ONNX candidate and accelerators: **not selected; official CPU runtime retained**
 - Privacy mode: **local only**
 
 Phase 3 implements the OCR contracts, Windows reference runtime, PDF hybrid
-extraction and image-text UI. It is not a release-ready or multiplatform OCR
+extraction and image-text UI. The locally achievable Windows implementation
+checkpoint is closed, but this is not a release-ready or multiplatform OCR
 claim. The version stays at `1.0.6` until every release gate passes.
 
 ## Locked Runtime
@@ -49,11 +50,26 @@ then verifies the manifests and every extracted file hash. Recognition never
 downloads models or selects a cloud fallback. Models remain separately
 packaged and the complete OCR resource tree occupies 421,522,838 bytes.
 
+`inventory-ocr-runtime-licenses.mjs` records the exact Python distribution
+metadata and every embedded license-file hash in
+`src-tauri/ocr-runtime-licenses.json`, tied to the runtime aggregate SHA-256.
+The current artifact contains 71 logical distributions and 105 embedded
+license files. All distributions declare license metadata, but
+`bce-python-sdk` is the single package without an embedded license file. This
+known exception is locked by `test:ocr` and still blocks public redistribution
+until the matching upstream license is reviewed and packaged.
+
 DirectML, CoreML and OpenVINO remain disabled. They may be selected only after
 the required CPU parity and median-speed gates pass on the locked corpus. The
 native C++ ONNX candidate is likewise not selected because its size, speed and
 quality parity have not been measured. One package must contain one selected
 runtime only.
+
+For this checkpoint the explicit production decision is therefore the official
+CPU sidecar. The native ONNX candidate and each accelerator are rejected from
+selection, rather than silently enabled, because no artifact has met the
+locked parity, size and speed thresholds. CPU fallback is the only evidenced
+Windows behavior.
 
 ## Implemented Architecture
 
@@ -134,6 +150,7 @@ clear permission.
 npm run prepare:ocr-models
 npm run build:ocr-runtime:windows
 npm run prepare:ocr-runtime -- --platform windows-x64
+npm run inventory:ocr-runtime-licenses
 npm run test:ocr
 npm run test:ocr:runtime
 npm run test:ocr:corpus
@@ -146,7 +163,7 @@ Windows runtime/model artifacts and runs real inference.
 multilingual and difficult-image fixtures. Preview fixtures are UI evidence
 only.
 
-## Evidence Obtained On 2026-07-31
+## Evidence Obtained On 2026-07-31 And 2026-08-01
 
 Real Tauri development-runtime evidence on Windows x64:
 
@@ -199,24 +216,42 @@ both npm audits, 44 Vitest tests, 11 Playwright scenarios, 108 normal Rust
 tests with 7 intentionally separated heavy tests, the 6/6 conversion matrix,
 6 PDFium tests, both Clippy gates, the production frontend and Tauri/NSIS.
 The NSIS archive also parsed and extracted all 281 packaged files without
-error; this remains structural evidence, not installed-runtime evidence.
+error.
+
+The exact `multi-converter.exe` extracted from that NSIS package was then
+launched from the isolated 281-file directory. A native Windows clipboard file
+paste imported a local PNG into the real Tauri application. **Extract text**
+started the hash-verified worker from application-local data and loaded models
+from the extracted package. Recognition returned the visible fixture text,
+explicit **Copy** wrote exactly that text, **Cancel** returned `OCR_CANCELLED`
+and removed the worker process, and the following retry succeeded. The worker
+process command line selected `--provider cpu`; sampled TCP inspection found
+zero connections for both the packaged app and worker. This is a packaged-file
+smoke, not proof of the NSIS install/uninstall lifecycle or a continuous packet
+capture.
+
+Windows process counters on the successful retry recorded 1,069.8 MiB peak
+working set, 1,188.0 MiB private memory after inference and 1,939.1 MiB peak
+paged memory for the persistent OCR worker. The measured values describe this
+machine and fixture; they are a baseline, not a hard cross-platform bound.
 
 ## Remaining Exit Gates
 
 - Expand the synthetic 11-case corpus with multipage documents, multiple fonts,
   skew, photos, all five native image input paths and reviewed expected files;
   improve or explicitly accept the observed Japanese long-vowel-mark error.
-- Measure the required accuracy thresholds and native-runtime parity; retain
-  the official runtime when the candidate misses any gate.
-- Complete dependency-license review and notices for the exact 660 MB Windows
-  runtime before distributing it.
+- Measure native-runtime parity if a candidate is produced. Until then retain
+  the explicitly selected official CPU runtime and keep accelerators disabled.
+- Review and package the missing `bce-python-sdk` license, then complete legal
+  review and `NOTICE` coverage for the 71-distribution inventory before public
+  redistribution.
 - Run corruption, password, timeout, cleanup, atomic-output and original-file
   tests through the packaged application.
-- Run the complete offline installed-NSIS behavior matrix; the local unsigned
-  build itself has passed.
+- Run the complete offline installed-NSIS behavior matrix. The local unsigned
+  build and extracted-package PNG/copy/cancel/retry smoke have passed.
 - Build and test one universal macOS runtime on Apple Silicon and Intel, then a
   Linux x64 runtime and AppImage on real hosts.
-- Record output hashes, screenshots, peak memory and all host evidence in
+- Record output hashes, screenshots and all remaining host evidence in
   `V1_0_7_VALIDATION.md`.
 
 Only after those gates pass may metadata move to `1.0.7` or an OCR release be

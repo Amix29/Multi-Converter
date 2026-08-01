@@ -91,6 +91,7 @@
     "prepare:bundled-engines": "node scripts/prepare-bundled-engines.mjs",
     "prepare:ocr-models": "node scripts/prepare-ocr-models.mjs",
     "prepare:ocr-runtime": "node scripts/prepare-ocr-runtime.mjs",
+    "inventory:ocr-runtime-licenses": "node scripts/inventory-ocr-runtime-licenses.mjs",
     "build:ocr-runtime:windows": "node scripts/build-ocr-reference-runtime.mjs --platform windows-x64",
     "prepare:installer-assets": "node scripts/generate-installer-assets.mjs",
     "package:base-engines": "node scripts/package-base-engines.mjs",

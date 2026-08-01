@@ -248,10 +248,20 @@ Phase 3 real Tauri development-runtime checks exercised local inference,
 resource verification, cancellation, forced worker crash, restart, native,
 scanned and mixed PDFs, editor import and semantic HTML. Unit tests cover the
 five image normalizers, limits, invalid sources, manifest tampering and unsafe
-archive paths. The local unsigned NSIS build now succeeds with the compressed
-OCR and LibreOffice resources. These checks do not yet prove installed-package
-behavior, an offline network-capture assertion, complete dependency notices,
-peak-memory bounds, macOS or Linux.
+archive paths. The local unsigned NSIS build succeeds with compressed OCR and
+LibreOffice resources. Its exact extracted executable also passed native PNG
+paste, OCR, explicit copy, cancellation, worker termination and retry. Sampled
+process inspection found zero TCP connections and the worker used the locked
+CPU provider. This is not a continuous packet capture and does not prove the
+installed-NSIS lifecycle, every packaged path, complete dependency notices,
+macOS or Linux.
+
+The exact Windows runtime inventory records 71 Python distributions and 105
+embedded license files. The absence of an embedded `bce-python-sdk` license is
+explicitly locked and blocks public redistribution. Runtime process counters
+recorded 1,069.8 MiB peak working set and 1,939.1 MiB peak paged memory on the
+reviewed fixture; these are measured baselines, not security limits or
+cross-platform guarantees.
 
 Passing TypeScript, unit, preview or static CSP tests does not prove that native
 filesystem behavior, engine isolation, packaging or real conversions are safe.

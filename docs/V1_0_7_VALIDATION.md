@@ -194,15 +194,19 @@ local unsigned Tauri/NSIS build.
 
 The resulting NSIS file was also parsed and extracted without error into an
 isolated temporary directory: 281 files and 1,407,773,464 expanded bytes. The
-listing confirmed the compressed OCR runtime and LibreOffice archive are
-present. Local policy blocked launching that extracted executable, so this is
-package-structure evidence only and the installed behavior row stays pending.
+exact extracted `multi-converter.exe` was subsequently launched and its process
+path verified. A native clipboard file paste, PNG OCR, explicit copy,
+cancellation, worker termination and retry all passed against the packaged
+resources. This is extracted-package behavior evidence; the installed NSIS
+lifecycle and complete PDF/image/editor matrix remain pending.
 
-This checkpoint is not the Phase 3 exit gate. Its initial synthetic corpus must
-still be expanded across native input paths and real-world fixtures, and it
-lacks native ONNX and accelerator decisions, complete runtime license
-inventory, installed Windows NSIS offline behavior matrix, peak-memory record
-and real macOS/Linux builds. Full details and hashes are in
+The locally achievable Windows Phase 3 checkpoint is closed, not the release
+gate. The initial synthetic corpus must still be expanded across native input
+paths and real-world fixtures. The runtime decision now explicitly retains the
+official CPU sidecar and disables unproven native/accelerated options. An exact
+71-distribution/105-license-file inventory and Windows peak-memory baseline are
+recorded, but the missing embedded `bce-python-sdk` license, installed Windows
+NSIS matrix and real macOS/Linux builds remain open. Full details and hashes are in
 [`V1_0_7_OCR.md`](V1_0_7_OCR.md).
 
 ## Gate Summary
@@ -216,9 +220,9 @@ and real macOS/Linux builds. Full details and hashes are in
 | Windows Tauri Office matrix | Pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios |
 | Native editor file drop | Pending manual proof | Validate in the real Tauri application |
 | Editor restart and asset persistence | Pending manual proof | Confirm `mc-asset://` images after a clean restart |
-| OCR Windows reference implementation | Implemented in development tree | Complete corpus, license and package gates |
+| OCR Windows reference implementation | Local checkpoint closed | Expand corpus and close redistribution review |
 | OCR Windows NSIS build | Passed locally | Preserve the verified compressed-resource preparation path |
-| OCR Windows packaged-app matrix | Pending | Installed offline NSIS PDF/image/editor matrix and measured evidence |
+| OCR Windows packaged-app matrix | Extracted-package smoke passed | Installed offline NSIS PDF/image/editor matrix and output hashes |
 | macOS V1.0.7 matrix | Blocked | Real universal editor/OCR package and host validation |
 | Linux V1.0.7 matrix | Blocked | Real x64 editor/OCR AppImage and host validation |
 | V1.0.7 version synchronization | Blocked | All feature and release gates must pass first |
@@ -235,7 +239,7 @@ The Windows gate remains open until the complete real Tauri matrix is marked pas
 
 ## OCR Evidence
 
-Status: **Windows development implementation evidenced; release gate open**.
+Status: **locally achievable Windows Phase 3 checkpoint closed; release gate open**.
 
 The exact versions, five model origins and hashes, installed sizes, automated
 commands, Tauri-development results and current proof limits are recorded in
@@ -243,13 +247,15 @@ commands, Tauri-development results and current proof limits are recorded in
 
 - the expanded reviewed accuracy corpus, including the documented Japanese
   punctuation limitation and all native image-format paths;
-- an explicit accept/reject decision for the native runtime and each
-  accelerator based on the locked parity, size and speed thresholds;
-- a complete redistribution/license inventory for the selected runtime;
+- parity measurements only if a native runtime or accelerator candidate is
+  proposed; the current decision retains official CPU and rejects unproven
+  candidates from selection;
+- package and review the missing `bce-python-sdk` license, complete `NOTICE`,
+  and approve the committed 71-distribution inventory for redistribution;
 - Windows packaged-NSIS tests for every advertised PDF text target, image
   format, editor path, cancellation, limits, cleanup and original integrity;
-- captured offline evidence that neither model downloads nor OCR data leave the
-  machine;
+- a continuous offline/network capture; sampled packaged-process inspection
+  found zero TCP connections but is not a full trace;
 - real macOS universal and Linux x64 host/package matrices.
 
 ## Platform Release Evidence
