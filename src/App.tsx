@@ -24,6 +24,8 @@ import { useAppUpdater } from "./hooks/useAppUpdater";
 import { t, useI18n } from "./i18n";
 import { api, type AppMode } from "./lib/api";
 import { repositoryUrl } from "./lib/updateService";
+import { ImageOcrDialog } from "./ocr/ImageOcrDialog";
+import type { FileItem } from "./app/types";
 import "./editor/editor.css";
 
 const EditorWorkspace = lazy(() => import("./editor/EditorWorkspace").then((module) => ({ default: module.EditorWorkspace })));
@@ -42,6 +44,7 @@ export default function App() {
   const [appMode, setAppMode] = useState<AppMode>(() => localStorage.getItem(appModeStorageKey) === "editor" ? "editor" : "converter");
   const [editorWasOpened, setEditorWasOpened] = useState(appMode === "editor");
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [ocrFile, setOcrFile] = useState<FileItem | null>(null);
 
   const fileWorkflow = useFileWorkflow({ appMode, language, showNotice });
   const conversionWorkflow = useConversionWorkflow({
@@ -195,6 +198,14 @@ export default function App() {
         onClose={() => setIsFeedbackOpen(false)}
       />
       <PageNotice language={language} notice={notice} onDismiss={() => setNotice(null)} />
+      <ImageOcrDialog
+        isOpen={Boolean(ocrFile)}
+        language={language}
+        fileName={ocrFile?.name ?? ""}
+        path={ocrFile?.path ?? ""}
+        onClose={() => setOcrFile(null)}
+        onNotice={showNotice}
+      />
 
       {appMode === "converter" && (
         <>
@@ -209,6 +220,7 @@ export default function App() {
             onDragOver={fileWorkflow.setIsDragOver}
             onDrop={(event) => void fileWorkflow.handleHtmlDrop(event)}
             onFormats={() => fileWorkflow.setStep(2)}
+            onExtractText={setOcrFile}
             onRemove={fileWorkflow.removeFile}
           />
           <ImportToast language={language} feedback={fileWorkflow.importFeedback} />

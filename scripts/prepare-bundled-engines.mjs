@@ -14,6 +14,7 @@ const ffmpegVersion = readRequiredFfmpegVersion(root);
 const manifestPath = path.join(root, "src-tauri", "engines-manifest.json");
 const binariesDir = path.join(root, "src-tauri", "binaries");
 const bundledEnginesDir = path.join(root, "src-tauri", "bundled-engines");
+const bundledEngineArchivesDir = path.join(root, "src-tauri", "bundled-engine-archives");
 const cacheDir = path.join(root, "engine-sources", ".bundled-engine-cache");
 const baseSidecars = baseSidecarsForPlatform(platform);
 const requireAdvancedEngines = process.env.MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES === "1";
@@ -24,6 +25,7 @@ if (platform === "unsupported") {
 
 await fs.mkdir(binariesDir, { recursive: true });
 await fs.mkdir(bundledEnginesDir, { recursive: true });
+await fs.mkdir(bundledEngineArchivesDir, { recursive: true });
 await fs.mkdir(cacheDir, { recursive: true });
 
 const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
@@ -129,7 +131,10 @@ async function createUniversalDarwinBinary(stem, arm64Source, x64Source, univers
 
 async function prepareBundledEngine(engine) {
   const targetRoot = path.join(bundledEnginesDir, engine.id, engine.version);
-  if (await bundledEngineLooksCurrent(targetRoot, engine)) return;
+  if (await bundledEngineLooksCurrent(targetRoot, engine)) {
+    await stageCompressedBundledEngine(engine);
+    return;
+  }
 
   if (!engine.downloadUrl || !engine.sha256 || isPlaceholderUrl(engine.downloadUrl) || isPlaceholderSha(engine.sha256)) {
     throw new Error(`${engine.id}: archive publiee non configuree dans src-tauri/engines-manifest.json.`);
@@ -154,6 +159,18 @@ async function prepareBundledEngine(engine) {
   if (!(await bundledEngineLooksCurrent(targetRoot, engine))) {
     throw new Error(`${engine.id}: le moteur embarque prepare est incomplet.`);
   }
+  await stageCompressedBundledEngine(engine);
+}
+
+async function stageCompressedBundledEngine(engine) {
+  if (platform !== "windows-x64" || engine.id !== "libreoffice") return;
+  const source = path.join(cacheDir, `${engine.id}-${engine.version}.zip`);
+  await verifySha256(source, engine.sha256);
+  const platformDir = path.join(bundledEngineArchivesDir, platform);
+  const target = path.join(platformDir, `${engine.id}.zip`);
+  await fs.mkdir(platformDir, { recursive: true });
+  const current = await sha256File(target).catch(() => null);
+  if (current !== engine.sha256.toLowerCase()) await fs.copyFile(source, target);
 }
 
 async function pruneBundledEngines(expectedEngines) {

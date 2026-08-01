@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "model": "PP-OCRv6_medium",
+  "versions": {
+    "paddlepaddle": "3.3.1",
+    "paddleocr": "3.7.0",
+    "paddlex": "3.7.0",
+    "onnxruntime": "1.26.0"
+  },
+  "languages": ["fr", "en", "es", "de", "it", "pt", "ja"],
+  "modelArtifact": {
+    "fileCount": 21,
+    "totalBytes": 185082003,
+    "aggregateSha256": "e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb"
+  },
+  "platformSelections": [
+    {
+      "platform": "windows-x64",
+      "runtime": "official",
+      "provider": "cpu",
+      "fallbackProvider": "cpu",
+      "providerFallbackReason": "DirectML reste désactivé jusqu'à validation de parité et de gain sur le corpus verrouillé.",
+      "executable": "runtime/windows-x64/ocr-worker.exe",
+      "artifact": {
+        "fileCount": 7260,
+        "totalBytes": 660098904,
+        "aggregateSha256": "b6ea96d25e8c43ffa09efe7b8b171b44d3a82049c7cd0662ce403e8399f10da4"
+      }
+    },
+    {
+      "platform": "macos-universal",
+      "runtime": "official",
+      "provider": "cpu",
+      "fallbackProvider": "cpu",
+      "providerFallbackReason": "CoreML reste désactivé jusqu'à validation de parité et de gain sur Apple Silicon et Intel.",
+      "executable": "runtime/macos-universal/ocr-worker"
+    },
+    {
+      "platform": "linux-x64",
+      "runtime": "official",
+      "provider": "cpu",
+      "fallbackProvider": "cpu",
+      "providerFallbackReason": "OpenVINO reste désactivé jusqu'à validation de parité et de gain sur Linux Intel.",
+      "executable": "runtime/linux-x64/ocr-worker"
+    }
+  ],
+  "models": [
+    {
+      "id": "document-orientation",
+      "file": "PP-LCNet_x1_0_doc_ori_infer.tar",
+      "url": "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-LCNet_x1_0_doc_ori_infer.tar",
+      "sha256": "282337df5c41f7cdf8dacd5acf71fddfdc10218399f4b318463c17f4eae96c97",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "document-unwarping",
+      "file": "UVDoc_infer.tar",
+      "url": "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/UVDoc_infer.tar",
+      "sha256": "15d79c6bcbf738b7e132eedff6ed57c7e834c73cbc140a1fff8fd8ab9c2a35b9",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "textline-orientation",
+      "file": "PP-LCNet_x1_0_textline_ori_infer.tar",
+      "url": "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-LCNet_x1_0_textline_ori_infer.tar",
+      "sha256": "6171f69605215a85624d650e9079fa45f7c3eaf944296181bcc5395bf3ddc7f6",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "text-detection",
+      "file": "PP-OCRv6_medium_det_infer.tar",
+      "url": "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv6_medium_det_infer.tar",
+      "sha256": "144d0621e059566e5086e228829171591c144c2deb07b2dad4962214fbabfcf7",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "text-recognition",
+      "file": "PP-OCRv6_medium_rec_infer.tar",
+      "url": "https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv6_medium_rec_infer.tar",
+      "sha256": "4eecc1c6a4623765042e6fc15446da0da110b7d875b6b72b2d351d2b2dbd4da6",
+      "license": "Apache-2.0"
+    }
+  ]
+}

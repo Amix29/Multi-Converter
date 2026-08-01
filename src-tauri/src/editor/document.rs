@@ -12,8 +12,9 @@ pub(super) const MAX_DRAFT_BYTES: usize = 32 * 1024 * 1024;
 pub(super) const MAX_IMPORT_BYTES: u64 = 128 * 1024 * 1024;
 pub(super) const MAX_ASSET_BYTES: u64 = 24 * 1024 * 1024;
 pub(super) const RECENT_DOCUMENT_LIMIT: usize = 10;
-pub(super) const SUPPORTED_INPUTS: &[&str] =
-    &["docx", "odt", "rtf", "txt", "md", "markdown", "html", "htm"];
+pub(super) const SUPPORTED_INPUTS: &[&str] = &[
+    "docx", "odt", "rtf", "txt", "md", "markdown", "html", "htm", "pdf",
+];
 pub(super) const SUPPORTED_OUTPUTS: &[&str] = &["docx", "odt", "rtf", "txt", "md", "html", "pdf"];
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -191,6 +192,23 @@ pub(super) fn plain_text_to_document(text: &str) -> Value {
         "type": "doc",
         "content": if paragraphs.is_empty() { vec![json!({ "type": "paragraph" })] } else { paragraphs }
     })
+}
+
+pub(super) fn paged_text_to_document(pages: &[String]) -> Value {
+    let mut content = Vec::new();
+    for (index, page) in pages.iter().enumerate() {
+        if index > 0 {
+            content.push(json!({ "type": "pageBreak" }));
+        }
+        let page_document = plain_text_to_document(page);
+        if let Some(nodes) = page_document.get("content").and_then(Value::as_array) {
+            content.extend(nodes.iter().cloned());
+        }
+    }
+    if content.is_empty() {
+        content.push(json!({ "type": "paragraph" }));
+    }
+    json!({ "type": "doc", "content": content })
 }
 
 pub(super) fn validate_document(

@@ -1,0 +1,107 @@
+.ocr-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: grid;
+  place-items: center;
+  padding: var(--vlm-space-6);
+  background: color-mix(in srgb, var(--vlm-text-strong) 52%, transparent);
+}
+
+.ocr-dialog {
+  width: min(680px, 100%);
+  max-height: min(780px, calc(100vh - var(--vlm-space-8)));
+  overflow: auto;
+  padding: var(--vlm-space-7);
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-lg);
+  background: var(--vlm-surface-raised);
+  box-shadow: var(--vlm-shadow-overlay);
+}
+
+.ocr-dialog-header,
+.ocr-actions,
+.ocr-progress > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vlm-space-4);
+}
+
+.ocr-dialog-header span {
+  color: var(--vlm-accent-strong);
+  font-size: var(--vlm-text-caption);
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.ocr-dialog-header h2,
+.ocr-dialog-header p {
+  margin: var(--vlm-space-1) 0 0;
+}
+
+.ocr-progress,
+.ocr-result,
+.ocr-error {
+  margin-top: var(--vlm-space-6);
+}
+
+.ocr-empty-result {
+  margin: var(--vlm-space-3) 0 0;
+  color: var(--vlm-text-muted);
+}
+
+.ocr-progress progress {
+  width: 100%;
+  height: 8px;
+  margin: var(--vlm-space-3) 0;
+  accent-color: var(--vlm-primary-bg);
+}
+
+.ocr-result label {
+  display: block;
+  margin-bottom: var(--vlm-space-2);
+  font-weight: 700;
+}
+
+.ocr-result textarea {
+  width: 100%;
+  min-height: 260px;
+  resize: vertical;
+  padding: var(--vlm-space-4);
+  border: 1px solid var(--vlm-border-strong);
+  border-radius: var(--vlm-radius-sm);
+  background: white;
+  color: var(--vlm-text-strong);
+  font: inherit;
+  line-height: 1.6;
+}
+
+.ocr-error {
+  padding: var(--vlm-space-4);
+  border-left: 3px solid var(--vlm-danger-text);
+  background: var(--vlm-danger-bg);
+  color: var(--vlm-danger-text);
+}
+
+.ocr-actions {
+  justify-content: flex-end;
+  margin-top: var(--vlm-space-6);
+}
+
+.file-ticket-ocr {
+  min-height: 36px;
+  padding-inline: var(--vlm-space-3);
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .ocr-backdrop { padding: 0; }
+  .ocr-dialog { min-height: 100vh; max-height: 100vh; border-radius: 0; padding: var(--vlm-space-5); }
+  .ocr-actions .primary-button, .ocr-actions .ghost-button { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ocr-backdrop, .ocr-dialog { animation: none !important; }
+}

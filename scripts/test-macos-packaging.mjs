@@ -179,7 +179,14 @@ assert.match(macosDmgVerify, /Windows-only bundled engine resource found in macO
 assert.match(macosDmgVerify, /metadata\.platform !== "macos-universal"/, "macOS DMG verification must reject non-macOS engine metadata");
 assert.deepEqual(macosConfig.bundle.targets, ["app", "dmg"], "macOS release must build app and dmg bundles");
 assert.deepEqual(macosConfig.bundle.externalBin, tauriConfig.bundle.externalBin, "macOS release config must keep the same sidecar stems as the base config");
-assert.deepEqual(macosConfig.bundle.resources, tauriConfig.bundle.resources, "macOS release config must keep bundled engine resources");
+assert.deepEqual(
+  macosConfig.bundle.resources,
+  {
+    "bundled-engines/": "engines/",
+    "ocr-resources/": "ocr/",
+  },
+  "macOS release config must keep its complete universal engine resources",
+);
 assert.equal(macosConfig.bundle.createUpdaterArtifacts, true, "macOS releases must create updater artifacts for Darwin automatic updates");
 assert.equal(macosConfig.bundle.macOS.signingIdentity, "-", "unsigned macOS builds should use Tauri ad-hoc signing");
 assert.equal(macosConfig.bundle.macOS.minimumSystemVersion, "11.0", "macOS minimum version must stay explicit");

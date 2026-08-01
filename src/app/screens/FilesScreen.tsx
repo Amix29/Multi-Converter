@@ -15,6 +15,7 @@ export function FilesScreen(props: {
   onDragOver(active: boolean): void;
   onDrop(event: DragEvent<HTMLElement>): void;
   onFormats(): void;
+  onExtractText(file: FileItem): void;
   onRemove(fileId: string): void;
 }) {
   const hasFiles = props.files.length > 0;
@@ -53,6 +54,7 @@ export function FilesScreen(props: {
           <article className="file-ticket" key={file.id}>
             <div><strong>{displayFileName(file)}</strong><span>{compactFileMeta(file, props.language)}</span></div>
             {!file.targets.length && <span className="ticket-status is-error">{t(props.language, "upload.unsupported")}</span>}
+            {isOcrImage(file) && <button className="ghost-button file-ticket-ocr" type="button" onClick={() => props.onExtractText(file)}>{t(props.language, "ocr.extract")}</button>}
             <button className="remove-file-button" type="button" aria-label={`${t(props.language, "upload.removeFile")} ${file.name}`} onClick={() => props.onRemove(file.id)}>×</button>
           </article>
         ))}
@@ -68,4 +70,9 @@ export function FilesScreen(props: {
       )}
     </section>
   );
+}
+
+function isOcrImage(file: FileItem) {
+  const extension = file.extension.toLowerCase().replace(/^\./, "");
+  return ["png", "jpg", "jpeg", "webp", "tif", "tiff", "bmp"].includes(extension);
 }

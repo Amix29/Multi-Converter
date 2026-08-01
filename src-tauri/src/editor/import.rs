@@ -1,14 +1,14 @@
 use super::document::{
     CommandResult, EditorCompatibilityWarning, EditorDocument, EditorImportResult, EditorSource,
     EditorTransientContent, MAX_IMPORT_BYTES, SUPPORTED_INPUTS, new_document,
-    normalized_input_format, plain_text_to_document,
+    normalized_input_format, paged_text_to_document, plain_text_to_document,
 };
 use super::odt::parse_odt;
 use super::storage::commit_import;
 use crate::converters::{self, ConversionJob};
 use std::fs;
 use std::path::Path;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 pub(super) fn import_document_inner(
     app: &AppHandle,
@@ -28,12 +28,6 @@ pub(super) fn import_document_inner(
         .and_then(|value| value.to_str())
         .unwrap_or_default()
         .to_ascii_lowercase();
-    if extension == "pdf" {
-        return Err(
-            "EDITOR_PDF_OCR_REQUIRED:L'ouverture des PDF sera disponible avec le moteur OCR."
-                .to_string(),
-        );
-    }
     if !SUPPORTED_INPUTS.contains(&extension.as_str()) {
         return Err(format!(
             "EDITOR_FORMAT_UNSUPPORTED:Le format .{extension} n'est pas éditable."
@@ -55,6 +49,36 @@ pub(super) fn import_document_inner(
 
     let mut imported_assets = Vec::new();
     let transient_content = match extension.as_str() {
+        "pdf" => {
+            let job_id = format!("editor-pdf-import-{}", uuid::Uuid::new_v4());
+            let state = app.state::<crate::ocr::OcrState>().inner().clone();
+            let result = state
+                .recognize_pdf(app, path, &job_id)
+                .map_err(|error| format!("EDITOR_PDF_OCR_FAILED:{error}"))?;
+            document.content = paged_text_to_document(
+                &result
+                    .pages
+                    .iter()
+                    .map(|page| page.text.clone())
+                    .collect::<Vec<_>>(),
+            );
+            let detail = if result.warnings.is_empty() {
+                String::new()
+            } else {
+                format!(
+                    " {} avertissement(s) OCR ont été signalés.",
+                    result.warnings.len()
+                )
+            };
+            document.warnings.push(EditorCompatibilityWarning {
+                code: "pdfTextOnlyImport".to_string(),
+                message: format!(
+                    "Ce PDF a été importé comme texte page par page. Sa mise en page visuelle n’est pas reproduite.{detail} Enregistrer sous est obligatoire pour protéger l’original."
+                ),
+                blocks_overwrite: true,
+            });
+            None
+        }
         "txt" => {
             let text = fs::read_to_string(path).map_err(|error| error.to_string())?;
             document.content = plain_text_to_document(&text);

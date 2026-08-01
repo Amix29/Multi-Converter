@@ -19,7 +19,7 @@ No additional runtime, localhost server or source-code bridge is required.
 
 | Area | Responsibility |
 | --- | --- |
-| Desktop root (`src/`, `src-tauri/`) | Local application, converters, editor, planned OCR work and packaging |
+| Desktop root (`src/`, `src-tauri/`) | Local application, converters, editor, OCR and packaging |
 | `site/` | Static marketing, download, format, guide and documentation pages |
 | `branding-kit/` | Source logos, design tokens, brand guides, templates and mockups |
 
@@ -148,13 +148,30 @@ are documented in [`SECURITY.md`](SECURITY.md).
 
 ## OCR Boundary
 
-V1.0.7 OCR is planned around a packaged local `PP-OCRv6_medium` runtime. PDF
-pages flow through native text extraction or PDFium rasterization before OCR.
-Recognized content becomes TXT, Markdown, HTML or the existing Tiptap JSON
-model.
+The frontend OCR dialog consumes only the typed API facade. Rust owns path and
+real-type validation, resource integrity, temporary files, process supervision,
+progress and cancellation. A persistent JSON-lines sidecar loads the locked
+local `PP-OCRv6_medium` pipeline on demand; only one OCR job can be active.
 
-No OCR implementation is considered available until the packaged runtime,
-offline behavior, limits, cancellation, cleanup and platform matrices pass.
+PDFium 0.3 inspects every PDF page. Usable native text is retained, while only
+insufficient pages are rendered at 300 DPI for OCR. The normalized result then
+feeds the existing text serializers or `EditorDocumentV1` with explicit page
+breaks. Image OCR accepts the five bounded local raster formats and returns
+structured text for an explicit write-only clipboard action.
+
+On Windows, the official CPU runtime is stored as one verified compressed
+archive and extracted into application-local data on first use. Its complete
+per-file manifest is checked after extraction. The existing LibreOffice
+runtime uses the same package-size strategy with its separately hash-locked
+release archive and on-demand extraction; PDFium, Pandoc and libvips remain
+direct resources. Archive readers reject absolute paths, parent traversal,
+symlinks and configured size or entry-count overruns.
+
+The Windows official CPU sidecar is implemented and exercised in the real
+Tauri development runtime, and the local unsigned NSIS build passes with all
+engines retained. Installed-package behavior is not yet proven. Runtime
+selection, hashes, limits, evidence and remaining platform gates live in
+[`V1_0_7_OCR.md`](V1_0_7_OCR.md).
 
 ## Sources Of Truth
 

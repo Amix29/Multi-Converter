@@ -413,5 +413,13 @@
   "editor.editFooter": "Fußzeile bearbeiten",
   "editor.insertPageNumber": "Seitenzahl einfügen",
   "editor.compatibilityWarning": "Dieses Dokument enthält Elemente, die nicht originalgetreu exportiert werden können. Verwenden Sie Speichern unter.",
-  "editor.flatFormatLayoutWarning": "TXT und Markdown haben keine Seiten: Kopf- und Fußzeile werden einmalig ohne wiederholte Seitennummerierung eingefügt."
+  "editor.flatFormatLayoutWarning": "TXT und Markdown haben keine Seiten: Kopf- und Fußzeile werden einmalig ohne wiederholte Seitennummerierung eingefügt.",
+  "ocr.extract": "Text extrahieren",
+  "ocr.eyebrow": "Lokale OCR",
+  "ocr.title": "Bildtext",
+  "ocr.processing": "Erkennung läuft…",
+  "ocr.result": "Erkannter Text",
+  "ocr.copy": "Kopieren",
+  "ocr.copied": "Der erkannte Text wurde kopiert.",
+  "ocr.empty": "In diesem Bild wurde kein Text erkannt."
 }

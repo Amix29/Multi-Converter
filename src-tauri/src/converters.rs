@@ -17,7 +17,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::{Mutex, OnceLock, mpsc};
 use std::time::{Duration, SystemTime};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 use thiserror::Error;
 use zip::write::SimpleFileOptions;
 
@@ -1370,6 +1370,21 @@ fn convert_text_document(
 ) -> Result<()> {
     if source_format == "pdf" {
         emit_progress(app, job_id, 22, "Extraction du texte PDF");
+        let state = app.state::<crate::ocr::OcrState>().inner().clone();
+        let result = state
+            .recognize_pdf(app, input_path, job_id)
+            .map_err(ConvertError::Message)?;
+        emit_progress(app, job_id, 88, "Finalisation OCR PDF");
+        if target_format == "html" {
+            fs::write(output_path, crate::ocr::pdf::semantic_html(&result))?;
+            return Ok(());
+        }
+        let content = if result.text.is_empty() && matches!(target_format, "txt" | "md") {
+            "\u{feff}"
+        } else {
+            &result.text
+        };
+        return write_text_content_file(output_path, source_format, target_format, content);
     }
     let content = read_document_text(input_path, source_format)?;
     assert_readable_document_content(input_path, source_format, &content)?;
@@ -1699,7 +1714,7 @@ fn convert_with_libvips(
     Ok(())
 }
 
-fn engine_path(app: &AppHandle, id: &str) -> Result<PathBuf> {
+pub(crate) fn engine_path(app: &AppHandle, id: &str) -> Result<PathBuf> {
     engines::resolve_tool(Some(app), id).ok_or_else(|| {
         ConvertError::Message(format!(
             "Moteur {} introuvable. Réinstallez Multi-Converter ou restaurez les moteurs embarqués.",
@@ -1708,7 +1723,7 @@ fn engine_path(app: &AppHandle, id: &str) -> Result<PathBuf> {
     })
 }
 
-fn engine_command(path: &Path) -> Command {
+pub(crate) fn engine_command(path: &Path) -> Command {
     let mut command = Command::new(path);
     configure_linux_portable_engine_env(&mut command, path);
     command
@@ -1762,15 +1777,15 @@ fn set_env_paths(command: &mut Command, key: &str, paths: Vec<PathBuf>) {
     }
 }
 
-struct ExternalCommandProgress<'a> {
-    app: &'a AppHandle,
-    job_id: &'a str,
-    phase: &'a str,
-    start: u8,
-    max: u8,
+pub(crate) struct ExternalCommandProgress<'a> {
+    pub(crate) app: &'a AppHandle,
+    pub(crate) job_id: &'a str,
+    pub(crate) phase: &'a str,
+    pub(crate) start: u8,
+    pub(crate) max: u8,
 }
 
-fn run_external_command_with_progress(
+pub(crate) fn run_external_command_with_progress(
     command: &mut Command,
     label: &str,
     timeout: Duration,

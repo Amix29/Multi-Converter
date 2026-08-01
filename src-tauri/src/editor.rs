@@ -59,7 +59,9 @@ pub async fn editor_import_document(
                 .set_title("Ouvrir un document")
                 .add_filter(
                     "Documents éditables",
-                    &["docx", "odt", "rtf", "txt", "md", "markdown", "html", "htm"],
+                    &[
+                        "docx", "odt", "rtf", "txt", "md", "markdown", "html", "htm", "pdf",
+                    ],
                 )
                 .pick_file()
                 .await

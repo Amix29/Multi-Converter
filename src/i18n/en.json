@@ -413,5 +413,13 @@
   "editor.editFooter": "Edit footer",
   "editor.insertPageNumber": "Insert page number",
   "editor.compatibilityWarning": "This document contains elements that cannot be exported faithfully. Use Save as to protect the original.",
-  "editor.flatFormatLayoutWarning": "TXT and Markdown do not have pages: the header and footer will be added once, without repeated page numbering."
+  "editor.flatFormatLayoutWarning": "TXT and Markdown do not have pages: the header and footer will be added once, without repeated page numbering.",
+  "ocr.extract": "Extract text",
+  "ocr.eyebrow": "Local OCR",
+  "ocr.title": "Image text",
+  "ocr.processing": "Recognition in progress…",
+  "ocr.result": "Recognized text",
+  "ocr.copy": "Copy",
+  "ocr.copied": "The recognized text was copied.",
+  "ocr.empty": "No text was detected in this image."
 }

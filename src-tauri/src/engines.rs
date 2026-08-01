@@ -1,3 +1,4 @@
+use crate::engine_archive;
 use crate::engine_distribution;
 use crate::registry::{Format, TargetFormat};
 use serde::{Deserialize, Serialize};
@@ -545,6 +546,23 @@ fn evaluate_tool(app: Option<&AppHandle>, tool: &ToolDef, run_smoke: bool) -> De
             )
         };
     }
+    if !run_smoke
+        && let Some(app) = app
+        && let Ok(manifest) = engine_distribution::load_manifest()
+        && let Some(engine) = engine_distribution::manifest_for_platform(&manifest, tool.id)
+        && engine_archive::available(app, &engine)
+        && !engine_archive::is_extracted(&engine)
+    {
+        return check(
+            Some(app),
+            tool,
+            Some(engine.version),
+            None,
+            "ready",
+            "Moteur compressé embarqué, extrait localement au premier usage.",
+            None,
+        );
+    }
     let path = resolve_tool(app, tool.id);
     let Some(path) = path else {
         return check(
@@ -1027,7 +1045,17 @@ pub(crate) fn internet_available() -> bool {
 fn bundled_engine_binary(app: Option<&AppHandle>, id: &str) -> Option<PathBuf> {
     let manifest = engine_distribution::load_manifest().ok()?;
     let engine = engine_distribution::manifest_for_platform(&manifest, id)?;
-    let root = bundled_engines_root(app)?;
+    if let Some(root) = bundled_engines_root(app)
+        && let Some(binary) =
+            engine_distribution::installed_binary(&root, id, &engine.version, &engine.binary_paths)
+    {
+        return Some(binary);
+    }
+    let app = app?;
+    if !engine_archive::available(app, &engine) {
+        return None;
+    }
+    let root = engine_archive::ensure_extracted(app, &engine).ok()?;
     engine_distribution::installed_binary(&root, id, &engine.version, &engine.binary_paths)
 }
 

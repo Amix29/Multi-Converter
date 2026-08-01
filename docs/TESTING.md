@@ -272,19 +272,40 @@ Before starting the OCR work, run the Windows Tauri editor matrix for ODT, DOCX 
 
 Persistent editor JSON must contain only `mc-asset://<uuid>` image references. Tests should reject Base64, Blob URLs, file paths and remote URLs; manual restart testing must confirm that the associated image bytes remain available after the WebView Blob URLs have been revoked and recreated.
 
-Editor PDF import must remain unavailable until the PP-OCRv6_medium integration is implemented. Do not describe PDF export or office round trips as platform-complete until the real conversion matrix has passed on that platform.
+Editor PDF import is enabled through the implemented hybrid
+PP-OCRv6_medium path. Do not describe PDF import, export or office round trips
+as platform-complete until the real packaged conversion matrix has passed on
+that platform.
 
 ## V1.0.7 OCR Gate
 
-OCR is specified in `V1_0_7_OCR.md` but is not implemented yet. There is currently no runnable OCR test command, and documentation must not pretend otherwise.
+The Windows reference implementation and its exact evidence are specified in
+`V1_0_7_OCR.md`. Run the repository contract gate with:
 
-When OCR implementation begins:
+```powershell
+npm run test:ocr
+```
 
-- add a dedicated OCR contract command;
-- include it in `npm run check`;
-- add real-model integration coverage to the Rust/Tauri test path;
-- record the exact model/runtime version, origin, SHA-256 and installed size;
-- ensure tests run offline and fail if a network fallback is attempted.
+This command is included in `npm run check` and validates the committed lock,
+offline worker contract, five-model configuration, resource packaging and
+clipboard capability. It does not perform inference. After preparing the
+ignored model and runtime artifacts, run the real packaged-sidecar smoke test:
+
+```powershell
+npm run test:ocr:runtime
+npm run test:ocr:corpus
+npm run test:bundled-engine-archive
+```
+
+The corpus command currently covers seven clean languages, rotation, low
+contrast, perspective and blank output on one persistent CPU worker. Its
+per-language results must remain visible; a passing aggregate must not erase a
+weaker fixture. The bundled-engine archive command performs the intentionally
+heavy real extraction of the prepared 1.5 GB LibreOffice tree and checks its
+launcher; it is separate from the normal unit suite. Rust OCR unit tests are
+part of the normal Rust suite. PDFium runtime tests need
+`MULTI_CONVERTER_TEST_PDFIUM_LIBRARY` set to the real platform library. Preview
+OCR fixtures validate UI behavior only and are never runtime evidence.
 
 Minimum automated coverage:
 
@@ -311,7 +332,12 @@ Minimum real Tauri coverage on Windows:
 7. restart and repeat without model download;
 8. record output hashes, screenshots, timings, peak memory and warnings.
 
-Windows OCR validation is required before the version bump. Equivalent real host tests remain required on macOS and Linux before publishing V1.0.7 packages for those platforms.
+The current real Tauri development-runtime checks cover a clean French image,
+native/scanned/mixed PDFs, PDF editor import, cancellation, worker crash and
+retry. The local unsigned Windows NSIS build passes with compressed OCR and
+LibreOffice resources, but the installed offline behavior matrix is still
+required before the version bump. Equivalent real host tests remain required
+on macOS and Linux before publishing V1.0.7 packages for those platforms.
 
 ## macOS Code Checks
 

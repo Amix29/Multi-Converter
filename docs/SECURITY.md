@@ -3,9 +3,9 @@
 ## Status And Purpose
 
 This document describes the security boundaries implemented in the desktop
-source tree. Package metadata remains at V1.0.6 while the editor work is under
-development for V1.0.7. This document is not a release-readiness statement and
-makes no claim that planned OCR is implemented.
+source tree. Package metadata remains at V1.0.6 while the editor and OCR work
+is under development for V1.0.7. This document is not a release-readiness
+statement; packaged and multiplatform OCR gates remain open.
 
 Use the repository [`SECURITY.md`](../SECURITY.md) for supported versions and
 private vulnerability reporting. Do not attach crafted documents, personal
@@ -195,9 +195,37 @@ translation. If translation is unavailable, the application displays the
 original English notes. User files, file contents, editor text and recognized
 OCR text must not be included in those requests.
 
-V1.0.7 OCR remains planned. Its offline model, temporary page images, resource
-limits, cancellation and cleanup require separate implementation and platform
-evidence before any OCR security claim is valid.
+Phase 3 OCR uses only bundled, hash-verified local resources. The worker starts
+with offline environment flags and has no cloud fallback. Sources and text are
+not sent to the existing release-metadata or optional release-note translation
+endpoints. The frontend receives structured results and never receives general
+filesystem authority.
+
+The OCR boundary rejects remote paths, false file types, corrupt inputs and
+password-protected PDFs. It caps sources at 128 MiB, decoded images at 120
+megapixels and 32,768 pixels per side, PDFs at 2,000 pages and normalized text
+at 64 MiB. Recognition has a 180-second page timeout. Temporary normalized
+images, PDF renders and results are scoped to unpredictable temporary
+directories and originals are never modified.
+
+The runtime and model each carry a per-file manifest. The packaged Windows
+runtime archive is extracted only into application-local data through a reader
+that rejects absolute paths, parent traversal, symlinks, excessive entries and
+expanded-size overruns. Rust then compares file count, total size, aggregate
+lock value, every relative path and every SHA-256 before the first job.
+Unexpected files, non-regular filesystem entries and tampering are rejected.
+Cancellation and crash terminate the Windows process tree and force a clean
+worker on the next job.
+
+Windows LibreOffice packaging uses its already hash-locked engine archive to
+stay below the NSIS raw-resource limit. Rust verifies the embedded archive hash
+against `engines-manifest.json`, applies the same traversal and expansion
+guards, and extracts it on the first conversion that needs LibreOffice. The
+source engine remains unchanged; only its package representation differs.
+
+Clipboard access is restricted to `clipboard-manager:allow-write-text`.
+Multi-Converter cannot read, monitor, clear or write image/HTML clipboard data
+through this capability.
 
 ## Verification And Proof Limits
 
@@ -216,10 +244,14 @@ conversion matrix, the production build and local Tauri/NSIS packaging. This
 gate strengthens the Windows checkpoint but does not broaden the proof limits
 below.
 
-Real Tauri asset persistence, restart behavior, filesystem enforcement and
-packaged-runtime behavior remain native checks. Security review for OCR source
-limits, rasterization, model packaging, cancellation and temporary-file
-cleanup also remains blocked by the OCR implementation.
+Phase 3 real Tauri development-runtime checks exercised local inference,
+resource verification, cancellation, forced worker crash, restart, native,
+scanned and mixed PDFs, editor import and semantic HTML. Unit tests cover the
+five image normalizers, limits, invalid sources, manifest tampering and unsafe
+archive paths. The local unsigned NSIS build now succeeds with the compressed
+OCR and LibreOffice resources. These checks do not yet prove installed-package
+behavior, an offline network-capture assertion, complete dependency notices,
+peak-memory bounds, macOS or Linux.
 
 Passing TypeScript, unit, preview or static CSP tests does not prove that native
 filesystem behavior, engine isolation, packaging or real conversions are safe.

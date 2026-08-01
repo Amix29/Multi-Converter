@@ -295,3 +295,49 @@ run variability, not an application performance improvement. The reviewed
 Vellum captures and compiled preview prove rendered Chromium behavior only;
 the real Tauri Office matrix, restart persistence, OCR and native macOS/Linux
 gates remain open.
+
+## Phase 3 Development Snapshot
+
+The local Phase 3 snapshot was measured on 2026-08-01 in the isolated
+`codex/phase-3-ocr-local` worktree. It includes the local PP-OCRv6 reference
+runtime and the Windows package-size repair, but it is not a release baseline.
+The ignored machine-readable report is stored at
+`test-results/phase-3-baseline/after.json` and can be reproduced with:
+
+```powershell
+npm run measure:baseline -- --output test-results/phase-3-baseline/after.json
+```
+
+| Measurement | Phase 3 snapshot | Interpretation |
+| --- | ---: | --- |
+| Measured source | 204 files / 45,468 lines | OCR domain, runtime preparation and archive isolation added |
+| Frontend production bundle | 1,095,149 bytes / 9 files | Raw total remains above the Phase 2 aspirational budget |
+| Frontend bundle, independent gzip method | 313,570 bytes | Informational |
+| Initial main JavaScript chunk | 211,600 bytes | Passes the 398,175-byte budget |
+| Largest JavaScript chunk | 496,337 bytes | Passes the 500,000-byte budget |
+| Windows application executable | 26,662,400 bytes | Local unsigned development build |
+| Windows NSIS installer | 999,871,215 bytes | Local unsigned development build |
+| Installed OCR models and runtime | 845,180,907 bytes | All locked PP-OCRv6 resources retained |
+| Packaged OCR resource tree | 421,522,838 bytes / 24 files | Runtime compressed; models and manifests retained |
+| Expanded advanced engine resources | 1,786,155,388 bytes / 19,571 files | Conversion source resources unchanged |
+| Packaged LibreOffice archive | 483,796,141 bytes | Same verified runtime, extracted on demand |
+
+The first packaging attempt exposed an NSIS memory-mapped input limit when the
+7,260-file OCR runtime and expanded LibreOffice tree were both passed as raw
+resources. Packaging the verified OCR runtime and the already verified
+LibreOffice engine as bounded archives reduced the raw Windows resource input
+to 1,380,851,344 bytes without removing any engine or conversion capability.
+The rebuilt NSIS installer completed successfully. Installed application
+behavior, offline network capture, peak OCR memory and real macOS/Linux
+packages remain separate exit gates in `V1_0_7_VALIDATION.md`.
+
+The final 15-step Windows gate passed in **557,915 ms** (about 9 min 18 s):
+
+- both npm audits reported zero known vulnerabilities;
+- 44 Vitest tests and 11 Playwright scenarios passed, with 11 duplicate routed
+  scenarios intentionally skipped;
+- 108 Rust tests passed and 7 heavy tests were intentionally separated; the
+  6/6 conversion matrix and the real LibreOffice archive extraction test both
+  passed separately;
+- 6 PDFium wrapper tests, Rust/PDFium Clippy, deterministic engine preparation,
+  the production frontend and the local Tauri/NSIS build passed.

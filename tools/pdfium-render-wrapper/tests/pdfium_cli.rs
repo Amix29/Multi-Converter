@@ -51,6 +51,29 @@ fn page_count_reports_mini_pdf_pages() {
 }
 
 #[test]
+fn inspect_text_reports_each_page_and_usability() {
+    let library = pdfium_library();
+    let dir = tempfile::tempdir().unwrap();
+    let pdf = dir.path().join("mini.pdf");
+    fs::write(&pdf, mini_pdf_two_pages()).unwrap();
+    let output = command()
+        .env("PDFIUM_LIBRARY_PATH", library)
+        .args(["--inspect-text", pdf.to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(value["schemaVersion"], 1);
+    assert_eq!(value["pageCount"], 2);
+    assert_eq!(value["pages"][0]["text"], "Page 1");
+    assert_eq!(value["pages"][0]["usable"], false);
+}
+
+#[test]
 fn render_page_generates_image() {
     let library = pdfium_library();
     let dir = tempfile::tempdir().unwrap();

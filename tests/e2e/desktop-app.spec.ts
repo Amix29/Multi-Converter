@@ -51,6 +51,73 @@ test("runs cancellation, failure retry and export through the preview API", asyn
   expect(consoleErrors).toEqual([]);
 });
 
+test("extracts and copies image text with cancellation, focus and Escape", async ({ page }, testInfo) => {
+  skipUnlessProject(testInfo, "desktop-chromium");
+  const consoleErrors = captureConsoleErrors(page);
+  await openPreview(page, "/?mockWelcomeSeen=1&mockOcrImage=1&mockSlowOcr=1");
+
+  await page.getByRole("button", { name: "Parcourir" }).click();
+  const extract = page.getByRole("button", { name: "Extraire le texte" });
+  await expect(extract).toBeVisible();
+  await extract.click();
+  const dialog = page.getByRole("dialog", { name: "Texte de l’image" });
+  await expect(dialog).toBeVisible();
+  const cancel = dialog.getByRole("button", { name: "Annuler" });
+  await expect(cancel).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeVisible();
+  await cancel.click();
+  await expect(dialog.getByRole("alert")).toContainText("OCR annulé");
+  await expect(dialog.getByRole("button", { name: "Fermer" }).first()).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(extract).toBeFocused();
+
+  await extract.click();
+  await expect(dialog.getByRole("textbox", { name: "Texte reconnu" })).toHaveValue(
+    "Texte reconnu localement dans l’image de démonstration.",
+  );
+  await expect(dialog.getByRole("button", { name: "Copier" })).toBeEnabled();
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await dialog.getByRole("button", { name: "Copier" }).click();
+  await expect(page.getByText("Le texte reconnu a été copié.")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(
+    "Texte reconnu localement dans l’image de démonstration.",
+  );
+  await expectNoHorizontalOverflow(page, "OCR image dialog");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(extract).toBeFocused();
+  expect(consoleErrors).toEqual([]);
+});
+
+test("reports a truly empty OCR result without enabling copy", async ({ page }, testInfo) => {
+  skipUnlessProject(testInfo, "desktop-chromium");
+  await openPreview(page, "/?mockWelcomeSeen=1&mockOcrImage=1&mockEmptyOcr=1");
+  await page.getByRole("button", { name: "Parcourir" }).click();
+  await page.getByRole("button", { name: "Extraire le texte" }).click();
+  const dialog = page.getByRole("dialog", { name: "Texte de l’image" });
+  await expect(dialog.getByText("Aucun texte n’a été détecté dans cette image.")).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Copier" })).toBeDisabled();
+});
+
+test("keeps the OCR dialog responsive at the four reference widths", async ({ page }, testInfo) => {
+  skipUnlessProject(testInfo, "desktop-chromium");
+  for (const width of [375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: width === 375 ? 844 : 900 });
+    await openPreview(page, "/?mockWelcomeSeen=1&mockOcrImage=1&mockSlowOcr=1");
+    await page.getByRole("button", { name: "Parcourir" }).click();
+    await page.getByRole("button", { name: "Extraire le texte" }).click();
+    const dialog = page.getByRole("dialog", { name: "Texte de l’image" });
+    await expect(dialog).toBeVisible();
+    await expectResponsiveState(page, `${width}px OCR dialog`);
+    await dialog.getByRole("button", { name: "Annuler" }).click();
+    await expect(dialog.getByRole("alert")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  }
+});
+
 test("autosaves an edited document before returning it to recent documents", async ({ page }, testInfo) => {
   skipUnlessProject(testInfo, "desktop-chromium");
   const consoleErrors = captureConsoleErrors(page);

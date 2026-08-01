@@ -15,6 +15,14 @@ target/
 # Engine packaging inputs and generated archives
 engine-sources/
 src-tauri/bundled-engines/
+src-tauri/bundled-engine-archives/
+!src-tauri/bundled-engine-archives/
+src-tauri/bundled-engine-archives/*
+!src-tauri/bundled-engine-archives/README.md
+src-tauri/ocr-resources/
+!src-tauri/ocr-resources/
+src-tauri/ocr-resources/*
+!src-tauri/ocr-resources/README.md
 dist-engines/
 dist-engines-*/
 

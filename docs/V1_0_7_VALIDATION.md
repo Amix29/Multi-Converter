@@ -9,6 +9,7 @@
 - Version metadata: **1.0.6**
 - Phase 1 checkpoint: local commit **`9f89a8d2`** on `codex/phase-1-guardrails`, not pushed
 - Phase 2 state: isolated worktree on `codex/phase-2-frontend-vellum`, based on the Phase 1 checkpoint, not merged or pushed
+- Phase 3 state: isolated worktree on `codex/phase-3-ocr-local`, based on the Phase 2 checkpoint, not merged or pushed
 
 This is the combined release-validation ledger for V1.0.7. It does not replace the detailed editor or OCR documents:
 
@@ -139,6 +140,71 @@ Phase 2 does **not** close the real Tauri Office matrix, native file drop,
 restart/persistent-asset proof, OCR, real macOS or Linux host validation,
 version synchronization or release publication gates.
 
+## 2026-08-01 Phase 3 Local OCR Development Checkpoint
+
+Phase 3 adds the Windows reference implementation without changing version
+metadata, removing an engine or publishing any artifact.
+
+Implemented evidence:
+
+- the editor prerequisite passed in the real Tauri development runtime for
+  create, edit, autosave, close and reopen; direct Save As wrote the expected
+  TXT bytes after the staging-extension repair;
+- the local model lock pins PaddlePaddle 3.3.1, PaddleOCR 3.7.0, PaddleX 3.7.0,
+  ONNX Runtime 1.26.0 and all five `PP-OCRv6_medium` pipeline modules;
+- the prepared models and Windows official CPU sidecar have per-file manifests,
+  locked aggregate SHA-256 values and Rust pre-use integrity verification;
+- one supervised persistent worker handles one job at a time, supports
+  cancellation, discards crashed workers and cleans temporary job directories;
+- PNG, JPEG, WebP, TIFF and BMP are validated and normalized locally; the UI
+  offers an explicit accessible image-text dialog and write-only text copy;
+- PDFium 0.3 inspects every page, keeps sufficient native text and renders only
+  insufficient pages at 300 DPI for OCR;
+- native, scanned and mixed PDF paths were exercised through real Tauri, as
+  were mixed-PDF editor import and semantic HTML serialization;
+- 8 OCR Rust tests and 6 PDFium wrapper tests pass;
+- compiled-preview Playwright covers OCR result, empty result, copy,
+  cancellation, focus, Escape and four reference widths;
+- the standalone packaged-sidecar smoke reached exact normalized recognition
+  for the reviewed clean French fixture without a Python installation.
+- an 11-case persistent-worker CPU corpus passed with a 99.16 percent clean
+  seven-language mean, 100 percent difficult-image mean, empty blank output and
+  48,280 ms median; Japanese remained individually visible at 94.12 percent.
+- the 660,098,904-byte installed OCR runtime is packaged as a verified
+  236,434,900-byte archive, while the existing LibreOffice runtime is packaged
+  as its verified 483,796,141-byte release archive and extracted on demand;
+- traversal-resistant extraction tests cover both archive boundaries, and the
+  real LibreOffice archive restored its required launcher in 69.22 seconds on
+  the final rerun;
+- the local unsigned Windows build passed with all engines retained, producing
+  a 26,662,400-byte executable and a 999,871,215-byte NSIS installer.
+
+Measured real Tauri development-runtime timings include 194.8 seconds for the
+first image job with cold resource verification, 24.2 seconds for the next
+persistent-worker job, 248 ms for a native PDF, 27.8 seconds for a scanned PDF,
+8.6 seconds for a mixed PDF and 9.1 seconds for mixed-PDF editor import.
+
+The final 15-step Windows gate passed on 2026-08-01 in **557,915 ms**. It
+included both npm audits with zero known vulnerabilities, deterministic engine
+preparation, `npm run check`, 44 Vitest tests, 11 Playwright scenarios with 11
+routed duplicates skipped, Rust formatting and Clippy, the allowed-warning
+Rust audit, 108 passing Rust tests with 7 intentionally separated heavy tests,
+the 6/6 real conversion matrix, 6 PDFium tests, the production build and the
+local unsigned Tauri/NSIS build.
+
+The resulting NSIS file was also parsed and extracted without error into an
+isolated temporary directory: 281 files and 1,407,773,464 expanded bytes. The
+listing confirmed the compressed OCR runtime and LibreOffice archive are
+present. Local policy blocked launching that extracted executable, so this is
+package-structure evidence only and the installed behavior row stays pending.
+
+This checkpoint is not the Phase 3 exit gate. Its initial synthetic corpus must
+still be expanded across native input paths and real-world fixtures, and it
+lacks native ONNX and accelerator decisions, complete runtime license
+inventory, installed Windows NSIS offline behavior matrix, peak-memory record
+and real macOS/Linux builds. Full details and hashes are in
+[`V1_0_7_OCR.md`](V1_0_7_OCR.md).
+
 ## Gate Summary
 
 | Gate | Status | Blocking work |
@@ -150,8 +216,9 @@ version synchronization or release publication gates.
 | Windows Tauri Office matrix | Pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios |
 | Native editor file drop | Pending manual proof | Validate in the real Tauri application |
 | Editor restart and asset persistence | Pending manual proof | Confirm `mc-asset://` images after a clean restart |
-| OCR implementation | Not started | Integrate local `PP-OCRv6_medium` |
-| OCR Windows packaged-app matrix | Blocked by implementation | PDF-to-text and copy-text-from-image |
+| OCR Windows reference implementation | Implemented in development tree | Complete corpus, license and package gates |
+| OCR Windows NSIS build | Passed locally | Preserve the verified compressed-resource preparation path |
+| OCR Windows packaged-app matrix | Pending | Installed offline NSIS PDF/image/editor matrix and measured evidence |
 | macOS V1.0.7 matrix | Blocked | Real universal editor/OCR package and host validation |
 | Linux V1.0.7 matrix | Blocked | Real x64 editor/OCR AppImage and host validation |
 | V1.0.7 version synchronization | Blocked | All feature and release gates must pass first |
@@ -168,26 +235,28 @@ The Windows gate remains open until the complete real Tauri matrix is marked pas
 
 ## OCR Evidence
 
-Status: **no implementation evidence yet**.
+Status: **Windows development implementation evidenced; release gate open**.
 
-Before this section can pass, record:
+The exact versions, five model origins and hashes, installed sizes, automated
+commands, Tauri-development results and current proof limits are recorded in
+[`V1_0_7_OCR.md`](V1_0_7_OCR.md). Before this section can pass, add:
 
-- exact PaddleOCR, inference-runtime and `PP-OCRv6_medium` model versions;
-- official archive origins, SHA-256 values, installed size and redistribution notices;
-- the dedicated automated OCR command and its real totals;
-- reviewed accuracy thresholds and fixture results;
-- Windows packaged-app tests for native-text, scanned and mixed PDFs;
-- PDF outputs to TXT, Markdown and HTML;
-- PDF import to editable Tiptap JSON;
-- explicit copy-text-from-image tests for every advertised image format;
-- offline, progress, cancellation, limits, cleanup and original-integrity tests;
-- proof that no model is downloaded during recognition and no OCR data is transmitted.
+- the expanded reviewed accuracy corpus, including the documented Japanese
+  punctuation limitation and all native image-format paths;
+- an explicit accept/reject decision for the native runtime and each
+  accelerator based on the locked parity, size and speed thresholds;
+- a complete redistribution/license inventory for the selected runtime;
+- Windows packaged-NSIS tests for every advertised PDF text target, image
+  format, editor path, cancellation, limits, cleanup and original integrity;
+- captured offline evidence that neither model downloads nor OCR data leave the
+  machine;
+- real macOS universal and Linux x64 host/package matrices.
 
 ## Platform Release Evidence
 
 ### Windows x64
 
-Status: **blocked by the editor manual matrix and OCR implementation**.
+Status: **blocked by the editor manual matrix and OCR packaged-app matrix**.
 
 Required final evidence:
 

@@ -16,7 +16,8 @@
       "binaries/ffprobe"
     ],
     "resources": {
-      "bundled-engines/": "engines/"
+      "bundled-engines/": "engines/",
+      "ocr-resources/": "ocr/"
     },
     "linux": {
       "appimage": {

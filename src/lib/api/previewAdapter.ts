@@ -1,4 +1,4 @@
-import type { EditorAssetRef, MultiConverterApi, ProgressPayload } from "./contracts";
+import type { EditorAssetRef, MultiConverterApi, OcrProgressV1, ProgressPayload } from "./contracts";
 import {
   createPreviewEditorState,
   makePreviewEditorDocument,
@@ -13,6 +13,7 @@ import {
 export function createPreviewApi(): MultiConverterApi {
   const previewParams = new URLSearchParams(window.location.search);
   const listeners = new Set<(payload: ProgressPayload) => void>();
+  const ocrListeners = new Set<(payload: OcrProgressV1) => void>();
   const previewState = createPreviewEditorState(previewParams.get("mockRecentDocuments") === "1");
   let previewDocuments = previewState.documents;
   const previewEditorAssets = previewState.assets;
@@ -50,6 +51,7 @@ export function createPreviewApi(): MultiConverterApi {
         `${PREVIEW_ROOT}\\Videos\\Enregistrement de l'écran 2025-11-19 190508 version très longue pour vérifier le découpage.mp4`,
         `${PREVIEW_ROOT}\\Audio\\Capture audio réunion client avec un nom beaucoup trop long.wav`,
       ];
+      if (previewParams.get("mockOcrImage") === "1") return paths.slice(1, 2);
       return previewParams.get("mockSingleFile") === "1" ? paths.slice(0, 1) : paths;
     },
     async pickOutputFolder() {
@@ -109,6 +111,60 @@ export function createPreviewApi(): MultiConverterApi {
     async cancelConversion(jobId) {
       canceledJobs.add(jobId);
       return true;
+    },
+    async getOcrRuntimeInfo() {
+      return {
+        schemaVersion: 1,
+        available: true,
+        model: "PP-OCRv6_medium",
+        runtime: "official",
+        runtimeVersion: "preview-fixture",
+        provider: "cpu",
+        providerFallbackReason: null,
+        languages: ["fr", "en", "es", "de", "it", "pt", "ja"],
+      };
+    },
+    async recognizeImage(_path, jobId) {
+      const phases: OcrProgressV1["phase"][] = ["starting", "preparing", "recognizing", "normalizing", "completed"];
+      for (const [index, phase] of phases.entries()) {
+        await new Promise((resolve) => window.setTimeout(resolve, previewParams.get("mockSlowOcr") === "1" ? 300 : 80));
+        if (canceledJobs.delete(jobId)) throw new Error("OCR annulé");
+        const payload: OcrProgressV1 = {
+          schemaVersion: 1,
+          jobId,
+          progress: Math.round((index / (phases.length - 1)) * 100),
+          phase,
+          pageNumber: 1,
+          pageCount: 1,
+        };
+        ocrListeners.forEach((listener) => listener(payload));
+      }
+      const text = previewParams.get("mockEmptyOcr") === "1"
+        ? ""
+        : "Texte reconnu localement dans l’image de démonstration.";
+      return {
+        schemaVersion: 1,
+        jobId,
+        text,
+        pages: [{
+          pageNumber: 1,
+          source: "ocr",
+          width: 1600,
+          height: 900,
+          text,
+          blocks: text ? [{ text, confidence: 0.98, boundingBox: { x: 120, y: 180, width: 920, height: 72 } }] : [],
+          warnings: [],
+        }],
+        warnings: [],
+      };
+    },
+    async cancelOcr(jobId) {
+      canceledJobs.add(jobId);
+      return true;
+    },
+    async onOcrProgress(callback) {
+      ocrListeners.add(callback);
+      return () => ocrListeners.delete(callback);
     },
     async revealFile() {
       return true;

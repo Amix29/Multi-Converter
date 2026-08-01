@@ -28,18 +28,92 @@ pub(super) async fn write_document_with_picker(
     }
     let target = normalize_output_format(&request.target_format)?;
     let suggested = format!("{}.{}", safe_file_stem(&request.document.title), target);
-    let Some(handle) = rfd::AsyncFileDialog::new()
-        .set_title(title)
-        .set_file_name(&suggested)
-        .add_filter(target.to_ascii_uppercase(), &[target.as_str()])
-        .save_file()
-        .await
-    else {
+    let title = title.to_string();
+    let selected_folder = tauri::async_runtime::spawn_blocking(move || {
+        rfd::FileDialog::new().set_title(&title).pick_folder()
+    })
+    .await
+    .map_err(|error| format!("EDITOR_FILE_DIALOG_FAILED:{error}"))?;
+    let Some(folder) = selected_folder else {
+        crate::runtime_log::write("editor-save-as", "folder selection cancelled");
         return Ok(None);
     };
-    write_document(app, request, handle.path().to_path_buf(), associate_source)
-        .await
-        .map(Some)
+    let destination = available_destination(&folder, &suggested)?;
+    crate::runtime_log::write(
+        "editor-save-as",
+        &format!(
+            "destination selected {}",
+            crate::runtime_log::path(&destination)
+        ),
+    );
+    match write_document(app, request, destination, associate_source).await {
+        Ok(result) => {
+            crate::runtime_log::write("editor-save-as", "document written");
+            Ok(Some(result))
+        }
+        Err(error) => {
+            crate::runtime_log::write("editor-save-as", &format!("write failed: {error}"));
+            Err(error)
+        }
+    }
+}
+
+fn available_destination(folder: &Path, suggested: &str) -> CommandResult<PathBuf> {
+    if !folder.is_dir() {
+        return Err(
+            "EDITOR_DESTINATION_INVALID:Le dossier de destination est introuvable.".to_string(),
+        );
+    }
+    // The Windows folder picker may return a shell/OneDrive alias that passes
+    // metadata checks but cannot be used directly by CreateFile. Resolve it to
+    // the filesystem-backed directory before building the destination path.
+    let folder = filesystem_picker_path(
+        fs::canonicalize(folder)
+            .map_err(|error| format!("EDITOR_DESTINATION_RESOLVE_FAILED:{error}"))?,
+    );
+    let preferred = folder.join(suggested);
+    if !preferred.exists() {
+        return Ok(preferred);
+    }
+
+    let path = Path::new(suggested);
+    let stem = path
+        .file_stem()
+        .and_then(|value| value.to_str())
+        .unwrap_or("Document");
+    let extension = path
+        .extension()
+        .and_then(|value| value.to_str())
+        .unwrap_or_default();
+    for suffix in 2..=999 {
+        let name = if extension.is_empty() {
+            format!("{stem} ({suffix})")
+        } else {
+            format!("{stem} ({suffix}).{extension}")
+        };
+        let candidate = folder.join(name);
+        if !candidate.exists() {
+            return Ok(candidate);
+        }
+    }
+    Err(
+        "EDITOR_DESTINATION_CONFLICT:Trop de fichiers portent déjà ce nom dans le dossier choisi."
+            .to_string(),
+    )
+}
+
+fn filesystem_picker_path(path: PathBuf) -> PathBuf {
+    #[cfg(windows)]
+    {
+        let value = path.to_string_lossy();
+        if let Some(rest) = value.strip_prefix(r"\\?\UNC\") {
+            return PathBuf::from(format!(r"\\{rest}"));
+        }
+        if let Some(rest) = value.strip_prefix(r"\\?\") {
+            return PathBuf::from(rest);
+        }
+    }
+    path
 }
 
 pub(super) async fn write_document(
@@ -78,10 +152,12 @@ pub(super) async fn write_document(
     {
         return Err("EDITOR_OVERWRITE_BLOCKED:Ce document contient des éléments qui imposent Enregistrer sous.".to_string());
     }
-    replace_file_safely(&output, &destination)?;
+    replace_file_safely(&output, &destination)
+        .map_err(|error| format!("EDITOR_REPLACE_FAILED:{error}"))?;
 
     if associate_source {
-        let metadata = fs::metadata(&destination).map_err(|error| error.to_string())?;
+        let metadata = fs::metadata(&destination)
+            .map_err(|error| format!("EDITOR_DESTINATION_METADATA_FAILED:{error}"))?;
         document.title = destination
             .file_stem()
             .and_then(|value| value.to_str())
@@ -94,7 +170,8 @@ pub(super) async fn write_document(
             modified_at: modified_stamp(&metadata),
         });
     }
-    let document = save_draft_inner(document)?;
+    let document =
+        save_draft_inner(document).map_err(|error| format!("EDITOR_DRAFT_SAVE_FAILED:{error}"))?;
     Ok(EditorWriteResult {
         path: destination.to_string_lossy().to_string(),
         document,
@@ -221,5 +298,27 @@ mod tests {
     fn office_bridge_uses_a_portable_ascii_intermediate_name() {
         assert!(OFFICE_INTERMEDIATE_STEM.is_ascii());
         assert_eq!(OFFICE_INTERMEDIATE_STEM, "editor-document");
+    }
+
+    #[test]
+    fn save_as_uses_the_document_name_inside_the_selected_folder() {
+        let folder = tempfile::tempdir().unwrap();
+        let destination = available_destination(folder.path(), "Rapport.docx").unwrap();
+        assert_eq!(
+            destination,
+            filesystem_picker_path(fs::canonicalize(folder.path()).unwrap()).join("Rapport.docx")
+        );
+    }
+
+    #[test]
+    fn save_as_never_overwrites_an_unrelated_existing_file() {
+        let folder = tempfile::tempdir().unwrap();
+        fs::write(folder.path().join("Rapport.docx"), b"existing").unwrap();
+        let destination = available_destination(folder.path(), "Rapport.docx").unwrap();
+        assert_eq!(
+            destination,
+            filesystem_picker_path(fs::canonicalize(folder.path()).unwrap())
+                .join("Rapport (2).docx")
+        );
     }
 }

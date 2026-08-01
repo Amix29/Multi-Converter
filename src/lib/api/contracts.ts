@@ -25,7 +25,7 @@ export interface EditorDocumentV1 {
   title: string;
   source: {
     path: string;
-    format: Exclude<EditorFormat, "pdf">;
+    format: EditorFormat;
     size: number;
     modifiedAt: string;
   } | null;
@@ -189,6 +189,56 @@ export interface WelcomeState {
   show: boolean;
 }
 
+export interface OcrRuntimeInfoV1 {
+  schemaVersion: 1;
+  available: boolean;
+  model: "PP-OCRv6_medium";
+  runtime: "official" | "native";
+  runtimeVersion: string;
+  provider: "cpu" | "directml" | "coreml" | "openvino";
+  providerFallbackReason?: string | null;
+  languages: string[];
+}
+
+export interface OcrTextBlockV1 {
+  text: string;
+  confidence: number;
+  boundingBox: { x: number; y: number; width: number; height: number };
+}
+
+export interface OcrWarningV1 {
+  code: string;
+  message: string;
+  pageNumber?: number | null;
+}
+
+export interface OcrPageResultV1 {
+  pageNumber: number;
+  source: "native" | "ocr" | "native-fallback";
+  width: number;
+  height: number;
+  text: string;
+  blocks: OcrTextBlockV1[];
+  warnings: OcrWarningV1[];
+}
+
+export interface OcrDocumentResultV1 {
+  schemaVersion: 1;
+  jobId: string;
+  text: string;
+  pages: OcrPageResultV1[];
+  warnings: OcrWarningV1[];
+}
+
+export interface OcrProgressV1 {
+  schemaVersion: 1;
+  jobId: string;
+  progress: number;
+  phase: "starting" | "preparing" | "inspecting" | "native-text" | "recognizing" | "normalizing" | "completed";
+  pageNumber?: number | null;
+  pageCount?: number | null;
+}
+
 export interface MultiConverterApi {
   welcomeState(): Promise<WelcomeState>;
   markWelcomeSeen(): Promise<boolean>;
@@ -204,6 +254,10 @@ export interface MultiConverterApi {
   saveClipboardFiles(files: ClipboardFileInput[]): Promise<string[]>;
   convert(job: ConversionJob): Promise<ConversionResult>;
   cancelConversion(jobId: string): Promise<boolean>;
+  getOcrRuntimeInfo(): Promise<OcrRuntimeInfoV1>;
+  recognizeImage(path: string, jobId: string): Promise<OcrDocumentResultV1>;
+  cancelOcr(jobId: string): Promise<boolean>;
+  onOcrProgress(callback: (payload: OcrProgressV1) => void): Promise<UnlistenFn>;
   revealFile(filePath: string): Promise<boolean>;
   openExternalUrl(url: string): Promise<boolean>;
   editorCreateDocument(): Promise<EditorDocumentV1>;

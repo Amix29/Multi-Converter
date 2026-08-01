@@ -60,7 +60,14 @@ assert.match(packageJson.scripts["tauri:build:linux"], /tauri\.linux\.conf\.json
 assert.deepEqual(linuxConfig.bundle.targets, ["appimage"], "Linux release must build one AppImage installer");
 assert.equal(linuxConfig.bundle.createUpdaterArtifacts, true, "Linux releases must create updater signatures");
 assert.deepEqual(linuxConfig.bundle.externalBin, tauriConfig.bundle.externalBin, "Linux config must keep the same sidecar stems");
-assert.deepEqual(linuxConfig.bundle.resources, tauriConfig.bundle.resources, "Linux config must keep bundled engine resources");
+assert.deepEqual(
+  linuxConfig.bundle.resources,
+  {
+    "bundled-engines/": "engines/",
+    "ocr-resources/": "ocr/",
+  },
+  "Linux config must keep its complete x64 engine resources",
+);
 assert.equal(linuxConfig.bundle.linux.appimage.bundleMediaFramework, false, "Linux AppImage should not bundle unused media playback frameworks");
 
 assert.match(prepareScript, /linux-x64/, "Bundled engine preparation must recognize Linux x64");

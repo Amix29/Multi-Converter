@@ -1,7 +1,9 @@
 mod converters;
 mod editor;
+mod engine_archive;
 mod engine_distribution;
 mod engines;
+mod ocr;
 mod registry;
 mod runtime_log;
 
@@ -398,8 +400,13 @@ async fn start_conversion(app: AppHandle, job: ConversionJob) -> CommandResult<C
 }
 
 #[tauri::command]
-fn cancel_conversion(job_id: String) -> CommandResult<bool> {
-    Ok(converters::cancel_conversion(&job_id))
+fn cancel_conversion(
+    job_id: String,
+    ocr_state: tauri::State<'_, ocr::OcrState>,
+) -> CommandResult<bool> {
+    let conversion = converters::cancel_conversion(&job_id);
+    let ocr = ocr_state.cancel(&job_id);
+    Ok(conversion || ocr)
 }
 
 #[tauri::command]
@@ -819,8 +826,10 @@ pub fn run() {
     runtime_log::install_panic_hook();
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(ocr::OcrState::default())
         .setup(|_| {
             runtime_log::write("startup", "Multi-Converter starting");
             cleanup_stale_temp_output_folders();
@@ -843,6 +852,9 @@ pub fn run() {
             engine_statuses,
             start_conversion,
             cancel_conversion,
+            ocr::get_ocr_runtime_info,
+            ocr::recognize_image,
+            ocr::cancel_ocr,
             reveal_file,
             open_external_url,
             export_to_downloads,

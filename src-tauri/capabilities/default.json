@@ -9,6 +9,7 @@
     "core:window:default",
     "core:webview:default",
     "notification:default",
+    "clipboard-manager:allow-write-text",
     "process:default",
     "updater:default"
   ]

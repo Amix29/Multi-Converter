@@ -1,270 +1,232 @@
-# V1.0.7 Local OCR Specification
+# V1.0.7 Local OCR Contract And Evidence
 
 ## Status
 
 - Target release: **V1.0.7**
+- Current metadata: **1.0.6**
 - Selected model: **PP-OCRv6_medium**
-- Implementation status: **not started**
-- Current editor PDF-import status: **disabled**
+- Windows implementation: **development checkpoint, real Tauri runtime exercised**
+- Windows NSIS build: **passed locally with compressed runtime resources**
+- Windows packaged application behavior matrix: **pending**
+- macOS universal and Linux x64 runtimes: **not built or host-tested**
+- Native ONNX candidate and accelerators: **not selected; official CPU runtime retained**
 - Privacy mode: **local only**
 
-This file defines the required OCR behavior before implementation starts. It must be updated with exact runtime versions, commands, benchmarks and validation evidence as the code becomes real.
+Phase 3 implements the OCR contracts, Windows reference runtime, PDF hybrid
+extraction and image-text UI. It is not a release-ready or multiplatform OCR
+claim. The version stays at `1.0.6` until every release gate passes.
 
-## User Goals
+## Locked Runtime
 
-### PDF to text formats
+`src-tauri/ocr-runtime-lock.json` is the deterministic source of truth:
 
-Users must be able to select one or more PDFs and obtain readable text without uploading the files. The minimum direct OCR targets are:
+| Component | Locked value |
+| --- | --- |
+| Model family | `PP-OCRv6_medium` |
+| PaddlePaddle | `3.3.1` |
+| PaddleOCR | `3.7.0` |
+| PaddleX | `3.7.0` |
+| ONNX Runtime | `1.26.0` |
+| Windows selection | official sidecar, CPU |
 
-- TXT for plain extracted text;
-- Markdown for readable paragraphs and recoverable simple structure;
-- HTML for semantic local output.
+The five official modules are document orientation, UVDoc unwarping, text-line
+orientation, PP-OCRv6 medium detection and PP-OCRv6 medium recognition. Their
+origin URLs and individual SHA-256 values are committed in the lock file.
 
-When a PDF is opened in Editor mode, recognized content must be converted to `EditorDocumentV1` Tiptap JSON. The user can then edit it and use the editor's existing Save As/export paths.
+The prepared model artifact contains 21 files and 185,082,003 bytes with
+aggregate SHA-256
+`e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb`.
+The current Windows runtime contains 7,260 files and 660,098,904 bytes with
+aggregate SHA-256
+`b6ea96d25e8c43ffa09efe7b8b171b44d3a82049c7cd0662ce403e8399f10da4`.
 
-### Copy text from an image
+`prepare-ocr-models.mjs` validates official archive hashes and rejects unsafe
+tar paths. `build-ocr-reference-runtime.mjs` creates the pinned Windows
+reference sidecar. `prepare-ocr-runtime.mjs` writes per-file manifests and a
+236,434,900-byte optimal-compression ZIP. At first use, Rust extracts this ZIP
+to the application-local data directory through a bounded path-safe reader,
+then verifies the manifests and every extracted file hash. Recognition never
+downloads models or selects a cloud fallback. Models remain separately
+packaged and the complete OCR resource tree occupies 421,522,838 bytes.
 
-Users must be able to request text extraction from a selected local image and copy the recognized result to the system clipboard.
+DirectML, CoreML and OpenVINO remain disabled. They may be selected only after
+the required CPU parity and median-speed gates pass on the locked corpus. The
+native C++ ONNX candidate is likewise not selected because its size, speed and
+quality parity have not been measured. One package must contain one selected
+runtime only.
 
-The action must:
-
-- be explicit;
-- show a progress state;
-- show the recognized text before or when it is copied;
-- report an empty result clearly;
-- avoid background clipboard monitoring;
-- leave the source image unchanged.
-
-## Supported Inputs
-
-The V1.0.7 minimum is:
-
-- PDF;
-- PNG;
-- JPEG/JPG;
-- WebP;
-- TIFF/TIF;
-- BMP.
-
-Animated images, SVG, HEIC/HEIF, multipage TIFF and unusually large sources require explicit fixture coverage before they are advertised.
-
-## Model Contract
-
-Multi-Converter will integrate the local PaddleOCR `PP-OCRv6_medium` pipeline.
-
-Required packaging rules:
-
-- pin the exact PaddleOCR/inference runtime version;
-- pin every model component used by the pipeline;
-- record official download URLs;
-- verify SHA-256 before staging;
-- keep the installed model in the local engine directory;
-- never download a model during a conversion;
-- never fall back to a network service;
-- include applicable Apache-2.0 and runtime/model notices.
-
-The upstream project documents PP-OCRv6 medium as a multilingual tier. Multi-Converter must not claim a language as supported until fixtures for that language pass on the packaged runtime.
-
-## Planned Local Architecture
-
-### Tauri backend
-
-The Tauri backend owns OCR jobs, local paths, process isolation, progress, cancellation and cleanup.
-
-The planned boundary is:
+## Implemented Architecture
 
 ```text
-React UI
-  → typed Tauri OCR command
-  → bounded local OCR job
-  → packaged PP-OCRv6_medium runtime/model
-  → structured OCR result
-  → converter output, clipboard preview or EditorDocumentV1
+React image action / converter / editor
+  -> typed Tauri OCR command
+  -> one bounded OCR job
+  -> validated temporary PNG or PDFium page render
+  -> supervised local PP-OCRv6 sidecar
+  -> normalized OcrDocumentResultV1
+  -> text output, clipboard preview or EditorDocumentV1
 ```
 
-Do not expose arbitrary file-system access to the WebView. The frontend receives structured results, not unrestricted local paths.
+The stable API facade exposes `getOcrRuntimeInfo()`,
+`recognizeImage(path, jobId)`, `cancelOcr(jobId)` and
+`onOcrProgress(callback)`. Tauri exposes the matching commands and
+`ocr-progress` event. The versioned result contracts are
+`OcrRuntimeInfoV1`, `OcrDocumentResultV1`, `OcrPageResultV1`,
+`OcrTextBlockV1`, `OcrWarningV1` and `OcrProgressV1`.
 
-### PDF flow
+The sidecar is persistent within the application session so the loaded model
+can be reused. Only one OCR job may run at a time. Cancellation terminates the
+worker process tree; crash, timeout or protocol failure discards the worker so
+the next job starts a clean process. Job temporary directories are owned by
+RAII guards and are removed on success, error or cancellation.
 
-1. Validate the PDF and source limits.
-2. Inspect whether each page contains usable extractable text.
-3. Use the existing local text path for a reliable native text layer.
-4. Rasterize scanned or insufficient pages through the bundled PDFium path.
-5. Run `PP-OCRv6_medium` on the required pages.
-6. Normalize Unicode, whitespace, page order and paragraph boundaries.
-7. serialize the requested text target or convert the result into Tiptap JSON.
+## PDF Flow
 
-A mixed PDF may combine native extraction and OCR page by page. The result must record which pages used OCR so warnings remain explainable.
+The PDFium wrapper `0.3.0` adds `--inspect-text`. Each page keeps native text
+when it contains at least 12 alphanumeric characters and less than 2 percent
+invalid characters. Only insufficient pages are rendered as PNG at 300 DPI
+and passed to OCR. Light page borders may be cropped locally without rescaling
+the text or changing the source.
 
-### Image flow
+If OCR returns no text but an exploitable native fragment exists, that fragment
+is retained with an `ocr-empty-native-fallback` warning. A required page
+failure aborts the conversion, so no partial output replaces the destination.
 
-1. Validate type, byte size and decoded dimensions.
-2. Normalize orientation without changing the source file.
-3. Run `PP-OCRv6_medium`.
-4. Return ordered text blocks and confidence metadata.
-5. Present the text for copy/export.
-6. Remove temporary normalized images after completion or cancellation.
+Hybrid extraction is wired into existing PDF text targets including TXT,
+Markdown, HTML, CSV, JSON, XML, DOCX, ODT and RTF. TXT separates pages with a
+form feed; Markdown uses `---`; HTML creates escaped semantic page sections
+without scripts or remote content. Opening a PDF in the editor produces
+paragraphs and `pageBreak` nodes, shows the fidelity warning and requires Save
+As.
 
-### Planned result model
+## Image Flow And Clipboard
 
-The exact API may evolve during implementation, but it must preserve at least:
+PNG, JPEG, WebP, TIFF and BMP are accepted after real-type validation. EXIF
+orientation is applied and the input is normalized to an unpredictable
+temporary PNG without modifying the original. Limits are checked before
+inference.
 
-```ts
-interface OcrDocumentResultV1 {
-  schemaVersion: 1;
-  sourceKind: "pdf" | "image";
-  model: "PP-OCRv6_medium";
-  pages: OcrPageResultV1[];
-  warnings: OcrWarningV1[];
-}
+Each supported image exposes the explicit **Extract text** action. The Vellum
+Paper dialog shows progress, cancellation, result, warnings, empty result and
+errors. It is keyboard accessible, traps and restores focus, supports Escape
+outside an active job and remains usable at 200 percent zoom and the reference
+widths. Copy is explicit and disabled for an empty result. The Tauri clipboard
+capability permits only text writing; there is no read, monitor, HTML, image or
+clear permission.
 
-interface OcrPageResultV1 {
-  pageIndex: number;
-  width: number;
-  height: number;
-  extraction: "native-text" | "ocr";
-  blocks: OcrTextBlockV1[];
-}
+## Normalization And Limits
 
-interface OcrTextBlockV1 {
-  text: string;
-  confidence: number | null;
-  box: { x: number; y: number; width: number; height: number } | null;
-}
+- source: 128 MiB;
+- decoded image: 120 megapixels and 32,768 pixels per side;
+- PDF: 2,000 pages;
+- normalized text: 64 MiB;
+- worker startup: 30 seconds;
+- recognition: 180 seconds per page;
+- remote URLs, corrupted files, wrong real types and password-protected PDFs
+  are rejected;
+- output is Unicode NFC with LF endings and no trailing spaces;
+- blocks stay ordered by page, then top-to-bottom and left-to-right;
+- low confidence alone never deletes recognized text.
+
+## Commands
+
+```powershell
+npm run prepare:ocr-models
+npm run build:ocr-runtime:windows
+npm run prepare:ocr-runtime -- --platform windows-x64
+npm run test:ocr
+npm run test:ocr:runtime
+npm run test:ocr:corpus
 ```
 
-Persisted editor content must contain normalized text, not engine-specific temporary paths.
+`npm run test:ocr` is the repository contract gate and is included in
+`npm run check`. `npm run test:ocr:runtime` requires the ignored prepared
+Windows runtime/model artifacts and runs real inference.
+`npm run test:ocr:corpus` reuses one persistent worker for the reviewed local
+multilingual and difficult-image fixtures. Preview fixtures are UI evidence
+only.
 
-## UX Requirements
+## Evidence Obtained On 2026-07-31
 
-- OCR jobs show current file/page progress.
-- Long jobs can be cancelled.
-- Cancelling does not leave a partial output presented as complete.
-- Failed pages are named in the error or warning.
-- A blank result is different from a runtime failure.
-- The selected output location follows the existing converter workflow.
-- The UI explains that OCR reconstructs text, not the exact visual PDF.
-- Editor PDF import becomes enabled only when the real OCR command is available.
-- OCR controls honor keyboard navigation and `prefers-reduced-motion`.
+Real Tauri development-runtime evidence on Windows x64:
 
-## Security And Privacy
+- runtime metadata reported the locked official CPU stack;
+- a clean French fixture reached 100 percent normalized text accuracy with
+  accents, including in the standalone sidecar smoke test;
+- the first Tauri image job completed in 194.8 seconds including cold resource
+  verification; subsequent persistent-worker runs completed in 24.2 seconds
+  and later about 15.6 seconds;
+- cancellation returned `OCR_CANCELLED`; a forced worker crash returned
+  `OCR_RUNTIME_CRASH`; the following retry succeeded;
+- native PDF extraction completed in 248 ms;
+- scanned PDF extraction completed in 27.8 seconds after local border crop;
+- mixed native/scanned extraction completed in 8.6 seconds and preserved page
+  order with a form feed;
+- mixed PDF editor import completed in 9.1 seconds with
+  `paragraph,pageBreak,paragraph`, a PDF source marker and fidelity warning;
+- semantic mixed-PDF HTML contained two page sections, no script and no remote
+  resource.
 
-- No source bytes, thumbnails, recognized text or metrics leave the device.
-- The OCR process runs with only the paths required for its current job.
-- Remote image URLs are rejected.
-- Temporary directories use unpredictable names and are removed after success, error or cancellation.
-- Archive/model extraction rejects traversal and ambiguous paths.
-- Model and runtime downloads are maintainer-staged and checksum-verified.
-- Output files are written to a temporary sibling and atomically replaced only after validation.
-- Existing originals remain intact after every failure.
-- Logs must not include recognized document text by default.
+Automated evidence:
 
-Concrete source-byte, page-count, pixel-count, timeout and memory limits must be selected from real Windows benchmarks before the OCR feature is merged.
+- Rust OCR tests pass for normalization, five image normalizers, limits,
+  invalid sources, manifest integrity, safe archive paths, page threshold and
+  PDF crop;
+- 6 PDFium wrapper tests pass, including text inspection and rendering;
+- Playwright covers result, empty result, copy, cancellation, focus, Escape and
+  the 375/768/1024/1440 widths through deterministic preview fixtures;
+- the final real-runtime smoke recognizes the reviewed clean fixture exactly.
+- the 11-case CPU corpus passed with a 99.16 percent mean across seven clean
+  languages, 100 percent mean across rotation, low contrast and perspective,
+  a strictly empty blank result and 48,280 ms median recognition time;
+- French, English, Spanish, German, Italian and Portuguese clean fixtures were
+  exact. Japanese reached 94.12 percent because `ー` was recognized as `-`;
+  this visible per-language limitation is retained even though the clean
+  aggregate exceeds 98 percent.
 
-## Output Expectations
+The local unsigned Windows build also completed after packaging the OCR runtime
+and LibreOffice as verified compressed archives. It produced a 999,871,215-byte
+NSIS installer and a 26,662,400-byte application executable. This proves the
+resource set can be built without crossing NSIS's raw-input mapping limit; it
+does not prove installed application behavior.
 
-### TXT
+These results do not prove the installed NSIS application, all image formats
+through native Tauri normalization, a broad real-world corpus, peak memory, a
+native ONNX runtime, accelerators, macOS or Linux.
 
-- Preserve page order.
-- Separate pages predictably.
-- Preserve accents and Unicode.
-- Never insert object identifiers or confidence values into user text.
+The final 15-step Windows development gate passed in 557,915 ms. It included
+both npm audits, 44 Vitest tests, 11 Playwright scenarios, 108 normal Rust
+tests with 7 intentionally separated heavy tests, the 6/6 conversion matrix,
+6 PDFium tests, both Clippy gates, the production frontend and Tauri/NSIS.
+The NSIS archive also parsed and extracted all 281 packaged files without
+error; this remains structural evidence, not installed-runtime evidence.
 
-### Markdown
+## Remaining Exit Gates
 
-- Preserve paragraphs and simple headings/lists only when confidence is sufficient.
-- Reconstruct simple table-like rows only when deterministic.
-- Warn that exact page layout, images, signatures and complex tables are not reproduced.
+- Expand the synthetic 11-case corpus with multipage documents, multiple fonts,
+  skew, photos, all five native image input paths and reviewed expected files;
+  improve or explicitly accept the observed Japanese long-vowel-mark error.
+- Measure the required accuracy thresholds and native-runtime parity; retain
+  the official runtime when the candidate misses any gate.
+- Complete dependency-license review and notices for the exact 660 MB Windows
+  runtime before distributing it.
+- Run corruption, password, timeout, cleanup, atomic-output and original-file
+  tests through the packaged application.
+- Run the complete offline installed-NSIS behavior matrix; the local unsigned
+  build itself has passed.
+- Build and test one universal macOS runtime on Apple Silicon and Intel, then a
+  Linux x64 runtime and AppImage on real hosts.
+- Record output hashes, screenshots, peak memory and all host evidence in
+  `V1_0_7_VALIDATION.md`.
 
-### HTML
-
-- Use semantic local markup.
-- Escape recognized text.
-- Do not embed remote resources or scripts.
-- Keep page boundaries identifiable.
-
-### Editor
-
-- Convert recognized blocks into valid Tiptap JSON.
-- Keep page-break information when available.
-- Add compatibility warnings for uncertain structure.
-- Use the editor's normal autosave, asset and export paths after import.
-
-## Test Fixtures
-
-The OCR fixture set must include:
-
-- native-text PDF;
-- scanned-only PDF;
-- mixed native/scanned PDF;
-- rotated pages;
-- three or more pages;
-- French accents and punctuation;
-- English and at least one additional upstream-supported language;
-- low contrast;
-- skew;
-- phone photo with perspective;
-- PNG, JPEG, WebP, TIFF and BMP;
-- blank page/image;
-- very large image;
-- corrupted input;
-- password-protected PDF;
-- cancellation during a multipage job.
-
-Expected text must be stored in reviewed fixture files. Tests must use normalized comparisons and documented accuracy thresholds rather than subjective claims.
-
-## Required Automated Coverage
-
-When implementation starts, add a dedicated OCR contract command and include it in `npm run check`. The command name is not active yet; do not document it as runnable until it exists.
-
-Coverage must include:
-
-- exact model identifier;
-- checksum and offline-model discovery;
-- no network access;
-- PDF page selection;
-- reading order;
-- Unicode/accents;
-- clipboard result;
-- Tiptap JSON conversion;
-- cancellation;
-- progress;
-- corrupt input;
-- limits;
-- cleanup;
-- atomic output;
-- original-file integrity;
-- deterministic TXT/Markdown/HTML serialization.
-
-## Manual Platform Matrix
-
-For each release platform:
-
-1. launch the packaged application offline;
-2. convert native, scanned and mixed PDFs to every advertised text target;
-3. extract and copy text from every advertised image format;
-4. open a scanned PDF in the editor;
-5. edit and export the OCR-created document;
-6. cancel a long job;
-7. force an error and confirm cleanup/original integrity;
-8. restart the app and repeat without downloading the model;
-9. record runtime/model versions, duration, peak memory, output hashes and screenshots.
-
-## Exit Criteria
-
-- Real `PP-OCRv6_medium` inference runs locally in the packaged app.
-- PDF-to-TXT, Markdown and HTML meet reviewed fixture thresholds.
-- Image text can be copied reliably.
-- PDF-to-editor produces valid editable Tiptap JSON.
-- Progress, cancellation, warnings and errors work.
-- Model/runtime checksums and notices are recorded.
-- No OCR data is transmitted.
-- Windows gate passes before the V1.0.7 version bump.
-- macOS/Linux gates pass before those V1.0.7 packages are published.
+Only after those gates pass may metadata move to `1.0.7` or an OCR release be
+published.
 
 ## Official References
 
-- PaddleOCR repository: https://github.com/PaddlePaddle/PaddleOCR
-- PP-OCRv6 documentation: https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/algorithm/PP-OCRv6/PP-OCRv6.md
-- OCR pipeline usage: https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/OCR.en.md
+- PaddleOCR 3.7.0: https://pypi.org/project/paddleocr/3.7.0/
+- OCR pipeline: https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/OCR.en.md
+- PP-OCRv6: https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/algorithm/PP-OCRv6/PP-OCRv6.md
 - PaddleOCR license: https://github.com/PaddlePaddle/PaddleOCR/blob/main/LICENSE
+- ONNX Runtime providers: https://onnxruntime.ai/docs/execution-providers/
+- Tauri clipboard permissions: https://v2.tauri.app/plugin/clipboard/

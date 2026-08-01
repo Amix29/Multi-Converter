@@ -238,7 +238,7 @@ pub(super) fn ensure_source_unchanged(
 }
 
 pub(super) fn replace_file_safely(source: &Path, destination: &Path) -> CommandResult<()> {
-    let bytes = fs::read(source).map_err(|error| error.to_string())?;
+    let bytes = fs::read(source).map_err(|error| format!("source-read:{error}"))?;
     if bytes.is_empty() {
         return Err("EDITOR_OUTPUT_EMPTY:La sortie générée est vide.".to_string());
     }
@@ -249,25 +249,41 @@ pub(super) fn write_bytes_atomically(bytes: &[u8], destination: &Path) -> Comman
     let parent = destination
         .parent()
         .ok_or_else(|| "EDITOR_STORAGE_INVALID:Dossier de destination invalide.".to_string())?;
-    fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-    let staged = parent.join(format!(".multi-converter-{}.tmp", uuid::Uuid::new_v4()));
-    fs::write(&staged, bytes).map_err(|error| error.to_string())?;
-    let backup = parent.join(format!(".multi-converter-{}.backup", uuid::Uuid::new_v4()));
+    fs::create_dir_all(parent).map_err(|error| format!("parent-create:{error}"))?;
+    // OneDrive-backed known folders can reject sibling files ending in
+    // `.tmp` with ERROR_FILE_NOT_FOUND. Keep the destination extension while
+    // retaining a unique, non-hidden work name.
+    let staged = sibling_work_path(parent, destination, "staged");
+    fs::write(&staged, bytes).map_err(|error| format!("stage-write:{error}"))?;
+    let backup = sibling_work_path(parent, destination, "backup");
     let had_destination = destination.exists();
     if had_destination {
-        fs::rename(destination, &backup).map_err(|error| error.to_string())?;
+        fs::rename(destination, &backup).map_err(|error| format!("backup-rename:{error}"))?;
     }
     if let Err(error) = fs::rename(&staged, destination) {
         if had_destination {
             let _ = fs::rename(&backup, destination);
         }
         let _ = fs::remove_file(&staged);
-        return Err(error.to_string());
+        return Err(format!("destination-rename:{error}"));
     }
     if had_destination {
         let _ = fs::remove_file(backup);
     }
     Ok(())
+}
+
+fn sibling_work_path(parent: &Path, destination: &Path, role: &str) -> PathBuf {
+    let extension = destination
+        .extension()
+        .and_then(|value| value.to_str())
+        .filter(|value| !value.is_empty())
+        .unwrap_or("work");
+    parent.join(format!(
+        "multi-converter-{role}-{}.{}",
+        uuid::Uuid::new_v4(),
+        extension
+    ))
 }
 
 #[cfg(test)]
@@ -304,5 +320,21 @@ mod tests {
         assert_ne!(document.id, original_id);
         assert!(document.source.is_none());
         assert_eq!(document.title, "Rapport - copie");
+    }
+
+    #[test]
+    fn atomic_work_files_keep_the_destination_extension() {
+        let parent = Path::new("C:\\Documents");
+        let staged = sibling_work_path(parent, &parent.join("Rapport.docx"), "staged");
+        assert_eq!(
+            staged.extension().and_then(|value| value.to_str()),
+            Some("docx")
+        );
+        assert!(
+            staged
+                .file_name()
+                .and_then(|value| value.to_str())
+                .is_some_and(|value| value.starts_with("multi-converter-staged-"))
+        );
     }
 }

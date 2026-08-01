@@ -413,5 +413,13 @@
   "editor.editFooter": "Editar rodapé",
   "editor.insertPageNumber": "Inserir número de página",
   "editor.compatibilityWarning": "Este documento contém elementos que não podem ser exportados fielmente. Use Guardar como para proteger o original.",
-  "editor.flatFormatLayoutWarning": "TXT e Markdown não têm páginas: o cabeçalho e o rodapé serão adicionados uma única vez, sem numeração repetida."
+  "editor.flatFormatLayoutWarning": "TXT e Markdown não têm páginas: o cabeçalho e o rodapé serão adicionados uma única vez, sem numeração repetida.",
+  "ocr.extract": "Extrair texto",
+  "ocr.eyebrow": "OCR local",
+  "ocr.title": "Texto da imagem",
+  "ocr.processing": "Reconhecimento em curso…",
+  "ocr.result": "Texto reconhecido",
+  "ocr.copy": "Copiar",
+  "ocr.copied": "O texto reconhecido foi copiado.",
+  "ocr.empty": "Nenhum texto foi detetado nesta imagem."
 }

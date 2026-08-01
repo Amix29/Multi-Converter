@@ -1,6 +1,7 @@
 use image::codecs::jpeg::JpegEncoder;
 use image::{DynamicImage, ImageFormat};
 use pdfium_render::prelude::*;
+use serde::Serialize;
 use std::env;
 use std::fs::{self, File};
 use std::path::{Path, PathBuf};
@@ -32,7 +33,7 @@ fn run() -> Result<(), String> {
             Ok(())
         }
         Some("--version") => {
-            println!("pdfium-render-wrapper 0.2.0");
+            println!("pdfium-render-wrapper 0.3.0");
             Ok(())
         }
         Some("--page-count") => {
@@ -41,6 +42,11 @@ fn run() -> Result<(), String> {
             let document = load_document(&pdfium, Path::new(input))?;
             println!("{}", page_count(&document)?);
             Ok(())
+        }
+        Some("--inspect-text") => {
+            let input = args.get(1).ok_or_else(usage)?;
+            let output = args.get(2).map(Path::new);
+            inspect_text(Path::new(input), output)
         }
         Some("--render") => {
             if args.len() < 3 {
@@ -66,11 +72,97 @@ fn usage() -> String {
         "  pdfium-render --check",
         "  pdfium-render --version",
         "  pdfium-render --page-count <input.pdf>",
+        "  pdfium-render --inspect-text <input.pdf> [output.json]",
         "  pdfium-render --render <input.pdf> <output.png|jpg|jpeg> --page 1 --format png --dpi 200",
         "  pdfium-render --render-all <input.pdf> <output-dir> --format png --dpi 200",
         "  pdfium-render --render-all <input.pdf> <output-dir> --format jpg --dpi 200 --quality 90",
     ]
     .join("\n")
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PdfTextInspection {
+    schema_version: u8,
+    page_count: usize,
+    pages: Vec<PdfTextPage>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PdfTextPage {
+    page_number: usize,
+    width_points: f32,
+    height_points: f32,
+    text: String,
+    alphanumeric_characters: usize,
+    invalid_character_ratio: f64,
+    usable: bool,
+}
+
+fn inspect_text(input: &Path, output: Option<&Path>) -> Result<(), String> {
+    let pdfium = load_pdfium()?;
+    let document = load_document(&pdfium, input)?;
+    let count = page_count(&document)?;
+    ensure_page_count(count)?;
+    let mut pages = Vec::with_capacity(count);
+    for index in 0..count {
+        let page = document
+            .pages()
+            .get(index as i32)
+            .map_err(|error| format!("PDFium ne peut pas lire la page {} : {error}", index + 1))?;
+        let text = page
+            .text()
+            .map_err(|error| {
+                format!(
+                    "PDFium ne peut pas extraire la page {} : {error}",
+                    index + 1
+                )
+            })?
+            .all();
+        let alphanumeric_characters = text.chars().filter(|value| value.is_alphanumeric()).count();
+        let considered = text.chars().filter(|value| !value.is_whitespace()).count();
+        let invalid = text
+            .chars()
+            .filter(|value| *value == '\u{fffd}' || (value.is_control() && !value.is_whitespace()))
+            .count();
+        let invalid_character_ratio = if considered == 0 {
+            0.0
+        } else {
+            invalid as f64 / considered as f64
+        };
+        pages.push(PdfTextPage {
+            page_number: index + 1,
+            width_points: page.width().value,
+            height_points: page.height().value,
+            text,
+            alphanumeric_characters,
+            invalid_character_ratio,
+            usable: alphanumeric_characters >= 12 && invalid_character_ratio < 0.02,
+        });
+    }
+    let inspection = PdfTextInspection {
+        schema_version: 1,
+        page_count: count,
+        pages,
+    };
+    let json = serde_json::to_string(&inspection)
+        .map_err(|error| format!("Inspection PDFium non sérialisable : {error}"))?;
+    if let Some(output) = output {
+        if let Some(parent) = output.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|error| format!("Dossier d’inspection PDFium inaccessible : {error}"))?;
+        }
+        let temporary = output.with_extension("json.part");
+        fs::write(&temporary, json)
+            .map_err(|error| format!("Inspection PDFium non enregistrée : {error}"))?;
+        fs::rename(&temporary, output)
+            .map_err(|error| format!("Inspection PDFium non finalisée : {error}"))?;
+        println!("{}", output.display());
+    } else {
+        println!("{json}");
+    }
+    Ok(())
 }
 
 #[derive(Clone, Copy, Debug)]

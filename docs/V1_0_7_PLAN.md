@@ -58,6 +58,27 @@ The editor gate must close before OCR implementation is treated as the active re
 
 ## Workstream B — Local OCR
 
+### Implemented in the Phase 3 Windows checkpoint
+
+- Locked five-module `PP-OCRv6_medium` model preparation with official origins,
+  SHA-256 verification and per-file manifests.
+- Supervised official CPU sidecar with one active job, persistent session
+  worker, cancellation, crash recovery and bounded temporary files.
+- Hybrid PDF page inspection, native extraction, selective 300-DPI OCR and
+  text/editor serializers.
+- Explicit image-text dialog, progress, cancellation, empty state and
+  write-only text clipboard capability.
+- Real Tauri development-runtime evidence for image, native/scanned/mixed PDF,
+  editor import, cancellation, crash and retry.
+
+### Still required for release
+
+- Full reviewed multilingual and difficult-image corpus with threshold reports.
+- Native ONNX candidate and accelerator parity/size/speed decisions.
+- Complete dependency-license inventory for the selected runtime.
+- Packaged Windows NSIS offline matrix, followed by real macOS universal and
+  Linux x64 runtime/package matrices.
+
 ### Required user outcomes
 
 - Convert PDFs containing scanned or image-only pages into usable text formats.

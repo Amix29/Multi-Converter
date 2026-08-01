@@ -30,22 +30,36 @@ For bundled FFmpeg/ffprobe binaries, the same rule applies even though they are 
 | libvips | Advanced bundled | LGPL-2.1-or-later, with many image codec dependencies that may carry separate terms. | Include libvips license and notices for all bundled DLLs/codecs. |
 | 7-Zip | Future archive engine | LGPL with additional unRAR restriction if RAR support is included. | Document 7-Zip usage, link to source, and avoid implying RAR creation support unless explicitly verified. |
 
-## Planned V1.0.7 OCR engine
+## V1.0.7 OCR development engine
 
-V1.0.7 selects the local `PP-OCRv6_medium` model from PaddleOCR. OCR is not bundled yet, so it must not be added to the active-engine table or `NOTICE` until implementation.
+The Phase 3 worktree prepares `PP-OCRv6_medium` with PaddlePaddle 3.3.1,
+PaddleOCR 3.7.0, PaddleX 3.7.0 and ONNX Runtime 1.26.0. Five official model
+archives, their origins and SHA-256 values are locked in
+`src-tauri/ocr-runtime-lock.json`. The Windows reference artifact is an
+official CPU sidecar; DirectML, CoreML, OpenVINO and the native ONNX candidate
+are not selected without parity evidence.
 
-Before packaging OCR:
+This engine is active only in the Phase 3 development worktree. It is not yet
+approved for public redistribution and is intentionally absent from `NOTICE`.
+The current PyInstaller artifact includes thousands of Python wheels and native
+libraries. Before packaging or publishing it, maintainers must inventory the
+exact dependency graph, preserve every applicable license/notice and confirm
+model redistribution terms. The top-level Apache-2.0 licenses for PaddleOCR,
+PaddleX and PaddlePaddle are necessary but not sufficient.
 
-- verify the exact PaddleOCR and inference-runtime versions;
-- verify the license and redistribution terms of every runtime dependency and model archive;
-- preserve the PaddleOCR Apache-2.0 license and applicable notices;
-- pin official model/runtime URLs and SHA-256 values;
-- record compressed and installed sizes;
-- package platform-native executables/libraries only;
-- prove that recognition works offline and does not download a model during conversion;
-- add OCR entries to the embedded engine manifest only after the package validator understands them.
+The model artifact is 185,082,003 installed bytes. The current Windows runtime
+is 660,098,904 installed bytes and its verified package archive is 236,434,900
+bytes. Per-file manifests and aggregate hashes are recorded in the OCR
+contract. Compression changes neither the runtime contents nor its licensing
+obligations. No macOS or Linux OCR artifact has been prepared, so no platform
+claim or notice set exists for those targets.
 
-The selected upstream project is Apache-2.0, but this does not remove the obligation to inspect PaddlePaddle, inference backend, image/PDF dependencies and model-distribution notices individually.
+The Windows package also reuses the exact verified LibreOffice release archive
+from the bundled-engine cache instead of presenting its 1.5 GB expanded tree
+directly to NSIS. The archive is 483,796,141 bytes, is checked against the
+LibreOffice entry in `engines-manifest.json`, and is extracted locally only
+when a conversion needs it. This is a packaging change only: LibreOffice and
+all of its license and notice requirements remain part of the application.
 
 ## macOS engine status
 

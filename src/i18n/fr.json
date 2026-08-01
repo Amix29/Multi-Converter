@@ -413,5 +413,13 @@
   "editor.editFooter": "Modifier le pied de page",
   "editor.insertPageNumber": "Insérer le numéro de page",
   "editor.compatibilityWarning": "Ce document contient des éléments qui ne peuvent pas être réexportés fidèlement. Utilisez Enregistrer sous pour protéger l’original.",
-  "editor.flatFormatLayoutWarning": "TXT et Markdown n’ont pas de pages : l’en-tête et le pied seront ajoutés une seule fois, sans numérotation répétée."
+  "editor.flatFormatLayoutWarning": "TXT et Markdown n’ont pas de pages : l’en-tête et le pied seront ajoutés une seule fois, sans numérotation répétée.",
+  "ocr.extract": "Extraire le texte",
+  "ocr.eyebrow": "OCR local",
+  "ocr.title": "Texte de l’image",
+  "ocr.processing": "Reconnaissance en cours…",
+  "ocr.result": "Texte reconnu",
+  "ocr.copy": "Copier",
+  "ocr.copied": "Le texte reconnu a été copié.",
+  "ocr.empty": "Aucun texte n’a été détecté dans cette image."
 }

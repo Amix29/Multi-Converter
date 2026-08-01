@@ -17,7 +17,8 @@
       "binaries/ffprobe"
     ],
     "resources": {
-      "bundled-engines/": "engines/"
+      "bundled-engines/": "engines/",
+      "ocr-resources/": "ocr/"
     },
     "macOS": {
       "minimumSystemVersion": "11.0",

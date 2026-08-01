@@ -413,5 +413,13 @@
   "editor.editFooter": "Modifica piè di pagina",
   "editor.insertPageNumber": "Inserisci numero di pagina",
   "editor.compatibilityWarning": "Il documento contiene elementi che non possono essere esportati fedelmente. Usa Salva con nome.",
-  "editor.flatFormatLayoutWarning": "TXT e Markdown non hanno pagine: intestazione e piè di pagina verranno aggiunti una sola volta, senza numerazione ripetuta."
+  "editor.flatFormatLayoutWarning": "TXT e Markdown non hanno pagine: intestazione e piè di pagina verranno aggiunti una sola volta, senza numerazione ripetuta.",
+  "ocr.extract": "Estrai testo",
+  "ocr.eyebrow": "OCR locale",
+  "ocr.title": "Testo dell’immagine",
+  "ocr.processing": "Riconoscimento in corso…",
+  "ocr.result": "Testo riconosciuto",
+  "ocr.copy": "Copia",
+  "ocr.copied": "Il testo riconosciuto è stato copiato.",
+  "ocr.empty": "Nessun testo è stato rilevato in questa immagine."
 }
