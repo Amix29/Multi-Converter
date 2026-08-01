@@ -98,7 +98,8 @@ in that commit.
 evidence. V1.0.7 remains blocked by the real Tauri editor matrix, OCR and the
 platform release gates. The commit is local and is not pushed without explicit
 authorization. Generated `output/` and `release-direct/` artifacts were not
-included. The former standalone site history remains recoverable from the
+included and are ignored at the repository root without deleting the retained
+local files. The former standalone site history remains recoverable from the
 verified external Git bundle retained by the maintainer.
 
 ## 2026-08-01 — Keep One Rust Crate And Refactor By Domain

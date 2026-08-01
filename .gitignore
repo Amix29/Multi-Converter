@@ -31,10 +31,14 @@ test-results/
 playwright-report/
 output/
 .playwright-cli/
+/output/
 tmp/
 tmp-test/
 *.tmp
 tmp-*.json
+
+# Local direct release builds and handoff artifacts
+/release-direct/
 
 # Logs
 *.log
