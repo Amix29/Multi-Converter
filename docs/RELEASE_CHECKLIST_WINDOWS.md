@@ -20,6 +20,7 @@ npm run clippy:pdfium-wrapper
 npm run test:conversions
 npm run build
 npm run tauri:build
+npm run test:windows:native
 npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp\mc-release-assets\vX.Y.Z"
 ```
 
@@ -32,6 +33,7 @@ Before a V1.0.7 Windows release:
 - real `PP-OCRv6_medium` inference must pass the fixtures in `docs/V1_0_7_OCR.md`;
 - scanned PDF to TXT/Markdown/HTML and copy-text-from-image must work offline in the packaged application;
 - OCR progress, cancellation, limits, cleanup and original-file integrity must pass;
+- `npm run test:windows:native` must validate the exact installed candidate from a dedicated clean Windows x64 profile;
 - `NOTICE` and `docs/THIRD_PARTY_ENGINES.md` must name the exact packaged OCR runtime/model and notices;
 - version metadata may change to `1.0.7` only after these checks pass.
 

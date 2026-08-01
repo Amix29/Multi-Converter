@@ -89,6 +89,16 @@ The editor gate must close before OCR implementation is treated as the active re
 - Packaged Windows NSIS offline matrix, followed by real macOS universal and
   Linux x64 runtime/package matrices.
 
+### Phase 5 validation status
+
+- A machine-checked Windows native ledger now defines 101 required installed
+  scenarios and rejects extracted, online or current-profile evidence as final
+  proof.
+- The exact Phase 5 candidate passed the complete automated Windows gate and
+  rendered on first and second extracted-package launches without `Ctrl+R`.
+- Installation, offline execution and all converter/editor/OCR scenarios still
+  require an interactive session in the dedicated clean Windows profile.
+
 ### Required user outcomes
 
 - Convert PDFs containing scanned or image-only pages into usable text formats.

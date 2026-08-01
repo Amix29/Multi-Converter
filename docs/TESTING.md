@@ -43,6 +43,58 @@ progress to `tmp/windows-ci-gate-status.json`. If a terminal session times out
 while `tauri:build` or NSIS is still running, inspect that file and the running
 processes before starting another full gate.
 
+### Installed Windows native evidence
+
+The automated gate does not prove the installed NSIS lifecycle or native UI
+interactions. Phase 5 adds a machine-checked evidence ledger for those checks:
+
+```powershell
+npm run test:windows:native -- --self-test
+npm run test:windows:native -- --init `
+  --run-id phase-5-final `
+  --installer "<exact-setup.exe>" `
+  --installed-executable "<installed-multi-converter.exe>" `
+  --profile-isolation dedicated `
+  --package-mode installed `
+  --network-mode offline
+```
+
+Initialization records the exact installer, installed executable, source
+commit and engine-resource fingerprints. It creates 101 pending scenarios in
+the ignored directory `test-results/phase-5-windows-native/<run-id>/`.
+
+For a scenario that consumes a source file, capture the before hash first:
+
+```powershell
+npm run test:windows:native -- --begin converter.ffmpeg-ffprobe --source "<fixture>"
+```
+
+After performing the interaction in the installed application, record a
+non-sensitive screenshot, output or log and every required native executable:
+
+```powershell
+npm run test:windows:native -- --complete converter.ffmpeg-ffprobe `
+  --status pass `
+  --artifact "output=<converted-file>" `
+  --process "<installed-ffmpeg.exe>" `
+  --process "<installed-ffprobe.exe>" `
+  --note "Offline installed conversion completed"
+```
+
+Use `--manifest "<manifest.json>"` for a run other than the newest one. The
+final command fails until every scenario passes and every artifact still
+matches its recorded SHA-256 value:
+
+```powershell
+npm run test:windows:native
+```
+
+The validator rejects a non-Windows/non-x64 run, a profile other than
+`dedicated`, a package mode other than `installed`, an online run, changed source bytes, missing process identities
+and new `multi-converter-*` temporary entries after failure or cancellation.
+Evidence stays local and ignored. Do not place document text, private filenames
+or recognized OCR content in notes or committed documentation.
+
 Before publishing Windows assets, prepare a clean release folder and run:
 
 ```powershell

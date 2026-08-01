@@ -235,6 +235,29 @@ working set, 1,188.0 MiB private memory after inference and 1,939.1 MiB peak
 paged memory for the persistent OCR worker. The measured values describe this
 machine and fixture; they are a baseline, not a hard cross-platform bound.
 
+## Phase 5 Windows Candidate Evidence
+
+The Phase 5 18-step Windows gate passed in 939,660 ms. The exact local unsigned
+candidate is:
+
+- NSIS: 999,834,888 bytes, SHA-256
+  `D070371BEB318F27EFC25E443A1F22662B3611B286D2C5D6168C6D9660FF91A1`;
+- release executable: 26,734,080 bytes, unchanged from Phase 4;
+- extracted NSIS payload: 281 files and 1,407,637,272 bytes.
+
+The exact executable extracted from that candidate rendered immediately on its
+first and second launches without `Ctrl+R`, and the native Windows file picker
+opened. These checks ran against the extracted package in the current profile.
+They do not prove installation, offline behavior, OCR inputs or the Office
+matrix in a dedicated clean profile.
+
+`npm run test:windows:native` now locks 101 native scenarios and checks the
+candidate hashes, advanced-engine tree, OCR resources, source integrity,
+temporary cleanup and evidence files. The current partial ledger intentionally
+fails with 104 open issues: three environment requirements and 101 scenarios
+that are not all passed. Three scenarios have partial blocked evidence and 98
+remain pending.
+
 ## Remaining Exit Gates
 
 - Expand the synthetic 11-case corpus with multipage documents, multiple fonts,
@@ -248,7 +271,8 @@ machine and fixture; they are a baseline, not a hard cross-platform bound.
 - Run corruption, password, timeout, cleanup, atomic-output and original-file
   tests through the packaged application.
 - Run the complete offline installed-NSIS behavior matrix. The local unsigned
-  build and extracted-package PNG/copy/cancel/retry smoke have passed.
+  build, earlier PNG/copy/cancel/retry smoke and Phase 5 exact-candidate launch
+  have passed; the clean-profile installed matrix has not.
 - Build and test one universal macOS runtime on Apple Silicon and Intel, then a
   Linux x64 runtime and AppImage on real hosts.
 - Record output hashes, screenshots and all remaining host evidence in

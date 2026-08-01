@@ -260,6 +260,39 @@ system file picker, so no native ODT round-trip claim is made. The installed
 NSIS lifecycle, manual native conversion cancellation and macOS/Linux remain
 open. This checkpoint does not make V1.0.7 release-ready.
 
+## 2026-08-01 Phase 5 Windows Native Validation Checkpoint
+
+Phase 5 adds a reproducible installed-Windows evidence protocol without
+changing a Tauri command, public contract, format, engine, dependency or
+version. `npm run test:windows:native -- --self-test` passes and locks 101
+required scenarios covering NSIS lifecycle, converter engine families, the
+Office editor matrix and OCR.
+
+Current evidence:
+
+- the canonical Windows gate passed 18/18 steps in 939,660 ms;
+- 44 Vitest tests, 22 routed Playwright executions, 138 Rust tests, the 6/6
+  conversion matrix, LibreOffice archive extraction, PDFium, OCR runtime and
+  the current 11-case corpus passed;
+- the prepared engine tree matches Phase 4 exactly: 19,571 files,
+  1,785,947,516 bytes and aggregate SHA-256
+  `5f5c6d5d11fcda17b741924d273108ded718b7581ebb0d19db04136bff0cd290`;
+- the exact local NSIS candidate is 999,834,888 bytes with SHA-256
+  `D070371BEB318F27EFC25E443A1F22662B3611B286D2C5D6168C6D9660FF91A1`;
+- its 26,734,080-byte executable is unchanged from Phase 4 and the extracted
+  281-file package rendered immediately on first and second launch without
+  `Ctrl+R`;
+- the native Windows file picker opened, but file selection stopped safely
+  after concurrent human input was detected.
+
+The current evidence run is deliberately labelled `current` and `extracted`,
+not `dedicated`, `installed` or `offline`. Its final validator reports 104 open
+issues: three environment requirements plus the 101 scenarios that are not all
+passed. First launch, second launch and native picker contain partial evidence
+but remain blocked; 98 scenarios remain pending. The installed NSIS lifecycle,
+complete converter/editor/OCR matrices and offline clean-profile proof remain
+open, so Phase 5 is a local checkpoint rather than a closed Windows gate.
+
 ## Gate Summary
 
 | Gate | Status | Blocking work |
@@ -267,6 +300,7 @@ open. This checkpoint does not make V1.0.7 release-ready.
 | Tiptap editor implementation | Implemented in development tree | Preserve current contracts while completing real host tests |
 | Phase 2 frontend and Vellum Paper | Windows automated checkpoint passed | Raw-total bundle target missed; keep the measured result and complete native/manual gates |
 | Phase 4 Rust backend refactor | Windows checkpoint passed | Preserve compatibility and complete the remaining installed/platform matrices |
+| Phase 5 Windows native validation | Protocol and automated candidate passed; host checkpoint partial | Run all 101 scenarios against the installed NSIS in a dedicated offline profile |
 | Editor automated checks | Passed for unit and compiled-preview scope | Keep preview proof separate from real Tauri behavior |
 | Editor HTML sanitization | Implemented with preview and static coverage | Complete real Tauri asset persistence and packaged-runtime checks |
 | Windows Tauri Office matrix | Pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios |

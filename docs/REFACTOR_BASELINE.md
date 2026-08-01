@@ -422,3 +422,40 @@ could not reliably drive native ODT import, so Phase 4 does not claim a native
 UI ODT round trip; ODT parity remains covered by Rust fixtures and the real
 LibreOffice archive test. The installed NSIS lifecycle, manual native
 conversion cancellation and real macOS/Linux behavior also remain open.
+
+## Phase 5 Windows Native Validation Snapshot
+
+Phase 5 is based on commit `51c5c595` in the isolated
+`codex/phase-5-windows-native` worktree. It adds validation infrastructure and
+documentation only; no product engine, conversion algorithm, public contract
+or dependency changed.
+
+### Candidate And Engine Identity
+
+| Measurement | Phase 4 | Phase 5 | Difference |
+| --- | ---: | ---: | ---: |
+| Advanced engine files | 19,571 | 19,571 | 0 |
+| Advanced engine bytes | 1,785,947,516 | 1,785,947,516 | 0 |
+| Windows application executable | 26,734,080 | 26,734,080 | 0 |
+| Windows NSIS installer | 999,834,801 | 999,834,888 | +87 bytes |
+
+The advanced-engine aggregate SHA-256 is identical in both worktrees:
+`5f5c6d5d11fcda17b741924d273108ded718b7581ebb0d19db04136bff0cd290`.
+The Phase 5 NSIS SHA-256 is
+`D070371BEB318F27EFC25E443A1F22662B3611B286D2C5D6168C6D9660FF91A1`.
+The installer delta is compression metadata, not an optimization claim. The
+executable remains exactly at the Phase 4 baseline and therefore stays below
+the five-percent ceiling.
+
+### Validation Evidence And Limits
+
+The full Windows gate passed 18/18 steps in 939,660 ms. The NSIS parsed into
+281 files totalling 1,407,637,272 bytes. Its exact extracted executable rendered
+on first and second launch without reproducing the earlier blank WebView.
+
+`npm run test:windows:native` adds a 101-scenario evidence contract. The partial
+current-host run intentionally fails with 104 issues because it is extracted,
+online and not isolated in a dedicated profile, and because none of the 101
+installed scenarios can yet be marked fully passed. Three have blocked partial
+evidence; 98 remain pending. This snapshot must not be presented as installed
+NSIS, offline OCR, complete Office round-trip or release readiness.

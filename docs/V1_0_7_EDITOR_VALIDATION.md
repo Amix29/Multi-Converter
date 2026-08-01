@@ -115,9 +115,17 @@ The real application was started with `npm start` and the following points were 
 - a new document opened with the formatting toolbar, page canvas, header/footer controls, page settings and export controls;
 - draft JSON files were written under the local application data editor directory after editing.
 
-One development-only observation remains to reproduce: the first WebView capture was blank until `Ctrl+R`; the complete interface rendered after reload with no console error. This must be checked on a clean second launch and on the packaged binary before the Windows gate is closed.
+Phase 5 rechecked the exact 26,734,080-byte executable extracted from its final
+local NSIS candidate. Both the first and second launches rendered the complete
+interface immediately without `Ctrl+R`; the earlier development-only blank
+capture was not reproduced. This is current-profile extracted-package evidence,
+not the still-required installed clean-profile proof.
 
-The automated Tauri office run was stopped when concurrent human input was detected in the Tauri window. This protected the active document from being overwritten, but it means the complete import → edit → export matrix below is still pending. The later browser UI regression pass and executable smoke launch do not close that matrix. OCR work must not begin on the basis of these partial observations.
+The Phase 5 exact candidate opened the native Windows file picker. File
+selection was stopped when concurrent human input was detected, protecting the
+active desktop and existing documents. The complete import → edit → export
+matrix below therefore remains pending. Browser UI checks and an
+extracted-package launch do not close it.
 
 ## Manual Office Matrix
 
@@ -142,8 +150,9 @@ For every completed row, record the source fixture, output SHA-256, LibreOffice 
 
 Status: **not yet closed**.
 
-The final Phase 2 automated Windows gate and the reported editor-home
-regressions are green. The complete real Tauri office round-trip matrix, native
-file-drop check and clean restart/persistent-asset check nevertheless remain
-required before starting OCR. macOS and Linux host validation remain release
-gates before any multiplatform publication claim.
+The Phase 5 automated Windows gate and the reported editor-home regressions are
+green. First and second extracted-package launches no longer reproduce the
+blank WebView observation. The complete installed Tauri Office round-trip
+matrix, native file drop and clean-profile restart/persistent-asset checks
+remain required before the Windows feature gate can close. macOS and Linux host
+validation remain release gates before any multiplatform publication claim.
