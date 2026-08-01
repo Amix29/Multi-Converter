@@ -459,3 +459,8 @@ online and not isolated in a dedicated profile, and because none of the 101
 installed scenarios can yet be marked fully passed. Three have blocked partial
 evidence; 98 remain pending. This snapshot must not be presented as installed
 NSIS, offline OCR, complete Office round-trip or release readiness.
+
+The maintainer subsequently accepted these remaining checks by assumption so
+that Phase 6 can begin without disconnecting the active machine. This sequencing
+decision does not alter the measurements or turn the pending checks into passed
+evidence.

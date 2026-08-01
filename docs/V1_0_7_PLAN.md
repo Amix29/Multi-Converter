@@ -98,6 +98,9 @@ The editor gate must close before OCR implementation is treated as the active re
   rendered on first and second extracted-package launches without `Ctrl+R`.
 - Installation, offline execution and all converter/editor/OCR scenarios still
   require an interactive session in the dedicated clean Windows profile.
+- By explicit maintainer decision, the remaining scenarios are assumed to work
+  and Phase 5 is accepted as complete for sequencing into Phase 6. They remain
+  unvalidated and must not be cited as release evidence.
 
 ### Required user outcomes
 

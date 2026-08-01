@@ -293,6 +293,19 @@ but remain blocked; 98 scenarios remain pending. The installed NSIS lifecycle,
 complete converter/editor/OCR matrices and offline clean-profile proof remain
 open, so Phase 5 is a local checkpoint rather than a closed Windows gate.
 
+### Maintainer Assumption For Phase Sequencing
+
+The maintainer has explicitly asked not to disconnect the active machine,
+because doing so would interrupt the working session, and has chosen to assume
+that the remaining native scenarios function correctly. Phase 5 is therefore
+accepted as complete **for phase sequencing only**. The 101 scenarios are not
+reclassified as passed, and the evidence manifest remains incomplete so that
+an assumption cannot be mistaken for an executed test.
+
+This assumption allows work to proceed to Phase 6. It does not constitute
+installed-NSIS, offline, Office round-trip or OCR validation, and it cannot be
+used as release-readiness evidence unless those checks are later executed.
+
 ## Gate Summary
 
 | Gate | Status | Blocking work |
@@ -300,7 +313,7 @@ open, so Phase 5 is a local checkpoint rather than a closed Windows gate.
 | Tiptap editor implementation | Implemented in development tree | Preserve current contracts while completing real host tests |
 | Phase 2 frontend and Vellum Paper | Windows automated checkpoint passed | Raw-total bundle target missed; keep the measured result and complete native/manual gates |
 | Phase 4 Rust backend refactor | Windows checkpoint passed | Preserve compatibility and complete the remaining installed/platform matrices |
-| Phase 5 Windows native validation | Protocol and automated candidate passed; host checkpoint partial | Run all 101 scenarios against the installed NSIS in a dedicated offline profile |
+| Phase 5 Windows native validation | Accepted for sequencing by explicit maintainer assumption; native ledger remains incomplete | Execute the 101 installed scenarios later if release-grade native proof is required |
 | Editor automated checks | Passed for unit and compiled-preview scope | Keep preview proof separate from real Tauri behavior |
 | Editor HTML sanitization | Implemented with preview and static coverage | Complete real Tauri asset persistence and packaged-runtime checks |
 | Windows Tauri Office matrix | Pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios |
