@@ -100,3 +100,54 @@ impl OcrProgressV1 {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ocr_progress_keeps_versioned_camel_case_ipc_shape() {
+        let value = serde_json::to_value(OcrProgressV1::document(
+            "ocr-1",
+            37,
+            "recognition",
+            Some(2),
+            Some(4),
+        ))
+        .unwrap();
+
+        assert_eq!(
+            value,
+            serde_json::json!({
+                "schemaVersion": 1,
+                "jobId": "ocr-1",
+                "progress": 37,
+                "phase": "recognition",
+                "pageNumber": 2,
+                "pageCount": 4
+            })
+        );
+    }
+
+    #[test]
+    fn ocr_document_result_round_trip_keeps_contract_fields() {
+        let value = serde_json::json!({
+            "schemaVersion": 1,
+            "jobId": "ocr-1",
+            "text": "Bonjour",
+            "pages": [{
+                "pageNumber": 1,
+                "source": "ocr",
+                "width": 100,
+                "height": 80,
+                "text": "Bonjour",
+                "blocks": [],
+                "warnings": []
+            }],
+            "warnings": []
+        });
+
+        let result: OcrDocumentResultV1 = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(serde_json::to_value(result).unwrap(), value);
+    }
+}

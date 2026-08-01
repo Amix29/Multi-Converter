@@ -92,6 +92,8 @@ assert.match(linuxAppImageWorkflow, /workflow_dispatch:/, "Linux AppImage workfl
 assert.match(linuxAppImageWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "Linux AppImage workflow must be push-runnable from the persistent codex/test branch");
 assert.match(linuxAppImageWorkflow, /scripts\/lib\/elf\.mjs/, "Linux AppImage workflow push paths must include the shared ELF parser");
 assert.match(linuxAppImageWorkflow, /scripts\/lib\/ffmpeg-version\.mjs/, "Linux AppImage workflow push paths must include the shared FFmpeg version contract helper");
+assert.match(linuxAppImageWorkflow, /scripts\/lib\/rust-source-tree\.mjs/, "Linux AppImage workflow push paths must include the recursive Rust source helper");
+assert.match(linuxAppImageWorkflow, /src-tauri\/src\/\*\*/, "Linux AppImage workflow push paths must include every Rust backend module");
 assert.match(linuxAppImageWorkflow, /scripts\/test-elf\.mjs/, "Linux AppImage workflow push paths must include shared ELF parser tests");
 assert.match(linuxAppImageWorkflow, /tools\/updater-signature-verifier\/\*\*/, "Linux AppImage workflow push paths must include the updater signature verifier used by AppImage verification");
 assert.match(linuxAppImageWorkflow, /sidecar_release_tag:/, "Linux AppImage workflow must accept staged real Linux sidecars from a release tag");
@@ -342,8 +344,8 @@ assert.match(macosDmgWorkflow, /workflow_dispatch:/, "macOS DMG workflow must be
 assert.match(macosDmgWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS DMG workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosDmgWorkflow, /scripts\/validate-bundled-engines\.mjs/, "macOS DMG push paths must include bundled-engine validation changes");
 assert.match(macosDmgWorkflow, /scripts\/lib\/ffmpeg-version\.mjs/, "macOS DMG push paths must include the shared FFmpeg version contract helper");
-assert.match(macosDmgWorkflow, /src-tauri\/src\/converters\.rs/, "macOS DMG push paths must include converter changes");
-assert.match(macosDmgWorkflow, /src-tauri\/src\/engine_distribution\.rs/, "macOS DMG push paths must include engine distribution changes");
+assert.match(macosDmgWorkflow, /scripts\/lib\/rust-source-tree\.mjs/, "macOS DMG push paths must include the recursive Rust source helper");
+assert.match(macosDmgWorkflow, /src-tauri\/src\/\*\*/, "macOS DMG push paths must include every Rust backend module");
 assert.match(macosDmgWorkflow, /prepare-macos-release-artifacts\.mjs/, "macOS DMG workflow must package updater artifacts as release assets");
 assert.match(macosDmgWorkflow, /sidecar_release_tag:/, "macOS DMG workflow must allow staged sidecars from a release tag");
 assert.match(macosDmgWorkflow, /engine_release_tag:/, "macOS DMG workflow must allow staged engine archives from a release tag");
@@ -385,8 +387,8 @@ assert.match(macosConversionsWorkflow, /workflow_dispatch:/, "macOS conversion w
 assert.match(macosConversionsWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "macOS conversion workflow must be push-runnable from the persistent codex/test branch");
 assert.match(macosConversionsWorkflow, /scripts\/validate-bundled-engines\.mjs/, "macOS conversion push paths must include bundled-engine validation changes");
 assert.match(macosConversionsWorkflow, /scripts\/lib\/ffmpeg-version\.mjs/, "macOS conversion push paths must include the shared FFmpeg version contract helper");
-assert.match(macosConversionsWorkflow, /src-tauri\/src\/converters\.rs/, "macOS conversion push paths must include converter changes");
-assert.match(macosConversionsWorkflow, /src-tauri\/src\/engine_distribution\.rs/, "macOS conversion push paths must include engine distribution changes");
+assert.match(macosConversionsWorkflow, /scripts\/lib\/rust-source-tree\.mjs/, "macOS conversion push paths must include the recursive Rust source helper");
+assert.match(macosConversionsWorkflow, /src-tauri\/src\/\*\*/, "macOS conversion push paths must include every Rust backend module");
 assert.match(macosConversionsWorkflow, /sidecar_release_tag:/, "macOS conversion workflow must allow staged real sidecars from a release tag");
 assert.match(macosConversionsWorkflow, /engine_release_tag:/, "macOS conversion workflow must allow staged engine archives from a release tag");
 assert.match(macosConversionsWorkflow, /engine_staging_run_id:/, "macOS conversion workflow must allow staged engines from a workflow artifact");

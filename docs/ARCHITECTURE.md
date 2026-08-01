@@ -41,6 +41,42 @@ application does not load the marketing site at runtime.
 The existing application does not need a new framework, database or local web
 server for its Atelier integration.
 
+## Rust Backend Boundaries
+
+The Phase 4 backend keeps one Tauri crate and organizes native responsibilities
+in three explicit layers:
+
+```text
+Tauri invoke handlers
+  -> commands/*
+  -> converters/* | editor/* | ocr/* | engines/* | registry/*
+  -> process_support.rs | engine_archive/* | engine_distribution/*
+  -> local filesystem and bundled resources
+```
+
+`src-tauri/src/lib.rs` is the composition root: it registers application state,
+plugins and the existing 35 commands, but does not implement conversion or
+editor behavior. The command modules translate Tauri inputs into domain calls;
+domain modules remain directly unit-testable without a WebView. Existing facade
+files retain their module paths and public contracts while delegating to focused
+implementations.
+
+The shared `process_support.rs` module is limited to operations that are truly
+common to one-shot native processes: hidden Windows launch, bounded stdout and
+stderr capture, timeout handling, portable Linux environment setup and process
+tree termination. OCR keeps its persistent JSON-lines supervisor separate
+because its model lifecycle, progress protocol and cancellation semantics are
+different.
+
+`converters/output.rs` owns same-directory staging and no-replace publication
+for conversion results. `commands/export.rs` separately reserves user-facing
+export names with exclusive file creation because export naming and authority
+belong to the command boundary. Integrated ZIP text input is split again:
+`converters/text/archive.rs` performs entry-count preflight and bounded archive
+metadata validation, while `converters/text/read.rs` extracts only the
+supported DOCX, EPUB or ODT text parts. The editor's richer ODT domain retains
+its separate package, XML, style, Tiptap and writer rules.
+
 ## Frontend Boundaries
 
 The React frontend is organized by product responsibility instead of keeping
@@ -122,6 +158,14 @@ Inputs are treated as untrusted. Rust validates paths, file types, limits and
 engine results before an output replaces its temporary sibling. The WebView
 receives typed results rather than unrestricted file-system access.
 
+The conversion domain separates job validation, orchestration, progress and
+cancellation from media, image, document, text and output-finalization
+adapters. Engine preference, fallback order, parameters, warnings, filenames
+and observable error prefixes remain compatible. One-shot engine output is
+drained concurrently and retained only as a bounded tail so verbose child
+processes cannot deadlock or grow memory without limit; timed-out children are
+terminated before temporary output is cleaned.
+
 Real conversion behavior belongs to Tauri/Rust. The Vite preview uses mocks and
 is limited to frontend development.
 
@@ -131,6 +175,12 @@ Editor drafts use `EditorDocumentV1` Tiptap JSON. Rich DOCX and RTF imports
 pass through LibreOffice to ODT and then through the bounded ODT parser.
 Validated local images are stored under the document directory and referenced
 with `mc-asset://<uuid>`.
+
+The ODT boundary is split into package validation, XML reading, style and
+namespace interpretation, Tiptap conversion, HTML rendering and ODT writing.
+This keeps archive limits and path checks independent from document semantics
+while preserving the existing import/export facade and serialized document
+schema.
 
 Office and PDF exports originate from the editor document model through the
 rich ODT generator. Deleting a draft removes only its local draft and assets,
@@ -172,6 +222,10 @@ Tauri development runtime, and the local unsigned NSIS build passes with all
 engines retained. Installed-package behavior is not yet proven. Runtime
 selection, hashes, limits, evidence and remaining platform gates live in
 [`V1_0_7_OCR.md`](V1_0_7_OCR.md).
+
+Phase 4 leaves the OCR runtime, model lock, hybrid PDF policy, limits and public
+contracts functionally unchanged. It adopts no generic process abstraction for
+the persistent OCR worker.
 
 ## Sources Of Truth
 

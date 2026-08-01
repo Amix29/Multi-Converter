@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { copyRustModuleTree } from "./lib/rust-source-tree.mjs";
 
 const root = process.cwd();
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "mc-bundled-platform-"));
@@ -28,11 +29,9 @@ console.log("Bundled engine platform tests passed.");
 function writeFixture() {
   const binariesDir = path.join(fixtureRoot, "src-tauri", "binaries");
   const bundledEnginesDir = path.join(fixtureRoot, "src-tauri", "bundled-engines");
-  const rustSrcDir = path.join(fixtureRoot, "src-tauri", "src");
   fs.mkdirSync(binariesDir, { recursive: true });
   fs.mkdirSync(bundledEnginesDir, { recursive: true });
-  fs.mkdirSync(rustSrcDir, { recursive: true });
-  fs.copyFileSync(path.join(root, "src-tauri", "src", "engines.rs"), path.join(rustSrcDir, "engines.rs"));
+  copyRustModuleTree(root, fixtureRoot, "engines");
   linkFixtureBinary("ffmpeg-x86_64-pc-windows-msvc.exe");
   linkFixtureBinary("ffprobe-x86_64-pc-windows-msvc.exe");
   fs.writeFileSync(

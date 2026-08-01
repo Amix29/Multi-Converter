@@ -4,12 +4,13 @@
 
 - Target version: **V1.0.7**
 - Published baseline: **V1.0.6**
-- Last documentation review: **2026-07-31**
+- Last documentation review: **2026-08-01**
 - Overall gate: **blocked**
 - Version metadata: **1.0.6**
 - Phase 1 checkpoint: local commit **`9f89a8d2`** on `codex/phase-1-guardrails`, not pushed
 - Phase 2 state: isolated worktree on `codex/phase-2-frontend-vellum`, based on the Phase 1 checkpoint, not merged or pushed
 - Phase 3 state: isolated worktree on `codex/phase-3-ocr-local`, based on the Phase 2 checkpoint, not merged or pushed
+- Phase 4 state: isolated worktree on `codex/phase-4-rust-backend`, based on Phase 3 commit `9ec3b9ca`, not merged or pushed
 
 This is the combined release-validation ledger for V1.0.7. It does not replace the detailed editor or OCR documents:
 
@@ -209,12 +210,63 @@ recorded, but the missing embedded `bce-python-sdk` license, installed Windows
 NSIS matrix and real macOS/Linux builds remain open. Full details and hashes are in
 [`V1_0_7_OCR.md`](V1_0_7_OCR.md).
 
+## 2026-08-01 Phase 4 Rust Backend Refactor Checkpoint
+
+Phase 4 restructures the existing Rust backend without changing public Tauri
+commands, serialized contracts, conversion formats, engine selection order,
+OCR policy, persistent schemas, dependencies or version metadata.
+
+Implemented evidence:
+
+- `lib.rs` is a 68-non-blank-line composition root registering the same 35
+  commands; Tauri adapters now delegate to focused command and domain modules;
+- conversion orchestration, media, image, document, text and atomic-output
+  responsibilities are separated while preserving fallbacks, parameters,
+  warnings, filenames and error prefixes;
+- ODT package validation, XML reading, style interpretation, Tiptap conversion,
+  HTML rendering and writing have characterization fixtures for rich content,
+  tables, lists, images, page breaks, accents and hostile archives;
+- engine catalogue, selection, executable resolution, health checks,
+  distribution manifests, checksum verification and atomic installation are
+  split without changing an engine or packaged resource;
+- shared one-shot process support bounds stdout and stderr to 128 KiB per
+  stream, applies timeouts and terminates process trees; the persistent OCR
+  supervisor remains independent;
+- the Rust structure guardrail scanned 91 handwritten files, found none above
+  500 non-blank lines and measured a 426-line maximum; the softer 300-line
+  objective remains visible for 17 files;
+- 138 Rust tests passed with 7 intentionally separated heavy tests. Three warm
+  normal-suite runs had a 15.09-second median test body, below the recorded
+  Phase 3 31.77-second body;
+- targeted deterministic preparation reproduced the expected fingerprints for
+  both sidecars, four advanced-engine archives, 24 OCR resources and the
+  LibreOffice archive;
+- the Windows executable is 26,734,080 bytes, +0.27 percent from Phase 3 and
+  below the 5 percent ceiling; the NSIS build is 999,834,801 bytes.
+
+The canonical Windows gate passed **18/18 steps** in **1,632,700 ms**. It
+included both npm audits, `npm run check`, compiled-preview Playwright, Rust
+formatting, Clippy and audit, 138 Rust tests, the 6/6 real conversion matrix,
+the real LibreOffice archive extraction, PDFium, the OCR runtime and corpus,
+the production frontend and the local unsigned Tauri/NSIS build.
+
+A Phase 4 release executable built before the final adversarial hardening was
+launched with its process path verified. Native clipboard-file import, PNG OCR,
+explicit copy, PNG to WebP conversion, export, editor autosave,
+recent-document refresh and reopening the saved draft passed. The final
+rebuilt executable passed the complete automated gate but was not re-exercised
+interactively. Native UI ODT import could not be driven reliably through the
+system file picker, so no native ODT round-trip claim is made. The installed
+NSIS lifecycle, manual native conversion cancellation and macOS/Linux remain
+open. This checkpoint does not make V1.0.7 release-ready.
+
 ## Gate Summary
 
 | Gate | Status | Blocking work |
 | --- | --- | --- |
 | Tiptap editor implementation | Implemented in development tree | Preserve current contracts while completing real host tests |
 | Phase 2 frontend and Vellum Paper | Windows automated checkpoint passed | Raw-total bundle target missed; keep the measured result and complete native/manual gates |
+| Phase 4 Rust backend refactor | Windows checkpoint passed | Preserve compatibility and complete the remaining installed/platform matrices |
 | Editor automated checks | Passed for unit and compiled-preview scope | Keep preview proof separate from real Tauri behavior |
 | Editor HTML sanitization | Implemented with preview and static coverage | Complete real Tauri asset persistence and packaged-runtime checks |
 | Windows Tauri Office matrix | Pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios |

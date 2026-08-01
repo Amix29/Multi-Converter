@@ -100,3 +100,23 @@ platform release gates. The commit is local and is not pushed without explicit
 authorization. Generated `output/` and `release-direct/` artifacts were not
 included. The former standalone site history remains recoverable from the
 verified external Git bundle retained by the maintainer.
+
+## 2026-08-01 — Keep One Rust Crate And Refactor By Domain
+
+**Decision:** keep the Tauri backend as one Rust crate and organize it through
+the flow `commands -> business domains -> local infrastructure`. Introduce a
+shared primitive only when it removes demonstrated duplication; keep the
+persistent OCR supervisor separate from one-shot engine processes.
+
+**Reason:** the former root, conversion and ODT modules mixed Tauri adaptation,
+domain orchestration, engine details, filesystem operations and tests. Focused
+modules make those responsibilities reviewable and independently testable
+without changing the mature conversion stack or introducing a new crate and
+dependency boundary.
+
+**Consequences:** all public commands, serialized contracts, formats, engine
+versions, resources, fallback order, persistent schemas and V1.0.6 metadata
+remain compatible. Handwritten Rust now has a 500-non-blank-line hard guardrail
+and an approximately 300-line soft target. Phase 4 ends as a local checkpoint;
+it is not pushed, merged, published or treated as V1.0.7 release evidence for
+unvalidated platforms and installed-package scenarios.

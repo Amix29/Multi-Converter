@@ -41,6 +41,58 @@ system or administrator account. An upstream engine vulnerability remains an
 upstream issue unless Multi-Converter's packaging, arguments or validation
 exposes additional impact.
 
+## Native Process Boundary
+
+One-shot FFmpeg, ffprobe and advanced-engine invocations use a shared native
+process primitive. It launches without a console window on Windows, disables
+stdin, drains stdout and stderr concurrently, retains at most 128 KiB from each
+stream, preserves the exit status and applies a caller-selected timeout. A
+timeout or I/O failure stops the child process tree and waits for termination
+before control returns to output cleanup.
+
+On Unix, supervised children start in their own process group so termination
+also reaches descendants that inherited an engine's output pipes. Output-drain
+joins are themselves bounded to prevent a descendant from keeping the caller
+blocked indefinitely. Windows uses the existing process-tree termination path.
+
+The primitive is covered for large output, non-zero exit status, launch failure,
+timeouts and paths containing spaces or non-ASCII characters. Callers still own
+engine-specific validation and error wording; sharing process mechanics does
+not broaden filesystem authority. The persistent OCR worker deliberately keeps
+its separate supervisor, locked JSON-lines protocol, resource verification and
+job lifecycle.
+
+## Filesystem, Export And Archive Boundary
+
+Conversion exports accept only canonical regular files inside a managed
+temporary output root. A source path is rejected when any existing component
+is a symbolic link or, on Windows, a reparse point. This prevents an export
+request from using a link or junction to copy an unrelated file. Conversion
+outputs are written to same-directory staging files, validated and published
+with a no-replace atomic link so concurrent jobs cannot overwrite an existing
+result. Uncommitted staging files are removed automatically. Export commands
+reserve collision-free destination names with `create_new`, write through the
+reserved handle and remove a partial destination on failure; terminal symbolic
+links are never followed. Source files are never modified.
+
+ODT, OCR-runtime and engine archives keep responsibility-specific entry-count,
+path, type and expanded-size limits. Integrated DOCX, EPUB and ODT text readers
+preflight the ZIP central-directory entry count before constructing the archive
+index, including ZIP64 metadata, then bound cumulative expanded size,
+compression ratios, duplicate names and entry-name length. Archives reject
+absolute paths, parent traversal and links before extraction or parsing. The
+shared checks are used only where their security limits are identical; the
+bounded editor ODT reader keeps its own XML, asset and package rules.
+
+Memory-backed clipboard imports are created through a private temporary
+directory. Unix directories use mode `0700` and imported files use mode `0600`;
+Windows relies on the current account's temporary-directory access controls.
+The command accepts at most 24 files, 128 MiB per file and 512 MiB for the
+batch. The aggregate limit is checked after Tauri has deserialized the public
+`Vec<ClipboardFile>` contract; this command-level check does not prove a bound
+on memory already used by a hostile IPC payload during framework
+deserialization.
+
 ## HTML Sanitization Boundary
 
 All rich HTML entering an editor surface uses `sanitizeImportedHtml()` before
@@ -262,6 +314,21 @@ explicitly locked and blocks public redistribution. Runtime process counters
 recorded 1,069.8 MiB peak working set and 1,939.1 MiB peak paged memory on the
 reviewed fixture; these are measured baselines, not security limits or
 cross-platform guarantees.
+
+The Phase 4 backend refactor passed the 18-step Windows gate, including both npm
+audits, the allowed-warning Rust audit, Rust formatting and Clippy, 138 unit
+tests, the 6/6 conversion matrix, the real LibreOffice archive extraction,
+PDFium, the OCR runtime and corpus, and the local Tauri/NSIS build. Tests also
+exercise process timeout and termination, bounded output, archive traversal,
+symlink/reparse-point export rejection and serialized command contracts.
+
+A Phase 4 release executable built before the final adversarial hardening was
+launched and its process path was verified. Native clipboard-file import, PNG
+OCR, explicit text copy, PNG to WebP conversion, export, editor autosave,
+recent-document refresh and reopen passed. The final rebuilt executable passed
+the automated gate but was not re-exercised interactively. This does not prove
+the installed NSIS lifecycle, native UI ODT import, manual conversion
+cancellation, macOS or Linux behavior; those gates remain open.
 
 Passing TypeScript, unit, preview or static CSP tests does not prove that native
 filesystem behavior, engine isolation, packaging or real conversions are safe.

@@ -9,12 +9,11 @@ on:
       - "scripts/prepare-macos-engine-release-assets.mjs"
       - "scripts/validate-bundled-engines.mjs"
       - "scripts/lib/ffmpeg-version.mjs"
+      - "scripts/lib/rust-source-tree.mjs"
       - "scripts/test-macos-host.mjs"
       - "scripts/test-macos-conversions.mjs"
       - "scripts/test-github-workflows.mjs"
-      - "src-tauri/src/converters.rs"
-      - "src-tauri/src/engine_distribution.rs"
-      - "src-tauri/src/registry.rs"
+      - "src-tauri/src/**"
   workflow_dispatch:
     inputs:
       sidecar_release_tag:

@@ -177,6 +177,19 @@ mod tests {
     }
 
     #[test]
+    fn editor_document_v1_keeps_camel_case_persistent_shape() {
+        let document = new_document("Essai");
+        let value = serde_json::to_value(&document).unwrap();
+        let object = value.as_object().unwrap();
+
+        assert_eq!(object.get("schemaVersion"), Some(&serde_json::json!(1)));
+        assert!(object.contains_key("createdAt"));
+        assert!(object.contains_key("updatedAt"));
+        assert!(!object.contains_key("schema_version"));
+        assert!(serde_json::from_value::<EditorDocument>(value).is_ok());
+    }
+
+    #[test]
     fn editor_rejects_path_like_ids() {
         assert!(validate_id("../draft").is_err());
         assert!(validate_id("document.json").is_err());

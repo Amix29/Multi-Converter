@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { readRustModuleTree } from "./lib/rust-source-tree.mjs";
 
 const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
@@ -23,8 +24,8 @@ const macosLibvipsInputPrepare = fs.readFileSync(path.join(root, "scripts", "pre
 const prepareScript = fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8");
 const validateScript = fs.readFileSync(path.join(root, "scripts", "validate-bundled-engines.mjs"), "utf8");
 const packageScript = fs.readFileSync(path.join(root, "scripts", "package-engines.mjs"), "utf8");
-const enginesRust = fs.readFileSync(path.join(root, "src-tauri", "src", "engines.rs"), "utf8");
-const convertersRust = fs.readFileSync(path.join(root, "src-tauri", "src", "converters.rs"), "utf8");
+const enginesRust = readRustModuleTree(root, "engines");
+const convertersRust = readRustModuleTree(root, "converters");
 const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
 const macosChecklist = fs.readFileSync(path.join(root, "docs", "RELEASE_CHECKLIST_MACOS.md"), "utf8");
 const thirdPartyEngines = fs.readFileSync(path.join(root, "docs", "THIRD_PARTY_ENGINES.md"), "utf8");

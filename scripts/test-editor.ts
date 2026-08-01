@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { readRustModuleTree } from "./lib/rust-source-tree.mjs";
 
 const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
@@ -21,7 +22,7 @@ const backend = [
 ].join("\n");
 const editorImporter = fs.readFileSync(path.join(editorRoot, "import.rs"), "utf8");
 const editorExporter = fs.readFileSync(path.join(editorRoot, "export.rs"), "utf8");
-const converters = fs.readFileSync(path.join(root, "src-tauri", "src", "converters.rs"), "utf8");
+const converters = readRustModuleTree(root, "converters");
 const editorExtensions = fs.readFileSync(path.join(root, "src", "editor", "extensions.ts"), "utf8");
 const imageNodeView = fs.readFileSync(path.join(root, "src", "editor", "DocumentImageView.tsx"), "utf8");
 const htmlSanitizer = fs.readFileSync(path.join(root, "src", "editor", "htmlSanitizer.ts"), "utf8");

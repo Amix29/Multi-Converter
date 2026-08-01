@@ -1,10 +1,11 @@
-# Frontend Refactor Baseline — Phases 1 And 2
+# Multi-Converter Application Refactor Baseline — Phases 1 To 4
 
 ## Purpose
 
-This document fixes the measurable starting point and the Phase 1 and Phase 2
-checkpoints for the Multi-Converter application refactor. It covers the
-desktop application only; the marketing site in `site/` is outside this audit.
+This document fixes the measurable starting point and the Phase 1 through
+Phase 4 checkpoints for the Multi-Converter application refactor. It covers
+the desktop application only; the marketing site in `site/` is outside this
+audit.
 
 Phase 1 adds measurement and regression guardrails. It does not remove,
 replace or reduce any conversion engine, advertised format, offline behavior
@@ -341,3 +342,83 @@ The final 15-step Windows gate passed in **557,915 ms** (about 9 min 18 s):
   passed separately;
 - 6 PDFium wrapper tests, Rust/PDFium Clippy, deterministic engine preparation,
   the production frontend and the local Tauri/NSIS build passed.
+
+## Phase 4 Rust Backend Snapshot
+
+Phase 4 was measured on 2026-08-01 in the isolated
+`codex/phase-4-rust-backend` worktree based on Phase 3 commit `9ec3b9ca`. Its
+ignored machine-readable report is
+`test-results/phase-4-baseline/refactor-baseline-after.json` and can be
+reproduced with:
+
+```powershell
+npm run measure:baseline -- --output test-results/phase-4-baseline/refactor-baseline-after.json --gate-status tmp/phase-4-windows-ci-gate.json
+```
+
+### Structure And Compatibility
+
+| Measurement | Before Phase 4 | After Phase 4 | Interpretation |
+| --- | ---: | ---: | --- |
+| Rust files under `src-tauri/src` | 24 | 87 | Domains and tests were extracted into focused modules |
+| Rust source lines | 13,817 | 15,420 | Includes characterization, archive and process-safety tests |
+| Rust non-blank lines | 12,925 | 14,382 | +1,457 lines; this phase prioritizes boundaries and proof over line-count reduction |
+| Handwritten Rust files scanned by the guardrail | Not applicable | 91 | Includes `src-tauri/src`, `build.rs` and `tools` |
+| Files above 500 non-blank lines | Not guarded | 0 | Hard limit passed |
+| Largest handwritten Rust file | Above the new target in former monoliths | 426 non-blank lines | 17 files remain above the approximately 300-line soft target |
+| `src-tauri/src/lib.rs` | Mixed composition and command behavior | 68 non-blank lines | Composition root with the same 35 registered commands |
+
+The increase in file count and modest source-line increase are expected results
+of extracting commands, conversion adapters, ODT parsing/writing, engine
+selection, distribution and characterization tests. No new Rust crate or Rust
+dependency was added. Public command names, serialized contracts, formats,
+fallback order, persistent schemas and error prefixes remain compatible.
+
+### Artifacts And Resource Boundary
+
+| Measurement | Phase 3 snapshot | Phase 4 snapshot | Difference |
+| --- | ---: | ---: | ---: |
+| Frontend production bundle | 1,095,149 bytes | 1,095,149 bytes | 0 bytes |
+| Initial main JavaScript chunk | 211,600 bytes | 211,600 bytes | 0 bytes |
+| Largest JavaScript chunk | 496,337 bytes | 496,337 bytes | 0 bytes |
+| Windows application executable | 26,662,400 bytes | 26,734,080 bytes | +71,680 bytes (+0.27%) |
+| Windows NSIS installer | 999,871,215 bytes | 999,834,801 bytes | -36,414 bytes |
+
+The executable increase remains below the 5 percent Phase 4 ceiling. Installer
+compression varies between builds and the small decrease is not an optimization
+claim. Deterministic preparation reproduced the expected hashes for both
+FFmpeg sidecars, all four advanced-engine archives, all 24 OCR resources and
+the LibreOffice release archive. This targeted fingerprint comparison does not
+claim that every expanded cache file was rehashed. FFmpeg, ffprobe, PDFium,
+LibreOffice, Pandoc, libvips, the integrated Rust converters and the local OCR
+runtime all remain present.
+
+### Test And Runtime Evidence
+
+The final Windows gate passed all **18/18 steps** in **1,632,700 ms** (about
+27 min 13 s):
+
+- both npm audits reported zero known vulnerabilities;
+- Rust formatting and Clippy passed; Cargo Audit reported no denied
+  vulnerability and retained the documented allowed warnings;
+- 138 Rust tests passed and 7 intentionally heavy tests remained separated;
+- the 6/6 conversion matrix, real LibreOffice archive extraction, PDFium
+  wrapper tests and Clippy, OCR runtime fixture and 11-case OCR corpus passed;
+- `npm run check`, compiled-preview Playwright, the production frontend and the
+  local unsigned Tauri/NSIS build passed.
+
+Three warm runs of the normal Rust test body measured 15.09 s, 15.08 s and
+15.25 s, for a 15.09 s median versus the recorded Phase 3 test-body value of
+31.77 s. This is a same-machine development comparison affected by caches and
+does not establish product runtime performance; it establishes that the 10
+percent test-time regression limit was not breached.
+
+A Phase 4 release executable built from this worktree before the final
+adversarial hardening was launched and its process path was verified. Native
+clipboard-file import, PNG OCR, explicit text copy, PNG to WebP conversion,
+output export, editor creation, autosave, recent-document refresh and reopening
+the saved draft passed. The final rebuilt executable passed the complete
+automated gate but was not re-exercised interactively. File-picker automation
+could not reliably drive native ODT import, so Phase 4 does not claim a native
+UI ODT round trip; ODT parity remains covered by Rust fixtures and the real
+LibreOffice archive test. The installed NSIS lifecycle, manual native
+conversion cancellation and real macOS/Linux behavior also remain open.

@@ -26,13 +26,16 @@ npm run audit:rust
 npm run validate:engines
 npm run test:rust
 npm run test:conversions
+npm run test:bundled-engine-archive
 npm run test:pdfium-wrapper
 npm run clippy:pdfium-wrapper
+npm run test:ocr:runtime
+npm run test:ocr:corpus
 npm run build
 npm run tauri:build
 ```
 
-These 15 steps include both production-only and complete installed dependency
+These 18 steps include both production-only and complete installed dependency
 audits. `npm run check` contains the unit, source-contract, production-config
 and secret-leak checks; the separate Playwright step then exercises the
 compiled frontend in Chromium. During a long local run, the wrapper writes
@@ -186,13 +189,39 @@ Run both focused guardrail suites with:
 npm run test:guardrails
 ```
 
+## Rust Backend Guardrails
+
+Run the focused structural and command-contract checks before a slower Rust or
+Windows gate:
+
+```bash
+npm run test:rust-structure
+npm run test:rust-contracts
+```
+
+`test:rust-structure` scans handwritten Rust under `src-tauri/src`,
+`src-tauri/build.rs` and `tools/`. It rejects any file above 500 non-blank lines
+and reports files above the approximately 300-line refactor target without
+treating that softer target as a failure. Generated dependencies, prepared
+engines, resources and build outputs are outside the scan.
+
+`test:rust-contracts` locks the Tauri composition root, the exact registered
+command names and signatures, and the emitted conversion/OCR event sites. Rust
+unit tests separately characterize serialized conversion, editor and OCR contracts,
+complete format/engine routing, fallbacks, process behavior and representative
+outputs. They also exercise concurrent no-replace conversion publication,
+concurrent export-name reservation, process-tree timeouts, bounded folder
+walks, and DOCX/EPUB entry-count, expanded-size, compression-ratio, duplicate
+and unsafe-name rejection. Both scripts are included in `npm run check` and
+`npm run test:guardrails`.
+
 ## Local Refactor Measurements
 
 Capture a structured local engineering snapshot without recording user
 content or sending measurement telemetry:
 
 ```powershell
-npm run measure:baseline -- --output test-results/phase-2-baseline/current.json --gate-status tmp/phase2-windows-ci.json
+npm run measure:baseline -- --output test-results/phase-4-baseline/refactor-baseline-after.json --gate-status tmp/phase-4-windows-ci-gate.json
 ```
 
 Pass `--artifact <exact-path>` to include a known installer or executable.
@@ -217,7 +246,7 @@ figures cover the launched root process and do not include WebView2 or engine
 child processes. The script itself does not read user content or send
 telemetry, but it launches Multi-Converter with its normal local profile and
 does not isolate the app from configured updater checks. See
-`REFACTOR_BASELINE.md` for the fixed Phase 1 boundary and interpretation rules.
+`REFACTOR_BASELINE.md` for the fixed phase boundaries and interpretation rules.
 
 ## Document Editor
 

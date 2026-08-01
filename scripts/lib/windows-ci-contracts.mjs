@@ -63,8 +63,11 @@ export function assertWindowsCiContracts({ packageJson, buildWorkflow, windowsBu
   assert.match(windowsCiGateScript, /\["npm", \["run", "audit:rust"\]\]/, "Windows CI validation wrapper must run Rust audit");
   assert.match(windowsCiGateScript, /\["npm", \["run", "test:rust"\]\]/, "Windows CI validation wrapper must run Rust unit tests");
   assert.match(windowsCiGateScript, /\["npm", \["run", "test:conversions"\]\]/, "Windows CI validation wrapper must run the full Windows conversion matrix");
+  assert.match(windowsCiGateScript, /\["npm", \["run", "test:bundled-engine-archive"\]\]/, "Windows CI validation wrapper must verify the prepared LibreOffice archive");
   assert.match(windowsCiGateScript, /\["npm", \["run", "test:pdfium-wrapper"\]\]/, "Windows CI validation wrapper must run PDFium runtime tests with the bundled Windows DLL");
   assert.match(windowsCiGateScript, /\["npm", \["run", "clippy:pdfium-wrapper"\]\]/, "Windows CI validation wrapper must lint the PDFium wrapper");
+  assert.match(windowsCiGateScript, /\["npm", \["run", "test:ocr:runtime"\]\]/, "Windows CI validation wrapper must smoke-test the packaged OCR runtime");
+  assert.match(windowsCiGateScript, /\["npm", \["run", "test:ocr:corpus"\]\]/, "Windows CI validation wrapper must run the OCR quality corpus");
   assert.match(windowsCiGateScript, /\["npm", \["run", "build"\]\]/, "Windows CI validation wrapper must run the frontend production build");
   assert.match(windowsCiGateScript, /\["npm", \["run", "tauri:build"\]\]/, "Windows CI validation wrapper must build the Windows Tauri installer");
 }

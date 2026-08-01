@@ -1,12 +1,10 @@
-import fs from "node:fs";
-import path from "node:path";
+import { readRustModuleTree } from "./rust-source-tree.mjs";
 
 export function readRequiredFfmpegVersion(root = process.cwd()) {
-  const enginesPath = path.join(root, "src-tauri", "src", "engines.rs");
-  const enginesSource = fs.readFileSync(enginesPath, "utf8");
+  const enginesSource = readRustModuleTree(root, "engines");
   const match = enginesSource.match(/const\s+FFMPEG_REQUIRED_VERSION\s*:\s*&str\s*=\s*"([^"]+)"/);
   if (!match) {
-    throw new Error("Unable to read FFMPEG_REQUIRED_VERSION from src-tauri/src/engines.rs.");
+    throw new Error("Unable to read FFMPEG_REQUIRED_VERSION from the Rust engines module.");
   }
   return match[1];
 }

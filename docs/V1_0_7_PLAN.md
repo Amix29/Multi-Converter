@@ -4,7 +4,7 @@
 
 - Development version: **V1.0.7**
 - Current published version: **V1.0.6**
-- Last documentation review: **2026-07-30**
+- Last documentation review: **2026-08-01**
 - Release status: **not ready**
 
 V1.0.7 is built around two official product objectives:
@@ -138,7 +138,37 @@ The upstream PP-OCRv6 documentation describes tiny, small and medium tiers and i
 
 The detailed OCR architecture and validation contract live in `V1_0_7_OCR.md`.
 
-## Integration Between The Two Workstreams
+## Cross-Cutting Workstream C — Rust Backend Structure
+
+The Phase 4 checkpoint reorganizes the existing native implementation around
+the flow `Tauri commands -> business domains -> local infrastructure` while
+keeping one crate and the current dependency graph.
+
+Implemented in the checkpoint:
+
+- lightweight Tauri composition root and commands split by responsibility;
+- focused conversion modules for orchestration, media, images, documents, text
+  and atomic output finalization;
+- layered ODT package, XML, style, Tiptap, HTML and writer modules;
+- separate engine catalogue, selection, process, distribution and registry
+  responsibilities;
+- bounded shared support for one-shot native processes while retaining the
+  dedicated persistent OCR supervisor;
+- no-replace atomic publication for conversion results and exclusive
+  destination reservation for exports;
+- pre-index entry-count and post-index size, ratio, name and duplicate limits
+  for integrated DOCX, EPUB and ODT text archives;
+- characterization tests for IPC serialization, registry and engine routing,
+  fallbacks, archives, processes and representative outputs;
+- a 500-non-blank-line hard guardrail for handwritten Rust, with an
+  approximately 300-line soft target.
+
+This workstream must not change conversion algorithms, output quality, formats,
+engine resources, public commands, persistent schemas or OCR runtime policy.
+Its Windows checkpoint does not close the installed-package or multiplatform
+release gates.
+
+## Integration Between The Product Workstreams
 
 ```text
 PDF with usable text layer
@@ -169,7 +199,10 @@ OCR must not bypass the editor document model when a PDF is opened for editing. 
 - Native-text, scanned and mixed PDFs convert to the promised text targets.
 - OCR cancellation, progress, errors and temporary-file cleanup are verified.
 - Packaged application restarts without re-downloading the model.
-- Full Windows CI, conversion matrix, PDFium tests and Tauri build pass.
+- The canonical 18-step Windows gate passes, including both npm audits,
+  application/preview checks, Rust format/Clippy/audit/tests, the conversion
+  matrix, real LibreOffice archive extraction, PDFium, OCR runtime/corpus and
+  the Tauri/NSIS build.
 
 ### macOS and Linux gates
 
@@ -202,6 +235,9 @@ Before publishing V1.0.7 for macOS or Linux:
 | `V1_0_7_EDITOR_UI_QA.md` | Editor-home visual regression evidence |
 | `V1_0_7_OCR.md` | OCR product, architecture, security and test specification |
 | `TESTING.md` | Commands and platform test procedures |
+| `ARCHITECTURE.md` | Frontend, Rust domain and local-infrastructure boundaries |
+| `SECURITY.md` | Native process, archive, editor, OCR and privacy boundaries |
+| `REFACTOR_BASELINE.md` | Phase measurements, budgets, evidence and proof limits |
 | `THIRD_PARTY_ENGINES.md` | Packaging, licensing and notice requirements |
 
 ## Official References

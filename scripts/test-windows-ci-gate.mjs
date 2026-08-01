@@ -28,8 +28,11 @@ const commands = [
   ["npm", ["run", "validate:engines"]],
   ["npm", ["run", "test:rust"]],
   ["npm", ["run", "test:conversions"]],
+  ["npm", ["run", "test:bundled-engine-archive"]],
   ["npm", ["run", "test:pdfium-wrapper"]],
   ["npm", ["run", "clippy:pdfium-wrapper"]],
+  ["npm", ["run", "test:ocr:runtime"]],
+  ["npm", ["run", "test:ocr:corpus"]],
   ["npm", ["run", "build"]],
   ["npm", ["run", "tauri:build"]],
 ];
