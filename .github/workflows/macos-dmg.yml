@@ -38,6 +38,10 @@ on:
         required: false
         default: ""
         type: string
+      ocr_staging_run_id:
+        description: "OCR Runtime Staging run ID containing both macOS runtimes and shared models"
+        required: true
+        type: string
 
 permissions:
   actions: read
@@ -66,6 +70,7 @@ jobs:
       SIDECAR_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_release_tag || '' }}
       ENGINE_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_release_tag || '' }}
       ENGINE_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_MACOS_ENGINE_STAGING_RUN_ID || '' }}
+      OCR_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.ocr_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_OCR_RUNTIME_STAGING_RUN_ID || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -108,6 +113,10 @@ jobs:
             echo "engine_staging_run_id must be a numeric GitHub Actions run ID." >&2
             exit 1
           fi
+          if [[ ! "$OCR_STAGING_RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "A numeric ocr_staging_run_id is required." >&2
+            exit 1
+          fi
           for tag in "$SIDECAR_RELEASE_TAG" "$ENGINE_RELEASE_TAG"; do
             if [[ -n "$tag" && ( ! "$tag" =~ ^[A-Za-z0-9._/-]+$ || "$tag" == -* || "$tag" == */..* || "$tag" == *..* ) ]]; then
               echo "Invalid release tag input: $tag" >&2
@@ -133,9 +142,9 @@ jobs:
           set -euo pipefail
           asset_dir="$RUNNER_TEMP/mc-macos-engine-assets"
           mkdir -p "$asset_dir" src-tauri/binaries
-          run_info="$(gh run view "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,name --jq '.name + "|" + .conclusion')"
-          if [[ "$run_info" != "macOS Engine Staging|success" ]]; then
-            echo "engine_staging_run_id must reference a successful macOS Engine Staging run. Got: $run_info" >&2
+          run_info="$(gh run view "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,headSha,name --jq '.name + "|" + .conclusion + "|" + .headSha')"
+          if [[ "$run_info" != "Phase 8 Engine Staging|success|$GITHUB_SHA" ]]; then
+            echo "engine_staging_run_id must reference the successful Phase 8 staging run for this commit. Got: $run_info" >&2
             exit 1
           fi
           if [[ ! -s "$asset_dir/ffmpeg-aarch64-apple-darwin" ]]; then
@@ -204,6 +213,32 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/prepare-macos-engine-release-assets.mjs --tag "$ENGINE_RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
 
+      - name: Download locked OCR artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ocr-*
+          path: ${{ runner.temp }}/mc-ocr-staging
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.OCR_STAGING_RUN_ID }}
+
+      - name: Verify and stage universal macOS OCR resources
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          run_info="$(gh run view "$OCR_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,headSha,name --jq '.name + "|" + .conclusion + "|" + .headSha')"
+          if [[ "$run_info" != "OCR Runtime Staging|success|$GITHUB_SHA" ]]; then
+            echo "OCR staging must be successful and target this exact commit. Got: $run_info" >&2
+            exit 1
+          fi
+          runtime_dir="$RUNNER_TEMP/mc-ocr-runtime"
+          mkdir -p "$runtime_dir"
+          cp "$RUNNER_TEMP/mc-ocr-staging/ocr-runtime-macos-aarch64/"* "$runtime_dir/"
+          cp "$RUNNER_TEMP/mc-ocr-staging/ocr-runtime-macos-x86_64/"* "$runtime_dir/"
+          npm run stage:ocr-runtime-artifacts -- --platform macos-universal --runtime-dir "$runtime_dir" --models-dir "$RUNNER_TEMP/mc-ocr-staging/ocr-models"
+
       - name: Validate macOS build prerequisites
         run: |
           npm run test:macos-packaging
@@ -216,10 +251,17 @@ jobs:
           npm run test:macos:host
 
       - name: Run macOS host tests
+        env:
+          MC_OCR_OBSERVE_NETWORK: 1
         run: |
           npm run test:rust
           npm run test:pdfium-wrapper:compile
           npm run clippy:pdfium-wrapper
+          npx playwright install chromium
+          npm run test:unit
+          npm run test:editor
+          npm run test:ocr:runtime
+          npm run test:ocr:corpus
 
       - name: Build universal DMG and updater artifacts
         env:
@@ -241,14 +283,22 @@ jobs:
       - name: Verify final DMG
         run: npm run verify:macos-dmg -- --version "${{ steps.version.outputs.version }}" --dmg "$RUNNER_TEMP/mc-macos-release-artifacts/${{ steps.version.outputs.dmg_name }}"
 
+      - name: Launch packaged app twice on Apple Silicon
+        run: npm run test:macos:native -- --package "$RUNNER_TEMP/mc-macos-release-artifacts/${{ steps.version.outputs.dmg_name }}" --proof-dir "$RUNNER_TEMP/mc-macos-native-proof"
+
       - uses: actions/upload-artifact@v4
         with:
           name: macos-release-artifacts
           path: |
             ${{ runner.temp }}/mc-macos-release-artifacts/${{ steps.version.outputs.dmg_name }}
-            ${{ runner.temp }}/mc-macos-release-artifacts/Multi-Converter_macos-universal.dmg
             ${{ runner.temp }}/mc-macos-release-artifacts/${{ steps.version.outputs.updater_archive_name }}
             ${{ runner.temp }}/mc-macos-release-artifacts/${{ steps.version.outputs.updater_signature_name }}
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-native-proof-apple-silicon
+          path: ${{ runner.temp }}/mc-macos-native-proof
           if-no-files-found: error
 
   verify-intel:
@@ -275,3 +325,12 @@ jobs:
 
       - name: Verify final DMG on Intel
         run: npm run verify:macos-dmg -- --version "${{ needs.build.outputs.version }}" --dmg "$RUNNER_TEMP/mc-macos-release-artifacts/${{ needs.build.outputs.dmg_name }}"
+
+      - name: Launch packaged app twice on Intel
+        run: npm run test:macos:native -- --package "$RUNNER_TEMP/mc-macos-release-artifacts/${{ needs.build.outputs.dmg_name }}" --proof-dir "$RUNNER_TEMP/mc-macos-native-proof"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-native-proof-intel
+          path: ${{ runner.temp }}/mc-macos-native-proof
+          if-no-files-found: error

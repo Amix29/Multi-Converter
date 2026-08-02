@@ -191,3 +191,19 @@ Before publication, test the final downloaded AppImage on a clean Linux desktop:
 - verify at least one FFmpeg audio/video conversion;
 - verify document/PDF/image paths only when the matching Linux engines are included;
 - verify updater metadata behavior when Linux updates are enabled.
+
+## Phase 8 Development Staging
+
+Run `OCR Runtime Staging` and `Phase 8 Engine Staging` on the exact
+`codex/test` checkpoint, then provide those successful run IDs to `Linux
+AppImage Build` together with the approved V1.0.6 Linux sidecar staging run.
+The workflow verifies run identity and head SHA, stages the official Linux x64
+CPU worker and one shared model tree, and rejects foreign macOS/Windows runtime
+archives. PDFium is the locked 149.0.7825.0 library with wrapper 0.3.0; the
+other approved V1.0.6 engine inputs remain byte-identical.
+
+The native harness launches the exact AppImage twice under isolated HOME/XDG
+and temporary directories, records screenshots, checks worker cleanup and
+samples OCR/PDFium connections while the network remains active. This CI proof
+can close Phase 8 for sequencing only. A manually launched, final downloaded
+AppImage on a clean Linux desktop is still required before Phase 9 publication.

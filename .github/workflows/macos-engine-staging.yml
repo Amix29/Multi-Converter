@@ -9,6 +9,8 @@ on:
       - "scripts/prepare-ffmpeg-engine-macos.mjs"
       - "scripts/lib/ffmpeg-version.mjs"
       - "scripts/prepare-pdfium-engine-macos.mjs"
+      - "scripts/lib/platform-provenance.mjs"
+      - "tools/platform-runtime-provenance-lock.json"
       - "scripts/prepare-libreoffice-engine-macos.mjs"
       - "scripts/prepare-pandoc-engine-macos.mjs"
       - "scripts/prepare-libvips-engine-macos.mjs"
@@ -59,10 +61,6 @@ on:
         description: "SHA-256 for the separate Intel FFprobe archive"
         required: false
         default: ""
-        type: string
-      pdfium_macos_universal_archive_sha256:
-        description: "SHA-256 for the official pdfium-mac-univ.tgz archive"
-        required: true
         type: string
       libreoffice_macos_aarch64_dmg_sha256:
         description: "SHA-256 for the official Apple Silicon LibreOffice DMG"
@@ -128,7 +126,6 @@ jobs:
       FFMPEG_MACOS_X86_64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_x86_64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_MACOS_X86_64_ARCHIVE_SHA256 || '' }}
       FFPROBE_MACOS_X86_64_ARCHIVE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_x86_64_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_MACOS_X86_64_ARCHIVE_URL || '' }}
       FFPROBE_MACOS_X86_64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_x86_64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_MACOS_X86_64_ARCHIVE_SHA256 || '' }}
-      PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pdfium_macos_universal_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256 || '' }}
       LIBREOFFICE_MACOS_AARCH64_DMG_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_macos_aarch64_dmg_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_MACOS_AARCH64_DMG_SHA256 || '' }}
       LIBREOFFICE_MACOS_X86_64_DMG_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_macos_x86_64_dmg_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_MACOS_X86_64_DMG_SHA256 || '' }}
       PANDOC_MACOS_AARCH64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pandoc_macos_aarch64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PANDOC_MACOS_AARCH64_ARCHIVE_SHA256 || '' }}

@@ -245,6 +245,16 @@ installed engine keeps the existing `bundled-engines/pdfium/compatible` path;
 the conversion and OCR domains therefore retain their public contracts and
 hybrid page-selection policy.
 
+Phase 8 extends that boundary to `macos-universal` and `linux-x64`. A single
+platform provenance lock fixes PDFium, PaddlePaddle, Python and the approved
+V1.0.6 engine staging inputs. The universal macOS package carries two official
+CPU worker archives (`arm64` and `x86_64`) but one shared model tree; Linux
+carries only its x86_64 worker. Rust selects the worker from the process OS and
+architecture, validates the archive hash and every extracted file, then checks
+the Mach-O, ELF or PE machine type before launch. Foreign runtimes, duplicate
+archive entries, links, traversal and missing executable permissions fail
+closed. CoreML, OpenVINO and the native ONNX candidate remain unselected.
+
 ## Sources Of Truth
 
 1. Atelier [`AGENTS.md`](../../../AGENTS.md), its indexed rules and

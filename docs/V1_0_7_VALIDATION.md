@@ -11,6 +11,7 @@
 - Phase 2 state: isolated worktree on `codex/phase-2-frontend-vellum`, based on the Phase 1 checkpoint, not merged or pushed
 - Phase 3 state: isolated worktree on `codex/phase-3-ocr-local`, based on the Phase 2 checkpoint, not merged or pushed
 - Phase 4 state: isolated worktree on `codex/phase-4-rust-backend`, based on Phase 3 commit `9ec3b9ca`, not merged or pushed
+- Phase 8 state: implementation prepared from Phase 7 commit `13e4285f2d455af8e4c3cd5da2b583047894bc4b`; native runner evidence pending
 
 This is the combined release-validation ledger for V1.0.7. It does not replace the detailed editor or OCR documents:
 
@@ -406,6 +407,37 @@ Phase 7 is closed for Windows PDFium packaging and installed hybrid OCR. The
 101 Phase 5 manual scenarios were not replayed and remain unvalidated by
 explicit maintainer decision; this closure must not be presented as their
 release-grade proof.
+
+## 2026-08-02 Phase 8 macOS/Linux Packaging Implementation
+
+The Phase 8 checkpoint introduces locked native resource preparation without
+changing version `1.0.6`, public commands, conversion formats or OCR V1
+contracts. PDFium 149.0.7825.0 and wrapper 0.3.0 are fixed for universal macOS
+and Linux x64. Official PaddlePaddle 3.3.1 CPU runtimes are separated into
+Apple Silicon, Intel and Linux artifacts; Intel is built from the exact
+official source commit and is a blocking path.
+
+Local evidence obtained on Windows:
+
+- `npm run check` passed, including 44 Vitest tests, OCR/PDFium contracts,
+  platform packaging contracts, static native harness checks and release asset
+  guards;
+- Rust formatting, Clippy and 142 unit tests passed with 7 ignored host tests;
+- both npm audits report zero vulnerabilities;
+- the locked Python runtime audit reports zero known vulnerabilities;
+- the Rust audit passed under the existing allowed-warning policy; it reports
+  transitive unmaintained/unsound warnings but no unallowed vulnerability;
+- source limits pass at 260 tooling/frontend files (maximum 500 nonblank lines)
+  and 91 Rust files (maximum 426).
+
+This does not yet prove a native runtime, DMG or AppImage. The following remain
+pending until the exact checkpoint is pushed to `codex/test`: three OCR staging
+jobs, two platform engine packages, Apple Silicon/Intel conversion and OCR
+matrices, universal DMG build/mount/launch, Linux AppImage build/extract/launch,
+package size measurements and the 40-case corpus on all three architectures.
+The network will remain active; connection sampling cannot be described as an
+offline or continuous-capture test. The 101 Phase 5 scenarios remain an
+assumption and are not reclassified as evidence.
 
 ## Gate Summary
 

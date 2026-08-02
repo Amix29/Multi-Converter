@@ -1,0 +1,113 @@
+name: Phase 8 Engine Staging
+
+on:
+  push:
+    branches:
+      - codex/test
+    paths:
+      - ".github/workflows/phase-8-engine-staging.yml"
+      - "scripts/prepare-pdfium-engine-macos.mjs"
+      - "scripts/prepare-pdfium-engine-linux.mjs"
+      - "scripts/package-locked-pdfium-platform.mjs"
+      - "scripts/restage-platform-pdfium.mjs"
+      - "scripts/lib/engine-package-files.mjs"
+      - "scripts/lib/platform-provenance.mjs"
+      - "tools/platform-runtime-provenance-lock.json"
+      - "tools/engine-packages.macos.config.json"
+      - "tools/engine-packages.linux.config.json"
+      - "tools/pdfium-render-wrapper/**"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: phase-8-engine-staging-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    name: Preserve V1.0.6 engines and replace PDFium (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-universal
+            runner: macos-latest
+            baseline_run_id: 27463128979
+            artifact_id: 7609654944
+            artifact_name: macos-engine-assets
+            artifact_bytes: 1236181474
+            artifact_sha256: d393adbaddeb900cee51a62d7ef0cee589da6f344f660b329e960f1327d3cbf5
+            baseline_head_sha: 1e2dc0dd14e9656248da221577ab76c70eb9103c
+          - platform: linux-x64
+            runner: ubuntu-22.04
+            baseline_run_id: 27501141759
+            artifact_id: 7621760659
+            artifact_name: linux-engine-assets
+            artifact_bytes: 385939455
+            artifact_sha256: 1d16c5ad057d16b6a2293c1d49ee0e5f591bf380f5bcdecf1e83058d4e2de082
+            baseline_head_sha: 428bc75357417f177dd753255822fdbde4ed8c85
+    env:
+      CARGO_TERM_COLOR: always
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      MULTI_CONVERTER_ENGINE_PLATFORM: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin,x86_64-unknown-linux-gnu
+      - name: Install archive tools
+        if: ${{ runner.os == 'Linux' }}
+        run: sudo apt-get update && sudo apt-get install -y unzip zip
+      - run: npm ci
+      - name: Validate exact V1.0.6 baseline artifact identity
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          actual="$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/${{ matrix.artifact_id }}" --jq '.name + "|" + (.size_in_bytes|tostring) + "|" + .digest + "|" + (.workflow_run.id|tostring) + "|" + .workflow_run.head_sha')"
+          expected="${{ matrix.artifact_name }}|${{ matrix.artifact_bytes }}|sha256:${{ matrix.artifact_sha256 }}|${{ matrix.baseline_run_id }}|${{ matrix.baseline_head_sha }}"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "V1.0.6 baseline artifact identity differs. Expected $expected, got $actual" >&2
+            exit 1
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ runner.temp }}/mc-engine-baseline
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ matrix.baseline_run_id }}
+      - name: Prepare locked PDFium 149.0.7825.0 and wrapper 0.3.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ matrix.platform }}" == "macos-universal" ]]; then
+            npm run prepare:pdfium-engine:macos
+          else
+            npm run prepare:pdfium-engine:linux
+          fi
+      - name: Package PDFium twice and merge with exact V1.0.6 engines
+        shell: bash
+        run: |
+          set -euo pipefail
+          replacement="$RUNNER_TEMP/mc-pdfium-replacement"
+          output="$RUNNER_TEMP/mc-phase-8-engine-assets"
+          node scripts/package-locked-pdfium-platform.mjs --platform "${{ matrix.platform }}" --output-dir "$replacement"
+          node scripts/restage-platform-pdfium.mjs --platform "${{ matrix.platform }}" --baseline-dir "$RUNNER_TEMP/mc-engine-baseline" --replacement-dir "$replacement" --output-dir "$output"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ runner.temp }}/mc-phase-8-engine-assets
+          if-no-files-found: error
+          compression-level: 0

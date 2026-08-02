@@ -346,6 +346,25 @@ The first installed cycle passed all 40 corpus cases with 100% clean mean,
 working set and zero observed remote connections across 615 samples. The
 second cycle repeated the packaged PDFium health checks after reinstall.
 
+## Phase 8 Platform Runtime Contract
+
+The internal OCR lock now has explicit `macos-aarch64`, `macos-x86_64` and
+`linux-x64` entries while public OCR V1 contracts remain unchanged. All three
+select the official PaddlePaddle 3.3.1 CPU runtime with PaddleOCR/PaddleX 3.7.0,
+Python 3.12.10 and the same five locked `PP-OCRv6_medium` models. Apple Silicon
+and Linux use official wheels. Intel macOS must build the official Paddle tag
+at commit `7688495538f4d6c1893f084dd238a402e8f68ab6`; inability to build or
+match the corpus is blocking and cannot silently disable Intel OCR.
+
+`OCR Runtime Staging` produces private Actions artifacts only. It runs
+`paddle.utils.run_check()`, the worker smoke test, deterministic packaging and
+license inventory on each native runner. The macOS DMG stages both worker
+archives plus one shared model tree; the AppImage stages only Linux x64. The
+package verifiers reject a missing, foreign or modified runtime. Native corpus,
+package launch and connection-observation results remain pending until the
+Phase 8 workflows run on the exact checkpoint; Windows self-tests are not
+macOS/Linux evidence.
+
 ## Official References
 
 - PaddleOCR 3.7.0: https://pypi.org/project/paddleocr/3.7.0/

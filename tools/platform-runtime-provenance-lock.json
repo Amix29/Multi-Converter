@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "generatedFor": "phase-8-macos-linux-native",
+  "pdfium": {
+    "version": "149.0.7825.0",
+    "tag": "chromium/7825",
+    "wrapperVersion": "0.3.0",
+    "platforms": {
+      "macos-universal": {
+        "archiveName": "pdfium-mac-univ.tgz",
+        "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7825/pdfium-mac-univ.tgz",
+        "bytes": 6866454,
+        "sha256": "3782e6cbc13c75dcf6461fdd33048fd7507730e095181427de24c0c400ea3eb6",
+        "libraryPath": "lib/libpdfium.dylib",
+        "libraryBytes": 14534128,
+        "librarySha256": "365155f66b5d859d4a37393640ed6dab1976dc0afcbfbf5d00737da96b18b461"
+      },
+      "linux-x64": {
+        "archiveName": "pdfium-linux-x64.tgz",
+        "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7825/pdfium-linux-x64.tgz",
+        "bytes": 3615157,
+        "sha256": "ae0e276bcdf276dca2746adb4780f79949620e5c655973ca252a3994bc516a13",
+        "libraryPath": "lib/libpdfium.so",
+        "libraryBytes": 7584008,
+        "librarySha256": "fcd602cd518476d712f661b08e010700490875288fb17069b5b5a2f8b7724118"
+      }
+    }
+  },
+  "ocr": {
+    "python": "3.12.10",
+    "uv": "0.11.21",
+    "pyinstaller": "6.16.0",
+    "paddlepaddle": {
+      "version": "3.3.1",
+      "source": {
+        "tag": "v3.3.1",
+        "commit": "7688495538f4d6c1893f084dd238a402e8f68ab6",
+        "url": "https://github.com/PaddlePaddle/Paddle/archive/refs/tags/v3.3.1.tar.gz",
+        "bytes": 18574714,
+        "sha256": "c3ffd836335fc4f95ffd990b1556cef5d1c39fcfd0bdca46f02e799a3ec870aa"
+      },
+      "platforms": {
+        "macos-aarch64": {
+          "kind": "wheel",
+          "filename": "paddlepaddle-3.3.1-cp312-cp312-macosx_11_0_arm64.whl",
+          "url": "https://files.pythonhosted.org/packages/3b/97/62d061b4700a7020506f4db80c4721100b5b2fa0709f4e999c38dc7e2293/paddlepaddle-3.3.1-cp312-cp312-macosx_11_0_arm64.whl",
+          "bytes": 104546703,
+          "sha256": "d7827d867503b502a881c718e3743d9b91648a62d01f93bcd5ba3d7846de5ab5"
+        },
+        "macos-x86_64": {
+          "kind": "source",
+          "sourceCommit": "7688495538f4d6c1893f084dd238a402e8f68ab6"
+        },
+        "linux-x64": {
+          "kind": "wheel",
+          "filename": "paddlepaddle-3.3.1-cp312-cp312-manylinux1_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/a0/03/f59f706902aad55a1f216c98fc55187945d6ccda6fdeccd226928bcc06c6/paddlepaddle-3.3.1-cp312-cp312-manylinux1_x86_64.whl",
+          "bytes": 194839332,
+          "sha256": "9016fc497213e1101261684321fbb31ef5960019ef39cb07ded27bc70e2a9858"
+        }
+      }
+    }
+  },
+  "v106Baselines": {
+    "macosEngineArtifact": {
+      "workflow": "macOS Engine Staging",
+      "runId": 27463128979,
+      "artifactId": 7609654944,
+      "artifactName": "macos-engine-assets",
+      "headSha": "1e2dc0dd14e9656248da221577ab76c70eb9103c",
+      "bytes": 1236181474,
+      "sha256": "d393adbaddeb900cee51a62d7ef0cee589da6f344f660b329e960f1327d3cbf5"
+    },
+    "linuxSidecarArtifact": {
+      "workflow": "Linux Sidecar Staging",
+      "runId": 27499910083,
+      "artifactId": 7621349316,
+      "artifactName": "linux-sidecar-assets",
+      "headSha": "d76a1de75b487522b190241bf151b051cfe6d0f3",
+      "bytes": 149937894,
+      "sha256": "d65d271b95b9b3da9946df03b4c75d4824bceae65f1c3a380a551cc0425ca53d"
+    },
+    "linuxEngineArtifact": {
+      "workflow": "Linux Engine Staging",
+      "runId": 27501141759,
+      "artifactId": 7621760659,
+      "artifactName": "linux-engine-assets",
+      "headSha": "428bc75357417f177dd753255822fdbde4ed8c85",
+      "bytes": 385939455,
+      "sha256": "1d16c5ad057d16b6a2293c1d49ee0e5f591bf380f5bcdecf1e83058d4e2de082"
+    }
+  }
+}

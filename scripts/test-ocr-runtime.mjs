@@ -1,13 +1,13 @@
 import { chromium } from "@playwright/test";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { extractOcrRuntimeArchive, ocrRuntimeArchivePath } from "./lib/ocr-runtime-archive.mjs";
+import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath } from "./lib/ocr-runtime-archive.mjs";
 
 const root = process.cwd();
-const platform = process.platform === "win32" ? "windows-x64" : process.platform === "darwin" ? "macos-universal" : "linux-x64";
+const platform = hostOcrPlatform();
 const runtimeArchive = ocrRuntimeArchivePath(root, platform);
 const models = path.join(root, "src-tauri", "ocr-resources", "models");
 await assertFile(runtimeArchive, "archive du runtime OCR préparé");
@@ -62,6 +62,9 @@ function recognize(workerPath, modelsPath, inputPath, outputPath) {
     let stdout = "";
     let stderr = "";
     let completed = false;
+    const networkTimer = process.env.MC_OCR_OBSERVE_NETWORK === "1"
+      ? setInterval(() => assertNoNetworkSockets(child.pid), 250)
+      : null;
     const timer = setTimeout(() => {
       child.kill();
       reject(new Error("Le runtime OCR empaqueté a dépassé 180 secondes."));
@@ -97,10 +100,22 @@ function recognize(workerPath, modelsPath, inputPath, outputPath) {
     });
     child.on("exit", (code) => {
       clearTimeout(timer);
+      if (networkTimer) clearInterval(networkTimer);
       if (completed && code === 0) resolve();
       else reject(new Error(`Le runtime OCR s’est arrêté (${code}): ${stderr}`));
     });
   });
+}
+
+function assertNoNetworkSockets(pid) {
+  if (!pid || process.platform === "win32") return;
+  const result = spawnSync("lsof", ["-nP", "-a", "-p", String(pid), "-iTCP", "-iUDP"], {
+    encoding: "utf8", stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (result.status === 0 && result.stdout.trim()) {
+    throw new Error(`Le worker OCR a ouvert une connexion réseau:\n${result.stdout.trim()}`);
+  }
+  if (![0, 1].includes(result.status)) throw new Error(`Observation réseau OCR impossible: ${result.stderr}`);
 }
 
 function normalize(value) {

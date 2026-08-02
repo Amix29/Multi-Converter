@@ -348,3 +348,13 @@ Vite preview uses mocks and cannot validate Tauri IPC or local asset storage.
 Windows validation does not prove macOS or Linux behavior; those platforms
 require their documented native gates. Dependency audits report known
 advisories in the inspected graph, not the absence of exploitable defects.
+
+Phase 8 adds immutable macOS/Linux provenance and architecture checks before
+OCR or PDFium execution. Runtime archives are regular-file-only, have bounded
+and unambiguous paths, restore only declared Unix executable bits and are
+verified against aggregate and per-file manifests. GitHub package jobs accept
+staging artifacts only from the expected workflow, successful conclusion and
+exact candidate commit. The app still performs no model or engine download at
+startup or during conversion. Native CI observes OCR and PDFium process
+connections while the host network remains active; this is process sampling,
+not a disconnection test or continuous packet capture.

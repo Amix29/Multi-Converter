@@ -51,6 +51,10 @@ on:
         required: false
         default: ""
         type: string
+      ocr_staging_run_id:
+        description: "OCR Runtime Staging run ID containing the Linux runtime and shared models"
+        required: true
+        type: string
 
 permissions:
   actions: read
@@ -65,7 +69,7 @@ jobs:
     name: Build verified Linux x64 AppImage
     if: ${{ github.event_name == 'workflow_dispatch' || vars.MC_ENABLE_LINUX_APPIMAGE == '1' }}
     runs-on: ubuntu-22.04
-    timeout-minutes: 90
+    timeout-minutes: 180
     outputs:
       version: ${{ steps.version.outputs.version }}
       appimage_name: ${{ steps.version.outputs.appimage_name }}
@@ -83,6 +87,7 @@ jobs:
       SIDECAR_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_SIDECAR_STAGING_RUN_ID || '' }}
       ENGINE_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_release_tag || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_ENGINE_RELEASE_TAG || '' }}
       ENGINE_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_LINUX_ENGINE_STAGING_RUN_ID || '' }}
+      OCR_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.ocr_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_OCR_RUNTIME_STAGING_RUN_ID || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -113,7 +118,10 @@ jobs:
             pkg-config \
             libfuse2 \
             patchelf \
-            unzip
+            unzip \
+            xvfb \
+            scrot \
+            lsof
 
       - uses: actions/cache@v4
         with:
@@ -156,6 +164,10 @@ jobs:
               exit 1
             fi
           done
+          if [[ ! "$OCR_STAGING_RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "A numeric ocr_staging_run_id is required." >&2
+            exit 1
+          fi
           for tag in "$SIDECAR_RELEASE_TAG" "$ENGINE_RELEASE_TAG"; do
             if [[ -n "$tag" && ( ! "$tag" =~ ^[A-Za-z0-9._/-]+$ || "$tag" == -* || "$tag" == */..* || "$tag" == *..* ) ]]; then
               echo "Invalid Linux release tag input: $tag" >&2
@@ -208,9 +220,9 @@ jobs:
           asset_dir="$RUNNER_TEMP/mc-linux-engine-assets"
           mkdir -p "$asset_dir"
           gh run download "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --name linux-engine-assets --dir "$asset_dir"
-          run_info="$(gh run view "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,name --jq '.name + "|" + .conclusion')"
-          if [[ "$run_info" != "Linux Engine Staging|success" ]]; then
-            echo "engine_staging_run_id must reference a successful Linux Engine Staging run. Got: $run_info" >&2
+          run_info="$(gh run view "$ENGINE_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,headSha,name --jq '.name + "|" + .conclusion + "|" + .headSha')"
+          if [[ "$run_info" != "Phase 8 Engine Staging|success|$GITHUB_SHA" ]]; then
+            echo "engine_staging_run_id must reference the successful Phase 8 staging run for this commit. Got: $run_info" >&2
             exit 1
           fi
           npm run prepare:linux-engine-release-assets -- --from-local-assets --asset-dir "$asset_dir"
@@ -220,6 +232,28 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run prepare:linux-engine-release-assets -- --tag "$ENGINE_RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
+
+      - name: Download locked OCR artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ocr-*
+          path: ${{ runner.temp }}/mc-ocr-staging
+          merge-multiple: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.OCR_STAGING_RUN_ID }}
+
+      - name: Verify and stage Linux OCR resources
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          run_info="$(gh run view "$OCR_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,headSha,name --jq '.name + "|" + .conclusion + "|" + .headSha')"
+          if [[ "$run_info" != "OCR Runtime Staging|success|$GITHUB_SHA" ]]; then
+            echo "OCR staging must be successful and target this exact commit. Got: $run_info" >&2
+            exit 1
+          fi
+          npm run stage:ocr-runtime-artifacts -- --platform linux-x64 --runtime-dir "$RUNNER_TEMP/mc-ocr-staging/ocr-runtime-linux-x64" --models-dir "$RUNNER_TEMP/mc-ocr-staging/ocr-models"
 
       - name: Validate Linux packaging contracts
         run: |
@@ -232,10 +266,17 @@ jobs:
         run: npm run test:linux:conversions
 
       - name: Run Linux host tests
+        env:
+          MC_OCR_OBSERVE_NETWORK: 1
         run: |
           npm run test:rust
           npm run test:pdfium-wrapper:compile
           npm run clippy:pdfium-wrapper
+          npx playwright install chromium
+          npm run test:unit
+          npm run test:editor
+          npm run test:ocr:runtime
+          npm run test:ocr:corpus
 
       - name: Build Linux AppImage and updater signature
         env:
@@ -257,12 +298,20 @@ jobs:
       - name: Verify release-named Linux AppImage
         run: npm run verify:linux-appimage -- --version "${{ steps.version.outputs.version }}" --appimage "$RUNNER_TEMP/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_name }}" --signature "$RUNNER_TEMP/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_signature_name }}"
 
+      - name: Launch packaged AppImage twice
+        run: xvfb-run -a npm run test:linux:native -- --package "$RUNNER_TEMP/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_name }}" --signature "$RUNNER_TEMP/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_signature_name }}" --proof-dir "$RUNNER_TEMP/mc-linux-native-proof"
+
       - uses: actions/upload-artifact@v4
         with:
           name: linux-release-artifacts
           path: |
             ${{ runner.temp }}/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_name }}
-            ${{ runner.temp }}/mc-linux-release-artifacts/Multi-Converter_linux-x64.AppImage
             ${{ runner.temp }}/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_signature_name }}
             ${{ runner.temp }}/mc-linux-release-artifacts/${{ steps.version.outputs.appimage_checksum_name }}
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-native-proof
+          path: ${{ runner.temp }}/mc-linux-native-proof
           if-no-files-found: error

@@ -132,7 +132,7 @@ assert.match(linuxAppImageBuildJob, /gh run download "\$SIDECAR_STAGING_RUN_ID"[
 assert.match(linuxAppImageBuildJob, /Linux Sidecar Staging\|success/, "Linux AppImage build must verify sidecar staging artifact run provenance");
 assert.match(linuxAppImageBuildJob, /npm run prepare:linux-sidecars -- --asset-dir "\$asset_dir"/, "Linux AppImage build must stage sidecars through the shared checksum and smoke-test helper");
 assert.match(linuxAppImageBuildJob, /gh run download "\$ENGINE_STAGING_RUN_ID"[\s\S]*--name linux-engine-assets/, "Linux AppImage build must download Linux engines from a staging workflow artifact");
-assert.match(linuxAppImageBuildJob, /Linux Engine Staging\|success/, "Linux AppImage build must verify engine staging artifact run provenance");
+assert.match(linuxAppImageBuildJob, /Phase 8 Engine Staging\|success\|\$GITHUB_SHA/, "Linux AppImage build must verify the Phase 8 engine staging commit");
 assert.match(linuxAppImageBuildJob, /npm run prepare:linux-engine-release-assets -- --from-local-assets --asset-dir "\$asset_dir"/, "Linux AppImage build must stage Linux engines from workflow artifacts without a public release");
 assert.match(linuxAppImageBuildJob, /npm run prepare:linux-engine-release-assets -- --tag "\$ENGINE_RELEASE_TAG" --repo "\$GITHUB_REPOSITORY"/, "Linux AppImage build must stage advanced Linux engine archives before conversion validation");
 assert.doesNotMatch(linuxAppImageBuildJob, /prepare-tauri-ci-sidecars/, "Linux AppImage build must use real sidecars, not CI placeholders");
@@ -146,8 +146,8 @@ assert.match(linuxAppImageBuildJob, /actions\/upload-artifact@v4/, "Linux AppIma
 assert.match(linuxEngineStagingWorkflow, /name:\s+Linux Engine Staging/, "Linux engine staging workflow must be clearly named");
 assert.match(linuxEngineStagingWorkflow, /workflow_dispatch:/, "Linux engine staging workflow must be manually runnable");
 assert.match(linuxEngineStagingWorkflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "Linux engine staging workflow must be push-runnable from codex/test");
-assert.match(linuxEngineStagingWorkflow, /pdfium_archive_url:/, "Linux engine staging workflow must accept a PDFium source-tree archive");
-assert.match(linuxEngineStagingWorkflow, /pdfium_upstream_sha256:/, "Linux engine staging workflow must accept upstream PDFium SHA-256 input");
+assert.doesNotMatch(linuxEngineStagingWorkflow, /pdfium_archive_url:/, "Linux engine staging must not accept a PDFium source override");
+assert.match(linuxEngineStagingWorkflow, /tools\/platform-runtime-provenance-lock\.json/, "Linux engine staging must use the locked PDFium provenance file");
 assert.match(linuxEngineStagingWorkflow, /libreoffice_archive_url:/, "Linux engine staging workflow must accept a LibreOffice source-tree archive");
 assert.match(linuxEngineStagingWorkflow, /libreoffice_upstream_sha256:/, "Linux engine staging workflow must accept upstream LibreOffice SHA-256 input");
 assert.match(linuxEngineStagingWorkflow, /pandoc_archive_url:/, "Linux engine staging workflow must accept a Pandoc source-tree archive");
@@ -157,15 +157,15 @@ assert.match(linuxEngineStagingWorkflow, /libvips_apt_runtime:/, "Linux engine s
 assert.match(linuxEngineStagingJob, /runs-on:\s+ubuntu-22\.04/, "Linux engine staging must run on the supported Ubuntu baseline");
 assert.match(linuxEngineStagingJob, /vars\.MC_ENABLE_LINUX_ENGINE_STAGING == '1'/, "codex/test Linux engine staging push runs must require an explicit repository variable gate");
 assert.match(linuxEngineStagingJob, /sudo apt-get install -y unzip tar xz-utils zip dpkg-dev file libvips-tools/, "Linux engine staging must install extraction, Debian package and libvips smoke-test tools");
-assert.match(linuxEngineStagingJob, /MC_PDFIUM_LINUX_X64_ARCHIVE/, "Linux engine staging must accept PDFium archive variables");
-assert.match(linuxEngineStagingJob, /PDFIUM_LINUX_X64_ARCHIVE_SHA256/, "Linux engine staging must accept upstream PDFium SHA-256 variables");
+assert.match(linuxEngineStagingJob, /prepare:pdfium-engine:linux/, "Linux engine staging must prepare locked upstream PDFium");
+assert.doesNotMatch(linuxEngineStagingJob, /PDFIUM_LINUX_X64_ARCHIVE_SHA256/, "Linux engine staging must not accept an unlocked PDFium checksum override");
 assert.match(linuxEngineStagingJob, /MC_LIBREOFFICE_LINUX_X64_ARCHIVE/, "Linux engine staging must accept LibreOffice archive variables");
 assert.match(linuxEngineStagingJob, /LIBREOFFICE_LINUX_X64_DEB_ARCHIVE_SHA256/, "Linux engine staging must accept upstream LibreOffice SHA-256 variables");
 assert.match(linuxEngineStagingJob, /MC_PANDOC_LINUX_X64_ARCHIVE/, "Linux engine staging must accept Pandoc archive variables");
 assert.match(linuxEngineStagingJob, /PANDOC_LINUX_X64_ARCHIVE_SHA256/, "Linux engine staging must accept upstream Pandoc SHA-256 variables");
 assert.match(linuxEngineStagingJob, /MC_LIBVIPS_LINUX_X64_ARCHIVE/, "Linux engine staging must accept libvips archive variables");
 assert.match(linuxEngineStagingJob, /LIBVIPS_LINUX_APT_RUNTIME/, "Linux engine staging must accept Ubuntu libvips runtime mode");
-assert.match(linuxEngineStagingJob, /PDFium source-tree archive inputs and PDFIUM_LINUX_X64_ARCHIVE_SHA256 are mutually exclusive/, "Linux engine staging must reject ambiguous PDFium source modes");
+assert.match(linuxEngineStagingWorkflow, /tools\/platform-runtime-provenance-lock\.json/, "Linux engine staging must rebuild when the platform provenance lock changes");
 assert.match(linuxEngineStagingJob, /LibreOffice source-tree archive inputs and LIBREOFFICE_LINUX_X64_DEB_ARCHIVE_SHA256 are mutually exclusive/, "Linux engine staging must reject ambiguous LibreOffice source modes");
 assert.match(linuxEngineStagingJob, /Pandoc source-tree archive inputs and PANDOC_LINUX_X64_ARCHIVE_SHA256 are mutually exclusive/, "Linux engine staging must reject ambiguous Pandoc source modes");
 assert.match(linuxEngineStagingJob, /libvips source-tree archive inputs and LIBVIPS_LINUX_APT_RUNTIME=1 are mutually exclusive/, "Linux engine staging must reject ambiguous libvips source modes");
@@ -286,7 +286,7 @@ assert.match(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_url:/, "macOS en
 assert.match(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_sha256:/, "macOS engine staging must require an Intel FFmpeg checksum");
 assert.match(macosEngineStagingWorkflow, /ffprobe_x86_64_archive_url:/, "macOS engine staging must allow a separate Intel FFprobe archive URL");
 assert.match(macosEngineStagingWorkflow, /ffprobe_x86_64_archive_sha256:/, "macOS engine staging must allow a separate Intel FFprobe checksum");
-assert.match(macosEngineStagingWorkflow, /pdfium_macos_universal_archive_sha256:/, "macOS engine staging must require a PDFium macOS checksum");
+assert.doesNotMatch(macosEngineStagingWorkflow, /pdfium_macos_universal_archive_sha256:/, "macOS engine staging must not accept a PDFium checksum override");
 assert.match(macosEngineStagingWorkflow, /libreoffice_macos_aarch64_dmg_sha256:/, "macOS engine staging must require an Apple Silicon LibreOffice checksum");
 assert.match(macosEngineStagingWorkflow, /libreoffice_macos_x86_64_dmg_sha256:/, "macOS engine staging must require an Intel LibreOffice checksum");
 assert.match(macosEngineStagingWorkflow, /pandoc_macos_aarch64_archive_sha256:/, "macOS engine staging must require an Apple Silicon Pandoc checksum");
@@ -309,7 +309,7 @@ assert.match(macosEngineStagingJob, /FFPROBE_MACOS_AARCH64_ARCHIVE_URL/, "macOS 
 assert.match(macosEngineStagingJob, /FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "macOS engine staging must pass separate Intel FFprobe checksums to the preparation script");
 assert.match(macosEngineStagingJob, /vars\.MC_FFPROBE_MACOS_AARCH64_ARCHIVE_URL/, "macOS engine staging push runs must read Apple Silicon FFprobe URLs from repository variables");
 assert.match(macosEngineStagingJob, /vars\.MC_FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "macOS engine staging push runs must read Intel FFprobe checksums from repository variables");
-assert.match(macosEngineStagingJob, /vars\.MC_PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256/, "macOS engine staging push runs must read PDFium checksums from repository variables");
+assert.match(macosEngineStagingWorkflow, /tools\/platform-runtime-provenance-lock\.json/, "macOS engine staging must rebuild when the platform provenance lock changes");
 assert.match(macosEngineStagingJob, /vars\.MC_LIBREOFFICE_MACOS_AARCH64_DMG_SHA256/, "macOS engine staging push runs must read Apple Silicon LibreOffice checksums from repository variables");
 assert.match(macosEngineStagingJob, /vars\.MC_LIBREOFFICE_MACOS_X86_64_DMG_SHA256/, "macOS engine staging push runs must read Intel LibreOffice checksums from repository variables");
 assert.match(macosEngineStagingJob, /vars\.MC_PANDOC_MACOS_AARCH64_ARCHIVE_SHA256/, "macOS engine staging push runs must read Apple Silicon Pandoc checksums from repository variables");
@@ -366,7 +366,7 @@ assert.match(macosDmgBuildJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-dar
 assert.match(macosDmgBuildJob, /Download staged macOS engine archives from a release/, "macOS DMG build must support staged macOS engine release assets");
 assert.match(macosDmgBuildJob, /Download staged macOS assets from a workflow artifact/, "macOS DMG build must support staged macOS engine workflow artifacts");
 assert.match(macosDmgBuildJob, /actions\/download-artifact@v4[\s\S]*name:\s+macos-engine-assets[\s\S]*run-id:\s+\$\{\{\s*env\.ENGINE_STAGING_RUN_ID\s*\}\}/, "macOS DMG build must download the macOS engine staging artifact");
-assert.match(macosDmgBuildJob, /macOS Engine Staging\|success/, "macOS DMG build must verify staging artifact run provenance");
+assert.match(macosDmgBuildJob, /Phase 8 Engine Staging\|success\|\$GITHUB_SHA/, "macOS DMG build must verify the Phase 8 staging commit");
 assert.match(macosDmgBuildJob, /shasum -a 256 -c "\$asset\.sha256"/, "macOS DMG build must verify staged sidecar checksums");
 assert.match(macosDmgBuildJob, /--from-local-assets --asset-dir "\$asset_dir"/, "macOS DMG build must stage engine artifacts without a public release");
 assert.match(macosDmgBuildJob, /prepare-macos-engine-release-assets\.mjs/, "macOS DMG build must use the staged engine release helper");
@@ -414,7 +414,7 @@ assert.match(macosConversionsJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-
 assert.match(macosConversionsJob, /Download staged macOS engine archives from a release/, "macOS conversion matrix must support staged macOS engine release assets");
 assert.match(macosConversionsJob, /Download staged macOS assets from a workflow artifact/, "macOS conversion matrix must support staged macOS engine workflow artifacts");
 assert.match(macosConversionsJob, /actions\/download-artifact@v4[\s\S]*name:\s+macos-engine-assets[\s\S]*run-id:\s+\$\{\{\s*env\.ENGINE_STAGING_RUN_ID\s*\}\}/, "macOS conversion matrix must download the macOS engine staging artifact");
-assert.match(macosConversionsJob, /macOS Engine Staging\|success/, "macOS conversion matrix must verify staging artifact run provenance");
+assert.match(macosConversionsJob, /Phase 8 Engine Staging\|success\|\$GITHUB_SHA/, "macOS conversion matrix must verify the Phase 8 staging commit");
 assert.match(macosConversionsJob, /shasum -a 256 -c "\$asset\.sha256"/, "macOS conversion matrix must verify staged sidecar checksums");
 assert.match(macosConversionsJob, /--from-local-assets --asset-dir "\$asset_dir"/, "macOS conversion matrix must stage engine artifacts without a public release");
 assert.match(macosConversionsJob, /prepare-macos-engine-release-assets\.mjs/, "macOS conversion matrix must use the staged engine release helper");
@@ -482,8 +482,8 @@ assert.match(linuxEngineSourcesScript, /verifySha256/, "Linux engine source prep
 assert.match(linuxEngineSourcesScript, /tar\.xz|tar\\\.xz/, "Linux engine source preparation helper must accept common .tar.xz source archives");
 assert.match(linuxEngineSourcesScript, /-xJf/, "Linux engine source preparation helper must explicitly extract .tar.xz archives with xz support");
 assert.match(linuxEngineSourcesScript, /non-Linux file found in source tree/, "Linux engine source preparation helper must reject non-Linux files");
-assert.match(linuxPdfiumPrepareScript, /pdfium-linux-x64\.tgz/, "Linux PDFium upstream helper must use the official Linux x64 PDFium archive");
-assert.match(linuxPdfiumPrepareScript, /PDFIUM_LINUX_X64_ARCHIVE_SHA256/, "Linux PDFium upstream helper must require a pinned SHA-256");
+assert.match(linuxPdfiumPrepareScript, /lockedPdfiumPlatform\("linux-x64"/, "Linux PDFium upstream helper must select the locked Linux x64 artifact");
+assert.match(linuxPdfiumPrepareScript, /lockedPdfiumPlatform/, "Linux PDFium upstream helper must use the repository provenance lock");
 assert.match(linuxPdfiumPrepareScript, /pdfium-render-x86_64-unknown-linux-gnu/, "Linux PDFium upstream helper must stage the wrapper name used by Linux packaging");
 assert.match(linuxLibreOfficePrepareScript, /Linux_x86-64_deb\.tar\.gz/, "Linux LibreOffice upstream helper must use the official Linux x86-64 deb archive");
 assert.match(linuxLibreOfficePrepareScript, /LIBREOFFICE_LINUX_X64_DEB_ARCHIVE_SHA256/, "Linux LibreOffice upstream helper must require a pinned SHA-256");

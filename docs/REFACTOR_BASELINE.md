@@ -537,3 +537,30 @@ The installed-resource corpus passed 40/40: clean mean 100%, difficult mean
 connection was observed across 615 process samples while the host network
 remained active. Both installation cycles used the locked wrapper and DLL,
 then removed the isolated installation root successfully.
+
+## Phase 8 macOS/Linux Packaging Implementation Snapshot
+
+Phase 8 starts from `13e4285f2d455af8e4c3cd5da2b583047894bc4b` in
+`codex/phase-8-macos-linux-native`. Metadata remains `1.0.6`. This Windows-side
+snapshot records implementation and static/local checks only; native package
+measurements remain pending the GitHub runner jobs.
+
+| Measurement | Phase 8 local result |
+| --- | ---: |
+| Handwritten frontend/tooling files | 260 |
+| Largest handwritten frontend/tooling file | 500 nonblank lines |
+| Handwritten Rust files | 91 |
+| Largest handwritten Rust file | 426 nonblank lines |
+| Vitest | 44 passed |
+| Rust unit tests | 142 passed, 7 ignored |
+| npm production/development vulnerabilities | 0 / 0 |
+| Python locked-runtime vulnerabilities | 0 |
+| Phase 8 workflow contracts | passed |
+| Native Apple Silicon/Intel/Linux packages | pending native workflows |
+
+The locked upstream PDFium archives are 6,866,454 bytes on universal macOS
+(`3782e6cbc13c75dcf6461fdd33048fd7507730e095181427de24c0c400ea3eb6`)
+and 3,615,157 bytes on Linux x64
+(`ae0e276bcdf276dca2746adb4780f79949620e5c655973ca252a3994bc516a13`).
+Package size, runtime performance, 40-case corpus and launch evidence will be
+recorded only after the exact checkpoint succeeds on native runners.

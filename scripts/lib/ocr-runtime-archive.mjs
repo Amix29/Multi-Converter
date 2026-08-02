@@ -7,6 +7,14 @@ export function ocrRuntimeArchivePath(root, platform) {
   return path.join(root, "src-tauri", "ocr-resources", "runtime", `${platform}.zip`);
 }
 
+export function hostOcrPlatform() {
+  if (process.platform === "win32" && process.arch === "x64") return "windows-x64";
+  if (process.platform === "darwin" && process.arch === "arm64") return "macos-aarch64";
+  if (process.platform === "darwin" && process.arch === "x64") return "macos-x86_64";
+  if (process.platform === "linux" && process.arch === "x64") return "linux-x64";
+  throw new Error(`Plateforme OCR non prise en charge: ${process.platform}/${process.arch}.`);
+}
+
 export async function extractOcrRuntimeArchive(archivePath, destination, platform) {
   await fs.mkdir(destination, { recursive: true });
   if (process.platform === "win32") {
@@ -23,5 +31,5 @@ export async function extractOcrRuntimeArchive(archivePath, destination, platfor
     const result = spawnSync("unzip", ["-q", archivePath, "-d", destination], { stdio: "inherit" });
     if (result.status !== 0) throw new Error("Extraction de l’archive OCR impossible.");
   }
-  return path.join(destination, process.platform === "win32" ? "ocr-worker.exe" : "ocr-worker");
+  return path.join(destination, platform === "windows-x64" ? "ocr-worker.exe" : "ocr-worker");
 }

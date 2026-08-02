@@ -7,6 +7,8 @@ on:
     paths:
       - ".github/workflows/linux-engine-staging.yml"
       - "scripts/prepare-pdfium-engine-linux.mjs"
+      - "scripts/lib/platform-provenance.mjs"
+      - "tools/platform-runtime-provenance-lock.json"
       - "scripts/prepare-libreoffice-engine-linux.mjs"
       - "scripts/prepare-pandoc-engine-linux.mjs"
       - "scripts/prepare-libvips-engine-linux.mjs"
@@ -20,21 +22,6 @@ on:
     inputs:
       output_release_tag:
         description: "Optional test release tag that will receive the staged Linux engine assets"
-        required: false
-        default: ""
-        type: string
-      pdfium_archive_url:
-        description: "Optional maintainer-approved Linux x64 PDFium source-tree archive URL; leave empty when using upstream PDFium"
-        required: false
-        default: ""
-        type: string
-      pdfium_archive_sha256:
-        description: "SHA-256 for the Linux x64 PDFium source-tree archive"
-        required: false
-        default: ""
-        type: string
-      pdfium_upstream_sha256:
-        description: "SHA-256 for the upstream pdfium-linux-x64.tgz archive when pdfium_archive_url is empty"
         required: false
         default: ""
         type: string
@@ -100,9 +87,6 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_ENGINE_PLATFORM: linux-x64
-      MC_PDFIUM_LINUX_X64_ARCHIVE: ${{ github.event_name == 'workflow_dispatch' && inputs.pdfium_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_PDFIUM_LINUX_X64_ARCHIVE || '' }}
-      MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pdfium_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256 || '' }}
-      PDFIUM_LINUX_X64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pdfium_upstream_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PDFIUM_LINUX_X64_UPSTREAM_SHA256 || '' }}
       MC_LIBREOFFICE_LINUX_X64_ARCHIVE: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_LINUX_X64_ARCHIVE || '' }}
       MC_LIBREOFFICE_LINUX_X64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_LINUX_X64_ARCHIVE_SHA256 || '' }}
       LIBREOFFICE_LINUX_X64_DEB_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_upstream_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_LINUX_X64_UPSTREAM_SHA256 || '' }}
@@ -160,19 +144,6 @@ jobs:
             echo "libvips requires either source-tree archive inputs or LIBVIPS_LINUX_APT_RUNTIME=1 for Ubuntu runtime preparation." >&2
             exit 1
           fi
-          if [[ -n "$MC_PDFIUM_LINUX_X64_ARCHIVE" || -n "$MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256" ]]; then
-            if [[ -z "$MC_PDFIUM_LINUX_X64_ARCHIVE" || -z "$MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256" ]]; then
-              echo "Provide both MC_PDFIUM_LINUX_X64_ARCHIVE and MC_PDFIUM_LINUX_X64_ARCHIVE_SHA256, or neither when using PDFIUM_LINUX_X64_ARCHIVE_SHA256." >&2
-              exit 1
-            fi
-            if [[ -n "$PDFIUM_LINUX_X64_ARCHIVE_SHA256" ]]; then
-              echo "PDFium source-tree archive inputs and PDFIUM_LINUX_X64_ARCHIVE_SHA256 are mutually exclusive." >&2
-              exit 1
-            fi
-          elif [[ -z "$PDFIUM_LINUX_X64_ARCHIVE_SHA256" ]]; then
-            echo "PDFium requires either source-tree archive inputs or PDFIUM_LINUX_X64_ARCHIVE_SHA256 for upstream preparation." >&2
-            exit 1
-          fi
           if [[ -n "$MC_PANDOC_LINUX_X64_ARCHIVE" || -n "$MC_PANDOC_LINUX_X64_ARCHIVE_SHA256" ]]; then
             if [[ -z "$MC_PANDOC_LINUX_X64_ARCHIVE" || -z "$MC_PANDOC_LINUX_X64_ARCHIVE_SHA256" ]]; then
               echo "Provide both MC_PANDOC_LINUX_X64_ARCHIVE and MC_PANDOC_LINUX_X64_ARCHIVE_SHA256, or neither when using PANDOC_LINUX_X64_ARCHIVE_SHA256." >&2
@@ -194,7 +165,6 @@ jobs:
           fi
 
       - name: Prepare upstream Linux PDFium source tree
-        if: ${{ env.PDFIUM_LINUX_X64_ARCHIVE_SHA256 != '' }}
         run: npm run prepare:pdfium-engine:linux
 
       - name: Prepare upstream Linux LibreOffice source tree

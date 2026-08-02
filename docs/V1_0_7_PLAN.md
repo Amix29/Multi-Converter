@@ -30,6 +30,15 @@ explicit sequencing assumption, not release evidence. Phase 8 still owns real
 macOS/Linux packaging and Phase 9 owns version synchronization and application
 release.
 
+Phase 8 implementation adds immutable macOS/Linux PDFium and OCR provenance,
+official CPU runtime staging for Apple Silicon, Intel and Linux x64, universal
+DMG/AppImage package verification and native evidence harnesses. Its local
+contracts pass on Windows, but the phase remains open until the exact
+checkpoint completes the native staging, conversion, OCR/editor and package
+jobs. Those CI receipts are sufficient only for sequencing; clean-user-machine
+Gatekeeper, file-picker/drop and final downloaded-package checks remain Phase 9
+release blockers.
+
 ## Product Principles
 
 - Files stay on the user's computer.

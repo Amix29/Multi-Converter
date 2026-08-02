@@ -245,3 +245,19 @@ In `## Validation`, mention that the macOS DMG was verified on Apple Silicon and
 Do not claim that all macOS conversions pass unless the same release also passed `npm run test:macos:conversions` on both Apple Silicon and Intel, or the manual `macOS Conversion Matrix` workflow with the final staged sidecars and engine archives. If release notes make that full-coverage claim, they must mention the `macOS Conversion Matrix`, Apple Silicon and Intel.
 
 Do not ask users to disable Gatekeeper globally. Do not present `xattr -dr com.apple.quarantine` as the normal install path.
+
+## Phase 8 Development Staging
+
+For the V1.0.7 development candidate, first run `OCR Runtime Staging` and
+`Phase 8 Engine Staging` on the exact `codex/test` commit. Pass both successful
+run IDs to `macOS Conversion Matrix` and `macOS DMG Build`. The package jobs
+must reject run names, conclusions or head SHAs that do not match. The OCR
+artifact must contain the official Apple Silicon and source-built Intel CPU
+workers plus one shared model archive. The engine artifact retains approved
+V1.0.6 resources byte-for-byte except for locked PDFium 149.0.7825.0 with
+wrapper 0.3.0.
+
+The Phase 8 DMG is ad-hoc signed only: it is neither Apple Developer ID signed
+nor notarized. CI mount/copy/launch evidence on both runner architectures is a
+development sequencing receipt, not proof of the real Gatekeeper `Open Anyway`
+path on a clean user Mac. Keep that manual receipt pending for Phase 9.

@@ -53,10 +53,42 @@ try {
   verifyLinuxSidecar(appDir, "ffmpeg");
   verifyLinuxSidecar(appDir, "ffprobe");
   verifyBundledEngines(appDir);
+  verifyOcrResources(appDir);
 
   console.log(`Linux AppImage verified: ${appImagePath}`);
 } finally {
   fs.rmSync(tempDir, { recursive: true, force: true });
+}
+
+function verifyOcrResources(appDir) {
+  const lock = readJson(path.join(root, "src-tauri", "ocr-runtime-lock.json"), "Unable to read OCR runtime lock");
+  const modelLocks = findFiles(appDir, (filePath) => filePath.endsWith(`${path.sep}ocr${path.sep}models${path.sep}models-lock.json`), { maxDepth: 16 });
+  if (modelLocks.length !== 1) fail(`AppImage: ${modelLocks.length} manifeste(s) de modèles OCR trouvé(s), attendu 1.`);
+  const ocrRoot = path.dirname(path.dirname(modelLocks[0]));
+  const runtimeRoot = path.join(ocrRoot, "runtime");
+  const archives = fs.readdirSync(runtimeRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".zip"))
+    .map((entry) => entry.name);
+  if (archives.length !== 1 || archives[0] !== "linux-x64.zip") {
+    fail(`AppImage: runtime OCR étranger ou absent (${archives.join(", ") || "aucun"}).`);
+  }
+  const archivePath = path.join(runtimeRoot, archives[0]);
+  assertFile(archivePath, "Linux OCR runtime");
+  const selection = lock.platformSelections.find((entry) => entry.platform === "linux-x64");
+  if (!selection?.archive || fs.statSync(archivePath).size !== selection.archive.bytes || sha256(archivePath) !== selection.archive.sha256) {
+    fail("The AppImage Linux OCR runtime differs from the staged lock.");
+  }
+  const modelsLock = readJson(modelLocks[0], "Unable to read OCR models lock");
+  if (modelsLock.model !== "PP-OCRv6_medium" || modelsLock.fileCount !== 21) {
+    fail("L’AppImage ne contient pas le jeu PP-OCRv6_medium verrouillé.");
+  }
+  if (modelsLock.aggregateSha256 !== lock.modelArtifact?.aggregateSha256 || modelsLock.totalBytes !== lock.modelArtifact?.totalBytes) {
+    fail("The AppImage OCR model set differs from the locked shared model artifact.");
+  }
+}
+
+function sha256(filePath) {
+  return run("sha256sum", [filePath], "Unable to hash OCR runtime").stdout.trim().split(/\s+/)[0];
 }
 
 function verifyLinuxSidecar(appDir, stem) {

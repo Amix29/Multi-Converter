@@ -6,8 +6,8 @@ import process from "node:process";
 import {
   downloadIfMissingVerified,
   publicSourceLabel,
-  requireSha256Env,
 } from "./lib/download-integrity.mjs";
+import { lockedPdfiumPlatform } from "./lib/platform-provenance.mjs";
 
 const root = process.cwd();
 const downloads = path.join(root, "engine-sources", ".downloads");
@@ -24,25 +24,24 @@ if (process.platform !== "linux" || process.arch !== "x64") {
 await fs.mkdir(downloads, { recursive: true });
 await fs.mkdir(extracts, { recursive: true });
 
-const release = await getJson("https://api.github.com/repos/bblanchon/pdfium-binaries/releases/latest");
-const asset = release.assets.find((item) => item.name === "pdfium-linux-x64.tgz");
-if (!asset) {
-  throw new Error("No pdfium-linux-x64.tgz asset found in the latest bblanchon/pdfium-binaries release.");
-}
+const asset = await lockedPdfiumPlatform("linux-x64", root);
 
-const archive = path.join(downloads, asset.name);
+const archive = path.join(downloads, asset.archiveName);
 await downloadIfMissingVerified(
-  asset.browser_download_url,
+  asset.url,
   archive,
-  requireSha256Env("PDFIUM_LINUX_X64_ARCHIVE_SHA256"),
+  asset.sha256,
   githubApiHeaders(),
 );
+const archiveStat = await fs.stat(archive);
+if (archiveStat.size !== asset.bytes) throw new Error("Locked Linux PDFium archive size differs.");
 
 const extractDir = path.join(extracts, "pdfium-linux-x64");
 await extractTgz(archive, extractDir);
 
-const so = path.join(extractDir, "lib", "libpdfium.so");
+const so = path.join(extractDir, ...asset.libraryPath.split("/"));
 await assertFile(so, "libpdfium.so missing from the Linux PDFium package.");
+await assertLockedLibrary(so, asset);
 
 await fs.rm(wrapperBuild, { recursive: true, force: true });
 await fs.cp(wrapperSource, wrapperBuild, { recursive: true, force: true });
@@ -68,8 +67,8 @@ await fs.writeFile(
   path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"),
   [
     "PDFium Linux x64 package",
-    `Source: ${publicSourceLabel(asset.browser_download_url)}`,
-    `Release: ${release.name ?? release.tag_name}`,
+    `Source: ${publicSourceLabel(asset.url)}`,
+    `Release: PDFium ${asset.version} (${asset.tag})`,
     "",
     "PDFium is distributed by bblanchon/pdfium-binaries from Chromium PDFium sources.",
     "The extracted package includes third-party notices under licenses/pdfium-third-party/.",
@@ -85,13 +84,7 @@ run(wrapper, ["--check"], {
   PDFIUM_LIBRARY_PATH: path.join(sourceDir, "bin", "libpdfium.so"),
 });
 
-console.log(`Linux PDFium ready from ${release.name ?? release.tag_name}.`);
-
-async function getJson(url) {
-  const response = await fetch(url, { headers: githubApiHeaders() });
-  if (!response.ok) throw new Error(`Request failed (${response.status}): ${url}`);
-  return response.json();
-}
+console.log(`Linux PDFium ${asset.version} ready from locked provenance ${asset.tag}.`);
 
 function githubApiHeaders() {
   const token = process.env.GH_TOKEN?.trim() || process.env.GITHUB_TOKEN?.trim();
@@ -111,6 +104,14 @@ async function extractTgz(archivePath, destination) {
 async function assertFile(filePath, message) {
   const stat = await fs.stat(filePath).catch(() => null);
   if (!stat?.isFile()) throw new Error(message);
+}
+
+async function assertLockedLibrary(filePath, asset) {
+  const stat = await fs.stat(filePath);
+  if (stat.size !== asset.libraryBytes) throw new Error("Locked Linux PDFium library size differs.");
+  const actual = await import("node:crypto").then(({ createHash }) => createHash("sha256"));
+  actual.update(await fs.readFile(filePath));
+  if (actual.digest("hex") !== asset.librarySha256) throw new Error("Locked Linux PDFium library SHA-256 differs.");
 }
 
 async function copyIfExists(source, target) {

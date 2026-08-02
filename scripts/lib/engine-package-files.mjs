@@ -139,7 +139,21 @@ export async function createZip(sourceDir, archivePath, options = {}) {
   const deterministicTimestamp = options.deterministicTimestamp ?? null;
   if (process.platform !== "win32") {
     if (deterministicTimestamp) {
-      throw new Error("Deterministic engine ZIP creation is currently limited to the Windows PDFium staging workflow.");
+      const timestamp = new Date(deterministicTimestamp);
+      if (Number.isNaN(timestamp.valueOf()) || timestamp.getUTCFullYear() < 1980) {
+        throw new Error("Deterministic ZIP timestamps must be valid and no older than 1980.");
+      }
+      const files = await collectRegularFiles(sourceDir);
+      for (const relative of files) await fs.utimes(resolveInside(sourceDir, relative, "ZIP input"), timestamp, timestamp);
+      await fs.rm(archivePath, { force: true });
+      const result = spawnSync("zip", ["-9qX", archivePath, "-@"], {
+        cwd: sourceDir,
+        input: `${files.join("\n")}\n`,
+        encoding: "utf8",
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      if (result.status !== 0) throw new Error(`Creation ZIP impossible: ${result.stderr || result.stdout}`);
+      return;
     }
     await fs.rm(archivePath, { force: true });
     const result = spawnSync("zip", ["-qry", archivePath, "."], {
@@ -185,6 +199,18 @@ export async function createZip(sourceDir, archivePath, options = {}) {
   ];
   const scriptText = script.join(deterministicTimestamp ? "\n" : "; ");
   runPowerShell(scriptText, "Creation ZIP impossible");
+}
+
+async function collectRegularFiles(directory, relative = "") {
+  const entries = await fs.readdir(path.join(directory, relative), { withFileTypes: true });
+  const files = [];
+  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name, "en"))) {
+    const child = path.join(relative, entry.name);
+    if (entry.isDirectory()) files.push(...await collectRegularFiles(directory, child));
+    else if (entry.isFile()) files.push(normalizeZipPath(child));
+    else throw new Error(`ZIP input must contain regular files only: ${child}`);
+  }
+  return files;
 }
 
 export async function extractZip(archivePath, destinationDir) {

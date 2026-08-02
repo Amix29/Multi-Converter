@@ -327,3 +327,17 @@ Ne publiez pas HEIC/HEIF/AVIF/RAW/PSD/JP2 tant que le build packagé n'a pas pro
 - MuPDF et Poppler ne sont pas retenus pour les packs actifs à cause de leurs contraintes de licence. PDFBox n'est pas retenu car il implique Java/JVM.
 - libvips : LGPL 2.1 ou ultérieure. Le script utilise les builds Windows officiels `libvips/build-win64-mxe`; les DLL/dépendances incluses peuvent avoir leurs propres licences et doivent rester documentées dans `licenses/THIRD_PARTY_NOTICES.txt`.
 Incluez dans chaque archive les fichiers de licence et notices correspondant exactement au build distribué. Ne publiez pas un moteur si sa licence, ses composants ou ses obligations de redistribution n'ont pas été vérifiés.
+
+## Verrou multiplateforme Phase 8
+
+`tools/platform-runtime-provenance-lock.json` est la source immuable pour
+PDFium macOS/Linux, PaddlePaddle et les artefacts moteurs V1.0.6 réutilisés.
+Les préparateurs PDFium refusent les surcharges de version ou d'empreinte. Le
+workflow `Phase 8 Engine Staging` télécharge l'artefact Actions approuvé par son
+identifiant exact, vérifie son nom, son commit, sa taille et son digest, puis
+remplace uniquement PDFium par deux constructions déterministes identiques.
+
+Les runtimes OCR restent des artefacts Actions privés pendant cette phase.
+macOS embarque deux archives de worker et une seule archive de modèles; Linux
+embarque uniquement l'archive x86_64 et les mêmes modèles. Aucune prérelease
+moteur publique ni récupération de « dernière version » n'est autorisée.

@@ -751,6 +751,32 @@ active; process connection sampling is an observation, not an offline or packet
 capture claim. This focused harness does not replay or validate the 101 manual
 Phase 5 scenarios.
 
+## Phase 8 Native Package Gates
+
+Phase 8 introduces two host-only evidence commands:
+
+```bash
+npm run test:macos:native -- --package "<Multi-Converter.app>" --run-id "<id>"
+npm run test:linux:native -- --package "<AppImage>" --run-id "<id>"
+```
+
+Their `--self-test` modes validate only the harness contract and may run on
+Windows. Real evidence must come from the package extracted from the DMG or the
+exact AppImage on its native runner. `OCR Runtime Staging` builds the official
+CPU workers for Apple Silicon, Intel and Linux. `Phase 8 Engine Staging`
+reuses the exact approved V1.0.6 engine artifacts and replaces only PDFium with
+the locked 149.0.7825.0 wrapper 0.3.0 package. Downstream workflows verify the
+staging workflow name, success conclusion and exact head commit before use.
+
+The macOS conversion and DMG workflows require both OCR architectures and one
+shared model copy. The Linux AppImage workflow requires only Linux x64. They
+run the OCR corpus with active-network process observation, package verification
+and two launch smokes. Internal Phase 8 artifacts intentionally omit public
+stable aliases; Phase 9 creates aliases only in the final clean release folder.
+CI evidence can close Phase 8 for sequencing, but it does not replace the
+clean-machine Gatekeeper, native picker/drop or final downloaded-package
+receipts required for publication.
+
 ## Release Asset Tests
 
 Use `scripts/test-release-assets.mjs` for fixture-based release asset checks. It covers:

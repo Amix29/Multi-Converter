@@ -7,7 +7,7 @@ const lockPath = path.join(root, "src-tauri", "ocr-runtime-lock.json");
 const lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
 const failures = [];
 
-expect(lock.schemaVersion === 1, "ocr-runtime-lock schemaVersion doit valoir 1");
+expect(lock.schemaVersion === 2, "ocr-runtime-lock schemaVersion doit valoir 2");
 expect(lock.model === "PP-OCRv6_medium", "le modèle doit rester PP-OCRv6_medium");
 expect(lock.versions?.paddlepaddle === "3.3.1", "PaddlePaddle doit être verrouillé sur 3.3.1");
 expect(lock.versions?.paddleocr === "3.7.0", "PaddleOCR doit être verrouillé sur 3.7.0");
@@ -27,6 +27,19 @@ const windowsSelection = lock.platformSelections?.find((value) => value.platform
 expect(windowsSelection?.runtime === "official", "Windows doit utiliser le runtime officiel tant que le candidat natif n’est pas validé");
 expect(windowsSelection?.provider === "cpu", "DirectML ne doit pas être activé sans preuve de parité et de gain");
 expect(/^[a-f0-9]{64}$/.test(windowsSelection?.artifact?.aggregateSha256 ?? ""), "le paquet Windows doit avoir une empreinte agrégée");
+const expectedPlatforms = ["windows-x64", "macos-aarch64", "macos-x86_64", "linux-x64"];
+expect(
+  JSON.stringify(lock.platformSelections?.map((entry) => entry.platform)) === JSON.stringify(expectedPlatforms),
+  "les quatre runtimes OCR natifs doivent être déclarés explicitement",
+);
+for (const platform of expectedPlatforms) {
+  const selection = lock.platformSelections.find((entry) => entry.platform === platform);
+  expect(selection?.runtime === "official", `${platform}: runtime officiel requis`);
+  expect(selection?.provider === "cpu" && selection?.fallbackProvider === "cpu", `${platform}: CPU officiel requis`);
+  expect(!/onnx|coreml|openvino|directml/i.test(selection?.provider ?? ""), `${platform}: accélérateur non validé`);
+  expect(lock.platformBuildEnvironments?.[platform]?.python === "3.12.10", `${platform}: Python 3.12.10 requis`);
+}
+expect(lock.platformBuildEnvironments?.["macos-x86_64"]?.paddleSource === "locked-source-build", "macOS Intel doit compiler PaddlePaddle depuis la source verrouillée");
 const licenseInventory = JSON.parse(
   fs.readFileSync(path.join(root, "src-tauri", "ocr-runtime-licenses.json"), "utf8"),
 );
@@ -59,8 +72,14 @@ for (const dependency of licenseInventory.packages ?? []) {
 const stagedRuntimeRoot = path.join(root, "src-tauri", "ocr-resources", "runtime");
 if (fs.existsSync(stagedRuntimeRoot)) {
   const stagedEntries = fs.readdirSync(stagedRuntimeRoot, { withFileTypes: true });
-  expect(stagedEntries.length === 1, "le paquet préparé doit contenir exactement une archive OCR de plateforme");
-  expect(stagedEntries[0]?.isFile() && stagedEntries[0]?.name === "windows-x64.zip", "le runtime Windows doit être empaqueté dans windows-x64.zip");
+  const names = stagedEntries.map((entry) => entry.name).sort();
+  const allowedSets = [
+    ["windows-x64.zip"],
+    ["linux-x64.zip"],
+    ["macos-aarch64.zip", "macos-x86_64.zip"],
+  ];
+  expect(stagedEntries.every((entry) => entry.isFile()), "les runtimes préparés doivent être des archives régulières");
+  expect(allowedSets.some((set) => JSON.stringify(set) === JSON.stringify(names)), "le paquet ne doit contenir que le ou les runtimes de sa plateforme");
 }
 const stagedModelsPath = path.join(root, "src-tauri", "ocr-resources", "models", "models-lock.json");
 if (fs.existsSync(stagedModelsPath)) {

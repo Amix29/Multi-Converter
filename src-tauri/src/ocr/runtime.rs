@@ -190,14 +190,17 @@ fn resource_root(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 fn platform_key() -> &'static str {
-    #[cfg(target_os = "windows")]
-    return "windows-x64";
-    #[cfg(target_os = "macos")]
-    return "macos-universal";
-    #[cfg(target_os = "linux")]
-    return "linux-x64";
-    #[allow(unreachable_code)]
-    "unsupported"
+    platform_key_for(std::env::consts::OS, std::env::consts::ARCH)
+}
+
+fn platform_key_for(os: &str, arch: &str) -> &'static str {
+    match (os, arch) {
+        ("windows", "x86_64") => "windows-x64",
+        ("macos", "aarch64") => "macos-aarch64",
+        ("macos", "x86_64") => "macos-x86_64",
+        ("linux", "x86_64") => "linux-x64",
+        _ => "unsupported",
+    }
 }
 
 fn verify_resources(
@@ -221,7 +224,48 @@ fn verify_resources(
         &runtime.models_dir,
         &runtime.models_dir.join("models-lock.json"),
         models_lock,
-    )
+    )?;
+    verify_worker_architecture(&runtime.executable, &selection.platform)
+}
+
+fn verify_worker_architecture(path: &Path, platform: &str) -> Result<(), String> {
+    let bytes = fs::read(path).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
+    let valid = match platform {
+        "windows-x64" => pe_machine(&bytes) == Some(0x8664),
+        "linux-x64" => {
+            bytes.starts_with(b"\x7fELF")
+                && bytes.get(4) == Some(&2)
+                && bytes.get(18..20) == Some(&[0x3e, 0x00])
+        }
+        "macos-aarch64" => mach_cpu(&bytes) == Some(0x0100_000c),
+        "macos-x86_64" => mach_cpu(&bytes) == Some(0x0100_0007),
+        _ => false,
+    };
+    if valid {
+        Ok(())
+    } else {
+        Err("OCR_RUNTIME_UNVERIFIED:Architecture du worker OCR incorrecte.".to_string())
+    }
+}
+
+fn pe_machine(bytes: &[u8]) -> Option<u16> {
+    if !bytes.starts_with(b"MZ") || bytes.len() < 0x40 {
+        return None;
+    }
+    let offset = u32::from_le_bytes(bytes.get(0x3c..0x40)?.try_into().ok()?) as usize;
+    if bytes.get(offset..offset + 4)? != b"PE\0\0" {
+        return None;
+    }
+    Some(u16::from_le_bytes(
+        bytes.get(offset + 4..offset + 6)?.try_into().ok()?,
+    ))
+}
+
+fn mach_cpu(bytes: &[u8]) -> Option<u32> {
+    if bytes.get(0..4)? != [0xcf, 0xfa, 0xed, 0xfe] {
+        return None;
+    }
+    Some(u32::from_le_bytes(bytes.get(4..8)?.try_into().ok()?))
 }
 
 fn verify_content_manifest(
@@ -363,5 +407,28 @@ mod tests {
         assert!(safe_relative_path("models/text/inference.json").is_ok());
         assert!(safe_relative_path("../outside").is_err());
         assert!(safe_relative_path("C:/outside").is_err());
+    }
+
+    #[test]
+    fn platform_selection_distinguishes_both_macos_architectures() {
+        assert_eq!(platform_key_for("macos", "aarch64"), "macos-aarch64");
+        assert_eq!(platform_key_for("macos", "x86_64"), "macos-x86_64");
+        assert_eq!(platform_key_for("linux", "x86_64"), "linux-x64");
+        assert_eq!(platform_key_for("linux", "aarch64"), "unsupported");
+    }
+
+    #[test]
+    fn worker_architecture_parsers_reject_foreign_binaries() {
+        let mut pe = vec![0u8; 0x48];
+        pe[0..2].copy_from_slice(b"MZ");
+        pe[0x3c..0x40].copy_from_slice(&(0x40u32).to_le_bytes());
+        pe[0x40..0x44].copy_from_slice(b"PE\0\0");
+        pe[0x44..0x46].copy_from_slice(&0x8664u16.to_le_bytes());
+        assert_eq!(pe_machine(&pe), Some(0x8664));
+        assert_eq!(mach_cpu(&pe), None);
+
+        let mut arm = vec![0xcf, 0xfa, 0xed, 0xfe];
+        arm.extend_from_slice(&0x0100_000cu32.to_le_bytes());
+        assert_eq!(mach_cpu(&arm), Some(0x0100_000c));
     }
 }

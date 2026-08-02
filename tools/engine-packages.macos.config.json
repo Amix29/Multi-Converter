@@ -46,6 +46,7 @@
       "platform": "macos-universal",
       "sourceDir": "engine-sources/macos-universal/pdfium",
       "outputArchiveName": "pdfium-compatible-macos-universal.zip",
+      "createdAt": "2026-08-02T00:00:00.000Z",
       "binaryPaths": [
         "bin/libpdfium.dylib",
         "bin/pdfium-render-universal-apple-darwin"

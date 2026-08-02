@@ -53,6 +53,7 @@ try {
   const ffmpeg = verifySidecar(appPath, "ffmpeg");
   const ffprobe = verifySidecar(appPath, "ffprobe");
   verifyBundledEngines(appPath);
+  verifyOcrResources(appPath);
 
   run("codesign", ["--verify", "--deep", "--strict", appPath], "App code signature verification failed.");
   verifySidecarVersion(ffmpeg, "ffmpeg");
@@ -63,6 +64,39 @@ try {
     spawnSync("hdiutil", ["detach", mountPoint, "-quiet"], { stdio: "ignore" });
   }
   fs.rmSync(attachPlistPath, { force: true });
+}
+
+function verifyOcrResources(appPath) {
+  const lock = readJson(path.join(root, "src-tauri", "ocr-runtime-lock.json"), "Unable to read OCR runtime lock");
+  const ocrRoot = path.join(appPath, "Contents", "Resources", "ocr");
+  const runtimeRoot = path.join(ocrRoot, "runtime");
+  const expected = ["macos-aarch64.zip", "macos-x86_64.zip"];
+  const archives = fs.readdirSync(runtimeRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".zip"))
+    .map((entry) => entry.name)
+    .sort();
+  if (JSON.stringify(archives) !== JSON.stringify(expected)) {
+    fail(`macOS OCR runtimes invalides: ${archives.join(", ") || "aucun"}.`);
+  }
+  for (const archive of archives) {
+    const archivePath = path.join(runtimeRoot, archive);
+    assertFile(archivePath, `OCR runtime ${archive}`);
+    const selection = lock.platformSelections.find((entry) => `${entry.platform}.zip` === archive);
+    if (!selection?.archive || fs.statSync(archivePath).size !== selection.archive.bytes || sha256(archivePath) !== selection.archive.sha256) {
+      fail(`OCR runtime ${archive} differs from the staged lock.`);
+    }
+  }
+  const modelsLock = readJson(path.join(ocrRoot, "models", "models-lock.json"), "OCR models-lock absent du DMG");
+  if (modelsLock.model !== "PP-OCRv6_medium" || modelsLock.fileCount !== 21) {
+    fail("Le DMG ne contient pas le jeu PP-OCRv6_medium verrouillé.");
+  }
+  if (modelsLock.aggregateSha256 !== lock.modelArtifact?.aggregateSha256 || modelsLock.totalBytes !== lock.modelArtifact?.totalBytes) {
+    fail("The DMG OCR model set differs from the locked shared model artifact.");
+  }
+}
+
+function sha256(filePath) {
+  return commandOutput("shasum", ["-a", "256", filePath], "Unable to hash OCR runtime").trim().split(/\s+/)[0];
 }
 
 function verifySidecar(appPath, stem) {

@@ -1,0 +1,172 @@
+name: OCR Runtime Staging
+
+on:
+  push:
+    branches:
+      - codex/test
+    paths:
+      - ".github/workflows/ocr-runtime-staging.yml"
+      - "scripts/build-ocr-reference-runtime.mjs"
+      - "scripts/build-paddle-macos-intel.mjs"
+      - "scripts/prepare-ocr-models.mjs"
+      - "scripts/prepare-ocr-runtime.mjs"
+      - "scripts/inventory-ocr-runtime-licenses.mjs"
+      - "scripts/lib/ocr-runtime-archive.mjs"
+      - "scripts/lib/platform-provenance.mjs"
+      - "tools/ocr-runtime/**"
+      - "tools/platform-runtime-provenance-lock.json"
+      - "src-tauri/ocr-runtime-lock.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ocr-runtime-staging-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  UV_VERSION: 0.11.21
+  PYTHON_VERSION: 3.12.10
+
+jobs:
+  models:
+    name: Stage shared PP-OCRv6_medium models
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Prepare locked shared models
+        run: npm run prepare:ocr-models -- --allow-download --output-dir "$RUNNER_TEMP/ocr-models"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ocr-models
+          path: ${{ runner.temp }}/ocr-models
+          if-no-files-found: error
+          compression-level: 0
+
+  runtime:
+    name: Build official CPU runtime (${{ matrix.platform }})
+    needs: models
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ matrix.timeout }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-aarch64
+            runner: macos-latest
+            timeout: 180
+          - platform: macos-x86_64
+            runner: macos-15-intel
+            timeout: 360
+          - platform: linux-x64
+            runner: ubuntu-22.04
+            timeout: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install native build and archive tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y build-essential patchelf unzip zip lsof
+          else
+            brew install cmake ninja swig wget || true
+          fi
+          python -m pip install "uv==$UV_VERSION"
+          uv --version
+          node --version
+          python --version
+      - run: npm ci
+      - name: Validate platform locks
+        run: |
+          npm run test:platform-provenance
+          npm run test:ocr:platform-locks
+      - name: Compile PaddlePaddle 3.3.1 for macOS Intel
+        if: ${{ matrix.platform == 'macos-x86_64' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run build:paddle:macos-intel -- --python "$(command -v python)"
+          wheel="$(find engine-sources/ocr-runtime/paddle-macos-x86_64/build/python/dist -maxdepth 1 -type f -name 'paddlepaddle-3.3.1-*.whl' -print -quit)"
+          test -n "$wheel"
+          echo "MC_PADDLE_INTEL_WHEEL=$wheel" >> "$GITHUB_ENV"
+      - name: Build official CPU worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--platform "${{ matrix.platform }}" --install)
+          if [[ "${{ matrix.platform }}" == "macos-x86_64" ]]; then
+            args+=(--paddle-wheel "$MC_PADDLE_INTEL_WHEEL")
+          fi
+          npm run build:ocr-runtime:platform -- "${args[@]}"
+      - name: Package twice and inventory licences
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_dir="engine-sources/ocr-runtime/${{ matrix.platform }}/dist/ocr-worker"
+          output_dir="$RUNNER_TEMP/ocr-runtime-artifact"
+          npm run prepare:ocr-runtime -- --platform "${{ matrix.platform }}" --source-dir "$source_dir" --output-dir "$output_dir" --verify-reproducible
+          node -e "const fs=require('fs');const p='src-tauri/ocr-runtime-lock.json';const l=require('./'+p);const s=require(process.env.RUNNER_TEMP+'/ocr-runtime-artifact/${{ matrix.platform }}.selection.json');Object.assign(l.platformSelections.find(x=>x.platform===s.platform),{artifact:s.artifact,archive:s.archive});fs.writeFileSync(p,JSON.stringify(l,null,2)+'\n')"
+          npm run inventory:ocr-runtime-licenses -- --platform "${{ matrix.platform }}" --source-dir "$source_dir" --output "$RUNNER_TEMP/ocr-runtime-licenses-${{ matrix.platform }}.json"
+      - uses: actions/download-artifact@v4
+        with:
+          name: ocr-models
+          path: ${{ runner.temp }}/ocr-models
+      - name: Smoke official packaged runtime
+        shell: bash
+        env:
+          MC_OCR_OBSERVE_NETWORK: 1
+        run: |
+          set -euo pipefail
+          python="engine-sources/ocr-runtime/${{ matrix.platform }}/.venv/bin/python"
+          "$python" -c "import paddle; paddle.utils.run_check(); assert paddle.__version__ == '3.3.1'"
+          rm -rf src-tauri/ocr-resources
+          mkdir -p src-tauri/ocr-resources/runtime src-tauri/ocr-resources/models
+          cp "$RUNNER_TEMP/ocr-runtime-artifact/${{ matrix.platform }}.zip" src-tauri/ocr-resources/runtime/
+          cp -R "$RUNNER_TEMP/ocr-models/." src-tauri/ocr-resources/models/
+          npx playwright install chromium
+          npm run test:ocr:runtime
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ocr-runtime-${{ matrix.platform }}
+          path: |
+            ${{ runner.temp }}/ocr-runtime-artifact/${{ matrix.platform }}.zip
+            ${{ runner.temp }}/ocr-runtime-artifact/${{ matrix.platform }}.selection.json
+          if-no-files-found: error
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ocr-runtime-evidence-${{ matrix.platform }}
+          path: |
+            ${{ runner.temp }}/ocr-runtime-licenses-${{ matrix.platform }}.json
+            engine-sources/ocr-runtime/${{ matrix.platform }}/dist/ocr-worker/build-provenance.json
+            engine-sources/ocr-runtime/paddle-macos-x86_64/build/python/dist/paddle-build-provenance.json
+          if-no-files-found: warn
+
+  complete:
+    name: Confirm all native OCR artifacts
+    needs: [models, runtime]
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo "All three official CPU runtimes and the shared model artifact were produced."

@@ -137,8 +137,11 @@ assert.match(linuxEngineReleasePreparer, /verifySha256/, "Linux staged engine he
 assert.match(linuxEngineReleasePreparer, /binaryPaths must not reference non-Linux files/, "Linux staged engine helper must reject non-Linux engine paths");
 assert.match(linuxEngineReleasePreparer, /Unexpected local Linux engine assets/, "Linux staged engine helper must reject extra files in local workflow artifacts");
 assert.match(linuxPdfiumPrepare, /process\.platform !== "linux" \|\| process\.arch !== "x64"/, "Linux PDFium preparation must refuse non-Linux x64 hosts");
-assert.match(linuxPdfiumPrepare, /pdfium-linux-x64\.tgz/, "Linux PDFium preparation must use the upstream Linux x64 PDFium archive");
-assert.match(linuxPdfiumPrepare, /PDFIUM_LINUX_X64_ARCHIVE_SHA256/, "Linux PDFium preparation must require a pinned upstream SHA-256");
+assert.match(linuxPdfiumPrepare, /lockedPdfiumPlatform\("linux-x64"/, "Linux PDFium preparation must use the centralized provenance lock");
+assert.match(linuxPdfiumPrepare, /downloadIfMissingVerified\(/, "Linux PDFium preparation must verify the locked archive before extraction");
+assert.match(linuxPdfiumPrepare, /asset\.archiveName/, "Linux PDFium preparation must use the archive name from the provenance lock");
+assert.match(linuxPdfiumPrepare, /asset\.sha256/, "Linux PDFium preparation must require the SHA-256 from the provenance lock");
+assert.match(linuxPdfiumPrepare, /assertLockedLibrary\(so, asset\)/, "Linux PDFium preparation must verify the extracted library against the provenance lock");
 assert.match(linuxPdfiumPrepare, /pdfium-render-x86_64-unknown-linux-gnu/, "Linux PDFium preparation must stage the wrapper name used by the Linux engine config");
 assert.match(linuxPdfiumPrepare, /PDFIUM_LIBRARY_PATH/, "Linux PDFium preparation must smoke-test the wrapper against the staged library");
 assert.match(linuxLibreOfficePrepare, /process\.platform !== "linux" \|\| process\.arch !== "x64"/, "Linux LibreOffice preparation must refuse non-Linux x64 hosts");

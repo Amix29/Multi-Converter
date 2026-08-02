@@ -6,14 +6,10 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import readline from "node:readline";
-import { extractOcrRuntimeArchive, ocrRuntimeArchivePath } from "./lib/ocr-runtime-archive.mjs";
+import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath } from "./lib/ocr-runtime-archive.mjs";
 
 const root = process.cwd();
-const platform = process.platform === "win32"
-  ? "windows-x64"
-  : process.platform === "darwin"
-    ? "macos-universal"
-    : "linux-x64";
+const platform = hostOcrPlatform();
 const runtimeArchive = ocrRuntimeArchivePath(root, platform);
 const directExecutable = process.env.MULTI_CONVERTER_OCR_CORPUS_EXECUTABLE
   ? path.resolve(process.env.MULTI_CONVERTER_OCR_CORPUS_EXECUTABLE)
@@ -220,12 +216,20 @@ async function startWorker(workerPath, modelsPath) {
 function monitorNetwork(pid) {
   const state = { samples: 0, connections: [], stopped: false };
   const sample = () => {
-    if (state.stopped || process.platform !== "win32") return;
-    const probe = spawn("netstat", ["-ano", "-p", "tcp"], { windowsHide: true });
+    if (state.stopped) return;
+    if (process.platform !== "win32" && process.env.MC_OCR_OBSERVE_NETWORK !== "1") return;
+    const command = process.platform === "win32" ? "netstat" : "lsof";
+    const args = process.platform === "win32"
+      ? ["-ano", "-p", "tcp"] : ["-nP", "-a", "-p", String(pid), "-iTCP", "-iUDP"];
+    const probe = spawn(command, args, { windowsHide: true });
     let stdout = "";
     probe.stdout.on("data", (chunk) => { stdout += chunk; });
     probe.on("close", () => {
       state.samples += 1;
+      if (process.platform !== "win32") {
+        for (const line of stdout.split(/\r?\n/).slice(1).filter(Boolean)) state.connections.push({ sample: state.samples, foreign: line.trim() });
+        return;
+      }
       for (const line of stdout.split(/\r?\n/)) {
         const fields = line.trim().split(/\s+/);
         if (fields.at(-1) !== String(pid) || fields[3] !== "ESTABLISHED") continue;

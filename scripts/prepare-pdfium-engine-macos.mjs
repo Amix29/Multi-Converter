@@ -6,8 +6,8 @@ import process from "node:process";
 import {
   downloadIfMissingVerified,
   publicSourceLabel,
-  requireSha256Env,
 } from "./lib/download-integrity.mjs";
+import { lockedPdfiumPlatform } from "./lib/platform-provenance.mjs";
 
 const root = process.cwd();
 const downloads = path.join(root, "engine-sources", ".downloads");
@@ -28,27 +28,24 @@ requireCommand("xcrun", ["-find", "lipo"]);
 await fs.mkdir(downloads, { recursive: true });
 await fs.mkdir(extracts, { recursive: true });
 
-const release = await getJson("https://api.github.com/repos/bblanchon/pdfium-binaries/releases/latest");
-const asset = release.assets.find((item) => item.name === "pdfium-mac-univ.tgz");
-if (!asset) {
-  throw new Error("No pdfium-mac-univ.tgz asset found in the latest bblanchon/pdfium-binaries release.");
-}
+const asset = await lockedPdfiumPlatform("macos-universal", root);
 
-const archive = path.join(downloads, asset.name);
+const archive = path.join(downloads, asset.archiveName);
 await downloadIfMissingVerified(
-  asset.browser_download_url,
+  asset.url,
   archive,
-  requireSha256Env("PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256"),
+  asset.sha256,
   userAgent,
 );
+const archiveStat = await fs.stat(archive);
+if (archiveStat.size !== asset.bytes) throw new Error("Locked macOS PDFium archive size differs.");
 
 const extractDir = path.join(extracts, "pdfium-macos-universal");
 await extractTgz(archive, extractDir);
 
-const dylib = await findFile(extractDir, "libpdfium.dylib");
-if (!dylib) {
-  throw new Error("libpdfium.dylib is missing from the macOS PDFium package.");
-}
+const dylib = path.join(extractDir, ...asset.libraryPath.split("/"));
+await assertFile(dylib, "libpdfium.dylib is missing from the macOS PDFium package.");
+await assertLockedLibrary(dylib, asset);
 
 await fs.rm(wrapperBuild, { recursive: true, force: true });
 await fs.rm(wrapperTarget, { recursive: true, force: true });
@@ -94,8 +91,8 @@ await fs.writeFile(
   path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"),
   [
     "PDFium macOS universal package",
-    `Source: ${publicSourceLabel(asset.browser_download_url)}`,
-    `Release: ${release.name ?? release.tag_name}`,
+    `Source: ${publicSourceLabel(asset.url)}`,
+    `Release: PDFium ${asset.version} (${asset.tag})`,
     "",
     "PDFium is distributed by bblanchon/pdfium-binaries from Chromium PDFium sources.",
     "The extracted package includes third-party notices under licenses/pdfium-third-party/.",
@@ -111,22 +108,7 @@ run(universalWrapper, ["--check"], {
   PDFIUM_LIBRARY_PATH: path.join(sourceDir, "bin", "libpdfium.dylib"),
 });
 
-console.log(`macOS PDFium ready from ${release.name ?? release.tag_name}.`);
-
-async function getJson(url) {
-  const response = await fetch(url, { headers: githubApiHeaders() });
-  if (!response.ok) throw new Error(`Request failed (${response.status}): ${url}`);
-  return response.json();
-}
-
-function githubApiHeaders() {
-  const token = process.env.GH_TOKEN?.trim() || process.env.GITHUB_TOKEN?.trim();
-  return {
-    ...userAgent,
-    Accept: "application/vnd.github+json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+console.log(`macOS PDFium ${asset.version} ready from locked provenance ${asset.tag}.`);
 
 async function extractTgz(archivePath, destination) {
   await fs.rm(destination, { recursive: true, force: true });
@@ -155,6 +137,14 @@ async function copyIfExists(source, target) {
 async function assertFile(filePath, message) {
   const stat = await fs.stat(filePath).catch(() => null);
   if (!stat?.isFile()) throw new Error(message);
+}
+
+async function assertLockedLibrary(filePath, asset) {
+  const stat = await fs.stat(filePath);
+  if (stat.size !== asset.libraryBytes) throw new Error("Locked macOS PDFium library size differs.");
+  const actual = await import("node:crypto").then(({ createHash }) => createHash("sha256"));
+  actual.update(await fs.readFile(filePath));
+  if (actual.digest("hex") !== asset.librarySha256) throw new Error("Locked macOS PDFium library SHA-256 differs.");
 }
 
 function requireCommand(command, args) {

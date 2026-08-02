@@ -116,10 +116,11 @@ assert.match(macosFfmpegPrepare, /ffprobe-universal-apple-darwin/, "macOS FFmpeg
 assert.match(macosFfmpegPrepare, /smokeTestVersion\(.*"ffmpeg"/s, "macOS FFmpeg preparation must smoke-test FFmpeg");
 assert.match(macosFfmpegPrepare, /smokeTestVersion\(.*"ffprobe"/s, "macOS FFmpeg preparation must smoke-test ffprobe");
 assert.match(macosPdfiumPrepare, /process\.platform !== "darwin"/, "macOS PDFium preparation must refuse non-macOS hosts");
-assert.match(macosPdfiumPrepare, /function githubApiHeaders\(\)/, "macOS PDFium preparation must use authenticated GitHub API headers when a token is available");
-assert.match(macosPdfiumPrepare, /process\.env\.GH_TOKEN/, "macOS PDFium preparation must read the GitHub Actions token from GH_TOKEN");
-assert.match(macosPdfiumPrepare, /pdfium-mac-univ\.tgz/, "macOS PDFium preparation must use the upstream universal PDFium archive");
-assert.match(macosPdfiumPrepare, /PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256/, "macOS PDFium preparation must require the pinned universal PDFium checksum");
+assert.match(macosPdfiumPrepare, /lockedPdfiumPlatform\("macos-universal"/, "macOS PDFium preparation must use the centralized provenance lock");
+assert.match(macosPdfiumPrepare, /downloadIfMissingVerified\(/, "macOS PDFium preparation must verify the locked archive before extraction");
+assert.match(macosPdfiumPrepare, /asset\.archiveName/, "macOS PDFium preparation must use the archive name from the provenance lock");
+assert.match(macosPdfiumPrepare, /asset\.sha256/, "macOS PDFium preparation must require the SHA-256 from the provenance lock");
+assert.match(macosPdfiumPrepare, /assertLockedLibrary\(dylib, asset\)/, "macOS PDFium preparation must verify the extracted library against the provenance lock");
 assert.match(macosPdfiumPrepare, /aarch64-apple-darwin/, "macOS PDFium wrapper must build for Apple Silicon");
 assert.match(macosPdfiumPrepare, /x86_64-apple-darwin/, "macOS PDFium wrapper must build for Intel");
 assert.match(macosPdfiumPrepare, /lipo.*-create/s, "macOS PDFium preparation must create a universal wrapper with lipo");

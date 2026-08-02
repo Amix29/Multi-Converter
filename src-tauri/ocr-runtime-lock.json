@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "model": "PP-OCRv6_medium",
   "versions": {
     "paddlepaddle": "3.3.1",
@@ -12,6 +12,31 @@
     "uv": "0.11.21",
     "requirements": "tools/ocr-runtime/requirements-windows-x64.lock.txt",
     "requirementsSha256": "5baf7325b3f11468ff1d8e0040e18c900a630f3bb8924550ecfbfd44aa920e99"
+  },
+  "platformBuildEnvironments": {
+    "windows-x64": {
+      "python": "3.12.10",
+      "uv": "0.11.21",
+      "requirements": "tools/ocr-runtime/requirements-windows-x64.lock.txt"
+    },
+    "macos-aarch64": {
+      "python": "3.12.10",
+      "uv": "0.11.21",
+      "requirements": "tools/ocr-runtime/requirements-windows-x64.lock.txt",
+      "paddleSource": "official-wheel"
+    },
+    "macos-x86_64": {
+      "python": "3.12.10",
+      "uv": "0.11.21",
+      "requirements": "tools/ocr-runtime/requirements-macos-x86_64.lock.txt",
+      "paddleSource": "locked-source-build"
+    },
+    "linux-x64": {
+      "python": "3.12.10",
+      "uv": "0.11.21",
+      "requirements": "tools/ocr-runtime/requirements-windows-x64.lock.txt",
+      "paddleSource": "official-wheel"
+    }
   },
   "languages": ["fr", "en", "es", "de", "it", "pt", "ja"],
   "modelArtifact": {
@@ -34,12 +59,20 @@
       }
     },
     {
-      "platform": "macos-universal",
+      "platform": "macos-aarch64",
       "runtime": "official",
       "provider": "cpu",
       "fallbackProvider": "cpu",
-      "providerFallbackReason": "CoreML reste désactivé jusqu'à validation de parité et de gain sur Apple Silicon et Intel.",
-      "executable": "runtime/macos-universal/ocr-worker"
+      "providerFallbackReason": "CoreML reste désactivé jusqu'à validation de parité et de gain sur Apple Silicon.",
+      "executable": "runtime/macos-aarch64/ocr-worker"
+    },
+    {
+      "platform": "macos-x86_64",
+      "runtime": "official",
+      "provider": "cpu",
+      "fallbackProvider": "cpu",
+      "providerFallbackReason": "CoreML reste désactivé jusqu'à validation de parité et de gain sur Intel.",
+      "executable": "runtime/macos-x86_64/ocr-worker"
     },
     {
       "platform": "linux-x64",
