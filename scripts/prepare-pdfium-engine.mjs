@@ -16,7 +16,7 @@ const extracts = path.join(root, "engine-sources", ".extracts");
 const sourceDir = path.join(root, "engine-sources", "windows-x64", "pdfium");
 const wrapperSource = path.join(root, "tools", "pdfium-render-wrapper");
 const provenancePath = path.join(root, "tools", "pdfium-windows-x64.lock.json");
-const wrapperBuild = path.join(path.parse(root).root, "multi-converter-pdfium-render-build");
+const wrapperBuild = "C:\\multi-converter-pdfium-render-build";
 const userAgent = { "User-Agent": "Multi-Converter-Packager" };
 
 const provenance = JSON.parse(await fs.readFile(provenancePath, "utf8"));
