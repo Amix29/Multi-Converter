@@ -46,6 +46,7 @@ await assertExactFile(dll, provenance.upstream.librarySizeBytes, provenance.upst
 assertDedicatedBuildRoot(wrapperBuild);
 await fs.rm(wrapperBuild, { recursive: true, force: true });
 await fs.cp(wrapperSource, wrapperBuild, { recursive: true, force: true });
+await normalizeWrapperTextFiles(wrapperBuild);
 await assertWrapperManifest(provenance.wrapper);
 if (!(await fileExists(path.join(wrapperBuild, "Cargo.lock")))) {
   throw new Error("Le wrapper PDFium doit fournir un Cargo.lock versionne.");
@@ -160,6 +161,20 @@ async function normalizePeDebugIdentity(filePath, lock) {
   }
   if (normalized !== 1) throw new Error(`Nombre d'identifiants CodeView PDFium inattendu: ${normalized}.`);
   await fs.writeFile(filePath, executable);
+}
+
+async function normalizeWrapperTextFiles(directory) {
+  for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== "target") await normalizeWrapperTextFiles(entryPath);
+      continue;
+    }
+    if (!entry.isFile() || !(/\.rs$/i.test(entry.name) || /^(Cargo\.toml|Cargo\.lock)$/i.test(entry.name))) continue;
+    const original = await fs.readFile(entryPath, "utf8");
+    const canonical = original.replace(/\r\n?/g, "\n");
+    if (canonical !== original) await fs.writeFile(entryPath, canonical, "utf8");
+  }
 }
 
 function rvaToFileOffset(executable, sectionsOffset, sectionCount, rva) {
