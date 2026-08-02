@@ -82,7 +82,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ocr-uv-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/platform-runtime-provenance-lock.json', 'tools/ocr-runtime/requirements-*.lock.txt', 'src-tauri/ocr-runtime-lock.json') }}
       - name: Install native build and archive tools
         shell: bash
         run: |
