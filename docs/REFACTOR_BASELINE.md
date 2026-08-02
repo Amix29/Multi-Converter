@@ -511,7 +511,7 @@ packaging and validation; version metadata remains `1.0.6`.
 | Official upstream archive | not independently locked | 3,720,244 bytes |
 | `pdfium.dll` | historical package | 7,178,240 bytes |
 | Wrapper executable | historical package | 969,216 bytes |
-| Deterministic engine ZIP | historical package | 3,961,829 bytes |
+| Deterministic engine ZIP | historical package | 3,961,574 bytes |
 | Installed PDFium tree | historical package | 8,257,482 bytes |
 | PDFium wrapper runtime tests | 6 | 7 |
 | Handwritten files above 500 nonblank lines | 0 / 245 | 0 / 250 |

@@ -30,7 +30,12 @@ export function validatePdfiumLock(lock) {
   if (lock.wrapper?.version !== "0.3.0" || lock.wrapper?.target !== "x86_64-pc-windows-msvc") {
     throw new Error("Wrapper PDFium verrouille inattendu.");
   }
-  if (lock.wrapper.buildRustVersion !== "1.96.0" || lock.wrapper.linker !== "rust-lld" || !/^[a-f0-9]{64}$/.test(lock.wrapper.cargoLockSha256 ?? "")) {
+  if (
+    lock.wrapper.buildRustVersion !== "1.96.0"
+    || lock.wrapper.linker !== "rust-lld"
+    || lock.wrapper.buildEnvironment !== "github-actions/windows-2025"
+    || !/^[a-f0-9]{64}$/.test(lock.wrapper.cargoLockSha256 ?? "")
+  ) {
     throw new Error("Toolchain ou Cargo.lock PDFium non verrouille.");
   }
   if (lock.wrapper.binarySizeBytes !== 969_216 || !/^[a-f0-9]{64}$/.test(lock.wrapper.binarySha256 ?? "")) {
