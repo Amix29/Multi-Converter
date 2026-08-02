@@ -4,6 +4,7 @@ import process from "node:process";
 import { spawnSync } from "node:child_process";
 import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 import { createBundledEngineHelpers, hostEnginePlatform } from "./lib/bundled-engine-files.mjs";
+import { readPdfiumLock, validateLockedPdfiumTree } from "./lib/pdfium-package.mjs";
 
 const root = process.cwd();
 const platform = process.env.MULTI_CONVERTER_ENGINE_PLATFORM?.trim() || hostEnginePlatform();
@@ -35,6 +36,8 @@ const bundledEngineArchivesDir = path.join(root, "src-tauri", "bundled-engine-ar
 const cacheDir = path.join(root, "engine-sources", ".bundled-engine-cache");
 const baseSidecars = baseSidecarsForPlatform(platform);
 const requireAdvancedEngines = process.env.MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES === "1";
+const pdfiumLock = platform === "windows-x64" ? await readPdfiumLock(root) : null;
+const pdfiumFixtureRoot = path.join(root, "tests", "fixtures", "ocr", "phase-6");
 
 if (platform === "unsupported") {
   throw new Error(`Plateforme de moteurs non supportee: ${process.platform}/${process.arch}`);
@@ -298,11 +301,18 @@ async function bundledEngineLooksCurrent(rootDir, engine) {
     if (!stat.isDirectory()) return false;
     await verifyPackageMetadata(rootDir, engine);
     await verifyExpectedFiles(rootDir, engine);
+    await validateLockedAdvancedEngine(rootDir, engine);
     await assertNoWindowsOnlyResourcesForNonWindowsEngine(rootDir, engine);
     await assertNoBrokenSymlinksForNonWindowsEngine(rootDir, engine);
     return true;
   } catch {
     return false;
+  }
+}
+
+async function validateLockedAdvancedEngine(rootDir, engine) {
+  if (engine.id === "pdfium" && engine.platform === "windows-x64") {
+    await validateLockedPdfiumTree(rootDir, pdfiumLock, pdfiumFixtureRoot);
   }
 }
 

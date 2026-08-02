@@ -9,8 +9,11 @@ import { copyRustModuleTree } from "./lib/rust-source-tree.mjs";
 const root = process.cwd();
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "mc-bundled-platform-"));
 const validator = path.join(root, "scripts", "validate-bundled-engines.mjs");
+const preparerSource = fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8");
 
 try {
+  assert.match(preparerSource, /validateLockedPdfiumTree\(rootDir, pdfiumLock, pdfiumFixtureRoot\)/,
+    "bundled engine preparation must reject a stale PDFium tree before reusing it");
   testPlaceholderClassifiers();
   writeFixture();
   runValidator("windows-x64");
