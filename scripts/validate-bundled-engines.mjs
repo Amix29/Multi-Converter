@@ -4,6 +4,7 @@ import path from "node:path";
 import process from "node:process";
 import { isX86_64Elf } from "./lib/elf.mjs";
 import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
+import { readPdfiumLock, validateLockedPdfiumTree } from "./lib/pdfium-package.mjs";
 
 const root = process.cwd();
 const manifestPath = path.join(root, "src-tauri", "engines-manifest.json");
@@ -37,7 +38,16 @@ for (const engine of advancedEngines) {
     validateFile(engine.id, path.join(engineRoot, normalizeArchivePath(relative)), { executable: platform !== "windows-x64" });
   }
   validateNoBrokenSymlinks(engineRoot, engine);
-  validateEngineSmoke(engineRoot, engine);
+  if (engine.id === "pdfium" && platform === "windows-x64" && !skipExecutableSmoke) {
+    try {
+      const lock = await readPdfiumLock(root);
+      await validateLockedPdfiumTree(engineRoot, lock, path.join(root, "tests", "fixtures", "ocr", "phase-6"));
+    } catch (error) {
+      errors.push(`pdfium: ${error.message}`);
+    }
+  } else {
+    validateEngineSmoke(engineRoot, engine);
+  }
 }
 
 validateNoStaleBundledEngines(manifest);
@@ -163,11 +173,11 @@ function validateEngineSmoke(engineRoot, engine) {
     return;
   }
   const smoke = {
-    pdfium: ["--check"],
+    pdfium: ["--version"],
     pandoc: ["--version"],
     libvips: ["--version"],
   }[engine.id];
-  if (smoke) validateExecutable(engine.id, executable, smoke, null, path.dirname(executable));
+  if (smoke) validateExecutable(engine.id, executable, smoke, engine.id === "pdfium" ? "pdfium-render-wrapper 0.3.0" : null, path.dirname(executable));
 }
 
 function primaryExecutable(engineRoot, engine) {

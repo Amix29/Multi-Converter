@@ -497,3 +497,35 @@ product-size regression claim. The complete 18-step Windows gate passed in
 `9CB355FC932347E7CF62444A3FF1A393D93AC56699C36A2C77052159A8ED5DD0`;
 the executable SHA-256 is
 `4D03729EE7E06E95A8E5230EA9316F0434A1291E237C52D94E7421C8F861C011`.
+
+## Phase 7 Windows PDFium Packaging Snapshot
+
+Phase 7 is based on `08cd9b35` in the isolated
+`codex/phase-7-pdfium-native` worktree. It changes only Windows x64 PDFium
+packaging and validation; version metadata remains `1.0.6`.
+
+| Measurement | Phase 6 | Phase 7 locked package |
+| --- | ---: | ---: |
+| PDFium version | historical compatible archive | 149.0.7825.0 |
+| Wrapper version | packaged 0.2.0 / source 0.3.0 | packaged 0.3.0 |
+| Official upstream archive | not independently locked | 3,720,244 bytes |
+| `pdfium.dll` | historical package | 7,178,240 bytes |
+| Wrapper executable | historical package | 970,752 bytes |
+| Deterministic engine ZIP | historical package | 3,962,918 bytes |
+| Installed PDFium tree | historical package | 8,259,018 bytes |
+| PDFium wrapper runtime tests | 6 | 7 |
+| Handwritten files above 500 nonblank lines | 0 / 245 | 0 / 250 |
+
+Two independent local wrapper builds produced the exact locked SHA-256
+`52A019A2E3498CC4FEF52F55E8298A6BD0277583DF85E8C3D7F7E5D61F0A833C`.
+Two independent engine packages produced the exact ZIP SHA-256
+`1AB96C10148F04F8F558D4CE3FEECDBC215D2289868E2E3996D4F18D848505AE`.
+The local clean-asset validator passed version, x64 PE, checksum, path,
+native-text inspection and decoded 300-DPI render checks.
+
+The first Phase 7 corpus run passed 40/40: clean mean 100%, difficult mean
+99.76%, native/scanned/mixed PDF cases 100%, median measured recognition
+44,356 ms and peak worker working set 751,030,272 bytes. No remote worker
+connection was observed across 822 process samples while the host network
+remained active. These figures are local package-source evidence until the
+installed-resource harness records the same class of proof.

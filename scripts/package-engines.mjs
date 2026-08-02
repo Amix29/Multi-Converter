@@ -74,7 +74,7 @@ async function packageFromConfig(config, options) {
 
   const manifest = {
     manifestVersion: config.manifestVersion,
-    generatedAt: new Date().toISOString(),
+    generatedAt: config.generatedAt ?? new Date().toISOString(),
     engines
   };
   const manifestPath = path.join(options.outputDir, "engines-manifest.json");
@@ -140,7 +140,7 @@ async function packageEngine(config, engine, options, workDir) {
     licenseName: engine.licenseName,
     licenseFiles,
     noticeFiles,
-    createdAt: new Date().toISOString(),
+    createdAt: engine.createdAt ?? config.generatedAt ?? new Date().toISOString(),
     packageFormatVersion: config.packageFormatVersion
   };
   await fs.writeFile(path.join(stageDir, "engine.json"), `${JSON.stringify(packageMetadata, null, 2)}\n`, "utf8");
@@ -148,7 +148,7 @@ async function packageEngine(config, engine, options, workDir) {
   const installedSizeBytes = await directorySize(stageDir);
   const archivePath = resolveInside(options.outputDir, engine.outputArchiveName, `${engine.engineId}:outputArchiveName`);
   await fs.rm(archivePath, { force: true });
-  await createZip(stageDir, archivePath);
+  await createZip(stageDir, archivePath, { deterministicTimestamp: engine.createdAt });
   const compressedSizeBytes = (await fs.stat(archivePath)).size;
   const sha256 = await sha256File(archivePath);
 

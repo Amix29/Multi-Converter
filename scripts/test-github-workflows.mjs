@@ -3,9 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { assertWindowsCiContracts } from "./lib/windows-ci-contracts.mjs";
+import { assertWindowsPdfiumWorkflowContracts } from "./lib/windows-pdfium-workflow-contracts.mjs";
 
-const root = process.cwd();
-const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const root = process.cwd(), packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const buildWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "build.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
 const macosEngineStagingWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-engine-staging.yml"), "utf8");
@@ -15,6 +15,7 @@ const macosConversionsWorkflow = fs.readFileSync(path.join(root, ".github", "wor
 const linuxEngineStagingWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "linux-engine-staging.yml"), "utf8");
 const linuxSidecarStagingWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "linux-sidecar-staging.yml"), "utf8");
 const linuxAppImageWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "linux-appimage.yml"), "utf8");
+const windowsPdfiumStagingWorkflow = readWorkflow("windows-pdfium-engine-staging.yml");
 const macosEngineReleaseScript = fs.readFileSync(path.join(root, "scripts", "prepare-macos-engine-release-assets.mjs"), "utf8");
 const macosLibvipsRuntimeScript = fs.readFileSync(path.join(root, "scripts", "build-libvips-macos-runtime.mjs"), "utf8");
 const macosLibvipsReleaseInputsScript = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-macos-release-inputs.mjs"), "utf8");
@@ -44,6 +45,9 @@ const macosConversionsJob = workflowJob(macosConversionsWorkflow, "macos-convers
 const linuxEngineStagingJob = workflowJob(linuxEngineStagingWorkflow, "stage");
 const linuxSidecarStagingJob = workflowJob(linuxSidecarStagingWorkflow, "stage");
 const linuxAppImageBuildJob = workflowJob(linuxAppImageWorkflow, "build");
+const windowsPdfiumStagingJob = workflowJob(windowsPdfiumStagingWorkflow, "stage");
+
+assertWindowsPdfiumWorkflowContracts({ workflow: windowsPdfiumStagingWorkflow, job: windowsPdfiumStagingJob });
 
 assertWindowsCiContracts({ packageJson, buildWorkflow, windowsBuildJob, windowsCiGateScript });
 assert.match(buildWorkflow, /paths-ignore:\s*\n\s+- "\*\*\/\*\.md"\s*\n\s+- "docs\/\*\*"/, "build workflow push runs must skip docs-only changes to conserve GitHub Actions minutes");
@@ -506,10 +510,11 @@ function workflowJob(workflow, jobName) {
   return match[0];
 }
 
+function readWorkflow(fileName) {
+  return fs.readFileSync(path.join(root, ".github", "workflows", fileName), "utf8");
+}
+
 function assertCodexTestBuildGate(job, label) {
-  assert.match(
-    job,
-    /if:\s+\$\{\{\s*github\.event_name != 'push' \|\| github\.ref_name != 'codex\/test' \|\| vars\.MC_ENABLE_CODEX_TEST_BUILD == '1'\s*\}\}/,
-    `${label} must skip codex/test push runs unless MC_ENABLE_CODEX_TEST_BUILD=1`,
-  );
+  const gate = /if:\s+\$\{\{\s*github\.event_name != 'push' \|\| github\.ref_name != 'codex\/test' \|\| vars\.MC_ENABLE_CODEX_TEST_BUILD == '1'\s*\}\}/;
+  assert.match(job, gate, `${label} must skip codex/test push runs unless MC_ENABLE_CODEX_TEST_BUILD=1`);
 }

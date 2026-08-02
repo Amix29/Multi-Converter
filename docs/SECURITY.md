@@ -323,6 +323,17 @@ PDFium, the OCR runtime and corpus, and the local Tauri/NSIS build. Tests also
 exercise process timeout and termination, bounded output, archive traversal,
 symlink/reparse-point export rejection and serialized command contracts.
 
+The Phase 7 Windows PDFium supply chain is fail-closed. It pins the official
+archive and DLL independently, requires the declared x64 PE wrapper and DLL,
+builds the wrapper with a locked Cargo graph and exact Rust toolchain, and
+accepts only the reproducible final ZIP fingerprint. ZIP inspection rejects
+absolute paths, parent traversal, duplicate or ambiguous names, symlinks,
+reparse points, excessive entry/expanded sizes and suspicious compression
+ratios before extraction. Runtime health requires the exact wrapper version,
+native-text inspection and decoded 300-DPI rendering; a successful `--check`
+alone is insufficient. PDFium is prepared before application packaging and is
+never downloaded by application startup or conversion code.
+
 A Phase 4 release executable built before the final adversarial hardening was
 launched and its process path was verified. Native clipboard-file import, PNG
 OCR, explicit text copy, PNG to WebP conversion, export, editor autosave,

@@ -321,6 +321,23 @@ scanned and mixed PDFs all scored 100%, as did the five Rust input normalizers.
 PDF results used the current source-built wrapper; they must not be confused
 with the historical packaged artifact.
 
+## Phase 7 Packaged PDFium Contract
+
+Windows x64 uses PDFium `149.0.7825.0` from tag `chromium/7825` and the
+Multi-Converter `pdfium-render` wrapper `0.3.0`. Their archive, DLL, Cargo lock,
+toolchain, wrapper binary and deterministic engine ZIP are independently
+locked in `tools/pdfium-windows-x64.lock.json`. The packaged wrapper must pass
+native text inspection and 300-DPI rasterization with the adjacent packaged
+DLL before it can enter the embedded engine manifest.
+
+This changes packaging only. The native-text threshold, invalid-character
+threshold, OCR fallback, page order, normalization, serializers, timeouts and
+public OCR V1 contracts remain unchanged. The installed native test must use
+the wrapper and DLL found below the NSIS installation root and compare its
+40-case corpus results with the source-wrapper baseline without a score drop.
+An active network is allowed during testing, but PDFium and OCR worker process
+sampling must not observe remote connections during recognition.
+
 ## Official References
 
 - PaddleOCR 3.7.0: https://pypi.org/project/paddleocr/3.7.0/

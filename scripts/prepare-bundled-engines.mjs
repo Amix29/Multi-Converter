@@ -18,6 +18,8 @@ const {
   ensureEngineExecutables,
   extractArchive,
   findFile,
+  isPlaceholderSha,
+  isPlaceholderUrl,
   normalizeArchivePath,
   normalizeBundledNoticeText,
   pruneLibreOfficeOptionalLinuxBackends,

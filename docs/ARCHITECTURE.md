@@ -235,6 +235,16 @@ quality and stability gates all pass. Corpus fixtures are committed with input,
 expected-output, provenance and SHA-256 metadata; generated runtime evidence
 stays under ignored `test-results/` paths.
 
+Phase 7 gives Windows PDFium its own immutable provenance boundary. The
+official `pdfium-win-x64.tgz` input, `pdfium.dll`, wrapper source lock, Rust
+toolchain, compiled wrapper and final engine ZIP all have exact sizes and
+SHA-256 values in `tools/pdfium-windows-x64.lock.json`. Preparation refuses a
+different version, architecture or payload. Packaging sorts regular files,
+normalizes ZIP timestamps and metadata, and rejects reparse points. The
+installed engine keeps the existing `bundled-engines/pdfium/compatible` path;
+the conversion and OCR domains therefore retain their public contracts and
+hybrid page-selection policy.
+
 ## Sources Of Truth
 
 1. Atelier [`AGENTS.md`](../../../AGENTS.md), its indexed rules and

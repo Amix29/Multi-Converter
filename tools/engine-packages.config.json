@@ -46,6 +46,7 @@
       "platform": "windows-x64",
       "sourceDir": "engine-sources/windows-x64/pdfium",
       "outputArchiveName": "pdfium-compatible-windows-x64.zip",
+      "createdAt": "2026-05-04T08:39:24Z",
       "binaryPaths": [
         "bin/pdfium.dll",
         "bin/pdfium-render-x86_64-pc-windows-msvc.exe"

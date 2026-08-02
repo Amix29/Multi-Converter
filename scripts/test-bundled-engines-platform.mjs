@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { createBundledEngineHelpers } from "./lib/bundled-engine-files.mjs";
 import { copyRustModuleTree } from "./lib/rust-source-tree.mjs";
 
 const root = process.cwd();
@@ -10,6 +11,7 @@ const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "mc-bundled-platform-"
 const validator = path.join(root, "scripts", "validate-bundled-engines.mjs");
 
 try {
+  testPlaceholderClassifiers();
   writeFixture();
   runValidator("windows-x64");
   runLinuxValidatorFailsWithNonElfSidecar();
@@ -25,6 +27,18 @@ try {
 }
 
 console.log("Bundled engine platform tests passed.");
+
+function testPlaceholderClassifiers() {
+  const helpers = createBundledEngineHelpers({
+    root,
+    platform: "windows-x64",
+    ffmpegVersion: "8.1.1",
+  });
+  assert.equal(helpers.isPlaceholderUrl("REPLACE_WITH_RELEASE_BASE_URL/engine.zip"), true);
+  assert.equal(helpers.isPlaceholderUrl("https://example.invalid/engine.zip"), false);
+  assert.equal(helpers.isPlaceholderSha("REPLACE_WITH_SHA256"), true);
+  assert.equal(helpers.isPlaceholderSha("a".repeat(64)), false);
+}
 
 function writeFixture() {
   const binariesDir = path.join(fixtureRoot, "src-tauri", "binaries");

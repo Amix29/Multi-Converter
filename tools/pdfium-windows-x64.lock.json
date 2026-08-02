@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "platform": "windows-x64",
+  "packageVersion": "compatible",
+  "upstream": {
+    "name": "PDFium",
+    "version": "149.0.7825.0",
+    "releaseTag": "chromium/7825",
+    "publishedAt": "2026-05-04T08:39:24Z",
+    "archiveName": "pdfium-win-x64.tgz",
+    "archiveUrl": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7825/pdfium-win-x64.tgz",
+    "archiveSizeBytes": 3720244,
+    "archiveSha256": "eefb48c845ab22f0945151093ce8fd611a33687796728051f9a1b2b341e1b980",
+    "libraryPath": "bin/pdfium.dll",
+    "librarySizeBytes": 7178240,
+    "librarySha256": "01be7a757183793f15eb35de9d9da424fc07d24b5560e8c3822f52812b2ad89a",
+    "license": "BSD-3-Clause",
+    "licenseUrl": "https://github.com/bblanchon/pdfium-binaries"
+  },
+  "wrapper": {
+    "name": "multi-converter-pdfium-render",
+    "version": "0.3.0",
+    "sourceDir": "tools/pdfium-render-wrapper",
+    "binaryPath": "bin/pdfium-render-x86_64-pc-windows-msvc.exe",
+    "target": "x86_64-pc-windows-msvc",
+    "minimumRustVersion": "1.88",
+    "buildRustVersion": "1.96.0",
+    "cargoLockSha256": "852c2d5a49ff8254ac8b8065e60645d203a4cd7b5460fe21eeb716bb4641349c",
+    "binarySizeBytes": 970752,
+    "binarySha256": "52a019a2e3498cc4fef52f55e8298a6bd0277583df85e8c3d7f7e5d61f0a833c",
+    "pdfiumRenderCrateVersion": "0.9.1",
+    "license": "AGPL-3.0-or-later"
+  },
+  "package": {
+    "archiveName": "pdfium-compatible-windows-x64.zip",
+    "releaseTag": "engines-v0.1.1-alpha.0",
+    "releaseBaseUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.1-alpha.0/",
+    "deterministicTimestamp": "2026-05-04T08:39:24Z",
+    "archiveSizeBytes": 3962918,
+    "archiveSha256": "1ab96c10148f04f8f558d4ce3feecdbc215d2289868e2e3996d4f18d848505ae",
+    "installedSizeBytes": 8259018
+  }
+}

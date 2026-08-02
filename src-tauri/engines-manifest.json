@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "generatedAt": "2026-05-10T17:08:43.889Z",
+  "generatedAt": "2026-05-04T08:39:24Z",
   "engines": [
     {
       "id": "pdfium",
@@ -9,10 +9,10 @@
       "version": "compatible",
       "platform": "windows-x64",
       "archiveType": "zip",
-      "downloadUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.0-alpha.0/pdfium-compatible-windows-x64.zip",
-      "sha256": "bb0ca2504d4961d675fb5bbf45412fc7a9d3bb2e2f1208f8f05e261ca1c37749",
-      "compressedSizeBytes": 5626403,
-      "installedSizeBytes": 13080831,
+      "downloadUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.1-alpha.0/pdfium-compatible-windows-x64.zip",
+      "sha256": "1ab96c10148f04f8f558d4ce3feecdbc215d2289868e2e3996d4f18d848505ae",
+      "compressedSizeBytes": 3962918,
+      "installedSizeBytes": 8259018,
       "binaryPaths": [
         "bin/pdfium.dll",
         "bin/pdfium-render-x86_64-pc-windows-msvc.exe"

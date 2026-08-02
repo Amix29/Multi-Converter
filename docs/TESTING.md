@@ -710,6 +710,47 @@ The minimum manual DMG smoke test is:
 
 Use `npm run test:pdfium-wrapper:compile` only when the goal is compile-only validation. Do not present that compile-only check as proof that PDF rendering works on the platform.
 
+## Windows PDFium Engine Staging And Native Proof
+
+`tools/pdfium-windows-x64.lock.json` is the sole Windows x64 PDFium provenance
+input. Run `npm run prepare:pdfium-engine`, then
+`npm run package:pdfium-engine`. Two independent package runs must produce the
+same `pdfium-compatible-windows-x64.zip` SHA-256. Validate the three clean
+staging assets with:
+
+```powershell
+npm run validate:pdfium-engine-release -- --dir "<asset-folder>"
+```
+
+After the authorized engine prerelease exists, validate a cache-empty public
+download with:
+
+```powershell
+npm run validate:pdfium-engine-release -- --download
+```
+
+The validator checks exact asset names, manifest metadata, hashes, x64 PE
+payloads, archive paths, wrapper `0.3.0`, `--check`, `--inspect-text` on a native
+PDF and `--render` on a scanned page with PNG decoding. The
+`Windows PDFium Engine Staging` workflow performs the same locked preparation
+twice on Windows and uploads an Actions artifact; it does not publish a GitHub
+release by itself.
+
+For installed-resource evidence, first build the NSIS from the publicly
+validated manifest, then run:
+
+```powershell
+npm run test:windows:pdfium-native -- --installer "<exact-setup.exe>" --run-id "<evidence-id>"
+```
+
+The harness silently installs the same candidate into an isolated directory,
+locates PDFium only under the installed resources, runs runtime health and the
+40-case OCR corpus, uninstalls, reinstalls and repeats a smoke test. Evidence is
+written below ignored `test-results/phase-7-pdfium-native/`. The network stays
+active; process connection sampling is an observation, not an offline or packet
+capture claim. This focused harness does not replay or validate the 101 manual
+Phase 5 scenarios.
+
 ## Release Asset Tests
 
 Use `scripts/test-release-assets.mjs` for fixture-based release asset checks. It covers:

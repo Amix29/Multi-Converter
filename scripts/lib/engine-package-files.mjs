@@ -135,8 +135,12 @@ export function canCheckExecutableBits() {
   return process.platform !== "win32";
 }
 
-export async function createZip(sourceDir, archivePath) {
+export async function createZip(sourceDir, archivePath, options = {}) {
+  const deterministicTimestamp = options.deterministicTimestamp ?? null;
   if (process.platform !== "win32") {
+    if (deterministicTimestamp) {
+      throw new Error("Deterministic engine ZIP creation is currently limited to the Windows PDFium staging workflow.");
+    }
     await fs.rm(archivePath, { force: true });
     const result = spawnSync("zip", ["-qry", archivePath, "."], {
       cwd: sourceDir,
@@ -149,14 +153,38 @@ export async function createZip(sourceDir, archivePath) {
     return;
   }
 
-  const script = [
+  const script = deterministicTimestamp ? [
+    "Add-Type -AssemblyName System.IO.Compression",
+    "Add-Type -AssemblyName System.IO.Compression.FileSystem",
+    `$source = ${psQuote(sourceDir)}`,
+    `$dest = ${psQuote(archivePath)}`,
+    `$timestamp = [DateTimeOffset]::Parse(${psQuote(deterministicTimestamp)}).ToUniversalTime()`,
+    "if ($timestamp.Year -lt 1980) { throw 'ZIP timestamps must be 1980 or newer' }",
+    "if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Force }",
+    "$stream = [System.IO.File]::Open($dest, [System.IO.FileMode]::CreateNew)",
+    "$zip = [System.IO.Compression.ZipArchive]::new($stream, [System.IO.Compression.ZipArchiveMode]::Create, $false)",
+    "try {",
+    "  $prefix = $source.TrimEnd([char[]]'\\/') + [System.IO.Path]::DirectorySeparatorChar",
+    "  $files = Get-ChildItem -LiteralPath $source -Recurse -File | Sort-Object -Property FullName",
+    "  foreach ($file in $files) {",
+    "    if (($file.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw ('Reparse point refused: ' + $file.FullName) }",
+    "    $relative = $file.FullName.Substring($prefix.Length).Replace('\\', '/')",
+    "    $entry = $zip.CreateEntry($relative, [System.IO.Compression.CompressionLevel]::Optimal)",
+    "    $entry.LastWriteTime = $timestamp",
+    "    $input = [System.IO.File]::OpenRead($file.FullName)",
+    "    $output = $entry.Open()",
+    "    try { $input.CopyTo($output) } finally { $output.Dispose(); $input.Dispose() }",
+    "  }",
+    "} finally { $zip.Dispose(); $stream.Dispose() }",
+  ] : [
     "Add-Type -AssemblyName System.IO.Compression.FileSystem",
     `$source = ${psQuote(sourceDir)}`,
     `$dest = ${psQuote(archivePath)}`,
     "if (Test-Path -LiteralPath $dest) { Remove-Item -LiteralPath $dest -Force }",
     "[System.IO.Compression.ZipFile]::CreateFromDirectory($source, $dest, [System.IO.Compression.CompressionLevel]::Optimal, $false)"
-  ].join("; ");
-  runPowerShell(script, "Creation ZIP impossible");
+  ];
+  const scriptText = script.join(deterministicTimestamp ? "\n" : "; ");
+  runPowerShell(scriptText, "Creation ZIP impossible");
 }
 
 export async function extractZip(archivePath, destinationDir) {

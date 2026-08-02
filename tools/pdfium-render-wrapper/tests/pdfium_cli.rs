@@ -22,6 +22,16 @@ fn run(args: &[&str]) -> std::process::Output {
 }
 
 #[test]
+fn version_is_exactly_the_packaged_contract() {
+    let output = command().arg("--version").output().unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8_lossy(&output.stdout).trim(),
+        "pdfium-render-wrapper 0.3.0"
+    );
+}
+
+#[test]
 fn check_succeeds_when_pdfium_dll_is_available() {
     let output = run(&["--check"]);
     assert!(

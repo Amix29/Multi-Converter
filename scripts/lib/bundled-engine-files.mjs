@@ -402,6 +402,8 @@ export function createBundledEngineHelpers({ root, platform, ffmpegVersion }) {
     ensureEngineExecutables,
     extractArchive,
     findFile,
+    isPlaceholderSha,
+    isPlaceholderUrl,
     normalizeArchivePath,
     normalizeBundledNoticeText,
     pruneLibreOfficeOptionalLinuxBackends,

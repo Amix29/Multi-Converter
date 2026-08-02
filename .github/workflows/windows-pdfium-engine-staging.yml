@@ -1,0 +1,90 @@
+name: Windows PDFium Engine Staging
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/test
+    paths:
+      - ".github/workflows/windows-pdfium-engine-staging.yml"
+      - "package.json"
+      - "scripts/lib/download-integrity.mjs"
+      - "scripts/lib/engine-package-files.mjs"
+      - "scripts/lib/pdfium-package.mjs"
+      - "scripts/lib/zip-inspection.mjs"
+      - "scripts/package-engines.mjs"
+      - "scripts/package-pdfium-engine.mjs"
+      - "scripts/prepare-pdfium-engine.mjs"
+      - "scripts/validate-pdfium-engine-release.mjs"
+      - "src-tauri/engines-manifest.json"
+      - "tests/fixtures/ocr/phase-6/**"
+      - "tools/engine-packages.config.json"
+      - "tools/pdfium-render-wrapper/**"
+      - "tools/pdfium-windows-x64.lock.json"
+
+permissions:
+  contents: read
+
+jobs:
+  stage:
+    name: Reproducible Windows x64 PDFium package
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.1
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@1.96.0
+        with:
+          targets: x86_64-pc-windows-msvc
+          components: clippy
+
+      - run: npm ci
+
+      - name: Prepare locked PDFium source tree
+        run: npm run prepare:pdfium-engine
+
+      - name: Package twice and require byte identity
+        shell: pwsh
+        run: |
+          npm run package:pdfium-engine
+          $archive = "dist-engines-advanced/pdfium-compatible-windows-x64.zip"
+          $first = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash
+          Copy-Item -LiteralPath $archive -Destination "$env:RUNNER_TEMP/pdfium-first.zip"
+          npm run package:pdfium-engine
+          $second = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash
+          if ($first -ne $second) { throw "PDFium archive is not reproducible: $first != $second" }
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath "$env:RUNNER_TEMP/pdfium-first.zip").Hash -ne $second) {
+            throw "Saved PDFium archive differs from the second build"
+          }
+          git diff --exit-code -- src-tauri/engines-manifest.json
+
+      - name: Validate exact release asset set
+        run: npm run validate:pdfium-engine-release -- --dir dist-engines-advanced
+
+      - name: Test and lint wrapper with locked DLL
+        shell: pwsh
+        run: |
+          $env:MULTI_CONVERTER_TEST_PDFIUM_LIBRARY = (Resolve-Path "engine-sources/windows-x64/pdfium/bin/pdfium.dll")
+          npm run test:pdfium-wrapper
+          npm run clippy:pdfium-wrapper
+
+      - name: Validate workflow contracts
+        run: npm run test:github-workflows
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-pdfium-engine-assets
+          path: |
+            dist-engines-advanced/pdfium-compatible-windows-x64.zip
+            dist-engines-advanced/pdfium-compatible-windows-x64.zip.sha256
+            dist-engines-advanced/engines-manifest.json
+          if-no-files-found: error
+          retention-days: 14

@@ -351,6 +351,35 @@ the following successful Windows gate records clean mean 100%, difficult mean
 stale packaged wrapper. The Rust PNG/JPEG/WebP/TIFF/BMP normalization and
 original-hash checks passed.
 
+## 2026-08-02 Phase 7 Windows PDFium Packaging Checkpoint
+
+Phase 7 replaces the obsolete Windows x64 PDFium package without changing the
+PDF hybrid algorithm, OCR contracts, formats or application version. The
+provenance lock fixes PDFium `149.0.7825.0`, tag `chromium/7825`, the official
+archive and DLL hashes, wrapper `0.3.0`, Cargo lock, Rust `1.96.0`, compiled
+wrapper fingerprint and deterministic engine ZIP fingerprint.
+
+Evidence obtained before public staging:
+
+- the 3,720,244-byte official archive and 7,178,240-byte DLL match their
+  independent locked SHA-256 values;
+- two wrapper builds are byte-identical at 970,752 bytes and two engine ZIPs
+  are byte-identical at 3,962,918 bytes;
+- the clean three-asset engine set and bundled tree pass exact version, x64 PE,
+  archive path, checksum, `--check`, native `--inspect-text` and scanned-page
+  `--render`/PNG-decode checks;
+- all seven native wrapper tests pass;
+- the first Phase 7 OCR corpus run passes 40/40 with 100% clean mean, 99.76%
+  difficult mean and 100% on native, scanned and mixed PDFs; 822 process
+  samples observe no remote OCR-worker connection while the network is active;
+- `npm run check`, both npm audits and the project-authorized Rust audit pass.
+
+The remaining Phase 7 evidence is the successful `codex/test` staging job,
+public cache-empty download, exact NSIS identity and the installed-resource
+two-cycle harness. Until those are recorded, this subsection is an engineering
+checkpoint rather than phase closure. The 101 Phase 5 manual scenarios are not
+replayed and remain unvalidated by explicit maintainer decision.
+
 ## Gate Summary
 
 | Gate | Status | Blocking work |

@@ -79,6 +79,21 @@ macOS upstream engine downloads must be pinned before staging. Set `PDFIUM_MACOS
 
 The normal committed embedded manifest remains conservative for public builds unless a release workflow stages the reviewed `macos-universal` entries. macOS release notes and user-facing docs must limit macOS conversion claims to the engines that are actually bundled and tested in the final DMG.
 
+## Windows PDFium provenance
+
+The Windows x64 PDFium package is built only from the locked official
+`pdfium-win-x64.tgz` for PDFium `149.0.7825.0` (`chromium/7825`). The archive
+and extracted `pdfium.dll` have separate SHA-256 checks. The Multi-Converter
+wrapper is version `0.3.0`, is distributed under `AGPL-3.0-or-later`, and uses
+the separately licensed Rust `pdfium-render` crate. PDFium retains its
+BSD-3-Clause license and the package embeds the Chromium/PDFium third-party
+notices. Do not describe the wrapper as being licensed by PDFium or the Rust
+crate license, and do not remove the upstream notices when repackaging.
+
+The engine prerelease contains only the versioned engine ZIP, its checksum and
+the one-entry engine manifest. It is a build-time resource source, not an
+application release and not a runtime download endpoint.
+
 ## User-facing warning
 
 Recommended release wording:

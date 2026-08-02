@@ -21,6 +21,15 @@ not make V1.0.7 release-ready: native macOS/Linux validation, the assumed but
 unexecuted installed-Windows matrix, maintainer license approval and the
 reviewed PDFium archive replacement remain open.
 
+Phase 7 replaces only the Windows x64 PDFium engine package. PDFium
+`149.0.7825.0`, wrapper `0.3.0`, the build graph/toolchain and the deterministic
+archive are locked independently. Staging on `codex/test`, the dedicated engine
+prerelease and installed-NSIS PDFium/OCR proof close this packaging gap without
+changing conversion behavior. The 101 manual Phase 5 scenarios remain an
+explicit sequencing assumption, not release evidence. Phase 8 still owns real
+macOS/Linux packaging and Phase 9 owns version synchronization and application
+release.
+
 ## Product Principles
 
 - Files stay on the user's computer.
