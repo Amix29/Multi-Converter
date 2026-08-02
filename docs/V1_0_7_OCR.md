@@ -265,9 +265,6 @@ remain pending.
   neither required nor made for that rejected candidate.
 - Obtain maintainer legal approval of the complete 71-distribution inventory
   before public redistribution; the technical license coverage is complete.
-- Replace and review the historical PDFium engine archive whose wrapper
-  predates the required `--inspect-text` command. The current source-built
-  wrapper passes, but the old packaged artifact is not PDF OCR evidence.
 - Run corruption, password, timeout, cleanup, atomic-output and original-file
   tests through the packaged application.
 - Run the complete offline installed-NSIS behavior matrix. The local unsigned
@@ -337,6 +334,17 @@ the wrapper and DLL found below the NSIS installation root and compare its
 40-case corpus results with the source-wrapper baseline without a score drop.
 An active network is allowed during testing, but PDFium and OCR worker process
 sampling must not observe remote connections during recognition.
+
+Phase 7 installed evidence uses the unsigned NSIS SHA-256
+`febaf4fad2cc0bdd570beeff0c83cca706526f75c3dbed987e1a7b8b5028ef28`.
+Both isolated installation cycles expose wrapper `0.3.0` at SHA-256
+`1d1474c2eff303112f00065d43818c2a4c005acc71c4ae32e3bdc0b37d9cb0d4`
+and the locked DLL at SHA-256
+`01be7a757183793f15eb35de9d9da424fc07d24b5560e8c3822f52812b2ad89a`.
+The first installed cycle passed all 40 corpus cases with 100% clean mean,
+99.76% difficult mean, 33,794 ms median recognition, 749,379,584-byte peak
+working set and zero observed remote connections across 615 samples. The
+second cycle repeated the packaged PDFium health checks after reinstall.
 
 ## Official References
 

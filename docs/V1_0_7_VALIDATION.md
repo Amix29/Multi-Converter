@@ -351,7 +351,7 @@ the following successful Windows gate records clean mean 100%, difficult mean
 stale packaged wrapper. The Rust PNG/JPEG/WebP/TIFF/BMP normalization and
 original-hash checks passed.
 
-## 2026-08-02 Phase 7 Windows PDFium Packaging Checkpoint
+## 2026-08-02 Phase 7 Windows PDFium Packaging Closure
 
 Phase 7 replaces the obsolete Windows x64 PDFium package without changing the
 PDF hybrid algorithm, OCR contracts, formats or application version. The
@@ -359,7 +359,7 @@ provenance lock fixes PDFium `149.0.7825.0`, tag `chromium/7825`, the official
 archive and DLL hashes, wrapper `0.3.0`, Cargo lock, Rust `1.96.0`, compiled
 wrapper fingerprint and deterministic engine ZIP fingerprint.
 
-Evidence obtained before public staging:
+Evidence obtained:
 
 - the 3,720,244-byte official archive and 7,178,240-byte DLL match their
   independent locked SHA-256 values;
@@ -378,11 +378,34 @@ Evidence obtained before public staging:
   samples observe no remote OCR-worker connection while the network is active;
 - `npm run check`, both npm audits and the project-authorized Rust audit pass.
 
-The remaining Phase 7 evidence is the successful `codex/test` staging job,
-public cache-empty download, exact NSIS identity and the installed-resource
-two-cycle harness. Until those are recorded, this subsection is an engineering
-checkpoint rather than phase closure. The 101 Phase 5 manual scenarios are not
-replayed and remain unvalidated by explicit maintainer decision.
+Staging run `30765906058` passed on commit `f14a4bad`, including two
+byte-identical packages, exact asset validation, seven wrapper tests and
+Clippy. Public prerelease `engines-v0.1.1-alpha.0` targets that commit and
+contains exactly the ZIP, `.sha256` and one-engine manifest. A cache-empty
+download validated SHA-256
+`819104b0fd72c49a81282c0e35552c57a0c98995ef830fc580778e75ef213d6d`.
+
+The complete Windows gate passed all 18 steps, including 139 Rust tests, the
+6/6 conversion matrix, PDFium, OCR runtime/corpus and Tauri/NSIS build. The
+exact unsigned NSIS is 998,186,835 bytes with SHA-256
+`febaf4fad2cc0bdd570beeff0c83cca706526f75c3dbed987e1a7b8b5028ef28`.
+Two isolated installed cycles passed with wrapper SHA-256
+`1d1474c2eff303112f00065d43818c2a4c005acc71c4ae32e3bdc0b37d9cb0d4`
+and DLL SHA-256
+`01be7a757183793f15eb35de9d9da424fc07d24b5560e8c3822f52812b2ad89a`.
+
+The installed corpus passed 40/40 with 100% clean mean, 99.76% difficult
+mean, 100% native/scanned/mixed PDF accuracy, 33,794 ms median and
+749,379,584-byte peak worker working set. Across 615 samples no remote worker
+connection was observed while the network remained active. The three PDF
+originals retained their exact hashes, both uninstalls removed the isolated
+application root and the installed executable remained exactly 26,734,080
+bytes, a 0% increase from Phase 6.
+
+Phase 7 is closed for Windows PDFium packaging and installed hybrid OCR. The
+101 Phase 5 manual scenarios were not replayed and remain unvalidated by
+explicit maintainer decision; this closure must not be presented as their
+release-grade proof.
 
 ## Gate Summary
 
@@ -397,9 +420,9 @@ replayed and remain unvalidated by explicit maintainer decision.
 | Windows Tauri Office matrix | Pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios |
 | Native editor file drop | Pending manual proof | Validate in the real Tauri application |
 | Editor restart and asset persistence | Pending manual proof | Confirm `mc-asset://` images after a clean restart |
-| OCR Windows reference implementation | Phase 6 technical checkpoint closed | Regenerate final 40-case report and obtain maintainer license approval |
-| OCR Windows NSIS build | Passed locally | Preserve the verified compressed-resource preparation path |
-| OCR Windows packaged-app matrix | Extracted-package smoke passed | Installed offline NSIS PDF/image/editor matrix and output hashes |
+| OCR Windows reference implementation | Phase 7 PDFium package checkpoint closed | Obtain maintainer license approval |
+| OCR Windows NSIS build | Passed with exact candidate identity | Preserve the verified compressed-resource preparation path |
+| OCR Windows packaged PDFium path | Two installed cycles and 40-case corpus passed | Keep this focused proof separate from the unexecuted Phase 5 matrix |
 | macOS V1.0.7 matrix | Blocked | Real universal editor/OCR package and host validation |
 | Linux V1.0.7 matrix | Blocked | Real x64 editor/OCR AppImage and host validation |
 | V1.0.7 version synchronization | Blocked | All feature and release gates must pass first |
@@ -416,20 +439,18 @@ The Windows gate remains open until the complete real Tauri matrix is marked pas
 
 ## OCR Evidence
 
-Status: **locally achievable Windows Phase 3 checkpoint closed; release gate open**.
+Status: **Windows packaged PDFium/OCR checkpoint closed; broader release gate open**.
 
 The exact versions, five model origins and hashes, installed sizes, automated
 commands, Tauri-development results and current proof limits are recorded in
 [`V1_0_7_OCR.md`](V1_0_7_OCR.md). Before this section can pass, add:
 
-- preserve the retained 40-case report and rerun it against the reviewed
-  packaged PDFium artifact before an exact-package claim;
 - parity measurements only for a future candidate that first passes the size
   gate; the targeted Phase 6 candidate was rejected and official CPU retained;
 - maintainer legal approval of the complete 71-distribution inventory;
 - Windows packaged-NSIS tests for every advertised PDF text target, image
   format, editor path, cancellation, limits, cleanup and original integrity;
-- a continuous offline/network capture; sampled packaged-process inspection
+- a continuous active-network capture; sampled packaged-process inspection
   found zero TCP connections but is not a full trace;
 - real macOS universal and Linux x64 host/package matrices.
 

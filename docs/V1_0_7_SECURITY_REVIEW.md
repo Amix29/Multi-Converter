@@ -1,7 +1,7 @@
 # V1.0.7 Security Review
 
 Date: 2026-08-02
-Scope: Phase 6 Windows x64 checkpoint based on `cdbda9e8`
+Scope: Phase 6 review plus Phase 7 Windows PDFium closure at `0224d4d0`
 Status: engineering review complete; release and redistribution remain blocked
 
 This is a technical security and redistribution review, not legal advice.
@@ -19,10 +19,11 @@ PyInstaller candidate was rejected: after restoring imports and metadata
 required by PaddleX, it saved 9.17% installed and 6.28% compressed, below the
 10% selection threshold.
 
-One low release-engineering discrepancy remains: the historical PDFium archive
-contains a wrapper predating the `--inspect-text` command required by hybrid
-OCR. Current wrapper source passes six native PDFium tests, but the historical
-archive must not be presented as packaged PDF OCR evidence.
+The low PDFium release-engineering discrepancy is corrected. The replacement
+archive is provenance-locked, reproducible on its declared Windows 2025 build
+environment, publicly checksum-verified and validated through two isolated
+NSIS installation cycles. This closes only packaged PDFium/OCR evidence; it
+does not validate the 101 manual Phase 5 scenarios.
 
 ## Scope And Method
 
@@ -102,20 +103,22 @@ controls.
 
 Status: accepted evidence limitation for Phase 6.
 
-### MC-SEC-006 — Low — Historical PDFium artifact lacks hybrid inspection
+### MC-SEC-006 — Low — Historical PDFium artifact lacked hybrid inspection
 
-Evidence: the locked engine archive wrapper has no `--inspect-text`; the OCR
-domain calls that command before choosing native or OCR pages. Current source
-and the Phase 3 prepared wrapper expose it and pass six native tests.
+Evidence: the historical engine archive wrapper had no `--inspect-text`; the
+OCR domain calls that command before choosing native or OCR pages. Current
+source and the replacement wrapper expose it and pass seven native tests.
 
 Impact: no security boundary is weakened, but a package prepared from that
 archive can fail PDF OCR.
 
-Disposition: do not silently change a locked engine fingerprint and do not
-count the historical package as PDF OCR evidence. Stage a reviewed replacement
-engine archive in a dedicated packaging handoff.
+Correction: PDFium `149.0.7825.0`, its official archive and DLL, Rust 1.96.0,
+the `windows-2025` build environment, wrapper `0.3.0` and the engine ZIP are
+locked independently. The public `engines-v0.1.1-alpha.0` prerelease contains
+only the archive, checksum and one-engine manifest. Cache-empty download,
+runtime health, seven wrapper tests and two installed NSIS cycles passed.
 
-Status: open low release-engineering issue; V1.0.7 remains blocked.
+Status: corrected. V1.0.7 remains blocked by unrelated release gates.
 
 ## Dependency Audit Evidence
 
@@ -134,5 +137,4 @@ databases.
 - macOS and Linux native packages were not validated here;
 - the marketing site was outside Phase 6;
 - process sampling is not full packet capture;
-- the PDFium archive discrepancy prevents an exact-package PDF OCR claim;
 - public redistribution requires maintainer approval of the complete notices.

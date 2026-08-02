@@ -516,18 +516,24 @@ packaging and validation; version metadata remains `1.0.6`.
 | PDFium wrapper runtime tests | 6 | 7 |
 | Handwritten files above 500 nonblank lines | 0 / 245 | 0 / 250 |
 
-The wrapper build uses `rust-lld` from the exact Rust 1.96.0 toolchain so its
-linker is not inherited from the host Visual Studio installation. Its locked
-SHA-256 is
-`74AA03C2DCCC9293A432E41AE888D5C7C656D480513C9723410EEBF34FD2F18A`.
-Two independent engine packages produced the exact ZIP SHA-256
-`669E6B2DF854BDCDBF6048759353CB99364017979434D87B3E9B3B16CCA576F6`.
-The local clean-asset validator passed version, x64 PE, checksum, path,
-native-text inspection and decoded 300-DPI render checks.
+The official wrapper build uses `rust-lld` from Rust 1.96.0 on the declared
+GitHub Actions `windows-2025` environment. This pins the MSVC system-library
+inputs that differ across Windows SDK revisions. Its locked SHA-256 is
+`1D1474C2EFF303112F00065D43818C2A4C005ACC71C4AE32E3BDC0B37D9CB0D4`.
+Two packages from that environment produced the exact ZIP SHA-256
+`819104B0FD72C49A81282C0E35552C57A0C98995EF830FC580778E75EF213D6D`.
 
-The first Phase 7 corpus run passed 40/40: clean mean 100%, difficult mean
+The public three-asset prerelease and cache-empty download validate at the same
+3,961,574 bytes. The final 18-step Windows gate passed in 2,246,500 ms. Its
+unsigned NSIS is 998,186,835 bytes with SHA-256
+`FEBAF4FAD2CC0BDD570BEEFF0C83CCA706526F75C3DBED987E1A7B8B5028EF28`.
+The installed application remains exactly 26,734,080 bytes, with SHA-256
+`C3D75F40F12BBE379F955BCE7F2ACAD08FBDDEC5986A826FD8833D35BA1FBD41`;
+the size increase from Phase 6 is 0%.
+
+The installed-resource corpus passed 40/40: clean mean 100%, difficult mean
 99.76%, native/scanned/mixed PDF cases 100%, median measured recognition
-44,356 ms and peak worker working set 751,030,272 bytes. No remote worker
-connection was observed across 822 process samples while the host network
-remained active. These figures are local package-source evidence until the
-installed-resource harness records the same class of proof.
+33,794 ms and peak worker working set 749,379,584 bytes. No remote worker
+connection was observed across 615 process samples while the host network
+remained active. Both installation cycles used the locked wrapper and DLL,
+then removed the isolated installation root successfully.
