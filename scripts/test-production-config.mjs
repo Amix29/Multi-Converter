@@ -22,5 +22,8 @@ assert.doesNotMatch(csp, /script-src[^;]*'unsafe-eval'/, "CSP must not allow uns
 assert.doesNotMatch(csp, /(?:^|[;\s])\*(?:[;\s]|$)/, "CSP must not contain wildcard sources");
 assert.match(csp, /object-src 'none'/, "CSP must block plugins and object embeds");
 assert.match(csp, /base-uri 'self'/, "CSP must restrict base-uri to self");
+assert.match(csp, /form-action 'none'/, "CSP must block form submissions");
+assert.match(csp, /frame-src 'none'/, "CSP must block embedded frames");
+assert.match(csp, /frame-ancestors 'none'/, "CSP must block framing the application");
 
 console.log("Production config tests passed.");

@@ -105,6 +105,8 @@ fn apply_exif_orientation(path: &Path, image: image::DynamicImage) -> image::Dyn
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::Value;
+    use sha2::{Digest, Sha256};
     use std::fs;
 
     #[test]
@@ -130,6 +132,39 @@ mod tests {
             let original = fs::read(&source).unwrap();
             let prepared = prepare_image(&source.to_string_lossy()).unwrap();
             assert_eq!((prepared.width, prepared.height), (24, 16));
+            assert_eq!(fs::read(&source).unwrap(), original);
+            assert_eq!(
+                image::ImageReader::open(&prepared.path)
+                    .unwrap()
+                    .with_guessed_format()
+                    .unwrap()
+                    .format(),
+                Some(ImageFormat::Png)
+            );
+        }
+    }
+
+    #[test]
+    fn phase_6_manifest_image_formats_are_normalized_without_touching_sources() {
+        let repository = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("repository root");
+        let manifest_path = repository.join("tests/fixtures/ocr/corpus-manifest.json");
+        let manifest: Value = serde_json::from_slice(&fs::read(manifest_path).unwrap()).unwrap();
+        let fixtures = manifest["cases"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|entry| entry["kind"] == "rust-normalization")
+            .collect::<Vec<_>>();
+        assert_eq!(fixtures.len(), 5);
+
+        for fixture in fixtures {
+            let source = repository.join(fixture["input"].as_str().unwrap());
+            let original = fs::read(&source).unwrap();
+            let source_sha256 = format!("{:x}", Sha256::digest(&original));
+            assert_eq!(source_sha256, fixture["sha256"].as_str().unwrap());
+            let prepared = prepare_image(&source.to_string_lossy()).unwrap();
             assert_eq!(fs::read(&source).unwrap(), original);
             assert_eq!(
                 image::ImageReader::open(&prepared.path)

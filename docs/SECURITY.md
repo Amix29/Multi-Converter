@@ -201,7 +201,7 @@ disposed.
 The exact WebView CSP configured in `src-tauri/tauri.conf.json` is:
 
 ```text
-default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob:; font-src 'self'; connect-src ipc: http://ipc.localhost http://localhost:1420 ws://localhost:1420 https://api.github.com https://translate.googleapis.com; object-src 'none'; base-uri 'self'
+default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob:; font-src 'self'; connect-src ipc: http://ipc.localhost http://localhost:1420 ws://localhost:1420 https://api.github.com https://translate.googleapis.com; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; frame-ancestors 'none'
 ```
 
 Its intended controls are:
@@ -232,7 +232,8 @@ than a general content permission. Its compensating controls are:
 - active CSS constructs and unlisted properties are removed;
 - remote stylesheets, `style` elements, `@import` and CSS `url()` values are
   rejected at the editor boundary;
-- `object-src 'none'` and `base-uri 'self'` remain enforced.
+- `object-src 'none'`, `base-uri 'self'`, `form-action 'none'`,
+  `frame-src 'none'` and `frame-ancestors 'none'` remain enforced.
 
 Removing this exception later requires replacing every dynamic style attribute
 and editor inline-style feature; it must not be removed without equivalent UI

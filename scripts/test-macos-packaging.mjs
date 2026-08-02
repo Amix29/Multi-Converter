@@ -21,9 +21,15 @@ const macosLibvipsPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-
 const macosLibvipsRuntimeBuild = fs.readFileSync(path.join(root, "scripts", "build-libvips-macos-runtime.mjs"), "utf8");
 const macosLocalEnginesPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-macos-local-engines.mjs"), "utf8");
 const macosLibvipsInputPrepare = fs.readFileSync(path.join(root, "scripts", "prepare-libvips-macos-release-inputs.mjs"), "utf8");
-const prepareScript = fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8");
+const prepareScript = [
+  fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8"),
+  fs.readFileSync(path.join(root, "scripts", "lib", "bundled-engine-files.mjs"), "utf8"),
+].join("\n");
 const validateScript = fs.readFileSync(path.join(root, "scripts", "validate-bundled-engines.mjs"), "utf8");
-const packageScript = fs.readFileSync(path.join(root, "scripts", "package-engines.mjs"), "utf8");
+const packageScript = [
+  fs.readFileSync(path.join(root, "scripts", "package-engines.mjs"), "utf8"),
+  fs.readFileSync(path.join(root, "scripts", "lib", "engine-package-files.mjs"), "utf8"),
+].join("\n");
 const enginesRust = readRustModuleTree(root, "engines");
 const convertersRust = readRustModuleTree(root, "converters");
 const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");

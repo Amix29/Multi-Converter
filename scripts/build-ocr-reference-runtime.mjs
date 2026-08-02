@@ -12,11 +12,12 @@ if ((args.platform ?? "windows-x64") !== "windows-x64" || process.platform !== "
 const buildRoot = path.join(root, "engine-sources", "ocr-runtime", "windows-x64");
 const environment = path.join(buildRoot, ".venv");
 const python = path.join(environment, "Scripts", "python.exe");
+const requirements = path.join(root, "tools", "ocr-runtime", "requirements-windows-x64.lock.txt");
 if (args.install) {
-  run("uv", ["venv", "--python", "3.12", environment]);
+  assertToolVersion("uv", ["--version"], "uv 0.11.21");
+  run("uv", ["venv", "--python", "3.12.10", environment]);
   run("uv", [
-    "pip", "install", "--python", python,
-    "paddlepaddle==3.3.1", "paddleocr==3.7.0", "paddlex==3.7.0", "pyinstaller==6.16.0",
+    "pip", "install", "--python", python, "--require-hashes", "--only-binary", ":all:", "-r", requirements,
   ]);
 }
 await assertFile(python, "environnement Python OCR verrouillé (utilisez --install pour le préparer)");
@@ -56,6 +57,13 @@ function parseArgs(values) {
 function run(command, commandArgs) {
   const result = spawnSync(command, commandArgs, { cwd: root, stdio: "inherit", windowsHide: true });
   if (result.status !== 0) throw new Error(`Échec de ${command} (${result.status ?? "signal"}).`);
+}
+
+function assertToolVersion(command, commandArgs, expected) {
+  const result = spawnSync(command, commandArgs, { cwd: root, encoding: "utf8", windowsHide: true });
+  if (result.status !== 0 || !result.stdout.trim().startsWith(`${expected} `)) {
+    throw new Error(`${command}: version attendue ${expected}, obtenue ${result.stdout.trim() || "indisponible"}.`);
+  }
 }
 
 async function assertFile(filePath, label) {

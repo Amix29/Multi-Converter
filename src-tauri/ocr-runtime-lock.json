@@ -7,6 +7,12 @@
     "paddlex": "3.7.0",
     "onnxruntime": "1.26.0"
   },
+  "buildEnvironment": {
+    "python": "3.12.10",
+    "uv": "0.11.21",
+    "requirements": "tools/ocr-runtime/requirements-windows-x64.lock.txt",
+    "requirementsSha256": "5baf7325b3f11468ff1d8e0040e18c900a630f3bb8924550ecfbfd44aa920e99"
+  },
   "languages": ["fr", "en", "es", "de", "it", "pt", "ja"],
   "modelArtifact": {
     "fileCount": 21,

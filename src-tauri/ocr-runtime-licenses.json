@@ -1,16 +1,17 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "platform": "windows-x64",
   "runtimeFileCount": 7260,
   "runtimeTotalBytes": 660098904,
   "runtimeAggregateSha256": "b6ea96d25e8c43ffa09efe7b8b171b44d3a82049c7cd0662ce403e8399f10da4",
   "generatedFrom": "engine-sources/ocr-runtime/windows-x64/dist/ocr-worker",
   "packageCount": 71,
-  "packagesWithLicenseFiles": 70,
-  "licenseFileCount": 105,
-  "packagesWithoutLicenseFiles": [
+  "packagesWithLicenseFiles": 71,
+  "licenseFileCount": 106,
+  "packagesWithoutEmbeddedLicenseFiles": [
     "bce-python-sdk"
   ],
+  "packagesWithoutLicenseFiles": [],
   "unresolvedMetadata": [],
   "packages": [
     {
@@ -33,7 +34,8 @@
           "bytes": 13936,
           "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "aiohttp",
@@ -63,7 +65,8 @@
           "bytes": 1091,
           "sha256": "279012e02a10acfd59a3f2d8f13a497332535d871c2b27c89988985b06a3a438"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "aiosignal",
@@ -87,7 +90,8 @@
           "bytes": 11332,
           "sha256": "6fd5243e92dd7f98ec69c7ac377728e74905709ff527a5bf98d6d0263c04f5b6"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "aistudio_sdk",
@@ -104,7 +108,8 @@
           "bytes": 11358,
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "altgraph",
@@ -125,7 +130,8 @@
           "bytes": 1002,
           "sha256": "6c194d6db0c64d45535d10c95142b9b0cda7b7dcc7f1ddee302b3d536f3dbe46"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "annotated-types",
@@ -146,7 +152,8 @@
           "bytes": 1083,
           "sha256": "fe1049884b1a0d9342901e88e07f32925d24b3121d9972b6a6805fb9824b095d"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "anyio",
@@ -166,7 +173,8 @@
           "bytes": 1081,
           "sha256": "5361ac9dc58f2ef5fd2e9b09c68297c17f04950909bbc8023bdb82eacf22c2b0"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "attrs",
@@ -187,7 +195,8 @@
           "bytes": 1109,
           "sha256": "882115c95dfc2af1eeb6714f8ec6d5cbcabf667caff8729f42420da63f714e9f"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "bce-python-sdk",
@@ -196,7 +205,15 @@
       "license": "Apache License 2.0",
       "licenseClassifiers": [],
       "projectUrls": [],
-      "licenseFiles": []
+      "licenseFiles": [],
+      "supplementalLicenseFiles": [
+        {
+          "path": "src-tauri/ocr-resources/licenses/bce-python-sdk-0.9.76.LICENSE.txt",
+          "bytes": 11359,
+          "sha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac",
+          "source": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ]
     },
     {
       "name": "certifi",
@@ -215,7 +232,8 @@
           "bytes": 989,
           "sha256": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "chardet",
@@ -236,7 +254,8 @@
           "bytes": 653,
           "sha256": "0517f574b0183d991eb7a9ec5dbf0add8d8ade5ac00341bd28ca0c18914d52e5"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "charset-normalizer",
@@ -256,7 +275,8 @@
           "bytes": 1092,
           "sha256": "18577485d3704f1a479ded8e573c0976cfed315fd2fd17983fa988da4c2f70d1"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "click",
@@ -277,7 +297,8 @@
           "bytes": 1475,
           "sha256": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "colorama",
@@ -296,7 +317,8 @@
           "bytes": 1491,
           "sha256": "cac35c02686e5d04a5a7140bfb3b36e73aed496656e891102e428886d7930318"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "colorlog",
@@ -313,7 +335,8 @@
           "bytes": 1107,
           "sha256": "b1d9082bc483623fd59fc7279b457f0e40d942a76426cde257239e04dfe4125a"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "crc32c",
@@ -349,7 +372,8 @@
           "bytes": 1944,
           "sha256": "c520296236014f5358e0bcdb031667783021af8a8ee000c65784a648c7b0e3a6"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "filelock",
@@ -371,7 +395,8 @@
           "bytes": 1088,
           "sha256": "608c89d5060ae9921adccf3236695bc654a9946e12323ef6c021dfa04e294d48"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "frozenlist",
@@ -396,7 +421,8 @@
           "bytes": 11332,
           "sha256": "6fd5243e92dd7f98ec69c7ac377728e74905709ff527a5bf98d6d0263c04f5b6"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "fsspec",
@@ -415,7 +441,8 @@
           "bytes": 1513,
           "sha256": "2dc35496ce53a7307915c008a844aad53e772b49b34cdd00445067691407ec94"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "future",
@@ -435,7 +462,8 @@
           "bytes": 1075,
           "sha256": "beba04103c3a9fff928b59c77d5fbeb03a3e4bd0d7ac3d1e1f8994a21e30ee3b"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "h11",
@@ -452,7 +480,8 @@
           "bytes": 1124,
           "sha256": "37db5bb85926db28a427a25867f10b1232003aea1be69ccb851138adb8e6f361"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "hf-xet",
@@ -474,7 +503,8 @@
           "bytes": 11558,
           "sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "httpcore",
@@ -495,7 +525,8 @@
           "bytes": 1518,
           "sha256": "fdcb59154c74cbaba16a11242f7740bea9f23d6feb5547917d8c5f94a80392a5"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "httpx",
@@ -517,7 +548,8 @@
           "bytes": 1508,
           "sha256": "4ec59d544f12b5f539a3a716fd321ac58ccd8030b465221f2c880200cdf28d8d"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "huggingface_hub",
@@ -534,7 +566,8 @@
           "bytes": 11357,
           "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "idna",
@@ -553,7 +586,8 @@
           "bytes": 1541,
           "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "imagesize",
@@ -570,7 +604,8 @@
           "bytes": 1120,
           "sha256": "d0659c2767a164c2bf2736ee9f7bb619e0f165c89a962839de53fd5f77f62f4e"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "modelscope",
@@ -587,7 +622,8 @@
           "bytes": 11358,
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "modelscope-hub",
@@ -604,7 +640,8 @@
           "bytes": 11358,
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "multidict",
@@ -629,7 +666,8 @@
           "bytes": 611,
           "sha256": "93d11a968e2f0f36373c40811ff6d20e173f58c3cab5884cd6617bbfd795492a"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "networkx",
@@ -649,7 +687,8 @@
           "bytes": 1763,
           "sha256": "3cf7c3a179d817b23b8b8568211769fefdf93797d207d984b8b2fa24d0220b33"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "numpy",
@@ -673,7 +712,8 @@
           "bytes": 46841,
           "sha256": "596b953e1dcbe829b32ae444387efa15003fc6abdeca8a2179f364a6364c286e"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "opencv-contrib-python",
@@ -690,7 +730,8 @@
           "bytes": 1090,
           "sha256": "edef0fac1eb08d29d34563f724742e078da2513e196133a12c6ad9ff01e26107"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "opt-einsum",
@@ -707,7 +748,8 @@
           "bytes": 1080,
           "sha256": "7b26691a7c8ee48af425a53cbaeaabc9aa3a84ea2e93fe47a1ecc550c1de76db"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "packaging",
@@ -735,7 +777,8 @@
           "bytes": 1344,
           "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "paddleocr",
@@ -760,7 +803,8 @@
           "bytes": 11376,
           "sha256": "3840c5c0c61c294264d2dd77b8777be6ddd90121ef4e0e64abcd22edea581d6e"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "paddlepaddle",
@@ -780,7 +824,8 @@
           "bytes": 11641,
           "sha256": "60bb8ca6ee9ccc739508c518a1f03d923fa06d15c73bfb13c56032dc177d8bf3"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "paddlex",
@@ -800,7 +845,8 @@
           "bytes": 11325,
           "sha256": "accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pandas",
@@ -821,7 +867,8 @@
           "bytes": 1634,
           "sha256": "9850f6b5bdef7346503065807b878deb8058b976c5c329f4c4d23bf4796ce9ae"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pefile",
@@ -836,7 +883,8 @@
           "bytes": 1083,
           "sha256": "bfd4b5e4f8a99c961fd6f94d708e38396cc146bfe8fbc5d2a86e63aa29fb4208"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pillow",
@@ -859,7 +907,8 @@
           "bytes": 78016,
           "sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "prettytable",
@@ -879,7 +928,8 @@
           "bytes": 1612,
           "sha256": "0c8adcc204c8af6cdfdf7887dfd1f99c29901f6c1d505a78bba96efa4fb2cb05"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "propcache",
@@ -911,7 +961,8 @@
           "bytes": 609,
           "sha256": "56d6ac6c8105c0a51304c21db060e361af9a8ea0af9a75c239c28b5d13693838"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "protobuf",
@@ -926,7 +977,8 @@
           "bytes": 1732,
           "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "psutil",
@@ -941,7 +993,8 @@
           "bytes": 1577,
           "sha256": "c7adc4d5d1337a548b967421f1fbe258b93033a0417708fd6f4e38f8ecbceb80"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "py-cpuinfo",
@@ -958,7 +1011,8 @@
           "bytes": 1127,
           "sha256": "ddbaf76396bf5c7aa45975a21eafe2e22eecb7da5aa0db7cb0e6152faafef34d"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pyclipper",
@@ -976,7 +1030,8 @@
           "bytes": 1131,
           "sha256": "73c25539e7fb486b834c33747d579e0bc56c0f984294c88f3cb2329420ba300f"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pycryptodome",
@@ -997,7 +1052,8 @@
           "bytes": 2987,
           "sha256": "60b8958a9ef9b7ec512087b725555372175ed2b02b969f8725b8534fde48acdd"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pydantic",
@@ -1018,7 +1074,8 @@
           "bytes": 1129,
           "sha256": "a9e186f3ca16b5eef84318e7a701721351a00cb7b8ae3a4394b67b49e3529ef3"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pydantic_core",
@@ -1037,7 +1094,8 @@
           "bytes": 1101,
           "sha256": "fbe7f615f18d135c07000e5a86325db27f42c7729699ef166ac1f7a3f4586bf4"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pyinstaller",
@@ -1059,7 +1117,8 @@
           "bytes": 32138,
           "sha256": "dcf75fdb959db1e3b41c0f8505069d2ece781b5ec6b3d0a4d30975cfc6580245"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pyinstaller-hooks-contrib",
@@ -1077,7 +1136,8 @@
           "bytes": 27666,
           "sha256": "91d0baaff00773038e72c0a1fc9d5d2d38706b7a2b9c04f34296608f931b9cd0"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pypdfium2",
@@ -1187,7 +1247,8 @@
           "bytes": 14844,
           "sha256": "f1b1748301cd4274f46733c218d510929661b4990855de5fc645dacd69c4371c"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "python-bidi",
@@ -1225,7 +1286,8 @@
           "bytes": 2924,
           "sha256": "8244dd3fec5774632922cc1593a1f6e124ff0fc3ce010ee874bec2640ee839a5"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "python-dateutil",
@@ -1246,7 +1308,8 @@
           "bytes": 2889,
           "sha256": "ba00f51a0d92823b5a1cde27d8b5b9d2321e67ed8da9bc163eff96d5e17e577e"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "pywin32-ctypes",
@@ -1261,7 +1324,8 @@
           "bytes": 1644,
           "sha256": "dfa83b3e2709adfcdb838d9ad55823ca674abb780e60563d9dd9544ccbf785e9"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "PyYAML",
@@ -1284,7 +1348,8 @@
           "bytes": 1101,
           "sha256": "8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "requests",
@@ -1309,7 +1374,8 @@
           "bytes": 38,
           "sha256": "f5110972dedad2b4e9d314518daf3b7d72d6e02e499acd802181de6f74571dcc"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "ruamel.yaml",
@@ -1331,7 +1397,8 @@
           "bytes": 1121,
           "sha256": "3e7632bb0dc1150f15f8161f5eec48dec8a99aaa1dfc9e8f63c02931e0fba7f8"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "safetensors",
@@ -1351,7 +1418,8 @@
           "bytes": 11558,
           "sha256": "1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "setuptools",
@@ -1370,7 +1438,8 @@
           "bytes": 1023,
           "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "shapely",
@@ -1400,7 +1469,8 @@
           "bytes": 1612,
           "sha256": "e8cd7d34604d2758ff589f0f34d6ed79c3f7fb14aaf5e12fb09221421391a3bf"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "six",
@@ -1417,7 +1487,8 @@
           "bytes": 1066,
           "sha256": "4375ba20e2b9c6c4e7cad2940a628fd90e95cc3d50ee92aae755715d8ba1fbd0"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "tqdm",
@@ -1437,7 +1508,8 @@
           "bytes": 1985,
           "sha256": "fcff87c3a47ce8028a8512aa182d4fcf0ad1c90544ee75cf9b343684cac194de"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "typing_extensions",
@@ -1459,7 +1531,8 @@
           "bytes": 13936,
           "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "typing-inspection",
@@ -1479,7 +1552,8 @@
           "bytes": 1090,
           "sha256": "804b59b25f2c31bd278f9202a19ae49a3945aa2664387e2d0a128c7cacc61ec3"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "tzdata",
@@ -1503,7 +1577,8 @@
           "bytes": 11357,
           "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "ujson",
@@ -1522,7 +1597,8 @@
           "bytes": 6089,
           "sha256": "7cde8b8e921a7670b0825feee800d07c33cb6515569b4e5bcf56bd77da80ae05"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "urllib3",
@@ -1542,7 +1618,8 @@
           "bytes": 1093,
           "sha256": "130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "wcwidth",
@@ -1559,7 +1636,8 @@
           "bytes": 1322,
           "sha256": "70b98a95a2144eb70af8017fa8c6d95ce247e40867436e8bc649e137fe13d21a"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     },
     {
       "name": "yarl",
@@ -1589,7 +1667,8 @@
           "bytes": 609,
           "sha256": "56d6ac6c8105c0a51304c21db060e361af9a8ea0af9a75c239c28b5d13693838"
         }
-      ]
+      ],
+      "supplementalLicenseFiles": []
     }
   ]
 }

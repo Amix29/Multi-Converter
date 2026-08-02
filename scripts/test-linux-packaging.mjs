@@ -7,7 +7,10 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), 
 const tauriConfig = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "tauri.conf.json"), "utf8"));
 const linuxConfig = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "tauri.linux.conf.json"), "utf8"));
 const linuxEngineConfig = JSON.parse(fs.readFileSync(path.join(root, "tools", "engine-packages.linux.config.json"), "utf8"));
-const prepareScript = fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8");
+const prepareScript = [
+  fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8"),
+  fs.readFileSync(path.join(root, "scripts", "lib", "bundled-engine-files.mjs"), "utf8"),
+].join("\n");
 const validateScript = fs.readFileSync(path.join(root, "scripts", "validate-bundled-engines.mjs"), "utf8");
 const linuxEngineSourcesPreparer = fs.readFileSync(path.join(root, "scripts", "prepare-linux-engine-sources.mjs"), "utf8");
 const linuxEngineReleasePreparer = fs.readFileSync(path.join(root, "scripts", "prepare-linux-engine-release-assets.mjs"), "utf8");

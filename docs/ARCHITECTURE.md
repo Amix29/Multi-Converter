@@ -227,6 +227,14 @@ Phase 4 leaves the OCR runtime, model lock, hybrid PDF policy, limits and public
 contracts functionally unchanged. It adopts no generic process abstraction for
 the persistent OCR worker.
 
+Phase 6 makes the Windows OCR build supply chain reproducible through an exact
+hash-locked Python/uv input and a generated license inventory. The selected
+runtime remains the official persistent CPU worker: targeted alternatives are
+kept outside application resources and may be selected only after their size,
+quality and stability gates all pass. Corpus fixtures are committed with input,
+expected-output, provenance and SHA-256 metadata; generated runtime evidence
+stays under ignored `test-results/` paths.
+
 ## Sources Of Truth
 
 1. Atelier [`AGENTS.md`](../../../AGENTS.md), its indexed rules and

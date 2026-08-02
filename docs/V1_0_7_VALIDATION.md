@@ -306,6 +306,51 @@ This assumption allows work to proceed to Phase 6. It does not constitute
 installed-NSIS, offline, Office round-trip or OCR validation, and it cannot be
 used as release-readiness evidence unless those checks are later executed.
 
+## 2026-08-02 Phase 6 Quality, Security And Optimization Checkpoint
+
+Phase 6 adds a global 500-nonblank-line source guardrail, deterministic bundle
+budgets, an exact Python OCR lock, a 71-package/106-license inventory, a
+40-case corpus manifest and a numbered security review. It does not change the
+version, public IPC contracts, conversion formats or selected OCR runtime.
+
+Current automated evidence:
+
+- `npm run check` passes, including 44 Vitest tests, 6 PDFium wrapper tests,
+  101 Windows native-protocol self-test scenarios and all static platform
+  packaging contracts;
+- `npm run test:guardrails` passes with 11 compiled-preview Playwright tests
+  and 11 expected duplicate-project skips;
+- npm production/full audits, the exact Python lock audit and Cargo Audit pass
+  under the documented Rust advisory policy;
+- the production frontend is exactly 1,095,149 raw bytes, its initial
+  application chunk is 211,600 bytes and its largest chunk is 496,337 bytes;
+- 245 handwritten source files were checked, none exceeds 500 nonblank lines;
+- the official OCR runtime stays selected because the targeted candidate saved
+  only 9.17% installed and 6.28% compressed, below the required 10%;
+- OCR process samples were taken with the machine network active and observed
+  no established remote connection. This is not continuous packet capture.
+- `npm run test:windows:ci` passes all 18 steps in 1,521,300 ms. The resulting
+  executable remains exactly 26,734,080 bytes; the local unsigned NSIS is
+  999,835,255 bytes with SHA-256
+  `9CB355FC932347E7CF62444A3FF1A393D93AC56699C36A2C77052159A8ED5DD0`.
+
+The technical security review is recorded in
+[`V1_0_7_SECURITY_REVIEW.md`](V1_0_7_SECURITY_REVIEW.md). No exploitable
+critical, high or medium issue was demonstrated. Three missing CSP directives
+were added. One low release-engineering issue remains open: the historical
+PDFium archive predates the hybrid OCR `--inspect-text` command, although the
+current source-built wrapper passes its six tests. Consequently an exact
+packaged PDF OCR claim remains blocked until a reviewed archive is staged.
+
+The standalone final 40-case corpus run passed in 829.6 seconds with 772
+network samples and zero observed remote connections. The retained report from
+the following successful Windows gate records clean mean 100%, difficult mean
+99.76%, median measured recognition 43,878 ms, peak worker working set
+750,030,848 bytes and 40 results. Native, scanned and mixed PDFs passed at
+100%; the source-built PDFium wrapper was used, so this is not evidence for the
+stale packaged wrapper. The Rust PNG/JPEG/WebP/TIFF/BMP normalization and
+original-hash checks passed.
+
 ## Gate Summary
 
 | Gate | Status | Blocking work |
@@ -319,7 +364,7 @@ used as release-readiness evidence unless those checks are later executed.
 | Windows Tauri Office matrix | Pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios |
 | Native editor file drop | Pending manual proof | Validate in the real Tauri application |
 | Editor restart and asset persistence | Pending manual proof | Confirm `mc-asset://` images after a clean restart |
-| OCR Windows reference implementation | Local checkpoint closed | Expand corpus and close redistribution review |
+| OCR Windows reference implementation | Phase 6 technical checkpoint closed | Regenerate final 40-case report and obtain maintainer license approval |
 | OCR Windows NSIS build | Passed locally | Preserve the verified compressed-resource preparation path |
 | OCR Windows packaged-app matrix | Extracted-package smoke passed | Installed offline NSIS PDF/image/editor matrix and output hashes |
 | macOS V1.0.7 matrix | Blocked | Real universal editor/OCR package and host validation |
@@ -344,13 +389,11 @@ The exact versions, five model origins and hashes, installed sizes, automated
 commands, Tauri-development results and current proof limits are recorded in
 [`V1_0_7_OCR.md`](V1_0_7_OCR.md). Before this section can pass, add:
 
-- the expanded reviewed accuracy corpus, including the documented Japanese
-  punctuation limitation and all native image-format paths;
-- parity measurements only if a native runtime or accelerator candidate is
-  proposed; the current decision retains official CPU and rejects unproven
-  candidates from selection;
-- package and review the missing `bce-python-sdk` license, complete `NOTICE`,
-  and approve the committed 71-distribution inventory for redistribution;
+- preserve the retained 40-case report and rerun it against the reviewed
+  packaged PDFium artifact before an exact-package claim;
+- parity measurements only for a future candidate that first passes the size
+  gate; the targeted Phase 6 candidate was rejected and official CPU retained;
+- maintainer legal approval of the complete 71-distribution inventory;
 - Windows packaged-NSIS tests for every advertised PDF text target, image
   format, editor path, cancellation, limits, cleanup and original integrity;
 - a continuous offline/network capture; sampled packaged-process inspection

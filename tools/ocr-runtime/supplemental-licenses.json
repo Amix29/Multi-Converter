@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "packages": [
+    {
+      "name": "bce-python-sdk",
+      "version": "0.9.76",
+      "declaredLicense": "Apache License 2.0",
+      "licenseFile": "src-tauri/ocr-resources/licenses/bce-python-sdk-0.9.76.LICENSE.txt",
+      "licenseSha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac",
+      "licenseSource": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "packageMetadata": "https://pypi.org/pypi/bce-python-sdk/0.9.76/json",
+      "wheel": {
+        "url": "https://files.pythonhosted.org/packages/b9/06/4d4a26c3dfcdb29599f563329b87eefe55b02b3c2b9d8f8c3aeaa38a33a6/bce_python_sdk-0.9.76-py3-none-any.whl",
+        "sha256": "e629181d060f4ed8f29749f47139bf08f1f9b0d8b15daedc956900785587e8d8"
+      },
+      "sdist": {
+        "url": "https://files.pythonhosted.org/packages/0a/ed/b41906366c0e1e3a1a883e0f1bcfc927403d9697d74b1eb7e89502870218/bce_python_sdk-0.9.76.tar.gz",
+        "sha256": "01c630ce8dcbf8be0563d65f18b5201eaac6bd954b3dc776040aec268f81b6ff"
+      },
+      "note": "The wheel and sdist declare Apache License 2.0 but contain no license file; Multi-Converter packages the canonical Apache 2.0 text separately. This is an engineering record, not legal advice."
+    }
+  ]
+}

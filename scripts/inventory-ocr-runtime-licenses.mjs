@@ -13,6 +13,7 @@ const sourceDir = path.resolve(
 const outputPath = path.resolve(
   args.output ?? path.join(root, "src-tauri", "ocr-runtime-licenses.json"),
 );
+const supplementalPath = path.join(root, "tools", "ocr-runtime", "supplemental-licenses.json");
 const internal = path.join(sourceDir, "_internal");
 const lock = JSON.parse(await fs.readFile(path.join(root, "src-tauri", "ocr-runtime-lock.json"), "utf8"));
 const selection = lock.platformSelections.find((entry) => entry.platform === platform);
@@ -69,22 +70,39 @@ for (const directory of distInfoDirectories) {
 }
 
 packages.sort((left, right) => left.name.localeCompare(right.name, "en"));
+const supplemental = JSON.parse(await fs.readFile(supplementalPath, "utf8"));
+const supplementalByPackage = new Map(
+  supplemental.packages.map((entry) => [`${entry.name.toLowerCase()}@${entry.version}`, entry]),
+);
+for (const entry of packages) {
+  const supplement = supplementalByPackage.get(`${entry.name.toLowerCase()}@${entry.version}`);
+  entry.supplementalLicenseFiles = supplement ? [await supplementalLicense(supplement)] : [];
+}
 const unresolvedMetadata = packages
   .filter((entry) => !entry.licenseExpression && !entry.license && entry.licenseClassifiers.length === 0)
   .map((entry) => entry.name);
-const packagesWithoutLicenseFiles = packages
+const packagesWithoutEmbeddedLicenseFiles = packages
   .filter((entry) => entry.licenseFiles.length === 0)
   .map((entry) => entry.name);
+const packagesWithoutLicenseFiles = packages
+  .filter((entry) => entry.licenseFiles.length === 0 && entry.supplementalLicenseFiles.length === 0)
+  .map((entry) => entry.name);
 const inventory = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   platform,
   runtimeFileCount: runtimeEntries.length,
   runtimeTotalBytes,
   runtimeAggregateSha256,
   generatedFrom: portable(path.relative(root, sourceDir)),
   packageCount: packages.length,
-  packagesWithLicenseFiles: packages.filter((entry) => entry.licenseFiles.length > 0).length,
-  licenseFileCount: packages.reduce((total, entry) => total + entry.licenseFiles.length, 0),
+  packagesWithLicenseFiles: packages.filter(
+    (entry) => entry.licenseFiles.length > 0 || entry.supplementalLicenseFiles.length > 0,
+  ).length,
+  licenseFileCount: packages.reduce(
+    (total, entry) => total + entry.licenseFiles.length + entry.supplementalLicenseFiles.length,
+    0,
+  ),
+  packagesWithoutEmbeddedLicenseFiles,
   packagesWithoutLicenseFiles,
   unresolvedMetadata,
   packages,
@@ -98,6 +116,21 @@ if (args.check) {
 } else {
   await fs.writeFile(outputPath, serialized);
   console.log(`OCR runtime license inventory written: ${packages.length} packages, ${inventory.licenseFileCount} license files, ${packagesWithoutLicenseFiles.length} package(s) without an embedded license file, ${unresolvedMetadata.length} unresolved metadata entries.`);
+}
+
+async function supplementalLicense(entry) {
+  const filePath = path.join(root, entry.licenseFile);
+  const content = (await fs.readFile(filePath, "utf8")).replaceAll("\r\n", "\n");
+  const actual = createHash("sha256").update(content).digest("hex");
+  if (actual !== entry.licenseSha256) {
+    throw new Error(`${entry.name}: empreinte de licence supplémentaire inattendue.`);
+  }
+  return {
+    path: portable(entry.licenseFile),
+    bytes: Buffer.byteLength(content),
+    sha256: actual,
+    source: entry.licenseSource,
+  };
 }
 
 function parseArgs(values) {

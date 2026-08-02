@@ -1,4 +1,4 @@
-# Multi-Converter Application Refactor Baseline — Phases 1 To 4
+# Multi-Converter Application Refactor Baseline — Phases 1 To 6
 
 ## Purpose
 
@@ -464,3 +464,36 @@ The maintainer subsequently accepted these remaining checks by assumption so
 that Phase 6 can begin without disconnecting the active machine. This sequencing
 decision does not alter the measurements or turn the pending checks into passed
 evidence.
+
+## Phase 6 Quality, Security And Optimization Snapshot
+
+Phase 6 is based on commit `cdbda9e8` in the isolated
+`codex/phase-6-quality-security-optimization` worktree. The version remains
+`1.0.6`; no engine, format or public contract was removed.
+
+| Measurement | Phase 5 baseline | Phase 6 checkpoint | Result |
+| --- | ---: | ---: | --- |
+| Frontend raw bundle | 1,095,149 bytes | 1,095,149 bytes | unchanged |
+| Initial application chunk | 211,600 bytes | 211,600 bytes | unchanged |
+| Largest JavaScript chunk | 496,337 bytes | 496,337 bytes | below 500 kB |
+| Windows application executable | 26,734,080 bytes | 26,734,080 bytes | unchanged |
+| Windows NSIS installer | 999,834,888 bytes | 999,835,255 bytes | +367 bytes |
+| Handwritten source files above 500 nonblank lines | not globally enforced | 0 / 245 | gate passed |
+| Files above the 300-line target | not globally recorded | 36 / 245 | tracked debt |
+| Official OCR runtime, installed | 660,098,904 bytes | 660,098,904 bytes | retained |
+| Targeted candidate, installed | - | 599,539,740 bytes | 9.17% smaller; rejected |
+| Official/candidate runtime ZIP | 236,434,900 / - | 236,434,900 / 221,586,643 bytes | 6.28% candidate saving; rejected |
+
+Three oversized engine/release scripts were split by responsibility. The new
+source gate examines handwritten JavaScript, TypeScript and Rust and rejects
+files above 500 nonblank lines while reporting the approximately 300-line
+target. `npm run check` and `npm run test:guardrails` pass with this gate.
+
+The production frontend exactly retains the Phase 5 byte budgets. The Phase 6
+release executable is unchanged and remains below the 28,070,784-byte ceiling.
+The 367-byte NSIS variation is packaging metadata/compression noise, not a
+product-size regression claim. The complete 18-step Windows gate passed in
+1,521,300 ms. The exact local unsigned NSIS SHA-256 is
+`9CB355FC932347E7CF62444A3FF1A393D93AC56699C36A2C77052159A8ED5DD0`;
+the executable SHA-256 is
+`4D03729EE7E06E95A8E5230EA9316F0434A1291E237C52D94E7421C8F861C011`.

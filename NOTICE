@@ -41,3 +41,18 @@ The bounded OpenDocument parser uses quick-xml 0.41.0 under the MIT License.
 Standalone HTML export uses base64 0.22.1 under the MIT OR Apache-2.0 License
 to embed local editor assets without exposing file-system paths. The applicable
 license texts are retained in the Cargo dependency source distribution.
+
+The unreleased V1.0.7 development build includes a local official
+PP-OCRv6_medium runtime composed from PaddlePaddle 3.3.1, PaddleOCR 3.7.0 and
+PaddleX 3.7.0. Its 71 Python distributions retain their own licenses. Exact
+versions, artifact hashes and license-file hashes are recorded in
+`tools/ocr-runtime/requirements-windows-x64.lock.txt` and
+`src-tauri/ocr-runtime-licenses.json`.
+
+`bce-python-sdk` 0.9.76 declares Apache License 2.0 but its exact wheel and
+source archive contain no license file. Multi-Converter packages the canonical
+Apache-2.0 text separately at
+`src-tauri/ocr-resources/licenses/bce-python-sdk-0.9.76.LICENSE.txt`; exact
+artifact, license-origin and SHA-256 values are recorded in
+`tools/ocr-runtime/supplemental-licenses.json`. This engineering record does
+not replace maintainer legal review before public redistribution.

@@ -14,6 +14,13 @@ V1.0.7 is built around two official product objectives:
 
 The repository version remains `1.0.6` until both objectives are implemented, tested and accepted. Do not publish V1.0.7 release notes, updater metadata or release assets before the exit gates in this document pass.
 
+Phase 6 quality/security work is implemented in its isolated checkpoint. It
+adds source-size and bundle budgets, a reproducible OCR dependency lock, a
+40-case corpus contract and a numbered security review. This checkpoint does
+not make V1.0.7 release-ready: native macOS/Linux validation, the assumed but
+unexecuted installed-Windows matrix, maintainer license approval and the
+reviewed PDFium archive replacement remain open.
+
 ## Product Principles
 
 - Files stay on the user's computer.

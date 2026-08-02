@@ -378,6 +378,25 @@ npm run test:ocr:corpus
 npm run test:bundled-engine-archive
 ```
 
+Phase 6 adds deterministic supply-chain, corpus and budget commands:
+
+```powershell
+npm run test:ocr:lock
+npm run audit:ocr-runtime
+npm run audit:python
+npm run test:source-structure
+npm run measure:phase-6
+```
+
+`test:ocr:corpus` validates the committed 40-case manifest and its input,
+expected-output and provenance hashes before inference. It observes established
+remote TCP connections for the OCR worker while the normal machine network
+remains active. It does not disconnect the computer and it is not a packet
+capture. A source-built PDFium wrapper may be supplied through
+`MULTI_CONVERTER_TEST_PDFIUM_RENDER` and
+`MULTI_CONVERTER_TEST_PDFIUM_LIBRARY`, but such a run is not evidence for a
+different historical engine archive shipped in an installer.
+
 The corpus command currently covers seven clean languages, rotation, low
 contrast, perspective and blank output on one persistent CPU worker. Its
 per-language results must remain visible; a passing aggregate must not erase a
@@ -404,14 +423,15 @@ Minimum automated coverage:
 
 Minimum real Tauri coverage on Windows:
 
-1. disconnect network access;
-2. launch the packaged application;
+1. keep the machine network available and launch the packaged application;
+2. observe the application and OCR worker processes for remote connections;
 3. convert native, scanned and mixed PDFs to each advertised text target;
 4. copy recognized text from each advertised image format;
 5. open a scanned PDF in the editor and export the edited document;
 6. cancel a multipage OCR job;
-7. restart and repeat without model download;
-8. record output hashes, screenshots, timings, peak memory and warnings.
+7. restart and repeat without any model or engine download;
+8. record output hashes, screenshots, timings, peak memory, warnings and the
+   exact limitation of the network observation method.
 
 The current real Tauri development-runtime checks cover a clean French image,
 native/scanned/mixed PDFs, PDF editor import, cancellation, worker crash and

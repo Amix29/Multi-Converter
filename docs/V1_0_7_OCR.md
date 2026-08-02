@@ -260,14 +260,14 @@ remain pending.
 
 ## Remaining Exit Gates
 
-- Expand the synthetic 11-case corpus with multipage documents, multiple fonts,
-  skew, photos, all five native image input paths and reviewed expected files;
-  improve or explicitly accept the observed Japanese long-vowel-mark error.
-- Measure native-runtime parity if a candidate is produced. Until then retain
-  the explicitly selected official CPU runtime and keep accelerators disabled.
-- Review and package the missing `bce-python-sdk` license, then complete legal
-  review and `NOTICE` coverage for the 71-distribution inventory before public
-  redistribution.
+- Retain the explicitly selected official CPU runtime. The Phase 6 targeted
+  candidate failed the size gate, so runtime parity and accelerator claims are
+  neither required nor made for that rejected candidate.
+- Obtain maintainer legal approval of the complete 71-distribution inventory
+  before public redistribution; the technical license coverage is complete.
+- Replace and review the historical PDFium engine archive whose wrapper
+  predates the required `--inspect-text` command. The current source-built
+  wrapper passes, but the old packaged artifact is not PDF OCR evidence.
 - Run corruption, password, timeout, cleanup, atomic-output and original-file
   tests through the packaged application.
 - Run the complete offline installed-NSIS behavior matrix. The local unsigned
@@ -280,6 +280,46 @@ remain pending.
 
 Only after those gates pass may metadata move to `1.0.7` or an OCR release be
 published.
+
+## Phase 6 Quality And Supply-Chain Evidence
+
+The OCR build input is now reproducible at the Python package boundary:
+Python `3.12.10`, uv `0.11.21` and all 71 distributions are pinned with hashes
+in `tools/ocr-runtime/requirements-windows-x64.lock.txt`. Its SHA-256 is
+`5baf7325b3f11468ff1d8e0040e18c900a630f3bb8924550ecfbfd44aa920e99`.
+`npm run test:ocr:lock`, `npm run audit:ocr-runtime` and `npm run audit:python`
+verify the lock, runtime inventory and advisories. The inventory covers 71/71
+packages with 106 license files and no unresolved metadata. The exact
+`bce-python-sdk==0.9.76` artifact is covered by the supplemental official
+Apache-2.0 text and recorded in `NOTICE`.
+
+The committed corpus manifest contains exactly 40 CC0 fixtures/cases: 21 clean
+printed cases across French, English, Spanish, German, Italian, Portuguese and
+Japanese; nine rotation, skew, contrast and perspective cases; all five image
+formats; native, scanned and mixed PDFs; a structured multiline case; and a
+blank page. Expected text is compared after Unicode NFC, whitespace and case
+normalization only. No character substitution is permitted, including for the
+Japanese long-vowel mark. Rust also exercises PNG, JPEG, WebP, TIFF and BMP
+normalization while verifying that source hashes do not change.
+
+The locked reference archive is 236,434,900 bytes with SHA-256
+`5982FCFBC2B78EE3B4AA55D4F7FAD3A6A01B0388F0F384BB86051F1D343FC936`.
+The targeted PyInstaller candidate measured 599,539,740 installed bytes versus
+660,098,904, a 9.17% saving, and 221,586,643 compressed bytes, a 6.28% saving.
+Both are below the locked 10% selection threshold, so the candidate was
+rejected before selection and the official runtime remains unchanged.
+
+Corpus execution samples the OCR worker's established remote TCP connections
+while the machine network remains active. Zero remote connections were seen in
+772 samples during the standalone final run. This is process sampling, not
+continuous packet capture. That run passed 40/40 cases in 829.6 seconds. The
+retained report from the following successful Windows gate records clean mean
+100%, difficult mean 99.76%, median measured recognition 43,878 ms and peak
+worker working set 750,030,848 bytes (715.3 MiB). The noise fixture scored
+97.62% against its 95% threshold; every other fixture scored 100%. Native,
+scanned and mixed PDFs all scored 100%, as did the five Rust input normalizers.
+PDF results used the current source-built wrapper; they must not be confused
+with the historical packaged artifact.
 
 ## Official References
 
