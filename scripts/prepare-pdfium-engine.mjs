@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
@@ -48,7 +49,7 @@ await assertWrapperManifest(provenance.wrapper);
 if (!(await fileExists(path.join(wrapperBuild, "Cargo.lock")))) {
   throw new Error("Le wrapper PDFium doit fournir un Cargo.lock versionne.");
 }
-await assertExactHash(path.join(wrapperBuild, "Cargo.lock"), provenance.wrapper.cargoLockSha256, "Cargo.lock PDFium");
+await assertCanonicalTextHash(path.join(wrapperBuild, "Cargo.lock"), provenance.wrapper.cargoLockSha256, "Cargo.lock PDFium");
 assertRustToolchain(provenance.wrapper.buildRustVersion);
 const build = spawnSync("cargo", [
   "build",
@@ -121,8 +122,9 @@ async function assertExactFile(filePath, expectedBytes, expectedSha256, label) {
   if (actual !== expectedSha256) throw new Error(`${label}: SHA-256 inattendu (${actual}).`);
 }
 
-async function assertExactHash(filePath, expectedSha256, label) {
-  const actual = await sha256File(filePath);
+async function assertCanonicalTextHash(filePath, expectedSha256, label) {
+  const canonical = (await fs.readFile(filePath, "utf8")).replace(/\r\n?/g, "\n");
+  const actual = createHash("sha256").update(canonical, "utf8").digest("hex");
   if (actual !== expectedSha256) throw new Error(`${label}: SHA-256 inattendu (${actual}).`);
 }
 
