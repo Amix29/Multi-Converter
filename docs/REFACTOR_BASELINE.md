@@ -510,16 +510,18 @@ packaging and validation; version metadata remains `1.0.6`.
 | Wrapper version | packaged 0.2.0 / source 0.3.0 | packaged 0.3.0 |
 | Official upstream archive | not independently locked | 3,720,244 bytes |
 | `pdfium.dll` | historical package | 7,178,240 bytes |
-| Wrapper executable | historical package | 970,752 bytes |
-| Deterministic engine ZIP | historical package | 3,962,918 bytes |
-| Installed PDFium tree | historical package | 8,259,018 bytes |
+| Wrapper executable | historical package | 969,216 bytes |
+| Deterministic engine ZIP | historical package | 3,961,829 bytes |
+| Installed PDFium tree | historical package | 8,257,482 bytes |
 | PDFium wrapper runtime tests | 6 | 7 |
 | Handwritten files above 500 nonblank lines | 0 / 245 | 0 / 250 |
 
-Two independent local wrapper builds produced the exact locked SHA-256
-`52A019A2E3498CC4FEF52F55E8298A6BD0277583DF85E8C3D7F7E5D61F0A833C`.
+The wrapper build uses `rust-lld` from the exact Rust 1.96.0 toolchain so its
+linker is not inherited from the host Visual Studio installation. Its locked
+SHA-256 is
+`74AA03C2DCCC9293A432E41AE888D5C7C656D480513C9723410EEBF34FD2F18A`.
 Two independent engine packages produced the exact ZIP SHA-256
-`1AB96C10148F04F8F558D4CE3FEECDBC215D2289868E2E3996D4F18D848505AE`.
+`669E6B2DF854BDCDBF6048759353CB99364017979434D87B3E9B3B16CCA576F6`.
 The local clean-asset validator passed version, x64 PE, checksum, path,
 native-text inspection and decoded 300-DPI render checks.
 

@@ -16,7 +16,7 @@ const extracts = path.join(root, "engine-sources", ".extracts");
 const sourceDir = path.join(root, "engine-sources", "windows-x64", "pdfium");
 const wrapperSource = path.join(root, "tools", "pdfium-render-wrapper");
 const provenancePath = path.join(root, "tools", "pdfium-windows-x64.lock.json");
-const wrapperBuild = path.join(process.env.TEMP ?? extracts, "multi-converter-pdfium-render-build");
+const wrapperBuild = path.join(path.parse(root).root, "multi-converter-pdfium-render-build");
 const userAgent = { "User-Agent": "Multi-Converter-Packager" };
 
 const provenance = JSON.parse(await fs.readFile(provenancePath, "utf8"));
@@ -43,6 +43,7 @@ const dll = path.join(extractDir, "bin", "pdfium.dll");
 await assertFile(dll, "pdfium.dll absent du paquet PDFium.");
 await assertExactFile(dll, provenance.upstream.librarySizeBytes, provenance.upstream.librarySha256, "pdfium.dll");
 
+assertDedicatedBuildRoot(wrapperBuild);
 await fs.rm(wrapperBuild, { recursive: true, force: true });
 await fs.cp(wrapperSource, wrapperBuild, { recursive: true, force: true });
 await assertWrapperManifest(provenance.wrapper);
@@ -51,6 +52,7 @@ if (!(await fileExists(path.join(wrapperBuild, "Cargo.lock")))) {
 }
 await assertCanonicalTextHash(path.join(wrapperBuild, "Cargo.lock"), provenance.wrapper.cargoLockSha256, "Cargo.lock PDFium");
 assertRustToolchain(provenance.wrapper.buildRustVersion);
+const linker = rustLldPath(provenance.wrapper);
 const build = spawnSync("cargo", [
   "build",
   "--manifest-path",
@@ -61,11 +63,12 @@ const build = spawnSync("cargo", [
   provenance.wrapper.target,
 ], {
   cwd: root,
-  env: reproducibleCargoEnvironment(provenance),
+  env: reproducibleCargoEnvironment(provenance, linker),
   stdio: "inherit",
 });
 if (build.status !== 0) process.exit(build.status ?? 1);
 const wrapperExecutable = path.join(wrapperBuild, "target", provenance.wrapper.target, "release", "pdfium-render.exe");
+await normalizePeDebugIdentity(wrapperExecutable, provenance);
 await assertExactFile(wrapperExecutable, provenance.wrapper.binarySizeBytes, provenance.wrapper.binarySha256, "wrapper PDFium");
 
 await fs.rm(sourceDir, { recursive: true, force: true });
@@ -128,6 +131,51 @@ async function assertCanonicalTextHash(filePath, expectedSha256, label) {
   if (actual !== expectedSha256) throw new Error(`${label}: SHA-256 inattendu (${actual}).`);
 }
 
+async function normalizePeDebugIdentity(filePath, lock) {
+  const executable = await fs.readFile(filePath);
+  const peOffset = executable.readUInt32LE(0x3c);
+  if (executable.toString("ascii", peOffset, peOffset + 4) !== "PE\0\0") throw new Error("Wrapper PDFium PE invalide.");
+  const optionalHeader = peOffset + 24;
+  const optionalSize = executable.readUInt16LE(peOffset + 20);
+  const sectionsOffset = optionalHeader + optionalSize;
+  const sectionCount = executable.readUInt16LE(peOffset + 6);
+  const debugRva = executable.readUInt32LE(optionalHeader + 112 + 6 * 8);
+  const debugSize = executable.readUInt32LE(optionalHeader + 112 + 6 * 8 + 4);
+  const debugOffset = rvaToFileOffset(executable, sectionsOffset, sectionCount, debugRva);
+  if (debugSize === 0 || debugSize % 28 !== 0) throw new Error("Repertoire de debogage PDFium invalide.");
+  const identity = createHash("sha256")
+    .update(`${lock.wrapper.version}\0${lock.wrapper.buildRustVersion}\0${lock.wrapper.cargoLockSha256}`, "utf8")
+    .digest()
+    .subarray(0, 16);
+  let normalized = 0;
+  for (let offset = debugOffset; offset < debugOffset + debugSize; offset += 28) {
+    if (executable.readUInt32LE(offset + 12) !== 2) continue;
+    const dataSize = executable.readUInt32LE(offset + 16);
+    const dataOffset = executable.readUInt32LE(offset + 24);
+    if (dataSize < 24 || executable.toString("ascii", dataOffset, dataOffset + 4) !== "RSDS") {
+      throw new Error("Identifiant CodeView PDFium invalide.");
+    }
+    identity.copy(executable, dataOffset + 4);
+    normalized += 1;
+  }
+  if (normalized !== 1) throw new Error(`Nombre d'identifiants CodeView PDFium inattendu: ${normalized}.`);
+  await fs.writeFile(filePath, executable);
+}
+
+function rvaToFileOffset(executable, sectionsOffset, sectionCount, rva) {
+  for (let index = 0; index < sectionCount; index += 1) {
+    const section = sectionsOffset + index * 40;
+    const virtualSize = executable.readUInt32LE(section + 8);
+    const virtualAddress = executable.readUInt32LE(section + 12);
+    const rawSize = executable.readUInt32LE(section + 16);
+    const rawOffset = executable.readUInt32LE(section + 20);
+    if (rva >= virtualAddress && rva < virtualAddress + Math.max(virtualSize, rawSize)) {
+      return rawOffset + rva - virtualAddress;
+    }
+  }
+  throw new Error(`RVA PDFium hors sections: ${rva}.`);
+}
+
 async function assertWrapperManifest(wrapper) {
   const manifest = await fs.readFile(path.join(wrapperSource, "Cargo.toml"), "utf8");
   if (!manifest.includes(`version = "${wrapper.version}"`)) throw new Error("Version du wrapper PDFium non conforme au verrou.");
@@ -168,11 +216,27 @@ function assertRustToolchain(expected) {
   if (actual !== expected) throw new Error(`Toolchain Rust PDFium ${actual}, attendu ${expected}.`);
 }
 
-function reproducibleCargoEnvironment(lock) {
+function assertDedicatedBuildRoot(buildRoot) {
+  const parsed = path.parse(buildRoot);
+  if (path.dirname(buildRoot) !== parsed.root || path.basename(buildRoot) !== "multi-converter-pdfium-render-build") {
+    throw new Error(`Dossier de build PDFium non sur: ${buildRoot}`);
+  }
+}
+
+function rustLldPath(wrapper) {
+  if (wrapper.linker !== "rust-lld") throw new Error(`Linker PDFium non pris en charge : ${wrapper.linker}.`);
+  const result = spawnSync("rustc", ["--print", "sysroot"], { encoding: "utf8", windowsHide: true });
+  if (result.status !== 0) throw new Error(`Sysroot Rust indisponible: ${result.stderr || result.stdout}`);
+  return path.join(result.stdout.trim(), "lib", "rustlib", wrapper.target, "bin", "rust-lld.exe");
+}
+
+function reproducibleCargoEnvironment(lock, linker) {
   const { RUSTFLAGS: _rustFlags, CARGO_ENCODED_RUSTFLAGS: _encodedFlags, ...cleanEnvironment } = process.env;
   const cargoHome = process.env.CARGO_HOME ?? path.join(process.env.USERPROFILE ?? root, ".cargo");
+  const sourceDateEpoch = Math.floor(new Date(lock.package.deterministicTimestamp).valueOf() / 1000);
   const flags = [
-    "-Clink-arg=/Brepro",
+    "-Clink-arg=/build-id:no",
+    `-Clink-arg=/timestamp:${sourceDateEpoch}`,
     `--remap-path-prefix=${wrapperBuild}=C:/multi-converter/pdfium-wrapper`,
     `--remap-path-prefix=${cargoHome}=C:/cargo`,
   ];
@@ -181,7 +245,8 @@ function reproducibleCargoEnvironment(lock) {
     CARGO_ENCODED_RUSTFLAGS: flags.join("\u001f"),
     CARGO_INCREMENTAL: "0",
     CARGO_PROFILE_RELEASE_CODEGEN_UNITS: "1",
-    SOURCE_DATE_EPOCH: String(Math.floor(new Date(lock.package.deterministicTimestamp).valueOf() / 1000)),
+    CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER: linker,
+    SOURCE_DATE_EPOCH: String(sourceDateEpoch),
   };
 }
 

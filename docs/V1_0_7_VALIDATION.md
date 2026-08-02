@@ -363,8 +363,8 @@ Evidence obtained before public staging:
 
 - the 3,720,244-byte official archive and 7,178,240-byte DLL match their
   independent locked SHA-256 values;
-- two wrapper builds are byte-identical at 970,752 bytes and two engine ZIPs
-  are byte-identical at 3,962,918 bytes;
+- two normalized wrapper builds are byte-identical at 969,216 bytes and two
+  engine ZIPs are byte-identical at 3,961,829 bytes;
 - the clean three-asset engine set and bundled tree pass exact version, x64 PE,
   archive path, checksum, `--check`, native `--inspect-text` and scanned-page
   `--render`/PNG-decode checks;

@@ -10,9 +10,9 @@
       "platform": "windows-x64",
       "archiveType": "zip",
       "downloadUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.1-alpha.0/pdfium-compatible-windows-x64.zip",
-      "sha256": "1ab96c10148f04f8f558d4ce3feecdbc215d2289868e2e3996d4f18d848505ae",
-      "compressedSizeBytes": 3962918,
-      "installedSizeBytes": 8259018,
+      "sha256": "669e6b2df854bdcdbf6048759353cb99364017979434d87b3e9b3b16cca576f6",
+      "compressedSizeBytes": 3961829,
+      "installedSizeBytes": 8257482,
       "binaryPaths": [
         "bin/pdfium.dll",
         "bin/pdfium-render-x86_64-pc-windows-msvc.exe"

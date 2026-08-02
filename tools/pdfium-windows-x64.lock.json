@@ -25,9 +25,10 @@
     "target": "x86_64-pc-windows-msvc",
     "minimumRustVersion": "1.88",
     "buildRustVersion": "1.96.0",
+    "linker": "rust-lld",
     "cargoLockSha256": "852c2d5a49ff8254ac8b8065e60645d203a4cd7b5460fe21eeb716bb4641349c",
-    "binarySizeBytes": 970752,
-    "binarySha256": "52a019a2e3498cc4fef52f55e8298a6bd0277583df85e8c3d7f7e5d61f0a833c",
+    "binarySizeBytes": 969216,
+    "binarySha256": "74aa03c2dccc9293a432e41ae888d5c7c656d480513c9723410eebf34fd2f18a",
     "pdfiumRenderCrateVersion": "0.9.1",
     "license": "AGPL-3.0-or-later"
   },
@@ -36,8 +37,8 @@
     "releaseTag": "engines-v0.1.1-alpha.0",
     "releaseBaseUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.1-alpha.0/",
     "deterministicTimestamp": "2026-05-04T08:39:24Z",
-    "archiveSizeBytes": 3962918,
-    "archiveSha256": "1ab96c10148f04f8f558d4ce3feecdbc215d2289868e2e3996d4f18d848505ae",
-    "installedSizeBytes": 8259018
+    "archiveSizeBytes": 3961829,
+    "archiveSha256": "669e6b2df854bdcdbf6048759353cb99364017979434d87b3e9b3b16cca576f6",
+    "installedSizeBytes": 8257482
   }
 }
