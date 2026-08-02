@@ -236,6 +236,7 @@ function reproducibleCargoEnvironment(lock, linker) {
   const sourceDateEpoch = Math.floor(new Date(lock.package.deterministicTimestamp).valueOf() / 1000);
   const flags = [
     "-Clink-arg=/build-id:no",
+    "-Clink-arg=/threads:1",
     `-Clink-arg=/timestamp:${sourceDateEpoch}`,
     `--remap-path-prefix=${wrapperBuild}=C:/multi-converter/pdfium-wrapper`,
     `--remap-path-prefix=${cargoHome}=C:/cargo`,
