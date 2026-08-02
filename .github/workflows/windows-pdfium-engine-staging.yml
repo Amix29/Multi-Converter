@@ -51,6 +51,15 @@ jobs:
       - name: Prepare locked PDFium source tree
         run: npm run prepare:pdfium-engine
 
+      - name: Preserve wrapper for failed reproducibility diagnosis
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-pdfium-wrapper-diagnostic
+          path: C:\multi-converter-pdfium-render-build\target\x86_64-pc-windows-msvc\release\pdfium-render.exe
+          if-no-files-found: error
+          retention-days: 3
+
       - name: Package twice and require byte identity
         shell: pwsh
         run: |
