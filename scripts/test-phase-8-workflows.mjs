@@ -29,7 +29,20 @@ assert.doesNotMatch(staging, /gh release (create|upload)/);
 assert.match(paddleIntelBuild, /paddle-build-macos-x86_64\.lock\.txt/);
 assert.match(paddleIntelBuild, /--require-hashes/);
 assert.match(paddleIntelBuild, /uv 0\.11\.21/);
-assert.match(paddleIntelBuildLock, /^setuptools==80\.9\.0 /m);
+for (const requirement of [
+  "httpx==0.28.1",
+  "networkx==3.6.1",
+  "numpy==2.3.5",
+  "opt-einsum==3.3.0",
+  "pillow==12.3.0",
+  "protobuf==7.35.1",
+  "safetensors==0.8.0",
+  "setuptools==83.0.0",
+  "typing-extensions==4.16.0",
+  "wheel==0.46.3",
+]) {
+  assert.match(paddleIntelBuildLock, new RegExp(`^${requirement.replaceAll(".", "\\.")} `, "m"));
+}
 assert.match(paddleIntelBuild, /runWithRetries/);
 assert.match(paddleIntelBuild, /stageCompatibilityRefs/);
 assert.match(paddleIntelBuild, /fetch", "--depth", "1", "origin", entry\.objectSha/);
