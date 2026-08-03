@@ -251,6 +251,7 @@ fn start_worker(runtime: &runtime::ResolvedRuntime) -> Result<WorkerProcess, Str
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
+    configure_runtime_library_path(&mut command, runtime)?;
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
@@ -310,6 +311,36 @@ fn start_worker(runtime: &runtime::ResolvedRuntime) -> Result<WorkerProcess, Str
         stdin,
         messages,
     })
+}
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+fn configure_runtime_library_path(
+    command: &mut Command,
+    runtime: &runtime::ResolvedRuntime,
+) -> Result<(), String> {
+    let library_dir = runtime
+        .executable
+        .parent()
+        .ok_or_else(|| "OCR_RUNTIME_INVALID:Répertoire du moteur introuvable.".to_string())?
+        .join("_internal")
+        .join("paddle")
+        .join("libs");
+    if !library_dir.is_dir() {
+        return Err("OCR_RUNTIME_INVALID:Bibliothèques Paddle absentes.".to_string());
+    }
+    #[cfg(target_os = "linux")]
+    command.env("LD_LIBRARY_PATH", library_dir);
+    #[cfg(target_os = "macos")]
+    command.env("DYLD_LIBRARY_PATH", library_dir);
+    Ok(())
+}
+
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+fn configure_runtime_library_path(
+    _command: &mut Command,
+    _runtime: &runtime::ResolvedRuntime,
+) -> Result<(), String> {
+    Ok(())
 }
 
 fn stop_worker(worker: Option<WorkerProcess>) {

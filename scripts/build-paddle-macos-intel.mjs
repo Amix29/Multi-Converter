@@ -28,7 +28,11 @@ run("git", ["-C", sourceRoot, "remote", "add", "origin", source.repository]);
 run("git", ["-C", sourceRoot, "fetch", "--depth", "1", "origin", source.commit]);
 run("git", ["-C", sourceRoot, "checkout", "--detach", source.commit]);
 validateSubmoduleUrls(commandOutput("git", ["-C", sourceRoot, "config", "-f", ".gitmodules", "--get-regexp", "^submodule\\..*\\.url$"]));
-run("git", ["-C", sourceRoot, "submodule", "update", "--init", "--recursive", "--depth", "1"]);
+runWithRetries(
+  "git",
+  ["-C", sourceRoot, "submodule", "update", "--init", "--recursive", "--depth", "1"],
+  4,
+);
 if (commandOutput("git", ["-C", sourceRoot, "rev-parse", "HEAD"]) !== source.commit) {
   throw new Error("Le checkout PaddlePaddle ne correspond pas au commit verrouillé.");
 }
@@ -96,6 +100,17 @@ function parseArgs(values) {
 function run(command, commandArgs) {
   const result = spawnSync(command, commandArgs, { cwd: root, stdio: "inherit" });
   if (result.status !== 0) throw new Error(`Échec de ${command} (${result.status ?? "signal"}).`);
+}
+
+function runWithRetries(command, commandArgs, attempts) {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const result = spawnSync(command, commandArgs, { cwd: root, stdio: "inherit" });
+    if (result.status === 0) return;
+    if (attempt === attempts) {
+      throw new Error(`Échec de ${command} après ${attempts} tentatives (${result.status ?? "signal"}).`);
+    }
+    console.error(`${command}: tentative ${attempt}/${attempts} interrompue, reprise du même checkout verrouillé.`);
+  }
 }
 
 function commandOutput(command, commandArgs) {

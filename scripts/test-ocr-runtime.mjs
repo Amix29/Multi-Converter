@@ -19,6 +19,12 @@ const output = path.join(temporary, "result.json");
 const expected = "Multi-Converter OCR local 2026 - façade déjà été";
 try {
   const executable = await extractOcrRuntimeArchive(runtimeArchive, path.join(temporary, "runtime"), platform);
+  if (["linux", "darwin"].includes(process.platform)) {
+    await assertDirectory(
+      path.join(path.dirname(executable), "_internal", "paddle", "libs"),
+      "répertoire des bibliothèques Paddle",
+    );
+  }
   await renderFixture(input, expected);
   const started = performance.now();
   await recognize(executable, models, input, output);
@@ -49,6 +55,7 @@ async function renderFixture(target, text) {
 
 function recognize(workerPath, modelsPath, inputPath, outputPath) {
   return new Promise((resolve, reject) => {
+    const libraryEnvironment = runtimeLibraryEnvironment(workerPath);
     const child = spawn(workerPath, ["--serve", "--models", modelsPath, "--provider", "cpu"], {
       windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"],
@@ -57,6 +64,7 @@ function recognize(workerPath, modelsPath, inputPath, outputPath) {
         HF_HUB_OFFLINE: "1",
         PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "true",
         NO_PROXY: "*",
+        ...libraryEnvironment,
       },
     });
     let stdout = "";
@@ -105,6 +113,14 @@ function recognize(workerPath, modelsPath, inputPath, outputPath) {
       else reject(new Error(`Le runtime OCR s’est arrêté (${code}): ${stderr}`));
     });
   });
+}
+
+function runtimeLibraryEnvironment(workerPath) {
+  const paddleLibraries = path.join(path.dirname(workerPath), "_internal", "paddle", "libs");
+  if (!["linux", "darwin"].includes(process.platform)) return {};
+  return process.platform === "linux"
+    ? { LD_LIBRARY_PATH: paddleLibraries }
+    : { DYLD_LIBRARY_PATH: paddleLibraries };
 }
 
 function assertNoNetworkSockets(pid) {
