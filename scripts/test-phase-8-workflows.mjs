@@ -33,6 +33,10 @@ assert.match(paddleIntelBuild, /PADDLE_VERSION: paddleVersion/);
 assert.match(paddleIntelBuild, /_PYTHON_HOST_PLATFORM: "macosx-11\.0-x86_64"/);
 assert.match(paddleIntelBuild, /CMAKE_OSX_ARCHITECTURES=x86_64/);
 assert.match(paddleIntelBuild, /CMAKE_OSX_DEPLOYMENT_TARGET=11\.0/);
+assert.match(paddleIntelBuild, /restorePinnedSubmodule\(sourceRoot, "third_party\/warprnnt", "CMakeLists\.txt"\)/);
+assert.match(paddleIntelBuild, /submodule", "update", "--init", "--recursive", "--force", "--", submodulePath/);
+assert.match(paddleIntelBuild, /ls-tree", "HEAD", "--", submodulePath/);
+assert.match(paddleIntelBuild, /commit restauré différent du gitlink PaddlePaddle/);
 for (const requirement of [
   "httpx==0.28.1",
   "networkx==3.6.1",

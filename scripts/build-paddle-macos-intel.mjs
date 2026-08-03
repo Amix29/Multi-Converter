@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -78,6 +79,7 @@ run("cmake", [
   "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0",
   "-DCMAKE_BUILD_TYPE=Release",
 ], buildEnvironment);
+restorePinnedSubmodule(sourceRoot, "third_party/warprnnt", "CMakeLists.txt");
 run("cmake", ["--build", buildRoot, "--parallel", String(os.cpus().length)], buildEnvironment);
 
 const wheelDirectory = path.join(buildRoot, "python", "dist");
@@ -161,6 +163,28 @@ function validateSubmoduleUrls(output) {
     }
   })) {
     throw new Error("Tous les sous-modules PaddlePaddle doivent utiliser une provenance HTTPS explicite.");
+  }
+}
+
+function restorePinnedSubmodule(repositoryRoot, submodulePath, requiredFile) {
+  if (!/^third_party\/[A-Za-z0-9._/-]+$/u.test(submodulePath)) {
+    throw new Error(`Chemin de sous-module PaddlePaddle invalide: ${submodulePath}`);
+  }
+  const treeEntry = commandOutput("git", ["-C", repositoryRoot, "ls-tree", "HEAD", "--", submodulePath]);
+  const match = treeEntry.match(/^160000 commit ([a-f0-9]{40})\t(.+)$/u);
+  if (!match || match[2] !== submodulePath) {
+    throw new Error(`${submodulePath}: gitlink PaddlePaddle verrouillé absent.`);
+  }
+  runWithRetries("git", [
+    "-C", repositoryRoot, "submodule", "update", "--init", "--recursive", "--force", "--", submodulePath,
+  ], 4);
+  const checkout = path.join(repositoryRoot, submodulePath);
+  if (commandOutput("git", ["-C", checkout, "rev-parse", "HEAD"]) !== match[1]) {
+    throw new Error(`${submodulePath}: commit restauré différent du gitlink PaddlePaddle.`);
+  }
+  const requiredPath = path.join(checkout, requiredFile);
+  if (!existsSync(requiredPath)) {
+    throw new Error(`${submodulePath}: fichier source requis absent après restauration: ${requiredFile}`);
   }
 }
 
