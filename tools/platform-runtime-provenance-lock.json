@@ -44,7 +44,8 @@
             "path": "third_party/pocketfft",
             "url": "https://gitlab.mpcdf.mpg.de/mtr/pocketfft.git",
             "ref": "refs/tags/release_for_eigen",
-            "commit": "b387dbecbab7a64ce2eb10c119e506af3c754c13"
+            "objectSha": "b387dbecbab7a64ce2eb10c119e506af3c754c13",
+            "commit": "ea778e37710c07723435b1be58235996d1d43a5a"
           }
         }
       },

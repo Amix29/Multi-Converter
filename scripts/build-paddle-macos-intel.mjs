@@ -163,8 +163,8 @@ function stageCompatibilityRefs(repositoryRoot, refs) {
     "-C", repositoryRoot, "config", "-f", ".gitmodules", "--get-regexp", "^submodule\\..*\\.url$",
   ]));
   return entries.map(([name, entry]) => {
-    if (!entry || !/^[a-f0-9]{40}$/u.test(entry.commit ?? "")) {
-      throw new Error(`${name}: commit de compatibilité invalide.`);
+    if (!entry || !/^[a-f0-9]{40}$/u.test(entry.objectSha ?? "") || !/^[a-f0-9]{40}$/u.test(entry.commit ?? "")) {
+      throw new Error(`${name}: objet ou commit de compatibilité invalide.`);
     }
     if (!/^refs\/tags\/[A-Za-z0-9._-]+$/u.test(entry.ref ?? "")) {
       throw new Error(`${name}: référence de compatibilité invalide.`);
@@ -179,17 +179,22 @@ function stageCompatibilityRefs(repositoryRoot, refs) {
       throw new Error(`${name}: URL du sous-module différente de la provenance verrouillée.`);
     }
     const checkout = path.join(repositoryRoot, entry.path);
-    runWithRetries("git", ["-C", checkout, "fetch", "--depth", "1", "origin", entry.commit], 4);
-    const fetchedCommit = commandOutput("git", ["-C", checkout, "rev-parse", "FETCH_HEAD"]);
-    if (fetchedCommit !== entry.commit) {
-      throw new Error(`${name}: le commit de compatibilité récupéré ne correspond pas au verrou.`);
+    runWithRetries("git", ["-C", checkout, "fetch", "--depth", "1", "origin", entry.objectSha], 4);
+    const fetchedObject = commandOutput("git", ["-C", checkout, "rev-parse", "FETCH_HEAD"]);
+    if (fetchedObject !== entry.objectSha) {
+      throw new Error(`${name}: l’objet de compatibilité récupéré ne correspond pas au verrou.`);
     }
     const tag = entry.ref.slice("refs/tags/".length);
-    run("git", ["-C", checkout, "tag", "-f", tag, entry.commit]);
-    if (commandOutput("git", ["-C", checkout, "rev-parse", `${tag}^{commit}`]) !== entry.commit) {
-      throw new Error(`${name}: la référence locale de compatibilité ne correspond pas au verrou.`);
+    run("git", ["-C", checkout, "tag", "-f", tag, entry.objectSha]);
+    if (commandOutput("git", ["-C", checkout, "rev-parse", `refs/tags/${tag}`]) !== entry.objectSha) {
+      throw new Error(`${name}: l’objet de la référence locale ne correspond pas au verrou.`);
     }
-    return { name, path: entry.path, url: entry.url, ref: entry.ref, commit: entry.commit };
+    if (commandOutput("git", ["-C", checkout, "rev-parse", `${tag}^{commit}`]) !== entry.commit) {
+      throw new Error(`${name}: le commit pointé par la référence locale ne correspond pas au verrou.`);
+    }
+    return {
+      name, path: entry.path, url: entry.url, ref: entry.ref, objectSha: entry.objectSha, commit: entry.commit,
+    };
   });
 }
 
