@@ -209,8 +209,8 @@
       "supplementalLicenseFiles": [
         {
           "path": "src-tauri/ocr-resources/licenses/bce-python-sdk-0.9.76.LICENSE.txt",
-          "bytes": 11359,
-          "sha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac",
+          "bytes": 11358,
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
           "source": "https://www.apache.org/licenses/LICENSE-2.0.txt"
         }
       ]

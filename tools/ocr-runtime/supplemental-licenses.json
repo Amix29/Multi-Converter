@@ -6,7 +6,7 @@
       "version": "0.9.76",
       "declaredLicense": "Apache License 2.0",
       "licenseFile": "src-tauri/ocr-resources/licenses/bce-python-sdk-0.9.76.LICENSE.txt",
-      "licenseSha256": "8c6db340475136df3c1201d458fa5755698eace76e510471ecc9d857d6083dac",
+      "licenseSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
       "licenseSource": "https://www.apache.org/licenses/LICENSE-2.0.txt",
       "packageMetadata": "https://pypi.org/pypi/bce-python-sdk/0.9.76/json",
       "wheel": {

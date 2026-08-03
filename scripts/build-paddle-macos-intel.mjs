@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { readPlatformProvenance } from "./lib/platform-provenance.mjs";
@@ -100,7 +101,7 @@ function run(command, commandArgs) {
 function commandOutput(command, commandArgs) {
   const result = spawnSync(command, commandArgs, { cwd: root, encoding: "utf8" });
   if (result.status !== 0) throw new Error(result.stderr || `Échec de ${command}.`);
-  return result.stdout.trim() || result.stderr.trim();
+  return result.stdout.trimEnd() || result.stderr.trimEnd();
 }
 
 function validateSubmoduleUrls(output) {

@@ -148,10 +148,19 @@ async function materializeRuntimeLinks(directory, relative = "") {
     if (!targetRelative || targetRelative.startsWith("..") || path.isAbsolute(targetRelative)) {
       throw new Error(`Lien PyInstaller hors du runtime: ${childRelative}`);
     }
+    if (target === child || target.startsWith(`${child}${path.sep}`)) {
+      throw new Error(`Lien PyInstaller cyclique: ${childRelative}`);
+    }
     const targetStat = await fs.stat(target);
-    if (!targetStat.isFile()) throw new Error(`Lien PyInstaller non régulier: ${childRelative}`);
     await fs.unlink(child);
-    await fs.copyFile(target, child);
-    if (process.platform !== "win32") await fs.chmod(child, targetStat.mode & 0o777);
+    if (targetStat.isDirectory()) {
+      await fs.cp(target, child, { recursive: true, dereference: true, force: true });
+      await materializeRuntimeLinks(directory, childRelative);
+    } else if (targetStat.isFile()) {
+      await fs.copyFile(target, child);
+      if (process.platform !== "win32") await fs.chmod(child, targetStat.mode & 0o777);
+    } else {
+      throw new Error(`Lien PyInstaller non régulier: ${childRelative}`);
+    }
   }
 }

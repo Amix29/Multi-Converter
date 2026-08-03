@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -43,6 +44,14 @@ expect(lock.platformBuildEnvironments?.["macos-x86_64"]?.paddleSource === "locke
 const licenseInventory = JSON.parse(
   fs.readFileSync(path.join(root, "src-tauri", "ocr-runtime-licenses.json"), "utf8"),
 );
+const supplementalLicenses = JSON.parse(
+  fs.readFileSync(path.join(root, "tools", "ocr-runtime", "supplemental-licenses.json"), "utf8"),
+);
+for (const supplemental of supplementalLicenses.packages ?? []) {
+  const content = fs.readFileSync(path.join(root, supplemental.licenseFile), "utf8").replaceAll("\r\n", "\n");
+  const actual = createHash("sha256").update(content).digest("hex");
+  expect(actual === supplemental.licenseSha256, `${supplemental.name}: licence supplémentaire désynchronisée`);
+}
 expect(licenseInventory.schemaVersion === 2, "l’inventaire des licences OCR doit utiliser le schéma 2");
 expect(licenseInventory.platform === "windows-x64", "l’inventaire des licences OCR doit viser Windows x64");
 expect(licenseInventory.runtimeFileCount === windowsSelection?.artifact?.fileCount, "l’inventaire OCR doit verrouiller chaque fichier du runtime");
