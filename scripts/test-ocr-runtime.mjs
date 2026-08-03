@@ -117,10 +117,7 @@ function recognize(workerPath, modelsPath, inputPath, outputPath) {
 
 function runtimeLibraryEnvironment(workerPath) {
   const paddleLibraries = path.join(path.dirname(workerPath), "_internal", "paddle", "libs");
-  if (!["linux", "darwin"].includes(process.platform)) return {};
-  return process.platform === "linux"
-    ? { LD_LIBRARY_PATH: paddleLibraries }
-    : { DYLD_LIBRARY_PATH: paddleLibraries };
+  return process.platform === "linux" ? { LD_LIBRARY_PATH: paddleLibraries } : {};
 }
 
 function assertNoNetworkSockets(pid) {

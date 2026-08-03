@@ -18,6 +18,15 @@ const output = path.resolve(args.outputDir ?? path.join(root, "engine-sources", 
 const sourceRoot = path.join(output, "source");
 const buildRoot = path.join(output, "build");
 const python = path.resolve(args.python ?? process.env.MC_OCR_PYTHON ?? "python3");
+const buildRequirements = path.join(root, "tools", "ocr-runtime", "requirements-macos-x86_64.lock.txt");
+
+const uvVersion = commandOutput("uv", ["--version"]);
+if (!uvVersion.startsWith("uv 0.11.21 ")) {
+  throw new Error(`uv 0.11.21 est requis pour les dépendances de build: ${uvVersion}`);
+}
+run("uv", [
+  "pip", "install", "--python", python, "--require-hashes", "--only-binary", ":all:", "-r", buildRequirements,
+]);
 
 await fs.rm(sourceRoot, { recursive: true, force: true });
 await fs.rm(buildRoot, { recursive: true, force: true });
@@ -64,6 +73,9 @@ if (wheels.length !== 1 || !/paddlepaddle-3\.3\.1-.*macosx.*x86_64\.whl$/iu.test
 }
 const wheel = path.join(wheelDirectory, wheels[0]);
 const digest = createHash("sha256").update(await fs.readFile(wheel)).digest("hex");
+const buildRequirementsSha256 = createHash("sha256")
+  .update(await fs.readFile(buildRequirements))
+  .digest("hex");
 await fs.writeFile(`${wheel}.sha256`, `${digest}  ${wheels[0]}\n`);
 const licenseInventory = await collectSourceLicenses(sourceRoot, path.join(wheelDirectory, "paddle-source-licenses"));
 await fs.writeFile(
@@ -81,6 +93,11 @@ await fs.writeFile(path.join(wheelDirectory, "paddle-build-provenance.json"), `$
   wheelSha256: digest,
   toolchain: {
     python: commandOutput(python, ["--version"]),
+    uv: uvVersion,
+    buildRequirements: {
+      path: path.relative(root, buildRequirements).split(path.sep).join("/"),
+      sha256: buildRequirementsSha256,
+    },
     cmake: commandOutput("cmake", ["--version"]).split("\n")[0],
     xcode: commandOutput("xcodebuild", ["-version"]).replaceAll("\n", " "),
   },

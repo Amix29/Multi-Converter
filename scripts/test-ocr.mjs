@@ -102,7 +102,7 @@ const worker = fs.readFileSync(path.join(root, "tools", "ocr-runtime", "worker.p
 const supervisor = fs.readFileSync(path.join(root, "src-tauri", "src", "ocr", "supervisor.rs"), "utf8");
 const runtimeSmoke = fs.readFileSync(path.join(root, "scripts", "test-ocr-runtime.mjs"), "utf8");
 expect(supervisor.includes('command.env("LD_LIBRARY_PATH", library_dir)'), "Linux doit résoudre les bibliothèques Paddle embarquées");
-expect(supervisor.includes('command.env("DYLD_LIBRARY_PATH", library_dir)'), "macOS doit résoudre les bibliothèques Paddle embarquées");
+expect(!supervisor.includes("DYLD_LIBRARY_PATH"), "macOS doit conserver la résolution de bibliothèques PyInstaller validée");
 expect(runtimeSmoke.includes("runtimeLibraryEnvironment(workerPath)"), "le smoke doit reproduire l’environnement du superviseur OCR");
 for (const marker of [
   'HF_HUB_OFFLINE", "1',

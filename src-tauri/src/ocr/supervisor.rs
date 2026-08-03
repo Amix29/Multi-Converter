@@ -313,7 +313,7 @@ fn start_worker(runtime: &runtime::ResolvedRuntime) -> Result<WorkerProcess, Str
     })
 }
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(target_os = "linux")]
 fn configure_runtime_library_path(
     command: &mut Command,
     runtime: &runtime::ResolvedRuntime,
@@ -328,14 +328,11 @@ fn configure_runtime_library_path(
     if !library_dir.is_dir() {
         return Err("OCR_RUNTIME_INVALID:Bibliothèques Paddle absentes.".to_string());
     }
-    #[cfg(target_os = "linux")]
     command.env("LD_LIBRARY_PATH", library_dir);
-    #[cfg(target_os = "macos")]
-    command.env("DYLD_LIBRARY_PATH", library_dir);
     Ok(())
 }
 
-#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+#[cfg(not(target_os = "linux"))]
 fn configure_runtime_library_path(
     _command: &mut Command,
     _runtime: &runtime::ResolvedRuntime,
