@@ -22,7 +22,7 @@
     "macos-aarch64": {
       "python": "3.12.10",
       "uv": "0.11.21",
-      "requirements": "tools/ocr-runtime/requirements-windows-x64.lock.txt",
+      "requirements": "tools/ocr-runtime/requirements-macos-aarch64.lock.txt",
       "paddleSource": "official-wheel"
     },
     "macos-x86_64": {
@@ -34,7 +34,7 @@
     "linux-x64": {
       "python": "3.12.10",
       "uv": "0.11.21",
-      "requirements": "tools/ocr-runtime/requirements-windows-x64.lock.txt",
+      "requirements": "tools/ocr-runtime/requirements-linux-x64.lock.txt",
       "paddleSource": "official-wheel"
     }
   },

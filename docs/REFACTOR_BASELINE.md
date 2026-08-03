@@ -547,7 +547,7 @@ measurements remain pending the GitHub runner jobs.
 
 | Measurement | Phase 8 local result |
 | --- | ---: |
-| Handwritten frontend/tooling files | 260 |
+| Handwritten frontend/tooling files | 262 |
 | Largest handwritten frontend/tooling file | 500 nonblank lines |
 | Handwritten Rust files | 91 |
 | Largest handwritten Rust file | 426 nonblank lines |

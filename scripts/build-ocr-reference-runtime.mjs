@@ -14,9 +14,9 @@ const provenance = await readPlatformProvenance(root);
 const buildRoot = path.join(root, "engine-sources", "ocr-runtime", platform);
 const environment = path.join(buildRoot, ".venv");
 const python = path.join(environment, process.platform === "win32" ? "Scripts/python.exe" : "bin/python");
-const requirementsName = platform === "macos-x86_64"
-  ? "requirements-macos-x86_64.lock.txt"
-  : "requirements-windows-x64.lock.txt";
+const requirementsName = platform === "windows-x64"
+  ? "requirements-windows-x64.lock.txt"
+  : `requirements-${platform}.lock.txt`;
 const requirements = path.join(root, "tools", "ocr-runtime", requirementsName);
 if (args.install) {
   assertToolVersion("uv", ["--version"], "uv 0.11.21");
@@ -38,6 +38,14 @@ run(python, [
   "--distpath", path.join(buildRoot, "dist"), "--workpath", path.join(buildRoot, "build"),
   "--specpath", buildRoot, path.join(root, "tools", "ocr-runtime", "worker.py"),
 ]);
+await materializeRuntimeLinks(path.join(buildRoot, "dist", "ocr-worker"));
+if (platform === "macos-x86_64") {
+  const sourceLicenses = path.join(path.dirname(path.resolve(args.paddleWheel)), "paddle-source-licenses");
+  await fs.cp(sourceLicenses, path.join(buildRoot, "dist", "ocr-worker", "_licenses", "paddle-source"), {
+    recursive: true,
+    force: true,
+  });
+}
 
 const sitePackages = commandOutput(python, ["-c", "import sysconfig; print(sysconfig.get_paths()['purelib'])"]);
 const internal = path.join(buildRoot, "dist", "ocr-worker", "_internal");
@@ -122,4 +130,28 @@ function assertToolVersion(command, commandArgs, expected) {
 async function assertFile(filePath, label) {
   const stat = await fs.stat(filePath).catch(() => null);
   if (!stat?.isFile()) throw new Error(`${label}: ${filePath}`);
+}
+
+async function materializeRuntimeLinks(directory, relative = "") {
+  const current = path.join(directory, relative);
+  for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+    const childRelative = path.join(relative, entry.name);
+    const child = path.join(directory, childRelative);
+    if (entry.isDirectory()) {
+      await materializeRuntimeLinks(directory, childRelative);
+      continue;
+    }
+    if (!entry.isSymbolicLink()) continue;
+    const target = await fs.realpath(child);
+    const rootReal = await fs.realpath(directory);
+    const targetRelative = path.relative(rootReal, target);
+    if (!targetRelative || targetRelative.startsWith("..") || path.isAbsolute(targetRelative)) {
+      throw new Error(`Lien PyInstaller hors du runtime: ${childRelative}`);
+    }
+    const targetStat = await fs.stat(target);
+    if (!targetStat.isFile()) throw new Error(`Lien PyInstaller non régulier: ${childRelative}`);
+    await fs.unlink(child);
+    await fs.copyFile(target, child);
+    if (process.platform !== "win32") await fs.chmod(child, targetStat.mode & 0o777);
+  }
 }

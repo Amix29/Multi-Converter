@@ -427,7 +427,7 @@ Local evidence obtained on Windows:
 - the locked Python runtime audit reports zero known vulnerabilities;
 - the Rust audit passed under the existing allowed-warning policy; it reports
   transitive unmaintained/unsound warnings but no unallowed vulnerability;
-- source limits pass at 260 tooling/frontend files (maximum 500 nonblank lines)
+- source limits pass at 262 tooling/frontend files (maximum 500 nonblank lines)
   and 91 Rust files (maximum 426).
 
 This does not yet prove a native runtime, DMG or AppImage. The following remain

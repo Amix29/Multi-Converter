@@ -1,5 +1,5 @@
-# Locked with uv 0.11.21 for CPython 3.12.10 on macos-x86_64.
-# PaddlePaddle 3.3.1 is installed separately from the exact source-built Intel wheel.
+# Locked with uv 0.11.21 for CPython 3.12.10 on macos-aarch64.
+# PaddlePaddle 3.3.1 is resolved from its official platform wheel.
 # Regenerate through scripts/prepare-ocr-platform-locks.mjs; do not edit by hand.
 aiohappyeyeballs==2.7.1 \
     --hash=sha256:065665c041c42a5938ed220bdcd7230f22527fbec085e1853d2402c8a3615d9d \
@@ -577,7 +577,9 @@ httpcore==1.0.9 \
 httpx==0.28.1 \
     --hash=sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc \
     --hash=sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad
-    # via huggingface-hub
+    # via
+    #   huggingface-hub
+    #   paddlepaddle
 huggingface-hub==1.26.0 \
     --hash=sha256:c8cd4e2df1ba9402f77fce9b509ec1d52debb502551789473f34016acc14e361 \
     --hash=sha256:e8cca670caa5d8dfa7e45bf45e86b466698198cd8150c021bcdb4a86b9252364
@@ -759,6 +761,7 @@ multidict==6.7.1 \
 networkx==3.6.1 \
     --hash=sha256:26b7c357accc0c8cde558ad486283728b65b6a95d85ee1cd66bafab4c8168509 \
     --hash=sha256:d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762
+    # via paddlepaddle
 numpy==2.3.5 \
     --hash=sha256:00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b \
     --hash=sha256:0472f11f6ec23a74a906a00b48a4dcf3849209696dff7c189714511268d103ae \
@@ -837,6 +840,7 @@ numpy==2.3.5 \
     # via
     #   opencv-contrib-python
     #   opt-einsum
+    #   paddlepaddle
     #   paddlex
     #   pandas
     #   shapely
@@ -852,6 +856,7 @@ opencv-contrib-python==4.10.0.84 \
 opt-einsum==3.3.0 \
     --hash=sha256:2455e59e3947d3c275477df7f5205b30635e266fe6dc300e3d9f9646bfcea147 \
     --hash=sha256:59f6475f77bbc37dcf7cd748519c0ec60722e91e63ca114e68821c0c54a46549
+    # via paddlepaddle
 packaging==26.2 \
     --hash=sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e \
     --hash=sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661
@@ -864,6 +869,22 @@ packaging==26.2 \
 paddleocr==3.7.0 \
     --hash=sha256:9b81eb62cf37e590d4873e60262ff56f968ff9de6ce1f565749760ceb1c422e2 \
     --hash=sha256:c0f0a81ad4112727f30c6fcf986ac0ef6a120d31ee0991a01fae0357ee32d338
+paddlepaddle==3.3.1 \
+    --hash=sha256:1203e2e1114b49e73a8440b68837ce5c93fdab51fe4838c5e5874ab40f58f747 \
+    --hash=sha256:21894d89e600b3dacbdd4e23c55fdf45be7893beac4ae6a06fec4acaf1ccbbdc \
+    --hash=sha256:2ce30bfb0023d8c9314b1413ca7a775a4ddd076e4551e74fbed2366cf1395c98 \
+    --hash=sha256:324b5122cf3887dfbd15db17f36e2421ef923fd4569d26111bf1a21fe84d442b \
+    --hash=sha256:40473c015058f880551a7617bec85dd30527d81f9cd5f62257b0e12ac0b4975d \
+    --hash=sha256:44e3fd30a9052556569e5dfa1f947a30b78bcd8e9302f1cf47629f9f54ff084e \
+    --hash=sha256:4f28038427649bb2fcfd4d52efa85ed8311df19122b4ebedc942484a0b57b032 \
+    --hash=sha256:55df22b0bc6bfc0b97093a538eda3c774ef27050ad19e0ee5aa17e468b0de714 \
+    --hash=sha256:6747e81b4ab46c9caaae248f7b9999ccd4d5bb3ca9083173b0ce4c14e4a68db5 \
+    --hash=sha256:9016fc497213e1101261684321fbb31ef5960019ef39cb07ded27bc70e2a9858 \
+    --hash=sha256:9651888c3586e2da4e443a0ee7630b95afbf58e6fbfee6203e6975cb642e615b \
+    --hash=sha256:b6f9b1370f3fbae610b7176538a8982d78cf2656849022099720e24bed881150 \
+    --hash=sha256:bb22396233d807f6957d9c4a6a1edc76693fb589c4ee3d17caf7e39113ca4047 \
+    --hash=sha256:d7827d867503b502a881c718e3743d9b91648a62d01f93bcd5ba3d7846de5ab5 \
+    --hash=sha256:e2661ca8087498e534eef02b64bff4d458d3182afd7ac850bab9904833d35774
 paddlex==3.7.0 \
     --hash=sha256:70c5762d6bae7efe3a7db0e3264eb88e9ce1c3bf88d8e30cd32759924357acdc \
     --hash=sha256:b28f8af3aef7f74d3a71a49a8fd333c6f7bd12c17dce32e07843020f254ee81c
@@ -1003,7 +1024,9 @@ pillow==12.3.0 \
     --hash=sha256:fdafc9cce40277e0f7a0feabce0ee50dd2fa1800f3b38015e51296b5e814048d \
     --hash=sha256:fe3cca2e4e8a592be0f269a1ca4835c25199d9f3ce815c8491048f785b0a0198 \
     --hash=sha256:ffd0c5368496f41b0944be820fcb7a838aa6e623d250b01acf2643939c3f99d7
-    # via paddlex
+    # via
+    #   paddlepaddle
+    #   paddlex
 prettytable==3.18.0 \
     --hash=sha256:439217116152244369caf3d9f1caf2f9fe29b03bd79e88d2928c8e718c95d680 \
     --hash=sha256:b3346e0e6f79180833aebaac088ae926340586cf6d7d991b9eb125b65f72313a
@@ -1144,6 +1167,7 @@ protobuf==7.35.1 \
     --hash=sha256:74758715c53d7158fb76caf4f0cfdacc5329a4b1bb994f865d6cf302d413a1c4 \
     --hash=sha256:b73f9489a4b8b1c9cb1f8ed951c736392592edb24b9d6819f36d2e10b171d5b4 \
     --hash=sha256:ce115a26fe0c39a2c29973d914d327e516a6455464489fe3cd1e51a1b354f81a
+    # via paddlepaddle
 psutil==7.2.2 \
     --hash=sha256:0746f5f8d406af344fd547f1c8daa5f5c33dbc293bb8d6a16d80b4bb88f59372 \
     --hash=sha256:076a2d2f923fd4821644f5ba89f059523da90dc9014e85f8e45a5774ca5bc6f9 \
@@ -1642,11 +1666,13 @@ safetensors==0.8.0 \
     --hash=sha256:fabaf3e0f18a6618d9b36560682562157f77c2b71fcffc7b432be2baed9d753d \
     --hash=sha256:fcdd41ec4628fee5799f807c73c353629130fbd942aa23d83c623dd6c9d52d78 \
     --hash=sha256:fd6f3f93c9a0a7cc2788ee63fb763353d4bd2e89b0751bc78fcf7dda00bea774
+    # via paddlepaddle
 setuptools==83.0.0 \
     --hash=sha256:025bccbbf0fa05b6192bc64ae1e7b16e001fd6d6d4d5de03c97b1c1ade523bef \
     --hash=sha256:29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3
     # via
     #   modelscope
+    #   paddlepaddle
     #   pyinstaller
 shapely==2.1.2 \
     --hash=sha256:0036ac886e0923417932c2e6369b6c52e38e0ff5d9120b90eef5cd9a5fc5cae9 \
@@ -1730,6 +1756,7 @@ typing-extensions==4.16.0 \
     #   anyio
     #   huggingface-hub
     #   paddleocr
+    #   paddlepaddle
     #   paddlex
     #   pydantic
     #   pydantic-core

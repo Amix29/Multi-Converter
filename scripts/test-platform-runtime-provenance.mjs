@@ -25,6 +25,7 @@ expect(lock.ocr?.python === "3.12.10", "Python OCR doit rester verrouillé sur 3
 expect(lock.ocr?.uv === "0.11.21", "uv doit rester verrouillé sur 0.11.21");
 expect(lock.ocr?.paddlepaddle?.version === "3.3.1", "PaddlePaddle doit rester verrouillé sur 3.3.1");
 expect(isSha(lock.ocr?.paddlepaddle?.source?.sha256), "le source PaddlePaddle doit avoir une empreinte");
+expect(lock.ocr?.paddlepaddle?.source?.repository === "https://github.com/PaddlePaddle/Paddle.git", "le dépôt officiel PaddlePaddle doit être verrouillé");
 expect(/^[a-f0-9]{40}$/.test(lock.ocr?.paddlepaddle?.source?.commit ?? ""), "le commit PaddlePaddle doit être verrouillé");
 for (const platform of ["macos-aarch64", "linux-x64"]) {
   const wheel = lock.ocr?.paddlepaddle?.platforms?.[platform];

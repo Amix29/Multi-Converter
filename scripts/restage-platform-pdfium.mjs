@@ -99,15 +99,28 @@ async function verifyAssets(directory, entries, strict) {
 }
 
 function assetName(url) {
-  const value = path.posix.basename(new URL(url).pathname);
-  if (!value || value.includes("\\") || value === "." || value === "..") throw new Error(`Nom d’archive dangereux: ${url}`);
-  return decodeURIComponent(value);
+  if (typeof url !== "string" || !url || url.includes("\\") || /[\r\n\0]/u.test(url)) {
+    throw new Error(`URL d’archive dangereuse: ${url}`);
+  }
+  const withoutQuery = url.split(/[?#]/u, 1)[0];
+  let value;
+  try {
+    value = decodeURIComponent(path.posix.basename(withoutQuery));
+  } catch {
+    throw new Error(`Nom d’archive encodé incorrectement: ${url}`);
+  }
+  if (!value || value.includes("/") || value.includes("\\") || value === "." || value === "..") {
+    throw new Error(`Nom d’archive dangereux: ${url}`);
+  }
+  return value;
 }
 
 function replaceAssetName(url, name) {
-  const parsed = new URL(url);
-  parsed.pathname = `${parsed.pathname.slice(0, parsed.pathname.lastIndexOf("/") + 1)}${encodeURIComponent(name)}`;
-  return parsed.toString();
+  assetName(url);
+  const boundary = url.search(/[?#]/u);
+  const suffix = boundary >= 0 ? url.slice(boundary) : "";
+  const base = boundary >= 0 ? url.slice(0, boundary) : url;
+  return `${base.slice(0, base.lastIndexOf("/") + 1)}${encodeURIComponent(name)}${suffix}`;
 }
 
 async function sha256(filePath) {

@@ -165,6 +165,7 @@ jobs:
             ${{ runner.temp }}/ocr-runtime-licenses-${{ matrix.platform }}.json
             engine-sources/ocr-runtime/${{ matrix.platform }}/dist/ocr-worker/build-provenance.json
             engine-sources/ocr-runtime/paddle-macos-x86_64/build/python/dist/paddle-build-provenance.json
+            engine-sources/ocr-runtime/paddle-macos-x86_64/build/python/dist/paddle-source-license-inventory.json
           if-no-files-found: warn
 
   complete:
