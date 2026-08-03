@@ -32,8 +32,9 @@ assert.match(paddleIntelBuild, /runWithRetries/);
 assert.match(paddleIntelBuild, /stageCompatibilityRefs/);
 assert.match(paddleIntelBuild, /fetch", "--depth", "1", "origin", entry\.objectSha/);
 assert.match(paddleIntelBuild, /rev-parse", "FETCH_HEAD/);
-assert.match(paddleIntelBuild, /refs\/tags\/\$\{tag\}/);
-assert.match(paddleIntelBuild, /\$\{tag\}\^\{commit\}/);
+assert.match(paddleIntelBuild, /refs\/\$\{kind\}\/\$\{localName\}/);
+assert.match(paddleIntelBuild, /refs\/\$\{kind\}\/\$\{localName\}\^\{commit\}/);
+assert.match(paddleIntelBuild, /branch", "-f", localName, entry\.commit/);
 assert.match(pythonAudit, /paddle-build-macos-x86_64\.lock\.txt/);
 
 assert.match(engines, /^name: Phase 8 Engine Staging$/m);

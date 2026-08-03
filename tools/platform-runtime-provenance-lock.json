@@ -40,12 +40,40 @@
         "bytes": 18574714,
         "sha256": "c3ffd836335fc4f95ffd990b1556cef5d1c39fcfd0bdca46f02e799a3ec870aa",
         "compatibilityRefs": {
+          "gloo": {
+            "path": "third_party/gloo",
+            "url": "https://github.com/ziyoujiyi/gloo.git",
+            "ref": "refs/tags/v0.0.3",
+            "objectSha": "8b6b61dfa0dca02b226a01262bfcf0484382048f",
+            "commit": "8b6b61dfa0dca02b226a01262bfcf0484382048f"
+          },
+          "gtest": {
+            "path": "third_party/gtest",
+            "url": "https://github.com/google/googletest.git",
+            "ref": "refs/tags/release-1.8.1",
+            "objectSha": "2fe3bd994b3189899d93f1d5a881e725e046fdc2",
+            "commit": "2fe3bd994b3189899d93f1d5a881e725e046fdc2"
+          },
           "pocketfft": {
             "path": "third_party/pocketfft",
             "url": "https://gitlab.mpcdf.mpg.de/mtr/pocketfft.git",
             "ref": "refs/tags/release_for_eigen",
             "objectSha": "b387dbecbab7a64ce2eb10c119e506af3c754c13",
             "commit": "ea778e37710c07723435b1be58235996d1d43a5a"
+          },
+          "protobuf": {
+            "path": "third_party/protobuf",
+            "url": "https://github.com/protocolbuffers/protobuf.git",
+            "ref": "refs/tags/v21.12",
+            "objectSha": "f502b8e9c831bda0bea57d9cbeefca3eb76e4254",
+            "commit": "f0dc78d7e6e331b8c6bb2d5283e06aa26883ca7c"
+          },
+          "rocksdb": {
+            "path": "third_party/rocksdb",
+            "url": "https://github.com/Thunderbrook/rocksdb",
+            "ref": "refs/heads/6.19.fb",
+            "objectSha": "9e18bf0e273b081de54ef1227e6f1db9e02a472a",
+            "commit": "9e18bf0e273b081de54ef1227e6f1db9e02a472a"
           }
         }
       },

@@ -27,12 +27,27 @@ expect(lock.ocr?.paddlepaddle?.version === "3.3.1", "PaddlePaddle doit rester ve
 expect(isSha(lock.ocr?.paddlepaddle?.source?.sha256), "le source PaddlePaddle doit avoir une empreinte");
 expect(lock.ocr?.paddlepaddle?.source?.repository === "https://github.com/PaddlePaddle/Paddle.git", "le dépôt officiel PaddlePaddle doit être verrouillé");
 expect(/^[a-f0-9]{40}$/.test(lock.ocr?.paddlepaddle?.source?.commit ?? ""), "le commit PaddlePaddle doit être verrouillé");
-const pocketfft = lock.ocr?.paddlepaddle?.source?.compatibilityRefs?.pocketfft;
+const compatibilityRefs = lock.ocr?.paddlepaddle?.source?.compatibilityRefs;
+const pocketfft = compatibilityRefs?.pocketfft;
 expect(pocketfft?.path === "third_party/pocketfft", "le chemin PocketFFT de compatibilité doit être verrouillé");
 expect(pocketfft?.url === "https://gitlab.mpcdf.mpg.de/mtr/pocketfft.git", "le dépôt PocketFFT officiel doit être verrouillé");
 expect(pocketfft?.ref === "refs/tags/release_for_eigen", "la référence PocketFFT requise par Paddle doit être verrouillée");
 expect(pocketfft?.objectSha === "b387dbecbab7a64ce2eb10c119e506af3c754c13", "l’objet du tag PocketFFT doit être verrouillé");
 expect(pocketfft?.commit === "ea778e37710c07723435b1be58235996d1d43a5a", "le commit PocketFFT pointé doit être verrouillé");
+const expectedCompatibilityRefs = {
+  gloo: ["third_party/gloo", "https://github.com/ziyoujiyi/gloo.git", "refs/tags/v0.0.3", "8b6b61dfa0dca02b226a01262bfcf0484382048f"],
+  gtest: ["third_party/gtest", "https://github.com/google/googletest.git", "refs/tags/release-1.8.1", "2fe3bd994b3189899d93f1d5a881e725e046fdc2"],
+  protobuf: ["third_party/protobuf", "https://github.com/protocolbuffers/protobuf.git", "refs/tags/v21.12", "f0dc78d7e6e331b8c6bb2d5283e06aa26883ca7c"],
+  rocksdb: ["third_party/rocksdb", "https://github.com/Thunderbrook/rocksdb", "refs/heads/6.19.fb", "9e18bf0e273b081de54ef1227e6f1db9e02a472a"],
+};
+for (const [name, [expectedPath, expectedUrl, expectedRef, expectedCommit]] of Object.entries(expectedCompatibilityRefs)) {
+  const entry = compatibilityRefs?.[name];
+  expect(entry?.path === expectedPath, `${name}: chemin de compatibilité invalide`);
+  expect(entry?.url === expectedUrl, `${name}: dépôt de compatibilité invalide`);
+  expect(entry?.ref === expectedRef, `${name}: référence de compatibilité invalide`);
+  expect(/^[a-f0-9]{40}$/.test(entry?.objectSha ?? ""), `${name}: objet de référence invalide`);
+  expect(entry?.commit === expectedCommit, `${name}: commit pointé invalide`);
+}
 for (const platform of ["macos-aarch64", "linux-x64"]) {
   const wheel = lock.ocr?.paddlepaddle?.platforms?.[platform];
   expect(wheel?.url?.startsWith("https://files.pythonhosted.org/"), `${platform}: wheel officiel absent`);

@@ -166,7 +166,7 @@ function stageCompatibilityRefs(repositoryRoot, refs) {
     if (!entry || !/^[a-f0-9]{40}$/u.test(entry.objectSha ?? "") || !/^[a-f0-9]{40}$/u.test(entry.commit ?? "")) {
       throw new Error(`${name}: objet ou commit de compatibilité invalide.`);
     }
-    if (!/^refs\/tags\/[A-Za-z0-9._-]+$/u.test(entry.ref ?? "")) {
+    if (!/^refs\/(tags|heads)\/[A-Za-z0-9._-]+$/u.test(entry.ref ?? "")) {
       throw new Error(`${name}: référence de compatibilité invalide.`);
     }
     const pathRecord = [...paths.entries()].find(([, value]) => value === entry.path);
@@ -184,12 +184,15 @@ function stageCompatibilityRefs(repositoryRoot, refs) {
     if (fetchedObject !== entry.objectSha) {
       throw new Error(`${name}: l’objet de compatibilité récupéré ne correspond pas au verrou.`);
     }
-    const tag = entry.ref.slice("refs/tags/".length);
-    run("git", ["-C", checkout, "tag", "-f", tag, entry.objectSha]);
-    if (commandOutput("git", ["-C", checkout, "rev-parse", `refs/tags/${tag}`]) !== entry.objectSha) {
+    const [kind, localName] = entry.ref.startsWith("refs/tags/")
+      ? ["tags", entry.ref.slice("refs/tags/".length)]
+      : ["heads", entry.ref.slice("refs/heads/".length)];
+    if (kind === "tags") run("git", ["-C", checkout, "tag", "-f", localName, entry.objectSha]);
+    else run("git", ["-C", checkout, "branch", "-f", localName, entry.commit]);
+    if (commandOutput("git", ["-C", checkout, "rev-parse", `refs/${kind}/${localName}`]) !== entry.objectSha) {
       throw new Error(`${name}: l’objet de la référence locale ne correspond pas au verrou.`);
     }
-    if (commandOutput("git", ["-C", checkout, "rev-parse", `${tag}^{commit}`]) !== entry.commit) {
+    if (commandOutput("git", ["-C", checkout, "rev-parse", `refs/${kind}/${localName}^{commit}`]) !== entry.commit) {
       throw new Error(`${name}: le commit pointé par la référence locale ne correspond pas au verrou.`);
     }
     return {
