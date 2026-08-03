@@ -15,6 +15,7 @@ const configurations = [
 
 assertUv();
 for (const configuration of configurations) await prepare(configuration);
+await prepareIntelBuildLock();
 console.log(`OCR platform dependency locks are reproducible for ${configurations.map((item) => item.platform).join(", ")}.`);
 
 async function prepare(configuration) {
@@ -35,6 +36,36 @@ async function prepare(configuration) {
     if (check) {
       const current = await fs.readFile(target, "utf8");
       if (current !== generated) throw new Error(`Le verrou ${configuration.platform} n’est plus reproductible.`);
+    } else {
+      await fs.writeFile(target, generated);
+    }
+  } finally {
+    await fs.rm(temporary, { force: true });
+  }
+}
+
+async function prepareIntelBuildLock() {
+  const configuration = { platform: "macos-x86_64", uvPlatform: "x86_64-apple-darwin" };
+  const requirements = ["numpy==2.3.5", "protobuf==7.35.1", "wheel==0.46.3"].join("\n");
+  const temporary = path.join(os.tmpdir(), `mc-ocr-paddle-build-${process.pid}.txt`);
+  const target = path.join(root, "tools", "ocr-runtime", "paddle-build-macos-x86_64.lock.txt");
+  try {
+    const result = spawnSync("uv", [
+      "pip", "compile", "-", "--generate-hashes", "--python-platform", configuration.uvPlatform,
+      "--python-version", "3.12.10", "--output-file", temporary,
+    ], { cwd: root, encoding: "utf8", input: `${requirements}\n`, windowsHide: true });
+    if (result.status !== 0) throw new Error(result.stderr || result.stdout || "Résolution des dépendances de build Intel impossible.");
+    const lines = (await fs.readFile(temporary, "utf8")).replaceAll("\r\n", "\n").split("\n");
+    while (lines[0]?.startsWith("#")) lines.shift();
+    const generated = [
+      "# Locked with uv 0.11.21 for the PaddlePaddle 3.3.1 macOS Intel source build.",
+      "# Official build prerequisites only: numpy, protobuf and wheel.",
+      "# Regenerate through scripts/prepare-ocr-platform-locks.mjs; do not edit by hand.",
+      ...lines,
+    ].join("\n");
+    if (check) {
+      const current = await fs.readFile(target, "utf8");
+      if (current !== generated) throw new Error("Le verrou de build PaddlePaddle Intel n’est plus reproductible.");
     } else {
       await fs.writeFile(target, generated);
     }

@@ -10,6 +10,7 @@ const dmg = read("macos-dmg.yml");
 const appimage = read("linux-appimage.yml");
 const engines = read("phase-8-engine-staging.yml");
 const paddleIntelBuild = fs.readFileSync(path.join(root, "scripts", "build-paddle-macos-intel.mjs"), "utf8");
+const pythonAudit = fs.readFileSync(path.join(root, "scripts", "audit-ocr-platform-locks.mjs"), "utf8");
 
 assert.match(staging, /^name: OCR Runtime Staging$/m);
 assert.match(staging, /lfs: false/g);
@@ -24,10 +25,11 @@ assert.match(staging, /--verify-reproducible/);
 assert.match(staging, /inventory:ocr-runtime-licenses/);
 assert.doesNotMatch(staging, /CoreML|OpenVINO|DirectML/);
 assert.doesNotMatch(staging, /gh release (create|upload)/);
-assert.match(paddleIntelBuild, /requirements-macos-x86_64\.lock\.txt/);
+assert.match(paddleIntelBuild, /paddle-build-macos-x86_64\.lock\.txt/);
 assert.match(paddleIntelBuild, /--require-hashes/);
 assert.match(paddleIntelBuild, /uv 0\.11\.21/);
 assert.match(paddleIntelBuild, /runWithRetries/);
+assert.match(pythonAudit, /paddle-build-macos-x86_64\.lock\.txt/);
 
 assert.match(engines, /^name: Phase 8 Engine Staging$/m);
 assert.match(engines, /artifact_id: 7609654944/);

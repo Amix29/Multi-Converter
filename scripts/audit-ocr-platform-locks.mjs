@@ -8,6 +8,7 @@ const locks = [
   "requirements-macos-aarch64.lock.txt",
   "requirements-macos-x86_64.lock.txt",
   "requirements-linux-x64.lock.txt",
+  "paddle-build-macos-x86_64.lock.txt",
 ];
 
 for (const lock of locks) {

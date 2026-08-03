@@ -18,7 +18,7 @@ const output = path.resolve(args.outputDir ?? path.join(root, "engine-sources", 
 const sourceRoot = path.join(output, "source");
 const buildRoot = path.join(output, "build");
 const python = path.resolve(args.python ?? process.env.MC_OCR_PYTHON ?? "python3");
-const buildRequirements = path.join(root, "tools", "ocr-runtime", "requirements-macos-x86_64.lock.txt");
+const buildRequirements = path.join(root, "tools", "ocr-runtime", "paddle-build-macos-x86_64.lock.txt");
 
 const uvVersion = commandOutput("uv", ["--version"]);
 if (!uvVersion.startsWith("uv 0.11.21 ")) {
