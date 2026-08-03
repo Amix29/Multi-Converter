@@ -29,6 +29,9 @@ assert.match(paddleIntelBuild, /paddle-build-macos-x86_64\.lock\.txt/);
 assert.match(paddleIntelBuild, /--require-hashes/);
 assert.match(paddleIntelBuild, /uv 0\.11\.21/);
 assert.match(paddleIntelBuild, /runWithRetries/);
+assert.match(paddleIntelBuild, /stageCompatibilityRefs/);
+assert.match(paddleIntelBuild, /fetch", "--depth", "1", "origin", entry\.commit/);
+assert.match(paddleIntelBuild, /rev-parse", "FETCH_HEAD/);
 assert.match(pythonAudit, /paddle-build-macos-x86_64\.lock\.txt/);
 
 assert.match(engines, /^name: Phase 8 Engine Staging$/m);

@@ -38,7 +38,15 @@
         "repository": "https://github.com/PaddlePaddle/Paddle.git",
         "url": "https://github.com/PaddlePaddle/Paddle/archive/refs/tags/v3.3.1.tar.gz",
         "bytes": 18574714,
-        "sha256": "c3ffd836335fc4f95ffd990b1556cef5d1c39fcfd0bdca46f02e799a3ec870aa"
+        "sha256": "c3ffd836335fc4f95ffd990b1556cef5d1c39fcfd0bdca46f02e799a3ec870aa",
+        "compatibilityRefs": {
+          "pocketfft": {
+            "path": "third_party/pocketfft",
+            "url": "https://gitlab.mpcdf.mpg.de/mtr/pocketfft.git",
+            "ref": "refs/tags/release_for_eigen",
+            "commit": "b387dbecbab7a64ce2eb10c119e506af3c754c13"
+          }
+        }
       },
       "platforms": {
         "macos-aarch64": {

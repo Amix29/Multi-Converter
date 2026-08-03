@@ -49,6 +49,7 @@ const submodules = commandOutput("git", ["-C", sourceRoot, "submodule", "status"
 if (submodules.split("\n").some((line) => line && line[0] !== " ")) {
   throw new Error("Les sous-modules PaddlePaddle ne correspondent pas aux commits verrouillés par le dépôt.");
 }
+const compatibilityOverrides = stageCompatibilityRefs(sourceRoot, source.compatibilityRefs);
 
 const include = commandOutput(python, ["-c", "import sysconfig; print(sysconfig.get_paths()['include'])"]);
 const library = commandOutput(python, ["-c", "import sysconfig; print(sysconfig.get_config_var('LIBDIR') + '/libpython3.12.dylib')"]);
@@ -89,6 +90,7 @@ await fs.writeFile(path.join(wheelDirectory, "paddle-build-provenance.json"), `$
   repository: source.repository,
   referenceArchive: { url: source.url, bytes: source.bytes, sha256: source.sha256 },
   submodules: submodules.split("\n").filter(Boolean),
+  compatibilityOverrides,
   wheel: wheels[0],
   wheelSha256: digest,
   toolchain: {
@@ -147,6 +149,56 @@ function validateSubmoduleUrls(output) {
   })) {
     throw new Error("Tous les sous-modules PaddlePaddle doivent utiliser une provenance HTTPS explicite.");
   }
+}
+
+function stageCompatibilityRefs(repositoryRoot, refs) {
+  const entries = Object.entries(refs ?? {});
+  if (!entries.length) {
+    throw new Error("Les références de compatibilité PaddlePaddle doivent être verrouillées.");
+  }
+  const paths = parseGitConfig(commandOutput("git", [
+    "-C", repositoryRoot, "config", "-f", ".gitmodules", "--get-regexp", "^submodule\\..*\\.path$",
+  ]));
+  const urls = parseGitConfig(commandOutput("git", [
+    "-C", repositoryRoot, "config", "-f", ".gitmodules", "--get-regexp", "^submodule\\..*\\.url$",
+  ]));
+  return entries.map(([name, entry]) => {
+    if (!entry || !/^[a-f0-9]{40}$/u.test(entry.commit ?? "")) {
+      throw new Error(`${name}: commit de compatibilité invalide.`);
+    }
+    if (!/^refs\/tags\/[A-Za-z0-9._-]+$/u.test(entry.ref ?? "")) {
+      throw new Error(`${name}: référence de compatibilité invalide.`);
+    }
+    const pathRecord = [...paths.entries()].find(([, value]) => value === entry.path);
+    if (!pathRecord) {
+      throw new Error(`${name}: chemin de sous-module absent de .gitmodules.`);
+    }
+    const moduleKey = pathRecord[0].slice(0, -".path".length);
+    const configuredUrl = urls.get(`${moduleKey}.url`);
+    if (configuredUrl !== entry.url || new URL(configuredUrl).protocol !== "https:") {
+      throw new Error(`${name}: URL du sous-module différente de la provenance verrouillée.`);
+    }
+    const checkout = path.join(repositoryRoot, entry.path);
+    runWithRetries("git", ["-C", checkout, "fetch", "--depth", "1", "origin", entry.commit], 4);
+    const fetchedCommit = commandOutput("git", ["-C", checkout, "rev-parse", "FETCH_HEAD"]);
+    if (fetchedCommit !== entry.commit) {
+      throw new Error(`${name}: le commit de compatibilité récupéré ne correspond pas au verrou.`);
+    }
+    const tag = entry.ref.slice("refs/tags/".length);
+    run("git", ["-C", checkout, "tag", "-f", tag, entry.commit]);
+    if (commandOutput("git", ["-C", checkout, "rev-parse", `${tag}^{commit}`]) !== entry.commit) {
+      throw new Error(`${name}: la référence locale de compatibilité ne correspond pas au verrou.`);
+    }
+    return { name, path: entry.path, url: entry.url, ref: entry.ref, commit: entry.commit };
+  });
+}
+
+function parseGitConfig(output) {
+  return new Map(output.split("\n").filter(Boolean).map((line) => {
+    const separator = line.indexOf(" ");
+    if (separator < 1) throw new Error("Entrée .gitmodules ambiguë.");
+    return [line.slice(0, separator), line.slice(separator + 1)];
+  }));
 }
 
 async function collectSourceLicenses(directory, output, relative = "") {

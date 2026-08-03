@@ -27,6 +27,11 @@ expect(lock.ocr?.paddlepaddle?.version === "3.3.1", "PaddlePaddle doit rester ve
 expect(isSha(lock.ocr?.paddlepaddle?.source?.sha256), "le source PaddlePaddle doit avoir une empreinte");
 expect(lock.ocr?.paddlepaddle?.source?.repository === "https://github.com/PaddlePaddle/Paddle.git", "le dépôt officiel PaddlePaddle doit être verrouillé");
 expect(/^[a-f0-9]{40}$/.test(lock.ocr?.paddlepaddle?.source?.commit ?? ""), "le commit PaddlePaddle doit être verrouillé");
+const pocketfft = lock.ocr?.paddlepaddle?.source?.compatibilityRefs?.pocketfft;
+expect(pocketfft?.path === "third_party/pocketfft", "le chemin PocketFFT de compatibilité doit être verrouillé");
+expect(pocketfft?.url === "https://gitlab.mpcdf.mpg.de/mtr/pocketfft.git", "le dépôt PocketFFT officiel doit être verrouillé");
+expect(pocketfft?.ref === "refs/tags/release_for_eigen", "la référence PocketFFT requise par Paddle doit être verrouillée");
+expect(pocketfft?.commit === "b387dbecbab7a64ce2eb10c119e506af3c754c13", "le commit PocketFFT de compatibilité doit être verrouillé");
 for (const platform of ["macos-aarch64", "linux-x64"]) {
   const wheel = lock.ocr?.paddlepaddle?.platforms?.[platform];
   expect(wheel?.url?.startsWith("https://files.pythonhosted.org/"), `${platform}: wheel officiel absent`);
