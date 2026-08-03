@@ -29,6 +29,10 @@ assert.doesNotMatch(staging, /gh release (create|upload)/);
 assert.match(paddleIntelBuild, /paddle-build-macos-x86_64\.lock\.txt/);
 assert.match(paddleIntelBuild, /--require-hashes/);
 assert.match(paddleIntelBuild, /uv 0\.11\.21/);
+assert.match(paddleIntelBuild, /PADDLE_VERSION: paddleVersion/);
+assert.match(paddleIntelBuild, /_PYTHON_HOST_PLATFORM: "macosx-11\.0-x86_64"/);
+assert.match(paddleIntelBuild, /CMAKE_OSX_ARCHITECTURES=x86_64/);
+assert.match(paddleIntelBuild, /CMAKE_OSX_DEPLOYMENT_TARGET=11\.0/);
 for (const requirement of [
   "httpx==0.28.1",
   "networkx==3.6.1",

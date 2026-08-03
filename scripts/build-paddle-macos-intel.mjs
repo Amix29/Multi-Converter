@@ -19,6 +19,17 @@ const sourceRoot = path.join(output, "source");
 const buildRoot = path.join(output, "build");
 const python = path.resolve(args.python ?? process.env.MC_OCR_PYTHON ?? "python3");
 const buildRequirements = path.join(root, "tools", "ocr-runtime", "paddle-build-macos-x86_64.lock.txt");
+const paddleVersion = source.tag?.match(/^v(\d+\.\d+\.\d+)$/u)?.[1];
+if (paddleVersion !== "3.3.1") {
+  throw new Error(`Le tag PaddlePaddle verrouillé doit être v3.3.1: ${source.tag ?? "absent"}`);
+}
+const buildEnvironment = {
+  ...process.env,
+  ARCHFLAGS: "-arch x86_64",
+  MACOSX_DEPLOYMENT_TARGET: "11.0",
+  PADDLE_VERSION: paddleVersion,
+  _PYTHON_HOST_PLATFORM: "macosx-11.0-x86_64",
+};
 
 const uvVersion = commandOutput("uv", ["--version"]);
 if (!uvVersion.startsWith("uv 0.11.21 ")) {
@@ -63,9 +74,11 @@ run("cmake", [
   "-DWITH_GPU=OFF",
   "-DWITH_ARM=OFF",
   "-DWITH_TESTING=OFF",
+  "-DCMAKE_OSX_ARCHITECTURES=x86_64",
+  "-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0",
   "-DCMAKE_BUILD_TYPE=Release",
-]);
-run("cmake", ["--build", buildRoot, "--parallel", String(os.cpus().length)]);
+], buildEnvironment);
+run("cmake", ["--build", buildRoot, "--parallel", String(os.cpus().length)], buildEnvironment);
 
 const wheelDirectory = path.join(buildRoot, "python", "dist");
 const wheels = (await fs.readdir(wheelDirectory)).filter((name) => name.endsWith(".whl"));
@@ -116,8 +129,8 @@ function parseArgs(values) {
   return parsed;
 }
 
-function run(command, commandArgs) {
-  const result = spawnSync(command, commandArgs, { cwd: root, stdio: "inherit" });
+function run(command, commandArgs, environment = process.env) {
+  const result = spawnSync(command, commandArgs, { cwd: root, env: environment, stdio: "inherit" });
   if (result.status !== 0) throw new Error(`Échec de ${command} (${result.status ?? "signal"}).`);
 }
 
