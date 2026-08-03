@@ -10,6 +10,7 @@ const dmg = read("macos-dmg.yml");
 const appimage = read("linux-appimage.yml");
 const engines = read("phase-8-engine-staging.yml");
 const paddleIntelBuild = fs.readFileSync(path.join(root, "scripts", "build-paddle-macos-intel.mjs"), "utf8");
+const paddleIntelBuildLock = fs.readFileSync(path.join(root, "tools", "ocr-runtime", "paddle-build-macos-x86_64.lock.txt"), "utf8");
 const pythonAudit = fs.readFileSync(path.join(root, "scripts", "audit-ocr-platform-locks.mjs"), "utf8");
 
 assert.match(staging, /^name: OCR Runtime Staging$/m);
@@ -28,6 +29,7 @@ assert.doesNotMatch(staging, /gh release (create|upload)/);
 assert.match(paddleIntelBuild, /paddle-build-macos-x86_64\.lock\.txt/);
 assert.match(paddleIntelBuild, /--require-hashes/);
 assert.match(paddleIntelBuild, /uv 0\.11\.21/);
+assert.match(paddleIntelBuildLock, /^setuptools==80\.9\.0 /m);
 assert.match(paddleIntelBuild, /runWithRetries/);
 assert.match(paddleIntelBuild, /stageCompatibilityRefs/);
 assert.match(paddleIntelBuild, /fetch", "--depth", "1", "origin", entry\.objectSha/);

@@ -46,7 +46,12 @@ async function prepare(configuration) {
 
 async function prepareIntelBuildLock() {
   const configuration = { platform: "macos-x86_64", uvPlatform: "x86_64-apple-darwin" };
-  const requirements = ["numpy==2.3.5", "protobuf==7.35.1", "wheel==0.46.3"].join("\n");
+  const requirements = [
+    "numpy==2.3.5",
+    "protobuf==7.35.1",
+    "setuptools==80.9.0",
+    "wheel==0.46.3",
+  ].join("\n");
   const temporary = path.join(os.tmpdir(), `mc-ocr-paddle-build-${process.pid}.txt`);
   const target = path.join(root, "tools", "ocr-runtime", "paddle-build-macos-x86_64.lock.txt");
   try {
@@ -59,7 +64,7 @@ async function prepareIntelBuildLock() {
     while (lines[0]?.startsWith("#")) lines.shift();
     const generated = [
       "# Locked with uv 0.11.21 for the PaddlePaddle 3.3.1 macOS Intel source build.",
-      "# Official build prerequisites only: numpy, protobuf and wheel.",
+      "# Official build prerequisites only: numpy, protobuf, setuptools and wheel.",
       "# Regenerate through scripts/prepare-ocr-platform-locks.mjs; do not edit by hand.",
       ...lines,
     ].join("\n");
