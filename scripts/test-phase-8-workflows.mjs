@@ -23,6 +23,7 @@ assert.match(staging, /UV_VERSION: 0\.11\.21/);
 assert.match(staging, /build:paddle:macos-intel/);
 assert.match(staging, /paddle\.utils\.run_check/);
 assert.match(staging, /--verify-reproducible/);
+assert.match(staging, /name: ocr-models[\s\S]*include-hidden-files: true/);
 assert.match(staging, /inventory:ocr-runtime-licenses/);
 assert.doesNotMatch(staging, /CoreML|OpenVINO|DirectML/);
 assert.doesNotMatch(staging, /gh release (create|upload)/);
@@ -67,6 +68,8 @@ assert.match(engines, /artifact_sha256: d393adbaddeb900cee51a62d7ef0cee589da6f34
 assert.match(engines, /artifact_sha256: 1d16c5ad057d16b6a2293c1d49ee0e5f591bf380f5bcdecf1e83058d4e2de082/);
 assert.match(engines, /package-locked-pdfium-platform\.mjs/);
 assert.match(engines, /restage-platform-pdfium\.mjs/);
+assert.match(engines, /complete-macos-sidecar-set\.mjs/);
+assert.match(engines, /lipo -verify_arch x86_64/);
 assert.doesNotMatch(engines, /gh release (create|upload)/);
 
 for (const [label, workflow] of [["macOS conversions", conversions], ["macOS DMG", dmg], ["Linux AppImage", appimage]]) {

@@ -1,6 +1,6 @@
 {
   "name": "multi-converter",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Local desktop file converter for documents, images, audio and video.",
   "homepage": "https://github.com/Amix29/Multi-Converter#readme",
   "bugs": {
@@ -25,7 +25,7 @@
     "build:frontend:preview": "npm run validate:i18n && npm run typecheck && vite build --mode preview",
     "preview:test": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "build": "npm run prepare:installer-assets && npm run prepare:bundled-engines && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && tsc --noEmit && vite build",
-    "check": "npm run prepare:installer-assets && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && npm run test:source-structure && npm run test:rust-structure && npm run test:rust-contracts && npm run test:release-notes && npm run test:editor && npm run test:ocr && npm run test:platform-provenance && npm run test:platform-restaging && npm run test:ocr:platform-locks && npm run test:ocr:platform-packaging && npm run test:windows:native -- --self-test && npm run test:windows:pdfium-native -- --self-test && npm run test:macos:native -- --self-test && npm run test:linux:native -- --self-test && npm run validate:pdfium-engine-release -- --self-test && npm run typecheck:tests && npm run test:unit && npm run test:elf && npm run test:macos-packaging && npm run test:linux-packaging && npm run test:linux-sidecars && npm run test:linux-sidecar-release-assets && npm run test:linux-engine-release-assets && npm run test:github-workflows && npm run test:phase-8-workflows && npm run test:release-assets && npm run test:macos-dmg-artifact && npm run test:macos-release-artifacts && npm run test:linux-release-artifacts && npm run test:bundled-engines-platform && npm run test:ui-layout && npm run test:repository-metadata && npm run test:production-config && npm run test:secret-leaks && npm run test:v1.0.6-status && npm run test:run-tauri && npm run typecheck && npm run validate:engines",
+    "check": "npm run prepare:installer-assets && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && npm run test:source-structure && npm run test:rust-structure && npm run test:rust-contracts && npm run test:release-notes && npm run test:editor && npm run test:ocr && npm run test:platform-provenance && npm run test:platform-restaging && npm run test:ocr:platform-locks && npm run test:ocr:platform-packaging && npm run test:windows:native -- --self-test && npm run test:windows:pdfium-native -- --self-test && npm run test:macos:native -- --self-test && npm run test:linux:native -- --self-test && npm run validate:pdfium-engine-release -- --self-test && npm run typecheck:tests && npm run test:unit && npm run test:elf && npm run test:macos-packaging && npm run test:linux-packaging && npm run test:linux-sidecars && npm run test:linux-sidecar-release-assets && npm run test:linux-engine-release-assets && npm run test:macos-sidecar-completion && npm run test:github-workflows && npm run test:phase-8-workflows && npm run test:release-assets && npm run test:macos-dmg-artifact && npm run test:macos-release-artifacts && npm run test:linux-release-artifacts && npm run test:bundled-engines-platform && npm run test:ui-layout && npm run test:repository-metadata && npm run test:production-config && npm run test:secret-leaks && npm run test:version-sync && npm run test:run-tauri && npm run typecheck && npm run validate:engines",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "validate:i18n": "node scripts/validate-i18n.mjs",
@@ -58,6 +58,7 @@
     "test:linux-sidecars": "node scripts/test-linux-sidecars.mjs",
     "test:linux-sidecar-release-assets": "node scripts/test-linux-sidecar-release-assets.mjs",
     "test:linux-engine-release-assets": "node scripts/test-linux-engine-release-assets.mjs",
+    "test:macos-sidecar-completion": "node scripts/test-complete-macos-sidecar-set.mjs",
     "test:github-workflows": "node scripts/test-github-workflows.mjs",
     "test:phase-8-workflows": "node scripts/test-phase-8-workflows.mjs",
     "test:release-assets": "node scripts/test-release-assets.mjs",
@@ -74,6 +75,7 @@
     "test:v1.0.5-status": "node scripts/test-v1-0-5-status.mjs",
     "status:v1.0.6": "node scripts/report-v1-0-6-status.mjs",
     "test:v1.0.6-status": "node scripts/test-v1-0-6-status.mjs",
+    "test:version-sync": "node scripts/test-version-sync.mjs",
     "test:run-tauri": "node scripts/test-run-tauri.mjs",
     "test:windows:ci": "node scripts/test-windows-ci-gate.mjs",
     "test:windows:native": "node scripts/test-windows-native.mjs",

@@ -52,6 +52,7 @@ jobs:
           path: ${{ runner.temp }}/ocr-models
           if-no-files-found: error
           compression-level: 0
+          include-hidden-files: true
 
   runtime:
     name: Build official CPU runtime (${{ matrix.platform }})

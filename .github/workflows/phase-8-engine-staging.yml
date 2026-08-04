@@ -105,6 +105,10 @@ jobs:
           output="$RUNNER_TEMP/mc-phase-8-engine-assets"
           node scripts/package-locked-pdfium-platform.mjs --platform "${{ matrix.platform }}" --output-dir "$replacement"
           node scripts/restage-platform-pdfium.mjs --platform "${{ matrix.platform }}" --baseline-dir "$RUNNER_TEMP/mc-engine-baseline" --replacement-dir "$replacement" --output-dir "$output"
+          if [[ "${{ matrix.platform }}" == "macos-universal" ]]; then
+            node scripts/complete-macos-sidecar-set.mjs --asset-dir "$output"
+            lipo -verify_arch x86_64 "$output/ffprobe-x86_64-apple-darwin"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
