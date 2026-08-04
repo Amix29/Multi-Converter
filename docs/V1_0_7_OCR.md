@@ -8,6 +8,7 @@
 - Windows implementation: **development checkpoint, real Tauri and extracted-package runtime exercised**
 - Windows NSIS build: **passed locally with compressed runtime resources**
 - Windows packaged application smoke: **passed for PNG extraction, copy, cancellation and retry; complete installed matrix pending**
+- Current Windows correction fixture: **reviewed expected text matched exactly (100%)**
 - macOS universal and Linux x64 runtimes: **not built or host-tested**
 - Native ONNX candidate and accelerators: **not selected; official CPU runtime retained**
 - Privacy mode: **local only**
@@ -96,6 +97,47 @@ can be reused. Only one OCR job may run at a time. Cancellation terminates the
 worker process tree; crash, timeout or protocol failure discards the worker so
 the next job starts a clean process. Job temporary directories are owned by
 RAII guards and are removed on success, error or cancellation.
+
+### 2026-08-04 progress and cancellation correction
+
+The first OCR run may spend material time extracting and hashing the locked
+runtime before model inference begins. That work now emits bounded preparation
+phases instead of leaving the interface at an unexplained `2%`:
+
+- runtime archive extraction;
+- runtime-manifest verification;
+- model-manifest verification;
+- image preparation or PDF page inspection;
+- recognition and result normalization.
+
+Extraction and verification report determinate progress. Worker startup,
+recognition and cancellation are intentionally indeterminate because the
+official runtime does not expose a reliable fractional inference value. The
+dialog therefore never fabricates a percentage for those phases.
+
+Cancellation is checked while reading the runtime archive, walking manifests,
+hashing files, preparing PDF pages and waiting for the worker. It invalidates
+the active UI sequence immediately, terminates the worker process tree when one
+exists and does not cache a cancelled verification as a permanent failure.
+Late progress or results for the cancelled job are ignored. The user receives
+an explicit cancelled state and a focused **Retry** action; closing with Escape
+or the close control also cancels an active job instead of trapping the dialog.
+
+The correction is covered by Rust tests and compiled-preview interaction tests.
+The packaged Windows runtime fixture matched its reviewed expected text exactly
+(100%) in 24,672 ms. The same checkpoint reran all 40 corpus cases: clean mean
+100%, difficult mean 99.76%, median measured recognition 13,330 ms and peak
+worker working set 714.8 MiB. The worker showed zero remote connections in 251
+process samples while the network remained active; this remains sampling, not
+continuous packet capture. Preview progress/cancel tests and Windows results are
+not proof of a packaged macOS or Linux worker.
+
+The final local Windows correction NSIS installed the exact prepared
+236,434,900-byte OCR runtime archive at SHA-256
+`5982fcfbc2b78ee3b4aa55d4f7fad3a6a01b0388f0f384bb86051f1d343fc936`
+alongside all five locked model directories. This byte identity ties the
+packaged-runtime and corpus results above to the archive present in the
+installed candidate; the maintainer's interactive OCR review remains separate.
 
 ## PDF Flow
 
@@ -276,7 +318,8 @@ remain pending.
 - Record output hashes, screenshots and all remaining host evidence in
   `V1_0_7_VALIDATION.md`.
 
-Only after those gates pass may metadata move to `1.0.7` or an OCR release be
+Development metadata is already synchronized to `1.0.7` by maintainer
+decision. Only after those gates pass may an OCR-enabled V1.0.7 release be
 published.
 
 ## Phase 6 Quality And Supply-Chain Evidence

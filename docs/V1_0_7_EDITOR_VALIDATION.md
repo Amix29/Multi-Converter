@@ -5,8 +5,8 @@ This document tracks the editor gate that had to pass before work started on PP-
 ## Validation Environment
 
 - Initial validation date: 2026-07-13
-- Latest editor UI regression validation: 2026-07-31
-- Documentation review: 2026-07-31
+- Latest editor UI regression validation: 2026-08-04
+- Documentation review: 2026-08-04
 - Host: Windows x64
 - Application: Tauri development app and Windows release bundle
 - LibreOffice: 26.2.3.2, bundled local engine
@@ -29,6 +29,7 @@ This document tracks the editor gate that had to pass before work started on PP-
 | PDFium wrapper | Pass | 5/5 tests plus Clippy |
 | Vite production build | Pass | Production adapter selected; exact bundle measurements and the raw-total target miss live in `REFACTOR_BASELINE.md` |
 | Tauri Windows build | Pass | Final local executable and NSIS bundle generated; these are not release artifacts |
+| 2026-08-04 correction lot | Pass for source/unit, Rust and compiled-preview scope | `npm run check`, Rust tests, targeted editor Playwright and visual measurements; native Office export remains pending |
 
 The editor-specific Rust tests cover bounded XML parsing, forbidden DTD/custom entities, encrypted manifests, ZIP traversal, style inheritance cycles, atomic writes, strict `mc-asset://` references and a rich ODT round trip with an image, page break, landscape layout, header, footer and page fields.
 
@@ -69,6 +70,96 @@ The focused checks passed:
 A Windows release-profile executable was rebuilt without an installer bundle and remained running during a six-second smoke launch. This proves that the executable starts, but it does not replace the manual Tauri office import/export matrix below. The local QA executable was unsigned and must not be treated as a public release artifact.
 
 The detailed visual QA record is available in [`V1_0_7_EDITOR_UI_QA.md`](V1_0_7_EDITOR_UI_QA.md).
+
+## 2026-08-04 Editor Correction Lot
+
+The maintainer's Windows test build identified a second set of editor and shell
+issues. The current implementation addresses them as follows.
+
+### Shell and file cards
+
+- The decorative vertical Coral stripe was removed from the onboarding
+  screenshot.
+- Converter files are laid out as structured cards with a dedicated identity,
+  complete wrapping filename, type, metadata, status and action row. Long names
+  are no longer intentionally reduced to a few characters.
+- OCR and removal actions remain inside their card and primary pointer targets
+  use the 44 px minimum.
+
+### Document workspace and formatting
+
+- **Focus mode** places the editor shell over the exact viewport. Escape exits
+  the mode and returns focus to its trigger.
+- The formatting bar uses labelled local SVG icons. Alignment, image insertion,
+  table, link and other ambiguous actions expose explicit accessible names and
+  tooltips.
+- At narrow widths, the toolbar scrolls horizontally with 44 px previous/next
+  controls instead of clipping tools or widening the page.
+- Paragraph-heading presets were removed from the UI. Imported `h1`–`h6`
+  nodes remain schema-compatible so opening an existing document is not
+  destructive.
+- Font size accepts any valid value from 6 to 288 pt, including decimal input;
+  suggestions remain available but are not the only permitted values.
+- Text color is independent from highlight color. Highlight exposes an
+  explicit no-highlight action and its toolbar glyph reflects the selected
+  color, returning to the default Ink color when no highlight is active.
+- The toolbar includes locally bundled OFL-1.1 families and optional system
+  families without network loading. Exact provenance is recorded in
+  [`THIRD_PARTY_FONTS.md`](THIRD_PARTY_FONTS.md).
+
+### Images and tables
+
+- A selected local image has explicit move and resize handles. Keyboard arrows
+  move it by a bounded step, Shift uses the larger step, and the image can
+  return to normal text flow.
+- Four layer actions are available: send to back, step backward, step forward
+  and bring to front. Persisted offsets and `z-index` values are bounded by the
+  Rust editor contract.
+- Selected image controls and the resize handle use 44 px targets.
+- Table columns expose resize handles. Context controls add/delete rows or
+  columns, merge/split cells and delete the table; their mobile targets are
+  also 44 px.
+
+### Recent documents, saving and export
+
+- A 520 ms long press starts recent-document multi-selection. Keyboard users
+  can enter the same mode explicitly; Escape leaves it. Batch deletion remains
+  behind a Vellum confirmation dialog and retains failed items selected.
+- New editor sessions select Markdown as the default export format.
+- An untitled document cannot be exported until a non-placeholder title is
+  entered. The accepted title becomes the current draft title and therefore
+  the proposed output filename.
+- Slow export displays a modal Vellum progress state. Source overwrite approval
+  is also an accessible in-app dialog; the WebView's unstyled
+  `window.confirm()` prompt is no longer used.
+- Save/Save As adopts the chosen destination stem as the document title when
+  it is a new association, so the visible title and stored source stay aligned.
+- DOCX, RTF and PDF generation now writes one rich ODT intermediate, normalizes
+  it through the strict local LibreOffice ODT path and converts the normalized
+  ODT to the requested target. The same-format normalization remains an
+  intentional compatibility step.
+
+### Evidence boundary
+
+`npm run check`, the Rust tests and the targeted compiled-preview E2E passed.
+The preview checks covered complete card names, focus viewport geometry,
+toolbar overflow/navigation, 44 px mobile controls, text/highlight formatting,
+image movement/resizing/layers, table resizing, title gating, export progress,
+in-app overwrite confirmation and long-press batch deletion. There was no
+unintentional horizontal page overflow in the inspected states.
+
+The UI measurements remain Chromium-preview evidence, not native Tauri proof.
+Separately, a corrected Windows engine probe using bundled LibreOffice
+26.2.3.2 completed rich ODT normalization in 10.593 s, normalized ODT-to-PDF
+in 11.102 s (62,348 bytes) and normalized ODT-to-DOCX in 11.713 s (8,943
+bytes). PDFium confirmed two landscape pages with exploitable text and the
+rendered pages retained the table, image, header, footer and pagination. DOCX
+inspection confirmed the non-uniform column ratios, horizontal and vertical
+merges, one exact embedded PNG, page fields, manual page break, margins,
+landscape layout, text styling and justification. Reopening that DOCX through
+LibreOffice produced a two-page PDF with the same text and no observable visual
+loss. These are real local engine and output-structure receipts; the full
+packaged Tauri export interaction remains pending.
 
 ## Phase 2 Frontend And HTML Boundary
 

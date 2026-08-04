@@ -6,6 +6,7 @@ mod text;
 mod tiptap;
 mod types;
 mod writer;
+mod writer_image;
 mod writer_render;
 mod xml;
 

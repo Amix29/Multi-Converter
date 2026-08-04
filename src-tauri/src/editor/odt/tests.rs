@@ -141,7 +141,10 @@ fn generated_tables_declare_every_column_and_page_breaks_keep_the_master_page() 
 
     let content = build_content_xml(&document).unwrap();
     let styles = build_styles_xml(&document).unwrap();
-    assert!(content.contains("table:number-columns-repeated=\"3\""));
+    assert_eq!(content.matches("<table:table-column ").count(), 3);
+    assert!(content.contains("table:name=\"BodyTable1\""));
+    assert!(content.contains("style:family=\"table-column\""));
+    assert!(content.contains("table:style-name=\"TableCell\""));
     assert!(content.contains(
         "style:name=\"PageBreak\" style:family=\"paragraph\" style:parent-style-name=\"Standard\""
     ));
@@ -152,6 +155,60 @@ fn generated_tables_declare_every_column_and_page_breaks_keep_the_master_page() 
     assert!(styles.contains(
         "<style:style style:name=\"Standard\" style:family=\"paragraph\" style:class=\"text\"/>"
     ));
+    parse_xml(content.as_bytes()).unwrap();
+}
+
+#[test]
+fn generated_layout_keeps_justification_unique_tables_widths_and_merged_cells() {
+    let mut document = new_document("Rapport structuré");
+    document.content = json!({
+        "type": "doc",
+        "content": [
+            {
+                "type": "paragraph",
+                "attrs": { "textAlign": "justify" },
+                "content": [{ "type": "text", "text": "Texte justifié" }]
+            },
+            {
+                "type": "table",
+                "content": [
+                    {
+                        "type": "tableRow",
+                        "content": [
+                            { "type": "tableHeader", "attrs": { "colspan": 1, "rowspan": 2, "colwidth": [120] }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "A" }] }] },
+                            { "type": "tableHeader", "attrs": { "colspan": 2, "rowspan": 1, "colwidth": [200, 100] }, "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "B" }] }] }
+                        ]
+                    },
+                    {
+                        "type": "tableRow",
+                        "content": [
+                            { "type": "tableCell", "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [200] }, "content": [{ "type": "paragraph" }] },
+                            { "type": "tableCell", "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [100] }, "content": [{ "type": "paragraph" }] }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "table",
+                "content": [{
+                    "type": "tableRow",
+                    "content": [{ "type": "tableCell", "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [100] }, "content": [{ "type": "paragraph" }] }]
+                }]
+            }
+        ]
+    });
+
+    let content = build_content_xml(&document).unwrap();
+    assert!(content.contains("text:style-name=\"Justify\""));
+    assert_eq!(content.matches("table:name=\"BodyTable1\"").count(), 1);
+    assert_eq!(content.matches("table:name=\"BodyTable2\"").count(), 1);
+    assert!(content.contains("style:name=\"BodyTable1.Column1\""));
+    assert!(content.contains("style:column-width=\"48.571mm\""));
+    assert!(content.contains("style:column-width=\"80.952mm\""));
+    assert!(content.contains("style:column-width=\"40.476mm\""));
+    assert!(content.matches("<table:covered-table-cell/>").count() >= 2);
+    assert!(content.contains("table:style-name=\"TableHeaderCell\""));
+    parse_xml(content.as_bytes()).unwrap();
 }
 
 #[test]
@@ -203,4 +260,72 @@ fn rich_odt_round_trip_keeps_image_header_footer_and_page_layout() {
     assert!(parsed.footer.unwrap().to_string().contains("{page}"));
     assert!(parsed.content.to_string().contains("Rapport été"));
     assert!(parsed.content.to_string().contains("pageBreak"));
+}
+
+#[test]
+fn rich_odt_round_trip_keeps_table_proportions_and_floating_image_layout() {
+    let mut png = Cursor::new(Vec::new());
+    image::DynamicImage::ImageRgba8(image::RgbaImage::from_pixel(
+        4,
+        2,
+        image::Rgba([80, 70, 60, 255]),
+    ))
+    .write_to(&mut png, image::ImageFormat::Png)
+    .unwrap();
+    let (asset, bytes) = make_asset("figure.png", "image/png", png.into_inner()).unwrap();
+    let mut document = new_document("Mise en page");
+    document.assets.push(asset.clone());
+    document.content = json!({
+        "type": "doc",
+        "content": [
+            {
+                "type": "image",
+                "attrs": {
+                    "assetId": asset.id,
+                    "src": format!("mc-asset://{}", asset.id),
+                    "alt": "Figure",
+                    "title": "Figure",
+                    "width": "50%",
+                    "height": "40mm",
+                    "align": "right",
+                    "layoutMode": "floating",
+                    "offsetXmm": -12.5,
+                    "offsetYmm": 22,
+                    "zIndex": -20,
+                    "wrapMode": "parallel"
+                }
+            },
+            {
+                "type": "table",
+                "content": [{
+                    "type": "tableRow",
+                    "content": [
+                        { "type": "tableCell", "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [120] }, "content": [{ "type": "paragraph" }] },
+                        { "type": "tableCell", "attrs": { "colspan": 1, "rowspan": 1, "colwidth": [240] }, "content": [{ "type": "paragraph" }] }
+                    ]
+                }]
+            }
+        ]
+    });
+
+    let directory = tempfile::tempdir().unwrap();
+    let output = directory.path().join("layout-roundtrip.odt");
+    write_odt_with_assets(&document, &output, |_| Ok(bytes.clone())).unwrap();
+    let parsed = parse_odt(&output).unwrap();
+    let image = &parsed.content["content"][0]["attrs"];
+    assert_eq!(image["layoutMode"], "floating");
+    assert_eq!(image["align"], "right");
+    assert_eq!(image["wrapMode"], "parallel");
+    assert_eq!(image["zIndex"], -20);
+    assert_eq!(image["offsetXmm"], -12.5);
+    assert_eq!(image["offsetYmm"], 22.0);
+    let first_width = parsed.content["content"][1]["content"][0]["content"][0]["attrs"]["colwidth"]
+        [0]
+    .as_u64()
+    .unwrap();
+    let second_width =
+        parsed.content["content"][1]["content"][0]["content"][1]["attrs"]["colwidth"][0]
+            .as_u64()
+            .unwrap();
+    assert!((second_width as f64 / first_width as f64 - 2.0).abs() < 0.02);
 }

@@ -24,6 +24,7 @@
 | [`REFACTOR_BASELINE.md`](REFACTOR_BASELINE.md) | Active | Phase 1 measurements and Phase 2 refactor budgets |
 | [`TESTING.md`](TESTING.md) | Active | Commands and platform validation procedures |
 | [`THIRD_PARTY_ENGINES.md`](THIRD_PARTY_ENGINES.md) | Active | Engine licensing, checksums, notices and packaging rules |
+| [`THIRD_PARTY_FONTS.md`](THIRD_PARTY_FONTS.md) | Active | Embedded editor fonts, provenance, licenses and offline contract |
 
 ## Project Architecture
 

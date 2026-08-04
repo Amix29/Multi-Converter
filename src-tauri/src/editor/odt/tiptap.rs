@@ -1,5 +1,5 @@
 use super::package::normalize_package_path;
-use super::styles::{marks_from_style, normalize_alignment, resolved_style};
+use super::styles::{marks_from_style, normalize_alignment, parse_length_mm, resolved_style};
 use super::types::{AssetContext, StyleCatalog};
 use super::xml::{XmlChild, XmlNode};
 use super::{NS_DRAW, NS_OFFICE, NS_SVG, NS_TABLE, NS_TEXT, NS_XLINK};
@@ -54,7 +54,13 @@ fn block_to_tiptap(
             }
         });
         if frames.len() == 1 && !has_meaningful_non_frame {
-            return frame_to_image(frames[0], assets).map(Some);
+            let style = resolved_style(node.attr(NS_TEXT, "style-name"), catalog)?;
+            let align = style
+                .paragraph
+                .get("text-align")
+                .map(String::as_str)
+                .map(normalize_alignment);
+            return frame_to_image(frames[0], catalog, assets, align).map(Some);
         }
         let style = resolved_style(node.attr(NS_TEXT, "style-name"), catalog)?;
         let mut attrs = Map::new();
@@ -118,13 +124,20 @@ fn block_to_tiptap(
     if node.is(NS_TABLE, "table") {
         let mut rows = Vec::new();
         let mut source_rows = Vec::new();
+        let column_widths = table_column_widths(node, catalog)?;
         collect_table_rows(node, false, &mut source_rows);
         for (row, header_row) in source_rows {
             let mut cells = Vec::new();
+            let mut column_index = 0usize;
             for cell in row.child_nodes().filter(|child| {
                 child.is(NS_TABLE, "table-cell") || child.is(NS_TABLE, "covered-table-cell")
             }) {
                 if cell.is(NS_TABLE, "covered-table-cell") {
+                    column_index += cell
+                        .attr(NS_TABLE, "number-columns-repeated")
+                        .and_then(|value| value.parse::<usize>().ok())
+                        .unwrap_or(1)
+                        .min(1_000);
                     continue;
                 }
                 let mut blocks = Vec::new();
@@ -144,9 +157,19 @@ fn block_to_tiptap(
                     .attr(NS_TABLE, "number-rows-spanned")
                     .and_then(|value| value.parse::<u32>().ok())
                     .unwrap_or(1);
+                let mut attrs = Map::new();
+                attrs.insert("colspan".to_string(), json!(colspan));
+                attrs.insert("rowspan".to_string(), json!(rowspan));
+                if let Some(widths) = column_widths
+                    .get(column_index..column_index.saturating_add(colspan as usize))
+                    .filter(|widths| widths.len() == colspan as usize)
+                    .and_then(|widths| widths.iter().copied().collect::<Option<Vec<_>>>())
+                {
+                    attrs.insert("colwidth".to_string(), json!(widths));
+                }
                 let parsed_cell = json!({
                     "type": if header_row { "tableHeader" } else { "tableCell" },
-                    "attrs": { "colspan": colspan, "rowspan": rowspan },
+                    "attrs": attrs,
                     "content": blocks
                 });
                 let repeated = cell
@@ -155,6 +178,7 @@ fn block_to_tiptap(
                     .unwrap_or(1)
                     .min(1_000);
                 cells.extend(std::iter::repeat_n(parsed_cell, repeated));
+                column_index = column_index.saturating_add(repeated);
             }
             let parsed_row = json!({ "type": "tableRow", "content": cells });
             let repeated = row
@@ -167,7 +191,7 @@ fn block_to_tiptap(
         return Ok(Some(json!({ "type": "table", "content": rows })));
     }
     if node.is(NS_DRAW, "frame") {
-        return frame_to_image(node, assets).map(Some);
+        return frame_to_image(node, catalog, assets, None).map(Some);
     }
     if node.namespace == NS_DRAW && matches!(node.name.as_str(), "object" | "object-ole" | "plugin")
     {
@@ -203,6 +227,25 @@ fn collect_table_rows<'a>(
             collect_table_rows(child, inherited_header, output);
         }
     }
+}
+
+fn table_column_widths(table: &XmlNode, catalog: &StyleCatalog) -> CommandResult<Vec<Option<u32>>> {
+    let mut widths = Vec::new();
+    for column in table
+        .child_nodes()
+        .filter(|child| child.is(NS_TABLE, "table-column"))
+    {
+        let style = resolved_style(column.attr(NS_TABLE, "style-name"), catalog)?;
+        let width = parse_length_mm(style.table_column.get("column-width").map(String::as_str))
+            .map(|width| ((width * 96.0 / 25.4).round() as u32).clamp(1, 4_096));
+        let repeated = column
+            .attr(NS_TABLE, "number-columns-repeated")
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or(1)
+            .min(1_000);
+        widths.extend(std::iter::repeat_n(width, repeated));
+    }
+    Ok(widths)
 }
 
 fn inline_content(
@@ -254,7 +297,7 @@ fn inline_content(
                 push_text(&mut output, "{total}", inherited_marks);
             }
             XmlChild::Node(child) if child.is(NS_DRAW, "frame") => {
-                let image = frame_to_image(child, assets)?;
+                let image = frame_to_image(child, catalog, assets, None)?;
                 let label = image
                     .pointer("/attrs/alt")
                     .and_then(Value::as_str)
@@ -297,7 +340,12 @@ fn push_text(output: &mut Vec<Value>, text: &str, marks: &[Value]) {
     output.push(Value::Object(node));
 }
 
-fn frame_to_image(node: &XmlNode, assets: &mut AssetContext) -> CommandResult<Value> {
+fn frame_to_image(
+    node: &XmlNode,
+    catalog: &StyleCatalog,
+    assets: &mut AssetContext,
+    paragraph_align: Option<&str>,
+) -> CommandResult<Value> {
     if node.child_nodes().any(|child| {
         child.namespace == NS_DRAW
             && matches!(child.name.as_str(), "object" | "object-ole" | "plugin")
@@ -347,16 +395,60 @@ fn frame_to_image(node: &XmlNode, assets: &mut AssetContext) -> CommandResult<Va
         .attr(NS_SVG, "width")
         .map(str::to_string)
         .unwrap_or_else(|| "auto".to_string());
+    let height = node.attr(NS_SVG, "height").map(str::to_string);
+    let style = resolved_style(node.attr(NS_DRAW, "style-name"), catalog)?;
+    let align = style
+        .graphic
+        .get("horizontal-pos")
+        .map(String::as_str)
+        .filter(|align| matches!(*align, "left" | "center" | "right"))
+        .or(paragraph_align)
+        .unwrap_or("center");
+    let layout_mode = if node.attr(NS_TEXT, "anchor-type") == Some("as-char") {
+        "flow"
+    } else {
+        "floating"
+    };
+    let offset_x_mm = parse_length_mm(node.attr(NS_SVG, "x")).unwrap_or(0.0);
+    let offset_y_mm = parse_length_mm(node.attr(NS_SVG, "y")).unwrap_or(0.0);
+    let z_index = node
+        .attr(NS_DRAW, "z-index")
+        .and_then(|value| value.parse::<i64>().ok())
+        .map(|value| (value - 100).clamp(-100, 100))
+        .unwrap_or(0);
+    let wrap_mode = if style
+        .graphic
+        .get("wrap")
+        .is_some_and(|wrap| wrap == "parallel")
+    {
+        "parallel"
+    } else {
+        "none"
+    };
+    let mut attrs = Map::new();
+    attrs.insert("assetId".to_string(), json!(asset.id));
+    attrs.insert("src".to_string(), json!(format!("mc-asset://{}", asset.id)));
+    attrs.insert(
+        "alt".to_string(),
+        json!(node.attr(NS_DRAW, "name").unwrap_or(&asset.name)),
+    );
+    attrs.insert(
+        "title".to_string(),
+        json!(node.attr(NS_DRAW, "name").unwrap_or(&asset.name)),
+    );
+    attrs.insert("width".to_string(), json!(width));
+    if let Some(height) = height {
+        attrs.insert("height".to_string(), json!(height));
+    }
+    attrs.insert("align".to_string(), json!(align));
+    attrs.insert("layoutMode".to_string(), json!(layout_mode));
+    attrs.insert("offsetXmm".to_string(), json!(offset_x_mm));
+    attrs.insert("offsetYmm".to_string(), json!(offset_y_mm));
+    attrs.insert("zIndex".to_string(), json!(z_index));
+    attrs.insert("wrapMode".to_string(), json!(wrap_mode));
     Ok(json!({
         "type": "image",
-        "attrs": {
-            "assetId": asset.id,
-            "src": format!("mc-asset://{}", asset.id),
-            "alt": node.attr(NS_DRAW, "name").unwrap_or(&asset.name),
-            "title": node.attr(NS_DRAW, "name").unwrap_or(&asset.name),
-            "width": width,
-            "align": "center"
-        }
+        "attrs": attrs
     }))
 }
 

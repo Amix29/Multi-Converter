@@ -255,6 +255,9 @@ export function createPreviewApi(): MultiConverterApi {
       return { path: `${PREVIEW_ROOT}\\Documents\\${document.title}.${request.targetFormat}`, document };
     },
     async editorExportDocument(request) {
+      if (previewParams.get("mockSlowEditorExport") === "1") {
+        await new Promise((resolve) => window.setTimeout(resolve, 300));
+      }
       const document = await this.editorSaveDraft(request.document);
       return { path: `${PREVIEW_ROOT}\\Downloads\\${document.title}.${request.targetFormat}`, document };
     },

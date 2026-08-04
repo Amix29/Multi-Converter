@@ -196,6 +196,20 @@ the local document asset directory. Blob URLs are created only for displaying
 bytes returned by `editorReadAsset` and are revoked when the image view is
 disposed.
 
+Interactive image placement does not broaden that asset authority. Persisted
+layout values are validated separately: widths/heights accept only bounded
+numeric measures, floating offsets are limited to ±500 mm, layer indices to
+`-100..100`, and alignment/layout/wrap values use closed enums. Imported or
+pasted HTML cannot set floating offsets or layer indices because those
+attributes are not in the HTML sanitizer allowlist. Pointer and keyboard
+controls update only the selected Tiptap image node; they never move or rewrite
+the original image file.
+
+The editor's additional WOFF2 fonts are repository-local, hash-locked and
+distributed with their OFL-1.1 texts. The formatting menu may also name system
+families, but it never downloads them. A missing system family falls back to
+the local/system stack and cannot trigger a remote font request.
+
 ## Content Security Policy
 
 The exact WebView CSP configured in `src-tauri/tauri.conf.json` is:
@@ -270,11 +284,28 @@ Unexpected files, non-regular filesystem entries and tampering are rejected.
 Cancellation and crash terminate the Windows process tree and force a clean
 worker on the next job.
 
+The cancellation token is also consulted during archive extraction, file-tree
+enumeration, manifest verification, SHA-256 reads and PDF page preparation.
+Partial extraction remains confined to the temporary staging directory. A
+cancelled verification is deliberately not retained in the process-wide
+verification cache, so cancellation cannot poison later OCR attempts. The
+frontend invalidates the cancelled job sequence and ignores its late events or
+result before enabling **Retry**.
+
 Windows LibreOffice packaging uses its already hash-locked engine archive to
 stay below the NSIS raw-resource limit. Rust verifies the embedded archive hash
 against `engines-manifest.json`, applies the same traversal and expansion
 guards, and extracts it on the first conversion that needs LibreOffice. The
 source engine remains unchanged; only its package representation differs.
+
+Editor DOCX, RTF and PDF output is generated from one bounded ODT intermediate,
+normalized through the strict local LibreOffice ODT path and converted from the
+normalized file to the requested target. Both LibreOffice steps remain local;
+they add no network path or fallback. The source-conflict check is repeated
+after the potentially slow conversion and immediately before atomic
+replacement. The title dialog is a usability gate only: the native boundary
+still sanitizes the filename stem, reserves a non-conflicting destination and
+validates the document before generation.
 
 Clipboard access is restricted to `clipboard-manager:allow-write-text`.
 Multi-Converter cannot read, monitor, clear or write image/HTML clipboard data
@@ -289,6 +320,16 @@ Base64 images pasted into both the document body and a header/footer surface.
 The checks preserve supported text and safe links while confirming that active
 content does not execute. Static editor contracts also pin DOMPurify, keep the
 sanitizer on every rich-HTML entry point and preserve the CSP boundary.
+
+The 2026-08-04 correction checks additionally cover bounded persisted image
+layout, local font provenance, explicit application-owned overwrite/export
+dialogs and cancellation during OCR resource preparation. Targeted preview
+tests show that cancelled jobs cannot publish stale results, but preview mocks
+do not prove native process termination. Real Windows OCR exercised the
+corrected path and matched the reviewed fixture exactly. The corrected Windows
+LibreOffice probe completed ODT normalization, DOCX and PDF generation; this
+does not by itself prove packaged-app behavior, reopened document structure or
+visual fidelity.
 
 The final 15-step Windows gate passed on 2026-07-31 after the last CSS and test
 corrections. It included both npm audits, static application and CSP contracts,

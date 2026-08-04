@@ -28,6 +28,16 @@ const imageNodeView = fs.readFileSync(path.join(root, "src", "editor", "Document
 const htmlSanitizer = fs.readFileSync(path.join(root, "src", "editor", "htmlSanitizer.ts"), "utf8");
 const editorAssets = fs.readFileSync(path.join(root, "src", "editor", "editorAssets.ts"), "utf8");
 const documentEditor = fs.readFileSync(path.join(root, "src", "editor", "DocumentEditor.tsx"), "utf8");
+const editorToolbar = [
+  fs.readFileSync(path.join(root, "src", "editor", "EditorToolbar.tsx"), "utf8"),
+  fs.readFileSync(path.join(root, "src", "editor", "EditorTextControls.tsx"), "utf8"),
+  fs.readFileSync(path.join(root, "src", "editor", "EditorToolbarSections.tsx"), "utf8"),
+].join("\n");
+const tableControls = fs.readFileSync(path.join(root, "src", "editor", "EditorTableControls.tsx"), "utf8");
+const toolbarIcons = fs.readFileSync(path.join(root, "src", "editor", "EditorToolbarIcons.tsx"), "utf8");
+const documentCommandRow = fs.readFileSync(path.join(root, "src", "editor", "DocumentCommandRow.tsx"), "utf8");
+const editorFocusMode = fs.readFileSync(path.join(root, "src", "editor", "useEditorFocusMode.ts"), "utf8");
+const editorCss = fs.readFileSync(path.join(root, "src", "editor", "editor.css"), "utf8");
 const headerFooterDialog = fs.readFileSync(path.join(root, "src", "editor", "HeaderFooterDialog.tsx"), "utf8");
 const tauriConfig = fs.readFileSync(path.join(root, "src-tauri", "tauri.conf.json"), "utf8");
 
@@ -65,6 +75,27 @@ assert.match(htmlSanitizer, /DOMPurify\.sanitize/, "editor HTML must use DOMPuri
 assert.match(htmlSanitizer, /options\.allowDataImages\s*&&\s*isBoundedDataImage/, "pasted HTML data images must stay disabled by default");
 assert.match(editorAssets, /allowDataImages:\s*true/, "only the import asset migration may admit bounded data images");
 assert.match(documentEditor, /transformPastedHTML:[\s\S]*sanitizeImportedHtml/, "document HTML paste/drop sanitization is missing");
+assert.match(documentEditor, /heading:\s*\{\s*levels:\s*\[1, 2, 3, 4, 5, 6\]/, "imported heading nodes must remain supported");
+assert.doesNotMatch(editorToolbar, /toggleHeading|paragraphStyle/, "the editor toolbar must not expose heading presets");
+assert.match(editorToolbar, /setFontSize/, "free point-size formatting is missing");
+assert.match(editorToolbar, /unsetColor/, "the default text color action is missing");
+assert.match(editorToolbar, /unsetHighlight/, "the no-highlight action is missing");
+assert.match(editorToolbar, /aria-label/, "editor formatting controls must expose explicit labels");
+assert.match(toolbarIcons, /<svg/, "editor controls must use explicit local SVG icons");
+assert.match(toolbarIcons, /aria-hidden="true"/, "toolbar icons must defer their names to accessible labels");
+assert.match(
+  fs.readFileSync(path.join(root, "src", "editor", "editorFormatting.ts"), "utf8"),
+  /Atkinson Hyperlegible[\s\S]*Liberation Sans[\s\S]*Noto Sans/,
+  "the local-only font list must include open system families",
+);
+assert.match(tableControls, /addColumnBefore/, "table column controls are missing");
+assert.match(tableControls, /addRowAfter/, "table row controls are missing");
+assert.match(tableControls, /mergeCells/, "table cell controls are missing");
+assert.match(editorCss, /\.column-resize-handle/, "table resize handles are not styled");
+assert.match(editorCss, /\.resize-cursor/, "table resize cursor feedback is missing");
+assert.match(editorFocusMode, /event\.key !== "Escape"/, "focus mode must close with Escape");
+assert.match(editorFocusMode, /focusButtonRef\.current\?\.focus/, "focus mode must restore focus to its trigger");
+assert.match(documentCommandRow, /editor\.documents/, "the document back action needs a visible label");
 assert.match(headerFooterDialog, /transformPastedHTML:[\s\S]*sanitizeImportedHtml/, "header/footer HTML paste/drop sanitization is missing");
 assert.match(tauriConfig, /script-src 'self'/, "the Tauri script CSP must stay self-only");
 assert.doesNotMatch(tauriConfig, /script-src[^;]*(?:'unsafe-inline'|'unsafe-eval')/, "the Tauri script CSP must not allow inline code or eval");

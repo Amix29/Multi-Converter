@@ -150,7 +150,7 @@ assert.match(testingDocs, /committed V1\.0\.6 evidence is complete[\s\S]*`releas
 assert.match(testingDocs, /future V1\.0\.7 status gate[\s\S]*editor and OCR/, "testing docs must require a new version-specific gate for V1.0.7");
 assert.match(testingDocs, /two-architecture `macOS Conversion Matrix`[\s\S]*Apple Silicon[\s\S]*Intel/, "testing docs must require macOS conversion evidence on both architectures");
 assert.match(v107Plan, /document editor powered by the open-source Tiptap\/ProseMirror stack[\s\S]*PP-OCRv6_medium/, "V1.0.7 plan must preserve both official objectives");
-assert.match(v107Plan, /repository version remains `1\.0\.6` until both objectives are implemented/, "V1.0.7 plan must keep version metadata gated");
+assert.match(v107Plan, /repository metadata is synchronized to `1\.0\.7`[\s\S]*version change is not a release-readiness claim/, "V1.0.7 plan must distinguish development metadata from release readiness");
 assert.match(v107Validation, /Overall gate:\s*\*\*blocked\*\*/, "V1.0.7 validation must not claim release readiness");
 assert.match(v107Ocr, /Windows implementation:\s*\*\*development checkpoint, real Tauri and extracted-package runtime exercised\*\*/, "OCR documentation must record the implemented Windows development boundary");
 assert.match(v107Ocr, /Windows NSIS build:\s*\*\*passed locally with compressed runtime resources\*\*/, "OCR documentation must record the verified local Windows build");

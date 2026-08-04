@@ -66,10 +66,12 @@ pub(super) fn write_odt_with_assets(
 
 pub(super) fn build_content_xml(document: &EditorDocument) -> CommandResult<String> {
     let writer_styles = writer_style_catalog(document);
-    let body = render_odt_blocks(&document.content, document, &writer_styles)?;
+    let rendered = render_odt_blocks(&document.content, document, &writer_styles, "Body")?;
     Ok(format!(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><office:document-content xmlns:office=\"{NS_OFFICE}\" xmlns:text=\"{NS_TEXT}\" xmlns:style=\"{NS_STYLE}\" xmlns:table=\"{NS_TABLE}\" xmlns:draw=\"{NS_DRAW}\" xmlns:xlink=\"{NS_XLINK}\" xmlns:fo=\"{NS_FO}\" xmlns:svg=\"{NS_SVG}\" office:version=\"1.3\"><office:automatic-styles>{}</office:automatic-styles><office:body><office:text>{body}</office:text></office:body></office:document-content>",
-        automatic_styles(&writer_styles)
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><office:document-content xmlns:office=\"{NS_OFFICE}\" xmlns:text=\"{NS_TEXT}\" xmlns:style=\"{NS_STYLE}\" xmlns:table=\"{NS_TABLE}\" xmlns:draw=\"{NS_DRAW}\" xmlns:xlink=\"{NS_XLINK}\" xmlns:fo=\"{NS_FO}\" xmlns:svg=\"{NS_SVG}\" office:version=\"1.3\"><office:automatic-styles>{}{}</office:automatic-styles><office:body><office:text>{}</office:text></office:body></office:document-content>",
+        automatic_styles(&writer_styles),
+        rendered.automatic_styles,
+        rendered.body,
     ))
 }
 
@@ -79,15 +81,24 @@ pub(super) fn build_styles_xml(document: &EditorDocument) -> CommandResult<Strin
     let header = document
         .header
         .as_ref()
-        .map(|value| render_odt_blocks(value, document, &writer_styles))
+        .map(|value| render_odt_blocks(value, document, &writer_styles, "Header"))
         .transpose()?
-        .unwrap_or_default();
-    let mut footer = document
+        .unwrap_or_else(|| super::writer_render::RenderedOdtBlocks {
+            body: String::new(),
+            automatic_styles: String::new(),
+        });
+    let footer = document
         .footer
         .as_ref()
-        .map(|value| render_odt_blocks(value, document, &writer_styles))
+        .map(|value| render_odt_blocks(value, document, &writer_styles, "Footer"))
         .transpose()?
-        .unwrap_or_default();
+        .unwrap_or_else(|| super::writer_render::RenderedOdtBlocks {
+            body: String::new(),
+            automatic_styles: String::new(),
+        });
+    let layout_styles = format!("{}{}", header.automatic_styles, footer.automatic_styles);
+    let header = header.body;
+    let mut footer = footer.body;
     if document.page.numbering != "none" && !contains_page_placeholder(document.footer.as_ref()) {
         let align_style = if document.page.numbering == "bottom-right" {
             "Right"
@@ -97,7 +108,7 @@ pub(super) fn build_styles_xml(document: &EditorDocument) -> CommandResult<Strin
         footer.push_str(&format!("<text:p text:style-name=\"{align_style}\"><text:page-number text:select-page=\"current\">1</text:page-number></text:p>"));
     }
     Ok(format!(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><office:document-styles xmlns:office=\"{NS_OFFICE}\" xmlns:text=\"{NS_TEXT}\" xmlns:style=\"{NS_STYLE}\" xmlns:fo=\"{NS_FO}\" xmlns:svg=\"{NS_SVG}\" xmlns:draw=\"{NS_DRAW}\" xmlns:xlink=\"{NS_XLINK}\" xmlns:table=\"{NS_TABLE}\" office:version=\"1.3\"><office:styles>{}</office:styles><office:automatic-styles><style:page-layout style:name=\"PageLayout\"><style:page-layout-properties fo:page-width=\"{width}mm\" fo:page-height=\"{height}mm\" style:print-orientation=\"{}\" fo:margin-top=\"{}mm\" fo:margin-right=\"{}mm\" fo:margin-bottom=\"{}mm\" fo:margin-left=\"{}mm\"/><style:header-style><style:header-footer-properties fo:min-height=\"5mm\" fo:margin-left=\"0mm\" fo:margin-right=\"0mm\" fo:margin-bottom=\"4mm\" style:dynamic-spacing=\"true\"/></style:header-style><style:footer-style><style:header-footer-properties fo:min-height=\"5mm\" fo:margin-left=\"0mm\" fo:margin-right=\"0mm\" fo:margin-top=\"4mm\" style:dynamic-spacing=\"true\"/></style:footer-style></style:page-layout></office:automatic-styles><office:master-styles><style:master-page style:name=\"Standard\" style:page-layout-name=\"PageLayout\"><style:header>{header}</style:header><style:footer>{footer}</style:footer></style:master-page></office:master-styles></office:document-styles>",
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><office:document-styles xmlns:office=\"{NS_OFFICE}\" xmlns:text=\"{NS_TEXT}\" xmlns:style=\"{NS_STYLE}\" xmlns:fo=\"{NS_FO}\" xmlns:svg=\"{NS_SVG}\" xmlns:draw=\"{NS_DRAW}\" xmlns:xlink=\"{NS_XLINK}\" xmlns:table=\"{NS_TABLE}\" office:version=\"1.3\"><office:styles>{}</office:styles><office:automatic-styles>{layout_styles}<style:page-layout style:name=\"PageLayout\"><style:page-layout-properties fo:page-width=\"{width}mm\" fo:page-height=\"{height}mm\" style:print-orientation=\"{}\" fo:margin-top=\"{}mm\" fo:margin-right=\"{}mm\" fo:margin-bottom=\"{}mm\" fo:margin-left=\"{}mm\"/><style:header-style><style:header-footer-properties fo:min-height=\"5mm\" fo:margin-left=\"0mm\" fo:margin-right=\"0mm\" fo:margin-bottom=\"4mm\" style:dynamic-spacing=\"true\"/></style:header-style><style:footer-style><style:header-footer-properties fo:min-height=\"5mm\" fo:margin-left=\"0mm\" fo:margin-right=\"0mm\" fo:margin-top=\"4mm\" style:dynamic-spacing=\"true\"/></style:footer-style></style:page-layout></office:automatic-styles><office:master-styles><style:master-page style:name=\"Standard\" style:page-layout-name=\"PageLayout\"><style:header>{header}</style:header><style:footer>{footer}</style:footer></style:master-page></office:master-styles></office:document-styles>",
         named_styles(&writer_styles),
         document.page.orientation,
         document.page.margins_mm.top,

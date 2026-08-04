@@ -90,7 +90,11 @@ the whole workflow in one component:
 | `src/app/layout/`, `settings/`, `welcome/`, `feedback/` | Shell navigation and focused overlays or panels |
 | `src/editor/EditorWorkspace.tsx` | Editor mode lifecycle, document opening and recent-document refresh |
 | `src/editor/DocumentEditor.tsx` | Active Tiptap document, autosave, save/export coordination and editor composition |
-| Other `src/editor/` modules | Canvas, toolbar, document commands, dialogs, local assets, extensions, search, pagination and HTML sanitization |
+| `src/editor/EditorToolbar*.tsx`, `EditorTextControls.tsx`, `EditorTableControls.tsx` | Labelled formatting primitives, responsive toolbar navigation, free typography and table commands |
+| `src/editor/DocumentImageView.tsx`, `src-tauri/src/editor/image_layout.rs` | Interactive image movement/resizing/layers and the matching bounded persisted layout contract |
+| `src/editor/DocumentOperationDialog.tsx`, `documentNaming.ts` | In-app overwrite/export states and non-placeholder title normalization |
+| `src/editor/EditorLanding.tsx`, `RecentDocumentDialogs.tsx` | Recent-document actions, long-press multi-selection and confirmed batch deletion |
+| Other `src/editor/` modules | Canvas, document commands, local assets, extensions, search, pagination and HTML sanitization |
 
 The converter and editor consume the public API from `src/lib/api.ts`. They do
 not import the Tauri or preview implementations directly.
@@ -127,6 +131,16 @@ preview mode; production-output inspection remains part of frontend validation.
 Paper is the active application theme. Multi-Converter does not expose a
 Carbon preference, and it does not fetch fonts, stylesheets or visual assets at
 runtime.
+
+The editor additionally loads four local WOFF2 resources from
+`src/assets/fonts/`: Source Sans 3, Atkinson Hyperlegible Next and JetBrains
+Mono. `public/third-party/fonts/fonts-manifest.json` pins their upstream
+commits, sizes, SHA-256 hashes and OFL-1.1 license files. Vite copies that
+compliance tree to `dist/third-party/fonts/` while content-hashing each WOFF2
+once under `dist/assets/`; the source and distribution font contracts enforce
+this offline supply-chain boundary. Optional system-family entries in the
+toolbar remain fallbacks and are not downloaded or redistributed. See
+[`THIRD_PARTY_FONTS.md`](THIRD_PARTY_FONTS.md).
 
 `src/styles.css` is only the ordered stylesheet entry point. Shell, files,
 formats, progress, welcome, settings, notices, feedback, motion and responsive
@@ -183,8 +197,28 @@ while preserving the existing import/export facade and serialized document
 schema.
 
 Office and PDF exports originate from the editor document model through the
-rich ODT generator. Deleting a draft removes only its local draft and assets,
-never the imported source.
+rich ODT generator. ODT is published directly. DOCX, RTF and PDF pass the
+generated file through a strict local LibreOffice ODT normalization, then use
+that normalized ODT for the requested LibreOffice conversion. Output still
+uses the existing conflict check and atomic replacement boundary. A corrected
+Windows probe confirms ODT normalization plus DOCX/PDF engine completion;
+packaged-app reopening, document structure and visual fidelity remain release
+validation work, not an architectural assumption.
+
+A new document defaults its export selector to Markdown. Export refuses an
+untitled placeholder until the user supplies a normalized title, then exposes
+the potentially long operation through an in-app Vellum dialog. Source
+overwrite confirmation uses the same application-owned dialog boundary instead
+of `window.confirm()`. Deleting a draft removes only its local draft and assets,
+never the imported source; batch deletion applies that rule independently to
+each selected draft.
+
+The Tiptap image node remains backed by `mc-asset://`. Its optional floating
+layout adds bounded offsets, width, wrap mode and a `z-index` from -100 to 100;
+Rust validates those attributes before persistence or ODT generation. Toolbar
+heading presets are intentionally absent, while imported heading nodes remain
+accepted for compatibility. Table column widths continue through TableKit's
+bounded `colwidth` contract.
 
 Closing an active document is an ordered operation: finish the pending
 autosave, refresh the recent-document list and only then return to the editor
@@ -200,8 +234,17 @@ are documented in [`SECURITY.md`](SECURITY.md).
 
 The frontend OCR dialog consumes only the typed API facade. Rust owns path and
 real-type validation, resource integrity, temporary files, process supervision,
-progress and cancellation. A persistent JSON-lines sidecar loads the locked
-local `PP-OCRv6_medium` pipeline on demand; only one OCR job can be active.
+progress and cancellation. Runtime extraction and manifest/model verification
+emit determinate preparation progress; worker startup and recognition remain
+indeterminate because the official engine exposes no reliable fractional
+value. A persistent JSON-lines sidecar loads the locked local
+`PP-OCRv6_medium` pipeline on demand; only one OCR job can be active.
+
+The cancellation flag is shared across archive extraction, manifest traversal,
+hashing, PDF preparation and worker supervision. UI attempts are sequenced so
+a cancelled job cannot overwrite a retry with late progress or a late result.
+Cancelling resource verification is never cached as a permanent verification
+failure, and the next attempt starts from a valid clean state.
 
 PDFium 0.3 inspects every PDF page. Usable native text is retained, while only
 insufficient pages are rendered at 300 DPI for OCR. The normalized result then

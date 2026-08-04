@@ -65,15 +65,16 @@ test("extracts and copies image text with cancellation, focus and Escape", async
   const cancel = dialog.getByRole("button", { name: "Annuler" });
   await expect(cancel).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(dialog).toBeVisible();
-  await cancel.click();
-  await expect(dialog.getByRole("alert")).toContainText("OCR annulé");
-  await expect(dialog.getByRole("button", { name: "Fermer" }).first()).toBeFocused();
-  await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(extract).toBeFocused();
 
   await extract.click();
+  await expect(dialog).toBeVisible();
+  await cancel.click();
+  await expect(dialog.getByRole("status")).toContainText("OCR annulé");
+  const retry = dialog.getByRole("button", { name: "Réessayer" });
+  await expect(retry).toBeFocused();
+  await retry.click();
   await expect(dialog.getByRole("textbox", { name: "Texte reconnu" })).toHaveValue(
     "Texte reconnu localement dans l’image de démonstration.",
   );
@@ -112,7 +113,7 @@ test("keeps the OCR dialog responsive at the four reference widths", async ({ pa
     await expect(dialog).toBeVisible();
     await expectResponsiveState(page, `${width}px OCR dialog`);
     await dialog.getByRole("button", { name: "Annuler" }).click();
-    await expect(dialog.getByRole("alert")).toBeVisible();
+    await expect(dialog.getByRole("status")).toContainText("OCR annulé");
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
   }
@@ -144,6 +145,46 @@ test("autosaves an edited document before returning it to recent documents", asy
   await expect(page.locator(".ProseMirror")).toContainText("Texte local avec accents");
 
   await expectNoHorizontalOverflow(page);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("offers explicit formatting controls and an escapable editor focus mode", async ({ page }, testInfo) => {
+  skipUnlessProject(testInfo, "desktop-chromium");
+  const consoleErrors = captureConsoleErrors(page);
+  await openPreview(page);
+
+  await page.getByRole("tab", { name: "Éditeur" }).click();
+  await page.getByRole("button", { name: "Nouveau document" }).click();
+
+  const toolbar = page.getByRole("toolbar", { name: "Outils de mise en forme" });
+  await expect(toolbar.getByRole("combobox", { name: "Style de paragraphe" })).toHaveCount(0);
+  await expect(toolbar.getByRole("button", { name: "Aligner à gauche" })).toBeVisible();
+  await expect(toolbar.getByRole("button", { name: "Centrer" })).toBeVisible();
+  await expect(toolbar.getByRole("button", { name: "Insérer une image" })).toBeVisible();
+  await expect(toolbar.getByRole("button", { name: "Aucun surlignage" })).toBeVisible();
+
+  const fontSize = toolbar.getByRole("combobox", { name: "Taille de police" });
+  await fontSize.fill("13,5");
+  await fontSize.press("Enter");
+  await expect(page.locator(".ProseMirror")).toBeFocused();
+
+  await toolbar.getByRole("button", { name: "Insérer un tableau" }).click();
+  await expect(toolbar.getByRole("group", { name: "Tableau" })).toBeVisible();
+  await expect(toolbar.getByRole("button", { name: "Ajouter une colonne à droite" })).toBeVisible();
+
+  const focusMode = page.getByRole("button", { name: "Mode concentration" });
+  await focusMode.click();
+  const editorShell = page.locator(".document-editor-shell");
+  await expect(editorShell).toHaveAttribute("data-focus-mode", "true");
+  const viewport = page.viewportSize();
+  expect(viewport).not.toBeNull();
+  await expect.poll(async () => {
+    const box = await editorShell.boundingBox();
+    return box ? [Math.round(box.x), Math.round(box.y), Math.round(box.width), Math.round(box.height)] : null;
+  }).toEqual([0, 0, viewport!.width, viewport!.height]);
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".document-editor-shell")).toHaveAttribute("data-focus-mode", "false");
+  await expect(focusMode).toBeFocused();
   expect(consoleErrors).toEqual([]);
 });
 

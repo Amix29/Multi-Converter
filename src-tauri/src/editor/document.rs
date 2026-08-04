@@ -303,6 +303,7 @@ fn validate_asset_nodes(value: &Value, known_assets: &HashSet<&str>) -> CommandR
                     "EDITOR_ASSET_MISSING:Une image référencée est introuvable.".to_string()
                 );
             }
+            super::image_layout::parse_image_layout(attrs)?;
         }
         for child in object.values() {
             validate_asset_nodes(child, known_assets)?;
@@ -457,5 +458,39 @@ mod tests {
             "content": [{ "type": "image", "attrs": { "assetId": id, "src": "data:image/png;base64,AA==" } }]
         });
         assert!(validate_document(&document, true).is_err());
+    }
+
+    #[test]
+    fn persisted_images_reject_unbounded_layout_attributes() {
+        let mut document = new_document("Images");
+        let id = uuid::Uuid::new_v4().to_string();
+        document.assets.push(EditorAssetRef {
+            id: id.clone(),
+            name: "image.png".to_string(),
+            mime_type: "image/png".to_string(),
+            size: 4,
+            width: Some(1),
+            height: Some(1),
+        });
+        document.content = json!({
+            "type": "doc",
+            "content": [{
+                "type": "image",
+                "attrs": {
+                    "assetId": id,
+                    "src": format!("mc-asset://{id}"),
+                    "width": "15cm",
+                    "layoutMode": "floating",
+                    "offsetXmm": 501,
+                    "zIndex": 0,
+                    "wrapMode": "parallel"
+                }
+            }]
+        });
+        assert!(
+            validate_document(&document, true)
+                .unwrap_err()
+                .starts_with("EDITOR_ASSET_INVALID")
+        );
     }
 }

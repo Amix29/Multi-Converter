@@ -3,7 +3,7 @@ use super::contracts::{
     OcrWarningV1,
 };
 use super::pdf_image::crop_light_page_border;
-use super::supervisor::{OcrState, emit};
+use super::supervisor::{OcrState, emit, ensure_not_canceled};
 use super::{normalize, runtime, validation};
 use crate::converters::{self, ExternalCommandProgress};
 use serde::Deserialize;
@@ -46,7 +46,9 @@ pub(super) fn recognize_pdf(
     job_id: &str,
     canceled: Arc<AtomicBool>,
 ) -> Result<OcrDocumentResultV1, String> {
+    ensure_not_canceled(&canceled)?;
     validate_pdf(source)?;
+    ensure_not_canceled(&canceled)?;
     emit(
         app,
         OcrProgressV1::document(job_id, 3, "inspecting", None, None),
@@ -73,20 +75,38 @@ pub(super) fn recognize_pdf(
         },
     )
     .map_err(|error| classify_pdfium_error(&error.to_string()))?;
+    ensure_not_canceled(&canceled)?;
     let inspection = read_inspection(&inspection_path)?;
-    let selected = inspection
-        .pages
-        .iter()
-        .any(|page| !page.usable)
-        .then(|| runtime::selected_runtime(app))
-        .transpose()?;
+    ensure_not_canceled(&canceled)?;
+    let selected = if inspection.pages.iter().any(|page| !page.usable) {
+        let mut runtime_progress = |phase: &'static str, value: u8| {
+            emit(
+                app,
+                OcrProgressV1::document(
+                    job_id,
+                    map_runtime_progress(phase, value),
+                    phase,
+                    None,
+                    Some(inspection.page_count as u32),
+                ),
+            );
+        };
+        Some(runtime::selected_runtime(
+            app,
+            &canceled,
+            &mut runtime_progress,
+        )?)
+    } else {
+        None
+    };
     let mut pages = Vec::with_capacity(inspection.page_count);
     let mut warnings = Vec::new();
 
     for inspected in inspection.pages {
+        ensure_not_canceled(&canceled)?;
         let page_number = u32::try_from(inspected.page_number)
             .map_err(|_| "OCR_PDF_PAGES:Numéro de page invalide.".to_string())?;
-        let progress = 12 + ((inspected.page_number * 80) / inspection.page_count.max(1)) as u8;
+        let progress = 18 + ((inspected.page_number * 74) / inspection.page_count.max(1)) as u8;
         emit(
             app,
             OcrProgressV1::document(
@@ -122,6 +142,7 @@ pub(super) fn recognize_pdf(
         pages.push(page);
     }
 
+    ensure_not_canceled(&canceled)?;
     let mut result = OcrDocumentResultV1 {
         schema_version: 1,
         job_id: job_id.to_string(),
@@ -155,6 +176,7 @@ fn recognize_scanned_page(
     job_id: &str,
     canceled: Arc<AtomicBool>,
 ) -> Result<OcrPageResultV1, String> {
+    ensure_not_canceled(&canceled)?;
     let rendered = temporary.join(format!("page-{page_number:04}.png"));
     converters::run_external_command_with_progress(
         converters::engine_command(
@@ -180,13 +202,17 @@ fn recognize_scanned_page(
         },
     )
     .map_err(|error| classify_pdfium_error(&error.to_string()))?;
+    ensure_not_canceled(&canceled)?;
     let cropped = crop_light_page_border(
         &rendered,
         &temporary.join(format!("page-{page_number:04}-cropped.png")),
     )?;
+    ensure_not_canceled(&canceled)?;
     let prepared = validation::prepare_image(&cropped.to_string_lossy())?;
+    ensure_not_canceled(&canceled)?;
     let output = temporary.join(format!("page-{page_number:04}-ocr.json"));
-    state.execute_worker(selected, &prepared.path, &output, job_id, canceled)?;
+    state.execute_worker(selected, &prepared.path, &output, job_id, canceled.clone())?;
+    ensure_not_canceled(&canceled)?;
     let bytes = fs::read(&output).map_err(|error| format!("OCR_RESULT_MISSING:{error}"))?;
     let result: OcrDocumentResultV1 =
         serde_json::from_slice(&bytes).map_err(|error| format!("OCR_RESULT_INVALID:{error}"))?;
@@ -210,6 +236,16 @@ fn recognize_scanned_page(
         });
     }
     Ok(page)
+}
+
+fn map_runtime_progress(phase: &str, value: u8) -> u8 {
+    let value = value.min(100);
+    match phase {
+        "extracting-runtime" => 12 + ((u16::from(value) * 2) / 100) as u8,
+        "verifying-runtime" => 14 + ((u16::from(value) * 2) / 100) as u8,
+        "verifying-models" => 16 + ((u16::from(value) * 2) / 100) as u8,
+        _ => 12,
+    }
 }
 
 fn native_page(inspected: PdfTextPage, page_number: u32) -> OcrPageResultV1 {
@@ -333,5 +369,13 @@ mod tests {
             usable: true,
         };
         assert_eq!(native_page(page, 1).source, "native");
+    }
+
+    #[test]
+    fn runtime_preparation_progress_precedes_page_processing() {
+        assert_eq!(map_runtime_progress("extracting-runtime", 0), 12);
+        assert_eq!(map_runtime_progress("extracting-runtime", 100), 14);
+        assert_eq!(map_runtime_progress("verifying-runtime", 100), 16);
+        assert_eq!(map_runtime_progress("verifying-models", 100), 18);
     }
 }

@@ -234,7 +234,18 @@ export interface OcrProgressV1 {
   schemaVersion: 1;
   jobId: string;
   progress: number;
-  phase: "starting" | "preparing" | "inspecting" | "native-text" | "recognizing" | "normalizing" | "completed";
+  phase:
+    | "starting"
+    | "preparing"
+    | "preparing-image"
+    | "extracting-runtime"
+    | "verifying-runtime"
+    | "verifying-models"
+    | "inspecting"
+    | "native-text"
+    | "recognizing"
+    | "normalizing"
+    | "completed";
   pageNumber?: number | null;
   pageCount?: number | null;
 }

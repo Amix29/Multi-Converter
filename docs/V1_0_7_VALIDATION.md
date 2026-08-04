@@ -427,8 +427,77 @@ Local evidence obtained on Windows:
 - the locked Python runtime audit reports zero known vulnerabilities;
 - the Rust audit passed under the existing allowed-warning policy; it reports
   transitive unmaintained/unsound warnings but no unallowed vulnerability;
-- source limits pass at 262 tooling/frontend files (maximum 500 nonblank lines)
-  and 91 Rust files (maximum 426).
+- source limits pass at 282 tooling/frontend files (maximum 500 nonblank lines)
+  and 95 Rust files (maximum 481).
+
+### 2026-08-04 user-validation correction lot
+
+The Windows test build exposed concrete usability and runtime defects before
+release integration. The current tree now contains the corresponding focused
+corrections:
+
+- the onboarding preview no longer renders its decorative centre stripe, and
+  converter files use structured cards that keep complete names, type, size,
+  status and the OCR action readable;
+- the OCR dialog reports resource preparation, verification, recognition and
+  normalization as distinct phases. Recognition and other non-quantifiable
+  phases use an indeterminate track instead of presenting a misleading fixed
+  percentage;
+- OCR cancellation now reaches archive extraction, manifest hashing, model
+  verification, PDF page preparation and the supervised worker. The dialog
+  immediately leaves the blocking running state, ignores late results from the
+  cancelled job and offers a focused retry action;
+- the editor adds exact-viewport focus mode, labelled local SVG controls,
+  horizontal toolbar navigation, free point sizes, text color, removable
+  highlight color, resizable tables, movable/resizable/layered local images and
+  long-press recent-document multi-selection;
+- new documents default to Markdown export. Export is blocked until a real
+  title is supplied, then shows an in-app Vellum progress dialog. Overwrite
+  confirmation no longer uses the WebView's native `window.confirm` prompt;
+- DOCX, RTF and PDF generation writes one rich ODT intermediate, normalizes it
+  through the strict local LibreOffice ODT path, then converts that normalized
+  ODT with LibreOffice to the requested target. The same-format normalization
+  remains an intentional compatibility step.
+
+Evidence actually obtained for this correction lot includes the passing
+`npm run check` gate, passing Rust tests, targeted compiled-preview E2E and
+visual measurements, and a packaged Windows OCR fixture that matched its
+expected text exactly (100%) in 24,672 ms. The full 40-case corpus passed with
+100% clean mean, 99.76% difficult mean, 13,330 ms median recognition, 714.8 MiB
+peak worker memory and zero remote connections in 251 process samples. A
+corrected Windows probe using bundled LibreOffice
+26.2.3.2 completed rich ODT normalization in 10.593 s, normalized ODT-to-PDF
+in 11.102 s (62,348 bytes) and normalized ODT-to-DOCX in 11.713 s (8,943
+bytes). PDFium and Office-archive inspection confirmed two landscape pages,
+usable text, the table proportions and merges, exact embedded image, header,
+footer, pagination fields, page break, margins and the tested text styling.
+LibreOffice also reopened the DOCX and rendered two pages with the same text
+and no observable visual loss.
+The preview measurements cover the exact focus viewport, 44 px mobile toolbar
+navigation and image/table targets, and absence of unintentional horizontal
+page overflow. They remain Chromium preview evidence, not native Tauri proof.
+The probe proves those engine paths plus structural inspection and DOCX
+reopening. The full packaged-app export interaction is still pending.
+
+The exact local Windows correction candidate was then built as an unsigned
+998,639,971-byte NSIS installer with SHA-256
+`18f291363def793474932222e8f8abd8e89f62d6e819b938016038158649d8c0`.
+It installed successfully into an isolated temporary location: 276 files,
+1,403,221,388 expanded bytes. The patched installed executable is 27,282,944
+bytes, SHA-256
+`5709c28ce717892f445a73d1c1a05584222c993946e85886c089a7f9b3168d34`,
+which is 2.05% above the 26,734,080-byte Phase 6 reference and therefore below
+the 5% ceiling. Its exact process reached a responsive top-level window before
+being closed. Installed PDFium reported wrapper 0.3.0, passed `--check`,
+inspected native text and rendered the scanned fixture at 300 DPI to a decoded
+2483 x 3512 PNG. The installed OCR and LibreOffice archives match their prepared
+SHA-256 values. This proves installation, startup and installed resource shape;
+it does not replace the maintainer's complete interactive editor/OCR review.
+The production frontend contains 1,578,312 raw bytes and 739,728 bytes when
+each file is gzipped independently. Its largest JavaScript chunk is 496,337
+bytes, below the 500 kB chunk ceiling; 405,128 raw bytes are the four explicitly
+requested local WOFF2 files. The earlier total-raw frontend target is therefore
+not retained as a claim after adding three locally embedded font families.
 
 This does not yet prove a native runtime, DMG or AppImage. The following remain
 pending until the exact checkpoint is pushed to `codex/test`: three OCR staging
@@ -447,17 +516,17 @@ assumption and are not reclassified as evidence.
 | Phase 2 frontend and Vellum Paper | Windows automated checkpoint passed | Raw-total bundle target missed; keep the measured result and complete native/manual gates |
 | Phase 4 Rust backend refactor | Windows checkpoint passed | Preserve compatibility and complete the remaining installed/platform matrices |
 | Phase 5 Windows native validation | Accepted for sequencing by explicit maintainer assumption; native ledger remains incomplete | Execute the 101 installed scenarios later if release-grade native proof is required |
-| Editor automated checks | Passed for unit and compiled-preview scope | Keep preview proof separate from real Tauri behavior |
+| Editor automated checks | Passed for unit and compiled-preview scope, including the 2026-08-04 correction lot | Keep preview proof separate from real Tauri behavior |
 | Editor HTML sanitization | Implemented with preview and static coverage | Complete real Tauri asset persistence and packaged-runtime checks |
-| Windows Tauri Office matrix | Pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios |
+| Windows Tauri Office matrix | Partial; corrected LibreOffice probe completed ODT normalization plus DOCX/PDF generation, while packaged-app reopening and fidelity remain pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios, including structural and visual fidelity |
 | Native editor file drop | Pending manual proof | Validate in the real Tauri application |
 | Editor restart and asset persistence | Pending manual proof | Confirm `mc-asset://` images after a clean restart |
-| OCR Windows reference implementation | Phase 7 PDFium package checkpoint closed | Obtain maintainer license approval |
+| OCR Windows reference implementation | Phase 7 PDFium package checkpoint closed; current packaged fixture exact at 100% and current 40-case corpus passed at 100% clean / 99.76% difficult | Preserve cancellation/progress regression coverage and obtain maintainer license approval |
 | OCR Windows NSIS build | Passed with exact candidate identity | Preserve the verified compressed-resource preparation path |
 | OCR Windows packaged PDFium path | Two installed cycles and 40-case corpus passed | Keep this focused proof separate from the unexecuted Phase 5 matrix |
 | macOS V1.0.7 matrix | Blocked | Real universal editor/OCR package and host validation |
 | Linux V1.0.7 matrix | Blocked | Real x64 editor/OCR AppImage and host validation |
-| V1.0.7 version synchronization | Blocked | All feature and release gates must pass first |
+| V1.0.7 development metadata | Synchronized | Keep npm, Cargo, Tauri and lockfiles aligned; this is not a release-readiness claim |
 | Final release notes and assets | Blocked | Derive only from verified V1.0.7 behavior |
 
 ## Editor Evidence

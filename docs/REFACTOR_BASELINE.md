@@ -541,16 +541,17 @@ then removed the isolated installation root successfully.
 ## Phase 8 macOS/Linux Packaging Implementation Snapshot
 
 Phase 8 starts from `13e4285f2d455af8e4c3cd5da2b583047894bc4b` in
-`codex/phase-8-macos-linux-native`. Metadata remains `1.0.6`. This Windows-side
+`codex/phase-8-macos-linux-native`. Development metadata is synchronized to
+`1.0.7` by maintainer decision. This Windows-side
 snapshot records implementation and static/local checks only; native package
 measurements remain pending the GitHub runner jobs.
 
 | Measurement | Phase 8 local result |
 | --- | ---: |
-| Handwritten frontend/tooling files | 262 |
+| Handwritten frontend/tooling files | 282 |
 | Largest handwritten frontend/tooling file | 500 nonblank lines |
-| Handwritten Rust files | 91 |
-| Largest handwritten Rust file | 426 nonblank lines |
+| Handwritten Rust files | 95 |
+| Largest handwritten Rust file | 481 nonblank lines |
 | Vitest | 44 passed |
 | Rust unit tests | 142 passed, 7 ignored |
 | npm production/development vulnerabilities | 0 / 0 |
@@ -564,3 +565,33 @@ and 3,615,157 bytes on Linux x64
 (`ae0e276bcdf276dca2746adb4780f79949620e5c655973ca252a3994bc516a13`).
 Package size, runtime performance, 40-case corpus and launch evidence will be
 recorded only after the exact checkpoint succeeds on native runners.
+
+## Phase 8 User-Validation Correction Snapshot
+
+The 2026-08-04 Windows test build produced a focused correction lot after the
+initial Phase 8 snapshot. It changes frontend structure, editor interaction,
+OCR preparation/cancellation and the editor Office bridge, but it does not
+remove a converter, format, engine, OCR model or public IPC contract.
+
+| Evidence | Current correction result |
+| --- | --- |
+| Repository gate | `npm run check` passed |
+| Rust regression coverage | passed |
+| Compiled-preview editor/OCR regressions | passed |
+| Preview visual measurements | exact focus viewport; 44 px mobile toolbar and media/table targets; no unintended page overflow |
+| Production frontend bundle | 1,578,312 raw bytes / 739,728 independently gzipped bytes; largest chunk 496,337 bytes; 405,128 bytes are the four requested local font files |
+| Real Windows OCR correction fixture and corpus | packaged fixture 100% in 24,672 ms; 40 cases at 100% clean / 99.76% difficult, 13,330 ms median, 714.8 MiB peak, zero remote connections in 251 process samples |
+| Windows LibreOffice bridge probe | rich ODT normalization 10.593 s; normalized ODT-to-PDF 11.102 s / 62,348 bytes; normalized ODT-to-DOCX 11.713 s / 8,943 bytes; DOCX structure and reopen passed |
+| Windows correction NSIS | 998,639,971 bytes; SHA-256 `18f291363def793474932222e8f8abd8e89f62d6e819b938016038158649d8c0` |
+| Installed correction candidate | 276 files / 1,403,221,388 bytes; executable 27,282,944 bytes (+2.05% from Phase 6), startup responsive |
+| Installed PDFium smoke | wrapper 0.3.0; health, native-text inspection and decoded 300-DPI render passed |
+| Native macOS/Linux Phase 8 package proof | still pending in the Phase 8 ledger |
+
+The revised Office path writes a rich ODT, normalizes it through LibreOffice and
+uses that normalized ODT for DOCX, RTF or PDF conversion. The corrected Windows
+probe confirms ODT normalization plus DOCX/PDF generation, structural inspection
+and DOCX reopening. It does not establish a speed improvement, package-size
+improvement or the complete packaged-app export interaction. Final frontend bundle,
+executable and platform-package measurements must be captured from the exact
+checkpoint after all concurrent correction files, including local font assets,
+are settled.

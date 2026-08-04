@@ -60,7 +60,7 @@ export const DocumentImage = Image.extend<DocumentImageOptions>({
         renderHTML: (attributes) => (attributes.assetId ? { "data-asset-id": attributes.assetId } : {}),
       },
       width: {
-        default: null,
+        default: "15cm",
         parseHTML: (element) => element.getAttribute("width") || element.style.width || null,
         renderHTML: (attributes) => (attributes.width ? { style: `width: ${String(attributes.width).replace(/[^0-9.%a-z-]/gi, "")}` } : {}),
       },
@@ -68,6 +68,31 @@ export const DocumentImage = Image.extend<DocumentImageOptions>({
         default: "center",
         parseHTML: (element) => element.getAttribute("data-align") || "center",
         renderHTML: (attributes) => ({ "data-align": attributes.align || "center" }),
+      },
+      layoutMode: {
+        default: "flow",
+        parseHTML: (element) => element.getAttribute("data-layout-mode") || "flow",
+        renderHTML: (attributes) => ({ "data-layout-mode": attributes.layoutMode === "floating" ? "floating" : "flow" }),
+      },
+      offsetXmm: {
+        default: 0,
+        parseHTML: (element) => finiteNumber(element.getAttribute("data-offset-x-mm")),
+        renderHTML: (attributes) => ({ "data-offset-x-mm": boundedNumber(attributes.offsetXmm, -500, 500) }),
+      },
+      offsetYmm: {
+        default: 0,
+        parseHTML: (element) => finiteNumber(element.getAttribute("data-offset-y-mm")),
+        renderHTML: (attributes) => ({ "data-offset-y-mm": boundedNumber(attributes.offsetYmm, -500, 500) }),
+      },
+      zIndex: {
+        default: 0,
+        parseHTML: (element) => finiteNumber(element.getAttribute("data-z-index")),
+        renderHTML: (attributes) => ({ "data-z-index": Math.round(boundedNumber(attributes.zIndex, -100, 100)) }),
+      },
+      wrapMode: {
+        default: "none",
+        parseHTML: (element) => element.getAttribute("data-wrap-mode") || "none",
+        renderHTML: (attributes) => ({ "data-wrap-mode": attributes.wrapMode === "parallel" ? "parallel" : "none" }),
       },
     };
   },
@@ -78,6 +103,15 @@ export const DocumentImage = Image.extend<DocumentImageOptions>({
   allowBase64: false,
   inline: false,
 });
+
+function finiteNumber(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function boundedNumber(value: unknown, minimum: number, maximum: number) {
+  return Math.min(maximum, Math.max(minimum, finiteNumber(value)));
+}
 
 export const UnsupportedObject = Node.create({
   name: "unsupportedObject",

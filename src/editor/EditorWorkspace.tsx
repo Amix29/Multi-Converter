@@ -131,6 +131,29 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     }
   }, [props.language, props.onNotice, refreshRecent]);
 
+  const deleteRecents = useCallback(async (ids: string[]) => {
+    setBusy(true);
+    const failed: string[] = [];
+    try {
+      for (const id of ids) {
+        try {
+          await api.editorDeleteDraft(id);
+        } catch {
+          failed.push(id);
+        }
+      }
+      await refreshRecent();
+      if (failed.length === 0) {
+        props.onNotice("success", t(props.language, "editor.deletedMany", { count: ids.length }));
+      } else {
+        props.onNotice("error", t(props.language, "editor.deleteManyFailed", { count: failed.length }));
+      }
+      return failed;
+    } finally {
+      setBusy(false);
+    }
+  }, [props.language, props.onNotice, refreshRecent]);
+
   const closeDocument = useCallback(async () => {
     await refreshRecent();
     setDocument(null);
@@ -152,6 +175,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
           onRenameRecent={(id, title) => void renameRecent(id, title)}
           onDuplicateRecent={(item) => void duplicateRecent(item)}
           onDeleteRecent={(id) => void deleteRecent(id)}
+          onDeleteRecents={deleteRecents}
           onDrop={(event) => {
             event.preventDefault();
             const file = event.dataTransfer.files[0];

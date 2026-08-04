@@ -101,6 +101,22 @@
     gap: 12px;
   }
 
+  .app-shell.is-editor-mode .topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand actions"
+      "context context";
+    row-gap: 8px;
+  }
+
+  .app-shell.is-editor-mode .brand { grid-area: brand; }
+  .app-shell.is-editor-mode .editor-context-pill {
+    grid-area: context;
+    width: 100%;
+    justify-self: stretch;
+  }
+  .app-shell.is-editor-mode .topbar-actions { grid-area: actions; }
+
   .brand h1 {
     font-size: 18px;
   }

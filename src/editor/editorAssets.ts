@@ -26,7 +26,7 @@ export async function insertImageFiles(
           src: `mc-asset://${result.asset.id}`,
           alt: file.name,
           title: file.name,
-          width: "auto",
+          width: "15cm",
           align: "center",
         },
       };

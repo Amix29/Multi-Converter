@@ -60,17 +60,37 @@ release blockers.
 - Separate `Convertisseur | Éditeur` workspaces.
 - One active editor document at a time.
 - New document, open document and drag-and-drop entry points.
-- Local recent documents with rename, duplicate and confirmed draft deletion.
+- Local recent documents with rename, duplicate, confirmed draft deletion and
+  long-press multi-selection for bounded batch deletion.
 - Tiptap JSON document model with schema versioning.
 - Paginated editing canvas and DOM-independent pagination planner.
-- Text styles, headings, fonts, sizes, colors, highlighting, alignment, lists, links, tables and local images.
+- Text styles, local/open and system fonts, free point sizes, explicit text and
+  highlight colors, alignment, lists and links. Imported heading nodes remain
+  compatible, but the toolbar no longer exposes heading presets.
+- Resizable tables with explicit row, column, merge, split and delete controls.
+- Local images with bounded resizing, flow/floating positioning, pointer and
+  keyboard movement, and four explicit layer operations: send to back, step
+  backward, step forward and bring to front.
 - Page formats, orientation, margins, headers, footers and numbering.
 - Local autosave and recent-document storage.
 - Validated local image assets referenced as `mc-asset://<uuid>`.
 - DOCX and RTF import through LibreOffice-to-ODT followed by the bounded ODT parser.
 - Direct ODT parsing without Office-to-HTML routing.
-- Office/PDF export through the rich ODT generator.
-- TXT, Markdown and HTML adapters.
+- ODT export through the rich ODT generator; DOCX, RTF and PDF first normalize
+  that generated file through the strict local LibreOffice ODT path, then use
+  the normalized ODT as input for the requested LibreOffice conversion. This
+  same-format normalization is intentional and remains part of the bridge.
+- TXT, Markdown and HTML adapters. Markdown is the default export selection for
+  a newly opened editor document.
+- Export requires a non-placeholder title, keeps the accepted title in the
+  draft and presents an in-app Vellum progress dialog while native generation
+  is running. Overwrite confirmation also uses an in-app Vellum dialog rather
+  than a browser prompt.
+- A full-viewport focus mode with Escape exit and focus return, a responsive
+  horizontally navigable toolbar and labelled local SVG controls.
+- Structured converter file cards preserve complete filenames and keep their
+  OCR action within the card. The decorative onboarding centre stripe was
+  removed.
 - UI regression protection for recent-document menus and full-viewport dialogs.
 
 ### Still required
@@ -80,6 +100,10 @@ release blockers.
 - Confirm native Tauri drag and drop.
 - Confirm draft and `mc-asset://` image persistence after closing and restarting the packaged application.
 - Confirm overwrite approval, external-source conflicts and original-file integrity after a forced failure.
+- Confirm the generated-ODT, normalized-ODT and LibreOffice DOCX/RTF/PDF bridge
+  in the real Tauri application. The corrected Windows probe proves the engine
+  path completes for DOCX and PDF, but source, probe and preview evidence do not
+  yet prove final document structure or visual fidelity in the packaged app.
 - Confirm unsupported embedded objects create a compatibility warning and block unsafe replacement.
 - Record fixtures, screenshots and SHA-256 values in `V1_0_7_EDITOR_VALIDATION.md`.
 

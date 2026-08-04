@@ -1,0 +1,127 @@
+use super::*;
+
+#[test]
+fn content_verification_detects_a_modified_resource() {
+    let temp = tempfile::tempdir().unwrap();
+    let payload = temp.path().join("worker.bin");
+    fs::write(&payload, b"trusted").unwrap();
+    let canceled = AtomicBool::new(false);
+    let digest = sha256(&payload, &canceled).unwrap();
+    let manifest_path = temp.path().join("runtime-manifest.json");
+    fs::write(
+        &manifest_path,
+        serde_json::json!({
+            "fileCount": 1,
+            "totalBytes": 7,
+            "aggregateSha256": "locked",
+            "files": [{ "path": "worker.bin", "bytes": 7, "sha256": digest }]
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let expected = ArtifactLock {
+        file_count: 1,
+        total_bytes: 7,
+        aggregate_sha256: "locked".to_string(),
+    };
+    verify_content_manifest(
+        temp.path(),
+        &manifest_path,
+        &expected,
+        &canceled,
+        &mut |_| {},
+    )
+    .unwrap();
+    fs::write(&payload, b"altered").unwrap();
+    assert!(
+        verify_content_manifest(
+            temp.path(),
+            &manifest_path,
+            &expected,
+            &canceled,
+            &mut |_| {},
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn content_verification_honors_cancellation_between_files() {
+    let temp = tempfile::tempdir().unwrap();
+    let canceled = AtomicBool::new(false);
+    let first = temp.path().join("first.bin");
+    let second = temp.path().join("second.bin");
+    fs::write(&first, b"first").unwrap();
+    fs::write(&second, b"second").unwrap();
+    let manifest_path = temp.path().join("runtime-manifest.json");
+    fs::write(
+        &manifest_path,
+        serde_json::json!({
+            "fileCount": 2,
+            "totalBytes": 11,
+            "aggregateSha256": "locked",
+            "files": [
+                { "path": "first.bin", "bytes": 5, "sha256": sha256(&first, &canceled).unwrap() },
+                { "path": "second.bin", "bytes": 6, "sha256": sha256(&second, &canceled).unwrap() }
+            ]
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let expected = ArtifactLock {
+        file_count: 2,
+        total_bytes: 11,
+        aggregate_sha256: "locked".to_string(),
+    };
+    let error = verify_content_manifest(
+        temp.path(),
+        &manifest_path,
+        &expected,
+        &canceled,
+        &mut |_| canceled.store(true, Ordering::SeqCst),
+    )
+    .unwrap_err();
+    assert!(error.starts_with("OCR_CANCELLED:"));
+}
+
+#[test]
+fn canceled_verification_is_not_cached() {
+    let mut slot = None;
+    let canceled = Err("OCR_CANCELLED:L’OCR a été annulé.".to_string());
+    retain_verification_result(&mut slot, &canceled);
+    assert!(slot.is_none());
+
+    let failed = Err("OCR_RUNTIME_UNVERIFIED:ressource modifiée".to_string());
+    retain_verification_result(&mut slot, &failed);
+    assert_eq!(slot, Some(failed));
+}
+
+#[test]
+fn manifest_paths_must_remain_relative() {
+    assert!(safe_relative_path("models/text/inference.json").is_ok());
+    assert!(safe_relative_path("../outside").is_err());
+    assert!(safe_relative_path("C:/outside").is_err());
+}
+
+#[test]
+fn platform_selection_distinguishes_both_macos_architectures() {
+    assert_eq!(platform_key_for("macos", "aarch64"), "macos-aarch64");
+    assert_eq!(platform_key_for("macos", "x86_64"), "macos-x86_64");
+    assert_eq!(platform_key_for("linux", "x86_64"), "linux-x64");
+    assert_eq!(platform_key_for("linux", "aarch64"), "unsupported");
+}
+
+#[test]
+fn worker_architecture_parsers_reject_foreign_binaries() {
+    let mut pe = vec![0u8; 0x48];
+    pe[0..2].copy_from_slice(b"MZ");
+    pe[0x3c..0x40].copy_from_slice(&(0x40u32).to_le_bytes());
+    pe[0x40..0x44].copy_from_slice(b"PE\0\0");
+    pe[0x44..0x46].copy_from_slice(&0x8664u16.to_le_bytes());
+    assert_eq!(pe_machine(&pe), Some(0x8664));
+    assert_eq!(mach_cpu(&pe), None);
+
+    let mut arm = vec![0xcf, 0xfa, 0xed, 0xfe];
+    arm.extend_from_slice(&0x0100_000cu32.to_le_bytes());
+    assert_eq!(mach_cpu(&arm), Some(0x0100_000c));
+}

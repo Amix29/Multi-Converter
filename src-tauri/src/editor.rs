@@ -1,6 +1,7 @@
 mod assets;
 mod document;
 mod export;
+mod image_layout;
 mod import;
 mod odt;
 mod storage;

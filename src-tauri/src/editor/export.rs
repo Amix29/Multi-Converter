@@ -116,6 +116,24 @@ fn filesystem_picker_path(path: PathBuf) -> PathBuf {
     path
 }
 
+fn associated_title(document: &EditorDocument, destination: &Path) -> String {
+    if document.source.as_ref().is_some_and(|source| {
+        let source = Path::new(&source.path);
+        source == destination
+            || fs::canonicalize(source)
+                .ok()
+                .zip(fs::canonicalize(destination).ok())
+                .is_some_and(|(source, destination)| source == destination)
+    }) {
+        return document.title.clone();
+    }
+    destination
+        .file_stem()
+        .and_then(|value| value.to_str())
+        .unwrap_or(&document.title)
+        .to_string()
+}
+
 pub(super) async fn write_document(
     app: AppHandle,
     request: EditorWriteRequest,
@@ -158,11 +176,7 @@ pub(super) async fn write_document(
     if associate_source {
         let metadata = fs::metadata(&destination)
             .map_err(|error| format!("EDITOR_DESTINATION_METADATA_FAILED:{error}"))?;
-        document.title = destination
-            .file_stem()
-            .and_then(|value| value.to_str())
-            .unwrap_or(&document.title)
-            .to_string();
+        document.title = associated_title(&document, &destination);
         document.source = Some(EditorSource {
             path: destination.to_string_lossy().to_string(),
             format: target,
@@ -320,5 +334,39 @@ mod tests {
             filesystem_picker_path(fs::canonicalize(folder.path()).unwrap())
                 .join("Rapport (2).docx")
         );
+    }
+
+    #[test]
+    fn saving_the_same_source_preserves_the_edited_document_title() {
+        let folder = tempfile::tempdir().unwrap();
+        let source = folder.path().join("source-name.odt");
+        fs::write(&source, b"source").unwrap();
+        let mut document = new_document("Titre édité");
+        document.source = Some(EditorSource {
+            path: source.to_string_lossy().to_string(),
+            format: "odt".to_string(),
+            size: 6,
+            modified_at: "0".to_string(),
+        });
+
+        assert_eq!(associated_title(&document, &source), "Titre édité");
+    }
+
+    #[test]
+    fn save_as_associates_the_new_destination_file_name() {
+        let folder = tempfile::tempdir().unwrap();
+        let source = folder.path().join("source-name.odt");
+        let destination = folder.path().join("Rapport final.odt");
+        fs::write(&source, b"source").unwrap();
+        fs::write(&destination, b"destination").unwrap();
+        let mut document = new_document("Titre édité");
+        document.source = Some(EditorSource {
+            path: source.to_string_lossy().to_string(),
+            format: "odt".to_string(),
+            size: 6,
+            modified_at: "0".to_string(),
+        });
+
+        assert_eq!(associated_title(&document, &destination), "Rapport final");
     }
 }

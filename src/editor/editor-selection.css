@@ -1,0 +1,84 @@
+.recent-heading-actions,
+.recent-selection-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recent-select-button,
+.recent-selection-bar button {
+  min-height: var(--vlm-target-min);
+  padding: 0 12px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-pill);
+  color: var(--vlm-text-soft);
+  background: var(--vlm-surface);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.recent-select-button:hover,
+.recent-selection-bar button:hover {
+  border-color: var(--vlm-border-strong);
+  background: var(--vlm-accent-soft);
+}
+
+.recent-selection-bar {
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  padding: 9px 11px;
+  border: 1px solid var(--vlm-accent-border);
+  border-radius: var(--vlm-radius-md);
+  background: var(--vlm-accent-soft);
+}
+
+.recent-selection-bar strong {
+  margin-right: auto;
+  color: var(--vlm-text-strong);
+  font-size: 11px;
+}
+
+.recent-selection-bar button.is-danger {
+  border-color: var(--vlm-danger-text);
+  color: var(--vlm-text-inverse);
+  background: var(--vlm-danger-text);
+}
+
+.recent-document-card.is-selecting {
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.recent-document-card.is-selected {
+  border-color: var(--vlm-accent);
+  box-shadow: 0 0 0 3px var(--vlm-selection), var(--vlm-shadow-sm);
+}
+
+.recent-selection-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid var(--vlm-border-strong);
+  border-radius: 50%;
+  color: var(--vlm-primary-text);
+  background: var(--vlm-surface-raised);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.recent-document-card.is-selected .recent-selection-check {
+  border-color: var(--vlm-primary-bg);
+  background: var(--vlm-primary-bg);
+}
+
+@media (max-width: 560px) {
+  .recent-documents-heading { align-items: flex-start; }
+  .recent-heading-actions { flex-direction: column; align-items: flex-end; }
+  .recent-selection-bar strong { flex-basis: 100%; }
+}

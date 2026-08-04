@@ -9,6 +9,8 @@ pub(super) struct StyleInfo {
     pub(super) family: String,
     pub(super) text: HashMap<String, String>,
     pub(super) paragraph: HashMap<String, String>,
+    pub(super) graphic: HashMap<String, String>,
+    pub(super) table_column: HashMap<String, String>,
 }
 
 #[derive(Default)]

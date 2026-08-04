@@ -1,7 +1,7 @@
 import type { DragEvent } from "react";
 import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
 import { t, type LanguageCode } from "../../i18n";
-import { compactFileMeta, displayFileName, fileSummary, hasAvailableTargets, uploadedFilesSummary } from "../conversion/model";
+import { compactFileMeta, fileSummary, hasAvailableTargets, uploadedFilesSummary } from "../conversion/model";
 import type { FileItem } from "../types";
 
 export function FilesScreen(props: {
@@ -52,10 +52,22 @@ export function FilesScreen(props: {
         {!hasFiles && <div className="empty-state">{t(props.language, "upload.empty")}</div>}
         {props.files.map((file) => (
           <article className="file-ticket" key={file.id}>
-            <div><strong>{displayFileName(file)}</strong><span>{compactFileMeta(file, props.language)}</span></div>
-            {!file.targets.length && <span className="ticket-status is-error">{t(props.language, "upload.unsupported")}</span>}
-            {isOcrImage(file) && <button className="ghost-button file-ticket-ocr" type="button" onClick={() => props.onExtractText(file)}>{t(props.language, "ocr.extract")}</button>}
-            <button className="remove-file-button" type="button" aria-label={`${t(props.language, "upload.removeFile")} ${file.name}`} onClick={() => props.onRemove(file.id)}>×</button>
+            <header className="file-ticket-header">
+              <div className="file-ticket-identity">
+                <span className="file-ticket-type" aria-hidden="true">{file.extension.replace(/^\./, "").slice(0, 5).toUpperCase() || "FILE"}</span>
+                <strong title={file.name}>{file.name}</strong>
+              </div>
+              <button className="remove-file-button" type="button" aria-label={`${t(props.language, "upload.removeFile")} ${file.name}`} onClick={() => props.onRemove(file.id)}>×</button>
+            </header>
+            <div className="file-ticket-meta">
+              <span>{compactFileMeta(file, props.language)}</span>
+              {!file.targets.length && <span className="ticket-status is-error">{t(props.language, "upload.unsupported")}</span>}
+            </div>
+            {isOcrImage(file) && (
+              <footer className="file-ticket-actions">
+                <button className="ghost-button file-ticket-ocr" type="button" onClick={() => props.onExtractText(file)}>{t(props.language, "ocr.extract")}</button>
+              </footer>
+            )}
           </article>
         ))}
       </section>
