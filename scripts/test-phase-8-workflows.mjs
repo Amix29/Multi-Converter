@@ -69,7 +69,7 @@ assert.match(engines, /artifact_sha256: 1d16c5ad057d16b6a2293c1d49ee0e5f591bf380
 assert.match(engines, /package-locked-pdfium-platform\.mjs/);
 assert.match(engines, /restage-platform-pdfium\.mjs/);
 assert.match(engines, /complete-macos-sidecar-set\.mjs/);
-assert.match(engines, /lipo -verify_arch x86_64/);
+assert.match(engines, /lipo "\$output\/ffprobe-x86_64-apple-darwin" -verify_arch x86_64/);
 assert.doesNotMatch(engines, /gh release (create|upload)/);
 
 for (const [label, workflow] of [["macOS conversions", conversions], ["macOS DMG", dmg], ["Linux AppImage", appimage]]) {

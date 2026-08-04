@@ -3,8 +3,8 @@
 ## Status And Purpose
 
 This document describes the security boundaries implemented in the desktop
-source tree. Package metadata remains at V1.0.6 while the editor and OCR work
-is under development for V1.0.7. This document is not a release-readiness
+source tree. Package metadata now targets V1.0.7 while native packaging and
+release validation remain in progress. This document is not a release-readiness
 statement; packaged and multiplatform OCR gates remain open.
 
 Use the repository [`SECURITY.md`](../SECURITY.md) for supported versions and

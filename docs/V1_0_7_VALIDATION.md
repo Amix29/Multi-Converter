@@ -4,14 +4,14 @@
 
 - Target version: **V1.0.7**
 - Published baseline: **V1.0.6**
-- Last documentation review: **2026-08-01**
+- Last documentation review: **2026-08-04**
 - Overall gate: **blocked**
-- Version metadata: **1.0.6**
+- Version metadata: **1.0.7**
 - Phase 1 checkpoint: local commit **`9f89a8d2`** on `codex/phase-1-guardrails`, not pushed
 - Phase 2 state: isolated worktree on `codex/phase-2-frontend-vellum`, based on the Phase 1 checkpoint, not merged or pushed
 - Phase 3 state: isolated worktree on `codex/phase-3-ocr-local`, based on the Phase 2 checkpoint, not merged or pushed
 - Phase 4 state: isolated worktree on `codex/phase-4-rust-backend`, based on Phase 3 commit `9ec3b9ca`, not merged or pushed
-- Phase 8 state: implementation prepared from Phase 7 commit `13e4285f2d455af8e4c3cd5da2b583047894bc4b`; native runner evidence pending
+- Phase 8 state: V1.0.7 checkpoint `ca36d2a1` on `codex/test`; replacement native staging and package evidence pending
 
 This is the combined release-validation ledger for V1.0.7. It does not replace the detailed editor or OCR documents:
 
@@ -410,9 +410,9 @@ release-grade proof.
 
 ## 2026-08-02 Phase 8 macOS/Linux Packaging Implementation
 
-The Phase 8 checkpoint introduces locked native resource preparation without
-changing version `1.0.6`, public commands, conversion formats or OCR V1
-contracts. PDFium 149.0.7825.0 and wrapper 0.3.0 are fixed for universal macOS
+The Phase 8 checkpoint introduces locked native resource preparation and moves
+the development metadata to `1.0.7` without changing public commands,
+conversion formats or OCR V1 contracts. PDFium 149.0.7825.0 and wrapper 0.3.0 are fixed for universal macOS
 and Linux x64. Official PaddlePaddle 3.3.1 CPU runtimes are separated into
 Apple Silicon, Intel and Linux artifacts; Intel is built from the exact
 official source commit and is a blocking path.

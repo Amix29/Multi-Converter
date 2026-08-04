@@ -4,7 +4,7 @@
 
 - Development version: **V1.0.7**
 - Current published version: **V1.0.6**
-- Last documentation review: **2026-08-02**
+- Last documentation review: **2026-08-04**
 - Release status: **not ready**
 
 V1.0.7 is built around two official product objectives:
@@ -12,7 +12,11 @@ V1.0.7 is built around two official product objectives:
 1. add a local document editor powered by the open-source Tiptap/ProseMirror stack;
 2. add local OCR powered by `PP-OCRv6_medium` for PDF-to-text conversion and text extraction from images.
 
-The repository version remains `1.0.6` until both objectives are implemented, tested and accepted. Do not publish V1.0.7 release notes, updater metadata or release assets before the exit gates in this document pass.
+The repository metadata is synchronized to `1.0.7` from the Phase 8 native
+candidate onward, following the maintainer decision recorded on 2026-08-04.
+This version change is not a release-readiness claim. Do not publish V1.0.7
+release notes, updater metadata or release assets before the exit gates in this
+document pass.
 
 Phase 6 quality/security work is implemented in its isolated checkpoint. It
 adds source-size and bundle budgets, a reproducible OCR dependency lock, a
@@ -27,7 +31,7 @@ archive are locked independently. Staging on `codex/test`, the dedicated engine
 prerelease and installed-NSIS PDFium/OCR proof closed this packaging gap without
 changing conversion behavior. The 101 manual Phase 5 scenarios remain an
 explicit sequencing assumption, not release evidence. Phase 8 still owns real
-macOS/Linux packaging and Phase 9 owns version synchronization and application
+macOS/Linux packaging and Phase 9 owns final integration and application
 release.
 
 Phase 8 implementation adds immutable macOS/Linux PDFium and OCR provenance,

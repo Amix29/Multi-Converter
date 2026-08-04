@@ -1,6 +1,6 @@
 # V1.0.7 Editor Validation
 
-This document tracks the editor gate that must pass before work starts on PP-OCRv6_medium. The complete release scope lives in [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md), and the next workstream is specified in [`V1_0_7_OCR.md`](V1_0_7_OCR.md). The application version remains 1.0.6 until both workstreams are implemented and validated.
+This document tracks the editor gate that had to pass before work started on PP-OCRv6_medium. The complete release scope lives in [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md), and the OCR workstream is specified in [`V1_0_7_OCR.md`](V1_0_7_OCR.md). Application metadata is now 1.0.7 for the Phase 8 native candidate; this does not mark the release ready.
 
 ## Validation Environment
 

@@ -3,7 +3,7 @@
 ## Status
 
 - Target release: **V1.0.7**
-- Current metadata: **1.0.6**
+- Current metadata: **1.0.7**
 - Selected model: **PP-OCRv6_medium**
 - Windows implementation: **development checkpoint, real Tauri and extracted-package runtime exercised**
 - Windows NSIS build: **passed locally with compressed runtime resources**
@@ -15,7 +15,8 @@
 Phase 3 implements the OCR contracts, Windows reference runtime, PDF hybrid
 extraction and image-text UI. The locally achievable Windows implementation
 checkpoint is closed, but this is not a release-ready or multiplatform OCR
-claim. The version stays at `1.0.6` until every release gate passes.
+claim. The metadata moved to `1.0.7` for the Phase 8 native candidate, but
+publication remains blocked until every release gate passes.
 
 ## Locked Runtime
 

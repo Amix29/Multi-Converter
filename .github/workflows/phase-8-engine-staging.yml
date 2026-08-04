@@ -107,7 +107,7 @@ jobs:
           node scripts/restage-platform-pdfium.mjs --platform "${{ matrix.platform }}" --baseline-dir "$RUNNER_TEMP/mc-engine-baseline" --replacement-dir "$replacement" --output-dir "$output"
           if [[ "${{ matrix.platform }}" == "macos-universal" ]]; then
             node scripts/complete-macos-sidecar-set.mjs --asset-dir "$output"
-            lipo -verify_arch x86_64 "$output/ffprobe-x86_64-apple-darwin"
+            lipo "$output/ffprobe-x86_64-apple-darwin" -verify_arch x86_64
           fi
       - uses: actions/upload-artifact@v4
         with:
