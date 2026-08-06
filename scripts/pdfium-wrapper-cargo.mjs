@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import fsSync from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
@@ -13,6 +14,8 @@ const targetDir = await fs.mkdtemp(path.join(tempRoot, "mc-cargo-target-pdfium-w
 const manifest = path.join(workDir, "Cargo.toml");
 const args = process.argv.slice(2);
 const expectedPdfiumRenderVersion = "=0.9.1";
+const expectedLopdfVersion = "=0.42.0";
+const pdfiumLock = JSON.parse(await fs.readFile(path.join(root, "tools", "pdfium-windows-x64.lock.json"), "utf8"));
 
 if (args.length === 0) {
   throw new Error("Missing cargo command for PDFium wrapper.");
@@ -25,21 +28,26 @@ if (configuredPdfiumRenderVersion !== expectedPdfiumRenderVersion) {
     `The PDFium wrapper must pin pdfium-render to ${expectedPdfiumRenderVersion}; found ${configuredPdfiumRenderVersion ?? "no version"}.`,
   );
 }
+const configuredLopdfVersion = sourceManifest.match(/^lopdf\s*=\s*"([^"]+)"/m)?.[1];
+if (configuredLopdfVersion !== expectedLopdfVersion) {
+  throw new Error(
+    `The PDFium wrapper must pin lopdf to ${expectedLopdfVersion}; found ${configuredLopdfVersion ?? "no version"}.`,
+  );
+}
 
 let exitCode = 1;
 try {
   await fs.cp(sourceDir, workDir, { recursive: true, force: true });
-
-  const lock = spawnSync("cargo", ["generate-lockfile", "--manifest-path", manifest], {
-    cwd: root,
-    stdio: "inherit",
-  });
-  if (lock.status !== 0) {
-    exitCode = lock.status ?? 1;
-  } else {
+  const canonicalLock = (await fs.readFile(path.join(workDir, "Cargo.lock"), "utf8")).replace(/\r\n?/gu, "\n");
+  const actualLockSha256 = createHash("sha256").update(canonicalLock, "utf8").digest("hex");
+  if (actualLockSha256 !== pdfiumLock.wrapper.cargoLockSha256) {
+    throw new Error(`PDFium wrapper Cargo.lock ${actualLockSha256}, expected ${pdfiumLock.wrapper.cargoLockSha256}.`);
+  }
+  {
     const cargoEnv = {
       ...process.env,
       CARGO_TARGET_DIR: targetDir,
+      MULTI_CONVERTER_REPOSITORY_ROOT: root,
     };
     if (isRuntimeTestCommand(args)) {
       const pdfiumLibrary = cargoEnv.MULTI_CONVERTER_TEST_PDFIUM_LIBRARY

@@ -205,10 +205,14 @@ attributes are not in the HTML sanitizer allowlist. Pointer and keyboard
 controls update only the selected Tiptap image node; they never move or rewrite
 the original image file.
 
-The editor's additional WOFF2 fonts are repository-local, hash-locked and
-distributed with their OFL-1.1 texts. The formatting menu may also name system
-families, but it never downloads them. A missing system family falls back to
-the local/system stack and cannot trigger a remote font request.
+The editor installs, embeds and downloads no font. Installed family names are
+enumerated through DirectWrite, CoreText or Fontconfig; resolved file paths are
+kept inside the native process and never returned to the WebView. Before PDF
+embedding, the backend reads OpenType `OS/2.fsType` and verifies that the face
+covers the requested text. Restricted, bitmap-only and indeterminate faces are
+not embedded and require an explicit, warned substitution. DOCX preserves only
+the requested family name so the recipient application remains responsible for
+font substitution.
 
 ## Content Security Policy
 
@@ -298,10 +302,16 @@ against `engines-manifest.json`, applies the same traversal and expansion
 guards, and extracts it on the first conversion that needs LibreOffice. The
 source engine remains unchanged; only its package representation differs.
 
-Editor DOCX, RTF and PDF output is generated from one bounded ODT intermediate,
-normalized through the strict local LibreOffice ODT path and converted from the
-normalized file to the requested target. Both LibreOffice steps remain local;
-they add no network path or fallback. The source-conflict check is repeated
+Editor DOCX output is generated directly from Tiptap JSON by the local
+`docx.js` Web Worker. Assets and the final package are bounded; cancellation
+terminates the worker and marks the 1 MiB-chunked Rust session canceled. The
+same token is checked through flush and bounded ZIP/XML validation, then an
+atomic compare-and-publish boundary prevents cancellation from racing a partial
+replacement. Before commit, Rust reads every ZIP entry to verify integrity,
+rejects ambiguous paths, duplicates, size/ratio limits and malformed OOXML.
+RTF and document-to-PDF use
+the bounded ODT intermediate and strict local LibreOffice path. These paths add
+no network fallback. The source-conflict check is repeated
 after the potentially slow conversion and immediately before atomic
 replacement. The title dialog is a usability gate only: the native boundary
 still sanitizes the filename stem, reserves a non-conflicting destination and
@@ -322,12 +332,13 @@ content does not execute. Static editor contracts also pin DOMPurify, keep the
 sanitizer on every rich-HTML entry point and preserve the CSP boundary.
 
 The 2026-08-04 correction checks additionally cover bounded persisted image
-layout, local font provenance, explicit application-owned overwrite/export
+layout, local system-font permissions, explicit application-owned overwrite/export
 dialogs and cancellation during OCR resource preparation. Targeted preview
 tests show that cancelled jobs cannot publish stale results, but preview mocks
 do not prove native process termination. Real Windows OCR exercised the
-corrected path and matched the reviewed fixture exactly. The corrected Windows
-LibreOffice probe completed ODT normalization, DOCX and PDF generation; this
+corrected path and matched the reviewed fixture exactly. The historical Windows
+LibreOffice probe completed ODT normalization, DOCX and PDF generation. The
+direct DOCX path supersedes that DOCX export proof and
 does not by itself prove packaged-app behavior, reopened document structure or
 visual fidelity.
 
@@ -399,3 +410,27 @@ exact candidate commit. The app still performs no model or engine download at
 startup or during conversion. Native CI observes OCR and PDFium process
 connections while the host network remains active; this is process sampling,
 not a disconnection test or continuous packet capture.
+
+The post-audit PDFium 0.4.0 package keeps the same fail-closed boundary. Windows
+has an exact locally reproducible wrapper and engine ZIP, but its lock remains
+`unpublished` and cannot be used by the public-download validator. The embedded
+0.3.0 manifest is intentionally left unchanged until a reviewed public 0.4.0
+artifact exists. macOS and Linux records remain `pending-native-rebuild` with
+null package hashes, so neither platform can accidentally inherit Windows
+measurements or unverified URLs.
+
+The structural PDF editor keeps signature handling explicit. Every patch is
+checked against the source SHA-256, document permissions and DocMDP before the
+wrapper writes a separate destination. A forbidden operation does not silently
+invalidate a signature. The user may instead request a distinct unsigned
+editable copy; its atomic writer removes signature and DocMDP structures,
+verifies the copy and leaves the signed original unchanged. Automated tests
+cover that transition, but the complete signed/encrypted native corpus remains
+a release gate.
+
+Active PDF content is never executed. A bounded parser records the presence and
+kind of JavaScript, Launch actions, XFA, 3D and media for the inspector without
+returning payload bodies. The automated hostile fixtures prove detection and
+non-execution at this boundary. They do not yet prove byte-preservation of every
+active object after a PDFium edit/save/reopen cycle; that claim requires the
+independent native corpus.

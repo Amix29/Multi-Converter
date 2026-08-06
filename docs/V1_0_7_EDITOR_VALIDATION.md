@@ -98,14 +98,15 @@ issues. The current implementation addresses them as follows.
 - Paragraph-heading presets were removed from the UI. Imported `h1`–`h6`
   nodes remain schema-compatible so opening an existing document is not
   destructive.
-- Font size accepts any valid value from 6 to 288 pt, including decimal input;
+- Font size accepts any valid value from 1 to 400 pt, including decimal input;
   suggestions remain available but are not the only permitted values.
 - Text color is independent from highlight color. Highlight exposes an
   explicit no-highlight action and its toolbar glyph reflects the selected
   color, returning to the default Ink color when no highlight is active.
-- The toolbar includes locally bundled OFL-1.1 families and optional system
-  families without network loading. Exact provenance is recorded in
-  [`THIRD_PARTY_FONTS.md`](THIRD_PARTY_FONTS.md).
+- The toolbar enumerates installed system families without installing,
+  embedding or downloading fonts. It orders the system default, three recent
+  names and the virtualized alphabetical catalogue. PDF embedding follows
+  OpenType `OS/2.fsType`; DOCX keeps the chosen family name.
 
 ### Images and tables
 

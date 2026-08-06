@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ImportToast, PageNotice } from "./app/components/AppNotices";
 import {
   appModeStorageKey,
@@ -18,6 +18,7 @@ import { FormatScreen } from "./app/screens/FormatScreen";
 import { ProgressScreen } from "./app/screens/ProgressScreen";
 import { SettingsPanel } from "./app/settings/SettingsPanel";
 import type { Notice, NoticeTone } from "./app/types";
+import { useStableEvent } from "./app/useStableEvent";
 import { WelcomePanel } from "./app/welcome/WelcomePanel";
 import { UpdateDialog, UpdateInstallDialog, UpdateReminder } from "./components/UpdateFlow";
 import { useAppUpdater } from "./hooks/useAppUpdater";
@@ -27,7 +28,6 @@ import { repositoryUrl } from "./lib/updateService";
 import { ImageOcrDialog } from "./ocr/ImageOcrDialog";
 import type { FileItem } from "./app/types";
 import "./editor/editor.css";
-import "./editor/editor-fonts.css";
 
 const EditorWorkspace = lazy(() => import("./editor/EditorWorkspace").then((module) => ({ default: module.EditorWorkspace })));
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
@@ -46,6 +46,9 @@ export default function App() {
   const [editorWasOpened, setEditorWasOpened] = useState(appMode === "editor");
   const [notice, setNotice] = useState<Notice | null>(null);
   const [ocrFile, setOcrFile] = useState<FileItem | null>(null);
+  const showNotice = useCallback((tone: NoticeTone, message: string) => {
+    setNotice({ id: Date.now(), tone, message });
+  }, []);
 
   const fileWorkflow = useFileWorkflow({ appMode, language, showNotice });
   const conversionWorkflow = useConversionWorkflow({
@@ -57,6 +60,25 @@ export default function App() {
     showNotice,
   });
   const updater = useAppUpdater({ bootInfoLoaded, isTauriRuntime, isWelcomeOpen, language, showNotice });
+  const setInternetAvailable = useStableEvent(updater.setInternetAvailable);
+  const startConversion = useStableEvent(conversionWorkflow.startConversion);
+  const cancelConversions = useStableEvent(conversionWorkflow.cancelConversions);
+  const continueConversions = useStableEvent(conversionWorkflow.continueConversions);
+  const resetConversion = useStableEvent(conversionWorkflow.resetAll);
+  const retryFile = useStableEvent(conversionWorkflow.retryFile);
+  const retryFailed = useStableEvent(conversionWorkflow.retryFailedConversions);
+  const exportFolder = useStableEvent(conversionWorkflow.exportResultsToFolder);
+  const revealFolder = useStableEvent(conversionWorkflow.revealCurrentFolder);
+  const exportDownloads = useStableEvent(() => conversionWorkflow.exportResults(
+    "downloads",
+    (paths, entries) => api.exportToDownloads(paths, conversionWorkflow.outputDir, entries),
+  ));
+  const showFormats = useCallback(() => fileWorkflow.setStep(2), [fileWorkflow.setStep]);
+  const showFiles = useCallback(() => fileWorkflow.setStep(1), [fileWorkflow.setStep]);
+  const showOutputSettings = useCallback(() => fileWorkflow.setStep(2), [fileWorkflow.setStep]);
+  const openSettings = useCallback(() => setIsSettingsOpen(true), []);
+  const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
+  const closeOcr = useCallback(() => setOcrFile(null), []);
 
   const updateReminderActive = updater.updateReminderVisible
     && Boolean(updater.updateInfo)
@@ -95,14 +117,10 @@ export default function App() {
       .then((state) => setIsWelcomeOpen(state.show))
       .catch(() => setIsWelcomeOpen(shouldShowWelcome()));
     api.bootstrapDependencies()
-      .then((dependencies) => updater.setInternetAvailable(dependencies.internetAvailable))
-      .catch(() => updater.setInternetAvailable(navigator.onLine))
+      .then((dependencies) => setInternetAvailable(dependencies.internetAvailable))
+      .catch(() => setInternetAvailable(navigator.onLine))
       .finally(() => setBootInfoLoaded(true));
-  }, [language]);
-
-  function showNotice(tone: NoticeTone, message: string) {
-    setNotice({ id: Date.now(), tone, message });
-  }
+  }, [setInternetAvailable]);
 
   function closeWelcome() {
     localStorage.setItem(welcomeStorageKey, "true");
@@ -111,10 +129,10 @@ export default function App() {
     updater.showAvailableUpdateReminder();
   }
 
-  function openFeedback() {
+  const openFeedback = useCallback(() => {
     if (feedbackPrivacyAccepted) setIsFeedbackOpen(true);
     else setIsFeedbackPrivacyOpen(true);
-  }
+  }, [feedbackPrivacyAccepted]);
 
   function acceptFeedbackPrivacy() {
     localStorage.setItem(feedbackPrivacyStorageKey, "true");
@@ -133,8 +151,8 @@ export default function App() {
         feedbackVisible={feedbackLauncherActive}
         onAppMode={setAppMode}
         onFeedback={openFeedback}
-        onSettings={() => setIsSettingsOpen(true)}
-        onStep={(step) => fileWorkflow.setStep(step)}
+        onSettings={openSettings}
+        onStep={fileWorkflow.setStep}
       />
 
       <WelcomePanel isOpen={isWelcomeOpen} language={language} onClose={closeWelcome} />
@@ -148,7 +166,7 @@ export default function App() {
         updateStatus={updater.updateStatus}
         updateDownloadProgress={updater.updateDownloadProgress}
         updateDownloadSize={updater.updateDownloadSize}
-        onClose={() => setIsSettingsOpen(false)}
+        onClose={closeSettings}
         onLanguage={setLanguage}
         onNotificationsEnabled={setNotificationsEnabled}
         onCheckForUpdate={() => void updater.checkForAppUpdate(true)}
@@ -204,7 +222,7 @@ export default function App() {
         language={language}
         fileName={ocrFile?.name ?? ""}
         path={ocrFile?.path ?? ""}
-        onClose={() => setOcrFile(null)}
+        onClose={closeOcr}
         onNotice={showNotice}
       />
 
@@ -216,11 +234,12 @@ export default function App() {
             files={fileWorkflow.files}
             isConverting={conversionWorkflow.isConverting}
             isDragOver={fileWorkflow.isDragOver}
-            onAddFiles={() => void fileWorkflow.addPickedFiles()}
+            onAddFiles={fileWorkflow.addPickedFiles}
             onClear={fileWorkflow.resetFiles}
+            onClearUnsupported={fileWorkflow.removeUnsupported}
             onDragOver={fileWorkflow.setIsDragOver}
-            onDrop={(event) => void fileWorkflow.handleHtmlDrop(event)}
-            onFormats={() => fileWorkflow.setStep(2)}
+            onDrop={fileWorkflow.handleHtmlDrop}
+            onFormats={showFormats}
             onExtractText={setOcrFile}
             onRemove={fileWorkflow.removeFile}
           />
@@ -230,9 +249,10 @@ export default function App() {
             language={language}
             files={fileWorkflow.files}
             isConverting={conversionWorkflow.isConverting}
-            onBack={() => fileWorkflow.setStep(1)}
+            onBack={showFiles}
             onChooseFileFormat={fileWorkflow.applyFileFormat}
-            onStart={() => void conversionWorkflow.startConversion()}
+            onApplyCompatibleFormat={fileWorkflow.applyCompatibleFormat}
+            onStart={startConversion}
           />
           <ProgressScreen
             isActive={fileWorkflow.step === 3}
@@ -243,15 +263,15 @@ export default function App() {
             isCancelling={conversionWorkflow.isCancelling}
             isExporting={conversionWorkflow.isExporting}
             isTempOutputCleaned={conversionWorkflow.isTempOutputCleaned}
-            onNew={conversionWorkflow.resetAll}
-            onCancel={() => void conversionWorkflow.cancelConversions()}
-            onContinue={() => void conversionWorkflow.continueConversions()}
-            onBackToSettings={() => fileWorkflow.setStep(2)}
-            onExportDownloads={() => void conversionWorkflow.exportResults("downloads", (paths) => api.exportToDownloads(paths, conversionWorkflow.outputDir))}
-            onExportFolder={() => void conversionWorkflow.exportResultsToFolder()}
-            onRevealFolder={() => void conversionWorkflow.revealCurrentFolder()}
-            onRetryFile={(fileId) => void conversionWorkflow.retryFile(fileId)}
-            onRetryFailed={() => void conversionWorkflow.retryFailedConversions()}
+            onNew={resetConversion}
+            onCancel={cancelConversions}
+            onContinue={continueConversions}
+            onBackToSettings={showOutputSettings}
+            onExportDownloads={exportDownloads}
+            onExportFolder={exportFolder}
+            onRevealFolder={revealFolder}
+            onRetryFile={retryFile}
+            onRetryFailed={retryFailed}
           />
         </>
       )}

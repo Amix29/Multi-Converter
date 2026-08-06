@@ -39,7 +39,7 @@ export function DocumentCommandRow(props: DocumentCommandRowProps) {
         value={props.title}
         disabled={props.saving}
         aria-label={t(props.language, "editor.documentName")}
-        onChange={(event) => props.onTitle(event.target.value.slice(0, 240))}
+        onInput={(event) => props.onTitle(event.currentTarget.value.slice(0, 240))}
       />
       <span className={`document-save-state ${props.dirty ? "is-dirty" : ""}`} aria-live="polite">
         {props.saving ? t(props.language, "editor.saving") : props.dirty ? t(props.language, "editor.unsaved") : t(props.language, "editor.savedState")}

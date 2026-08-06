@@ -2803,8 +2803,10 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.18",
  "time",
+ "ttf-parser",
  "unicode-normalization",
  "uuid",
+ "windows",
  "windows-sys 0.61.2",
  "zip 8.6.0",
 ]

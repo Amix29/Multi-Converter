@@ -424,13 +424,36 @@ fn external_output_already_at_destination_is_kept() {
 }
 
 #[test]
-fn queued_cancellation_survives_until_conversion_checks_it() {
-    let job_id = "queued-before-start";
+fn active_cancellation_is_removed_when_the_job_finishes() {
+    let job_id = format!("active-cancel-{}", uuid::Uuid::new_v4());
+    let registration = begin_conversion(&job_id).unwrap();
 
-    assert!(cancel_conversion(job_id));
-    assert!(check_cancelled(job_id).is_err());
-    clear_cancelled(job_id);
-    assert!(check_cancelled(job_id).is_ok());
+    assert!(cancel_conversion(&job_id));
+    assert!(check_cancelled(&job_id).is_err());
+    drop(registration);
+    assert!(check_cancelled(&job_id).is_ok());
+    assert!(!cancel_conversion(&job_id));
+}
+
+#[test]
+fn late_cancellation_of_a_finished_job_is_not_retained() {
+    let job_id = format!("late-cancel-{}", uuid::Uuid::new_v4());
+    let registration = begin_conversion(&job_id).unwrap();
+    drop(registration);
+
+    assert!(!cancel_conversion(&job_id));
+    let next = begin_conversion(&job_id).unwrap();
+    assert!(check_cancelled(&job_id).is_ok());
+    drop(next);
+}
+
+#[test]
+fn duplicate_active_job_ids_are_rejected() {
+    let job_id = format!("duplicate-active-{}", uuid::Uuid::new_v4());
+    let registration = begin_conversion(&job_id).unwrap();
+
+    assert!(begin_conversion(&job_id).is_err());
+    drop(registration);
 }
 
 #[test]

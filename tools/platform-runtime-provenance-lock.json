@@ -1,10 +1,12 @@
 {
-  "schemaVersion": 1,
-  "generatedFor": "phase-8-macos-linux-native",
+  "schemaVersion": 2,
+  "generatedFor": "v1.0.7-post-audit",
   "pdfium": {
     "version": "149.0.7825.0",
     "tag": "chromium/7825",
-    "wrapperVersion": "0.3.0",
+    "wrapperVersion": "0.4.0",
+    "wrapperCargoLockSha256": "6462b7bf8f748280d276316c2634f0faf8eb8ecd5c0d794ca0c445edc4decc7f",
+    "wrapperBuildRustVersion": "1.96.0",
     "platforms": {
       "macos-universal": {
         "archiveName": "pdfium-mac-univ.tgz",
@@ -13,7 +15,16 @@
         "sha256": "3782e6cbc13c75dcf6461fdd33048fd7507730e095181427de24c0c400ea3eb6",
         "libraryPath": "lib/libpdfium.dylib",
         "libraryBytes": 14534128,
-        "librarySha256": "365155f66b5d859d4a37393640ed6dab1976dc0afcbfbf5d00737da96b18b461"
+        "librarySha256": "365155f66b5d859d4a37393640ed6dab1976dc0afcbfbf5d00737da96b18b461",
+        "package": {
+          "status": "pending-native-rebuild",
+          "archiveName": "pdfium-compatible-macos-universal.zip",
+          "archiveSizeBytes": null,
+          "archiveSha256": null,
+          "installedSizeBytes": null,
+          "wrapperSizeBytes": null,
+          "wrapperSha256": null
+        }
       },
       "linux-x64": {
         "archiveName": "pdfium-linux-x64.tgz",
@@ -22,7 +33,16 @@
         "sha256": "ae0e276bcdf276dca2746adb4780f79949620e5c655973ca252a3994bc516a13",
         "libraryPath": "lib/libpdfium.so",
         "libraryBytes": 7584008,
-        "librarySha256": "fcd602cd518476d712f661b08e010700490875288fb17069b5b5a2f8b7724118"
+        "librarySha256": "fcd602cd518476d712f661b08e010700490875288fb17069b5b5a2f8b7724118",
+        "package": {
+          "status": "pending-native-rebuild",
+          "archiveName": "pdfium-compatible-linux-x64.zip",
+          "archiveSizeBytes": null,
+          "archiveSha256": null,
+          "installedSizeBytes": null,
+          "wrapperSizeBytes": null,
+          "wrapperSha256": null
+        }
       }
     }
   },

@@ -11,6 +11,7 @@ const prepareScript = [
   fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8"),
   fs.readFileSync(path.join(root, "scripts", "lib", "bundled-engine-files.mjs"), "utf8"),
 ].join("\n");
+const stagedEngineAssetsLibrary = fs.readFileSync(path.join(root, "scripts", "lib", "staged-engine-assets.mjs"), "utf8");
 const validateScript = fs.readFileSync(path.join(root, "scripts", "validate-bundled-engines.mjs"), "utf8");
 const linuxEngineSourcesPreparer = fs.readFileSync(path.join(root, "scripts", "prepare-linux-engine-sources.mjs"), "utf8");
 const linuxEngineReleasePreparer = fs.readFileSync(path.join(root, "scripts", "prepare-linux-engine-release-assets.mjs"), "utf8");
@@ -79,7 +80,9 @@ assert.match(prepareScript, /engine-sources", "linux-x64"/, "Linux sidecars must
 assert.match(prepareScript, /MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES/, "Bundled engine preparation must support strict advanced-engine release mode");
 assert.match(prepareScript, /extractZipArchive/, "Bundled engine preparation must extract ZIP-based advanced engine archives on Linux");
 assert.match(prepareScript, /unzip", \["-q"/, "Bundled engine preparation must use unzip for ZIP archives on non-Windows hosts");
-assert.ok((prepareScript.match(/extractArchive\(archive, extractDir, engine\.archiveType\)/g) ?? []).length >= 2, "Bundled engine preparation must preserve manifest archive types for sidecars and advanced engines");
+assert.match(prepareScript, /extractArchive\(archive, extractDir, engine\.archiveType\)/, "Bundled engine preparation must preserve manifest archive types for sidecars");
+assert.match(prepareScript, /extractArchive\(archive, extractDir, source\.archiveType\)/, "Bundled engine preparation must preserve the selected manifest archive type for advanced engines");
+assert.match(stagedEngineAssetsLibrary, /["']archiveType["']/, "Staged engine manifests must protect archiveType compatibility");
 assert.match(prepareScript, /patchelf/, "Bundled engine preparation must patch Linux engine RPATHs for AppImage packaging");
 assert.match(prepareScript, /--set-rpath/, "Bundled engine preparation must expose portable Linux engine libraries through ELF RPATHs");
 assert.match(prepareScript, /libkf5be1lo\.so/, "Bundled engine preparation must prune optional LibreOffice KDE backends from Linux headless bundles");

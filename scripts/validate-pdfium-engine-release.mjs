@@ -23,6 +23,9 @@ else await validateRelease();
 async function validateRelease() {
   requireWindows();
   const lock = await readPdfiumLock(root);
+  if (args.includes("--download") && lock.package.publicationStatus !== "published") {
+    throw new Error("Le candidat PDFium 0.4.0 n'est pas publie; --download est interdit tant qu'une URL publique verifiee n'est pas verrouillee.");
+  }
   const temporary = args.includes("--download") ? await fs.mkdtemp(path.join(os.tmpdir(), "mc-pdfium-release-download-")) : null;
   const assetDir = temporary ?? path.resolve(requiredOption("--dir"));
   try {
@@ -39,10 +42,10 @@ async function validateRelease() {
     if (checksum !== `${actualSha256}  ${lock.package.archiveName}`) throw new Error("Fichier SHA-256 PDFium invalide.");
     const manifest = JSON.parse(await fs.readFile(path.join(assetDir, "engines-manifest.json"), "utf8"));
     if (manifest.manifestVersion !== 1 || manifest.engines?.length !== 1 || manifest.engines[0].id !== "pdfium") {
-      throw new Error("Le manifeste de prerelease doit contenir uniquement PDFium.");
+      throw new Error("Le manifeste candidat doit contenir uniquement PDFium.");
     }
     const engine = manifest.engines[0];
-    if (engine.downloadUrl !== `${lock.package.releaseBaseUrl}${lock.package.archiveName}`) throw new Error("URL PDFium de prerelease invalide.");
+    if (engine.downloadUrl !== `${lock.package.manifestBaseUrl}${lock.package.archiveName}`) throw new Error("URL PDFium candidate invalide.");
     if (engine.sha256 !== actualSha256 || engine.compressedSizeBytes !== (await fs.stat(archive)).size) {
       throw new Error("Empreinte ou taille PDFium incoherente dans le manifeste.");
     }
@@ -80,6 +83,9 @@ async function validateMetadata(engineRoot, engine) {
 }
 
 async function downloadAssets(lock, destination) {
+  if (lock.package.publicationStatus !== "published" || typeof lock.package.releaseBaseUrl !== "string") {
+    throw new Error("Aucune provenance publique PDFium 0.4.0 verrouillee.");
+  }
   for (const name of [lock.package.archiveName, `${lock.package.archiveName}.sha256`, "engines-manifest.json"]) {
     await download(`${lock.package.releaseBaseUrl}${name}`, path.join(destination, name), { "User-Agent": "Multi-Converter-PDFium-Validator" });
   }

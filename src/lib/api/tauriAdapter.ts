@@ -7,6 +7,9 @@ import type {
   EditorDocumentSummary,
   EditorDocumentV1,
   EditorImportResult,
+  EditorFontEmbeddingPolicyV1,
+  GeneratedWriteSessionInfo,
+  EditorSystemFontCatalogV1,
   EditorWriteResult,
   EngineStatus,
   ExportResult,
@@ -15,6 +18,11 @@ import type {
   OcrDocumentResultV1,
   OcrProgressV1,
   OcrRuntimeInfoV1,
+  PdfEditableCopyResultV1,
+  PdfEditorSessionV1,
+  PdfPageWindowV1,
+  PdfRenderedPageV1,
+  PdfSaveResultV1,
   ProgressPayload,
   ConversionResult,
   WelcomeState,
@@ -30,9 +38,10 @@ export function createTauriApi(): MultiConverterApi {
     pickOutputFolder: () => invoke<string | null>("pick_output_folder"),
     createTempOutputFolder: () => invoke<string>("create_temp_output_folder"),
     cleanupTempOutputFolder: (folder) => invoke<boolean>("cleanup_temp_output_folder", { folder }),
-    exportToDownloads: (filePaths, outputDir) => invoke<ExportResult>("export_to_downloads", { filePaths, outputDir }),
-    exportToFolder: (filePaths, destinationDir, outputDir) =>
-      invoke<ExportResult>("export_to_folder", { filePaths, destinationDir, outputDir }),
+    exportToDownloads: (filePaths, outputDir, entries) =>
+      invoke<ExportResult>("export_to_downloads", { filePaths, outputDir, entries: entries ?? null }),
+    exportToFolder: (filePaths, destinationDir, outputDir, entries) =>
+      invoke<ExportResult>("export_to_folder", { filePaths, destinationDir, outputDir, entries: entries ?? null }),
     describePaths: (paths) => invoke<FileDescription[]>("describe_paths", { paths }),
     saveClipboardFiles: (files) => invoke<string[]>("save_clipboard_files", { files }),
     convert: (job) => invoke<ConversionResult>("start_conversion", { job }),
@@ -55,6 +64,14 @@ export function createTauriApi(): MultiConverterApi {
     editorSaveDocument: (request) => invoke<EditorWriteResult>("editor_save_document", { request }),
     editorSaveAs: (request) => invoke<EditorWriteResult | null>("editor_save_as", { request }),
     editorExportDocument: (request) => invoke<EditorWriteResult | null>("editor_export_document", { request }),
+    editorBeginGeneratedWrite: (payload) =>
+      invoke<GeneratedWriteSessionInfo | null>("editor_begin_generated_write", { payload }),
+    editorAppendGeneratedWrite: (sessionId, offset, bytes) =>
+      invoke<number>("editor_append_generated_write", { sessionId, offset, bytes }),
+    editorCommitGeneratedWrite: (sessionId) =>
+      invoke<EditorWriteResult>("editor_commit_generated_write", { sessionId }),
+    editorAbortGeneratedWrite: (sessionId) =>
+      invoke<boolean>("editor_abort_generated_write", { sessionId }),
     editorReadAsset: (documentId, assetId) => invoke<EditorAssetData>("editor_read_asset", { documentId, assetId }),
     editorStoreAsset: (documentId, name, mimeType, bytes) =>
       invoke<EditorAssetStoreResult>("editor_store_asset", { documentId, name, mimeType, bytes }),
@@ -63,6 +80,51 @@ export function createTauriApi(): MultiConverterApi {
     editorRemoveAsset: (documentId, assetId) =>
       invoke<EditorDocumentV1>("editor_remove_asset", { documentId, assetId }),
     editorPruneAssets: (documentId) => invoke<EditorDocumentV1>("editor_prune_assets", { documentId }),
+    editorListSystemFonts: () => invoke<EditorSystemFontCatalogV1>("editor_list_system_fonts"),
+    editorInspectFontEmbedding: (family, text, face) =>
+      invoke<EditorFontEmbeddingPolicyV1>("editor_inspect_font_embedding", {
+        family,
+        text,
+        bold: face?.bold ?? false,
+        italic: face?.italic ?? false,
+      }),
+    pdfEditorOpen: (sourcePath, password) =>
+      invoke<PdfEditorSessionV1>("pdf_editor_open", { sourcePath, password: password ?? null }),
+    pdfEditorInspectPages: (sessionId, sourceSha256, pageStart, pageCount) =>
+      invoke<PdfPageWindowV1>("pdf_editor_inspect_pages", {
+        sessionId,
+        sourceSha256,
+        pageStart,
+        pageCount,
+      }),
+    pdfEditorRenderPage: (sessionId, sourceSha256, pageNumber, scale) =>
+      invoke<PdfRenderedPageV1>("pdf_editor_render_page", {
+        sessionId,
+        sourceSha256,
+        pageNumber,
+        scale: scale ?? null,
+      }),
+    pdfEditorRecognizePage: (sessionId, sourceSha256, pageNumber, jobId) =>
+      invoke<OcrDocumentResultV1>("pdf_editor_recognize_page", {
+        sessionId,
+        sourceSha256,
+        pageNumber,
+        jobId,
+      }),
+    pdfEditorSaveAs: (sessionId, sourceSha256, patches, destinationPath) =>
+      invoke<PdfSaveResultV1 | null>("pdf_editor_save_as", {
+        sessionId,
+        sourceSha256,
+        patches,
+        destinationPath: destinationPath ?? null,
+      }),
+    pdfEditorCreateEditableCopy: (sessionId, sourceSha256, destinationPath) =>
+      invoke<PdfEditableCopyResultV1 | null>("pdf_editor_create_editable_copy", {
+        sessionId,
+        sourceSha256,
+        destinationPath: destinationPath ?? null,
+      }),
+    pdfEditorClose: (sessionId) => invoke<boolean>("pdf_editor_close", { sessionId }),
     engineStatuses: () => invoke<EngineStatus[]>("engine_statuses"),
     onProgress: async (callback) => listen<ProgressPayload>("convert-progress", (event) => callback(event.payload)),
     onFileDrop: async (callback) =>

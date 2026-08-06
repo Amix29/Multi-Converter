@@ -13,6 +13,8 @@ export function DocumentOperationDialog(props: {
   title: string;
   titleDraft: string;
   format: EditorFormat;
+  progress: number | null;
+  cancellable: boolean;
   onTitleDraft(value: string): void;
   onCancel(): void;
   onConfirmOverwrite(): void;
@@ -20,7 +22,8 @@ export function DocumentOperationDialog(props: {
 }) {
   const surfaceRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const canEscape = props.operation !== "exporting";
+  const exporting = props.operation === "exporting";
+  const canEscape = !exporting || props.cancellable;
   useModalAccessibility({
     isOpen: props.operation !== null,
     surfaceRef,
@@ -29,9 +32,8 @@ export function DocumentOperationDialog(props: {
   });
   if (!props.operation) return null;
 
-  const exporting = props.operation === "exporting";
   return createPortal(
-    <div className="editor-modal-backdrop editor-operation-backdrop" role="presentation" onMouseDown={canEscape ? props.onCancel : undefined}>
+    <div className="editor-modal-backdrop editor-operation-backdrop" role="presentation" onMouseDown={!exporting ? props.onCancel : undefined}>
       <div
         ref={surfaceRef}
         className="editor-modal editor-operation-dialog"
@@ -81,10 +83,27 @@ export function DocumentOperationDialog(props: {
             <p id="editor-operation-description" aria-live="polite">
               {t(props.language, "editor.exportingDescription", { format: props.format.toUpperCase() })}
             </p>
-            <div className="editor-operation-progress" role="progressbar" aria-label={label(props.language, "editor.exportingTitle")}>
-              <span />
+            <div
+              className={`editor-operation-progress ${props.progress === null ? "is-indeterminate" : ""}`}
+              role="progressbar"
+              aria-label={label(props.language, "editor.exportingTitle")}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={props.progress === null ? undefined : Math.round(props.progress * 100)}
+            >
+              <span style={props.progress === null ? undefined : { width: `${Math.round(props.progress * 100)}%` }} />
             </div>
+            {props.progress !== null && (
+              <strong className="editor-operation-percentage" aria-live="polite">
+                {Math.round(props.progress * 100)}%
+              </strong>
+            )}
             <small>{label(props.language, "editor.exportingKeepOpen")}</small>
+            {props.cancellable && (
+              <div className="editor-modal-actions">
+                <button type="button" onClick={props.onCancel}>{t(props.language, "common.cancel")}</button>
+              </div>
+            )}
           </>
         )}
       </div>

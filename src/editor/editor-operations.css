@@ -47,11 +47,26 @@
 
 .editor-operation-progress span {
   display: block;
-  width: 38%;
+  width: 0;
   height: 100%;
   border-radius: inherit;
+  background: var(--vlm-accent);
+  transition: width 160ms var(--vlm-ease-standard);
+}
+
+.editor-operation-progress.is-indeterminate span {
+  width: 38%;
   background: linear-gradient(90deg, var(--vlm-primary-bg), var(--vlm-accent), var(--vlm-primary-bg));
   animation: editorOperationProgress 1.15s var(--vlm-ease-standard) infinite;
+}
+
+.editor-operation-percentage {
+  display: block;
+  margin: -4px 0 10px;
+  color: var(--vlm-text);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .editor-operation-dialog small {
@@ -73,6 +88,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .editor-operation-dialog,
-  .editor-operation-progress span { animation: none; }
-  .editor-operation-progress span { width: 100%; opacity: .7; }
+  .editor-operation-progress.is-indeterminate span { animation: none; }
+  .editor-operation-progress.is-indeterminate span { width: 100%; opacity: .7; }
 }

@@ -17,11 +17,17 @@ import { EditorCanvas } from "./EditorCanvas";
 import { EditorToolbar } from "./EditorToolbar";
 import { HeaderFooterDialog } from "./HeaderFooterDialog";
 import { isUntitledDocument, normalizedDocumentTitle } from "./documentNaming";
+import { writeGeneratedDocx } from "./docx/generatedDocxWriter";
 import { insertImageFiles } from "./editorAssets";
+import { EditorColorPreview } from "./editorColorState";
 import { DocumentImage, DocumentLayout, PageBreak, UnsupportedObject } from "./extensions";
 import { sanitizeImportedHtml } from "./htmlSanitizer";
 import { Pagination } from "./pagination";
+import { ParagraphLineHeight } from "./paragraphLineHeight";
+import { prepareDocumentForPdf } from "./pdfFontPolicy";
+import { ResizableTableRow, TableResizeHandles } from "./tableResize";
 import { useEditorFocusMode } from "./useEditorFocusMode";
+import "./editor-table-resize.css";
 
 interface DocumentEditorProps {
   language: LanguageCode;
@@ -45,13 +51,11 @@ export function DocumentEditor(props: DocumentEditorProps) {
   const [headerFooter, setHeaderFooter] = useState<"header" | "footer" | null>(null);
   const [toolbarRevision, setToolbarRevision] = useState(0);
   const [operation, setOperation] = useState<DocumentOperation>(null);
+  const [exportProgress, setExportProgress] = useState<number | null>(null);
   const [titleDraft, setTitleDraft] = useState("");
   const pendingOverwrite = useRef<{ document: EditorDocumentV1; format: EditorFormat } | null>(null);
+  const exportAbortController = useRef<AbortController | null>(null);
   const { focusMode, focusButtonRef, toggleFocusMode } = useEditorFocusMode();
-
-  useEffect(() => {
-    documentRef.current = document;
-  }, [document]);
 
   const markDirty = useCallback(() => {
     revisionRef.current += 1;
@@ -62,10 +66,13 @@ export function DocumentEditor(props: DocumentEditorProps) {
   const extensions = useMemo(
     () => [
       StarterKit.configure({ heading: { levels: [1, 2, 3, 4, 5, 6] } }),
-      TextStyleKit,
+      TextStyleKit.configure({ lineHeight: false }),
+      ParagraphLineHeight,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight.configure({ multicolor: true }),
-      TableKit.configure({ table: { resizable: true } }),
+      TableKit.configure({ table: { resizable: true }, tableRow: false }),
+      ResizableTableRow,
+      TableResizeHandles,
       DocumentImage.configure({ documentId: document.id }),
       FileHandler.configure({
         allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/gif"],
@@ -80,6 +87,7 @@ export function DocumentEditor(props: DocumentEditorProps) {
       CharacterCount,
       Placeholder.configure({ placeholder: t(props.language, "editor.placeholder") }),
       Typography,
+      EditorColorPreview,
       PageBreak,
       DocumentLayout,
       UnsupportedObject,
@@ -237,6 +245,9 @@ export function DocumentEditor(props: DocumentEditorProps) {
 
   async function exportDocument(title?: string) {
     if (title !== undefined) updateDocument({ title });
+    const abortController = exportFormat === "docx" ? new AbortController() : null;
+    exportAbortController.current = abortController;
+    setExportProgress(abortController ? 0 : null);
     setSaving(true);
     setOperation("exporting");
     try {
@@ -244,23 +255,46 @@ export function DocumentEditor(props: DocumentEditorProps) {
       if ((exportFormat === "txt" || exportFormat === "md") && (latest.header || latest.footer || latest.page.numbering !== "none")) {
         props.onNotice("info", t(props.language, "editor.flatFormatLayoutWarning"));
       }
-      const result = await api.editorExportDocument({ document: latest, targetFormat: exportFormat });
-      if (result) props.onNotice("success", t(props.language, "editor.exported", { path: result.path }));
+      const prepared = exportFormat === "pdf"
+        ? await prepareDocumentForPdf(api, latest)
+        : { document: latest, warnings: [] as string[] };
+      for (const warning of prepared.warnings) props.onNotice("info", warning);
+      const request = { document: prepared.document, targetFormat: exportFormat };
+      const result = exportFormat === "docx"
+        ? await writeGeneratedDocx(api, request, "export", {
+          signal: abortController?.signal,
+          onProgress: setExportProgress,
+        })
+        : await api.editorExportDocument(request);
+      if (result) {
+        acceptSavedDocument(exportFormat === "pdf" ? latest : result.document);
+        props.onNotice("success", t(props.language, "editor.exported", { path: result.path }));
+      }
     } catch (error) {
-      props.onNotice("error", editorError(error));
+      if (!isAbortError(error)) props.onNotice("error", editorError(error));
     } finally {
+      if (exportAbortController.current === abortController) {
+        exportAbortController.current = null;
+      }
+      setExportProgress(null);
       setSaving(false);
       setOperation(null);
     }
   }
 
   async function performSave(latest: EditorDocumentV1, format: EditorFormat, mode: "save" | "saveAs") {
-    const request = { document: latest, targetFormat: format };
-    const result = mode === "save" && latest.source
-      ? await api.editorSaveDocument(request)
-      : await api.editorSaveAs(request);
+    const prepared = format === "pdf"
+      ? await prepareDocumentForPdf(api, latest)
+      : { document: latest, warnings: [] as string[] };
+    for (const warning of prepared.warnings) props.onNotice("info", warning);
+    const request = { document: prepared.document, targetFormat: format };
+    const result = format === "docx"
+      ? await writeGeneratedDocx(api, request, mode)
+      : mode === "save" && latest.source
+        ? await api.editorSaveDocument(request)
+        : await api.editorSaveAs(request);
     if (!result) return;
-    acceptSavedDocument(result.document);
+    acceptSavedDocument(format === "pdf" ? latest : result.document);
     props.onNotice("success", t(props.language, "editor.saved", { name: result.document.title }));
   }
 
@@ -283,6 +317,10 @@ export function DocumentEditor(props: DocumentEditorProps) {
   }
 
   function cancelOperation() {
+    if (operation === "exporting") {
+      exportAbortController.current?.abort(new DOMException("L’export DOCX a été annulé.", "AbortError"));
+      return;
+    }
     pendingOverwrite.current = null;
     setOperation(null);
   }
@@ -359,6 +397,8 @@ export function DocumentEditor(props: DocumentEditorProps) {
         title={pendingOverwrite.current?.document.title ?? document.title}
         titleDraft={titleDraft}
         format={exportFormat}
+        progress={exportProgress}
+        cancellable={operation === "exporting" && exportAbortController.current !== null}
         onTitleDraft={setTitleDraft}
         onCancel={cancelOperation}
         onConfirmOverwrite={() => void confirmOverwrite()}
@@ -371,4 +411,10 @@ export function DocumentEditor(props: DocumentEditorProps) {
 function editorError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   return message.replace(/^[A-Z][A-Z0-9_]+:/, "");
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException
+    ? error.name === "AbortError"
+    : error instanceof Error && error.name === "AbortError";
 }

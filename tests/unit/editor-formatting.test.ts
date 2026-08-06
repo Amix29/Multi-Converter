@@ -2,11 +2,19 @@ import { describe, expect, it } from "vitest";
 
 import {
   colorInputValue,
-  editorFontFamilies,
+  fontSizeSuggestions,
+  lineHeightSuggestions,
+  lineHeightValue,
   maximumFontSizePt,
+  maximumLineHeight,
   minimumFontSizePt,
+  minimumLineHeight,
   normalizeFontSizeInput,
+  normalizeLineHeightInput,
+  normalizedHexColor,
+  orderedFontCatalog,
   pointSizeValue,
+  rememberRecentFont,
 } from "../../src/editor/editorFormatting";
 
 describe("editor formatting values", () => {
@@ -17,8 +25,13 @@ describe("editor formatting values", () => {
   });
 
   it("bounds font sizes to the supported document range", () => {
-    expect(normalizeFontSizeInput("2")).toBe(`${minimumFontSizePt}pt`);
+    expect(normalizeFontSizeInput("0.2")).toBe(`${minimumFontSizePt}pt`);
+    expect(normalizeFontSizeInput("2")).toBe("2pt");
     expect(normalizeFontSizeInput("999")).toBe(`${maximumFontSizePt}pt`);
+  });
+
+  it("keeps the compact Word-like point-size shortcuts", () => {
+    expect(fontSizeSuggestions).toEqual([8, 9, 10, 11, 12, 14, 16, 18, 24, 32, 48, 72]);
   });
 
   it.each(["", "large", "12.345", "12px", "-1"])(
@@ -40,15 +53,36 @@ describe("editor formatting values", () => {
     expect(colorInputValue(undefined, "#fff4bd")).toBe("#fff4bd");
   });
 
-  it("offers bundled OFL families and a broad local system-font set", () => {
-    expect(editorFontFamilies.length).toBeGreaterThanOrEqual(20);
-    expect(editorFontFamilies.slice(0, 3)).toEqual([
-      "Source Sans 3",
-      "Atkinson Hyperlegible Next",
-      "JetBrains Mono",
-    ]);
-    expect(editorFontFamilies).toContain("DejaVu Sans");
-    expect(editorFontFamilies).toContain("Liberation Serif");
-    expect(editorFontFamilies.every((font) => !/https?:|url\(/i.test(font))).toBe(true);
+  it("normalizes shorthand colors and keeps hexadecimal as the public value", () => {
+    expect(normalizedHexColor("#C73")).toBe("#cc7733");
+    expect(normalizedHexColor("rgb(1, 2, 3)")).toBeNull();
+  });
+
+  it("supports automatic, preset and custom paragraph line height", () => {
+    expect(lineHeightSuggestions).toEqual(["auto", "1", "1.15", "1.5", "2", "2.5", "3"]);
+    expect(normalizeLineHeightInput("auto")).toBe("auto");
+    expect(normalizeLineHeightInput("1,37")).toBe("1.37");
+    expect(normalizeLineHeightInput("0.1")).toBe(String(minimumLineHeight));
+    expect(normalizeLineHeightInput("9")).toBe(String(maximumLineHeight));
+    expect(lineHeightValue("normal")).toBe("auto");
+  });
+
+  it("orders the native font catalogue as default, recent, then alphabetic", () => {
+    const catalog = orderedFontCatalog(
+      "Segoe UI",
+      ["Verdana", "Arial", "Missing", "Consolas"],
+      ["Verdana", "Segoe UI", "consolas", "Arial", "ARIAL"],
+    );
+    expect(catalog.defaultFont).toBe("Segoe UI");
+    expect(catalog.recentFonts).toEqual(["Verdana", "Arial", "Consolas"]);
+    expect(catalog.allFonts).toEqual(["Arial", "consolas", "Segoe UI", "Verdana"]);
+  });
+
+  it("remembers at most three valid installed-family names without paths", () => {
+    expect(rememberRecentFont("Georgia", ["Arial", "Verdana", "Tahoma"], "Segoe UI"))
+      .toEqual(["Georgia", "Arial", "Verdana"]);
+    expect(rememberRecentFont("Segoe UI", ["Arial", "Verdana"], "Segoe UI"))
+      .toEqual(["Arial", "Verdana"]);
+    expect(rememberRecentFont("bad\u0000font", ["Arial"], "Segoe UI")).toEqual(["Arial"]);
   });
 });

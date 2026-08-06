@@ -64,6 +64,13 @@ export const DocumentImage = Image.extend<DocumentImageOptions>({
         parseHTML: (element) => element.getAttribute("width") || element.style.width || null,
         renderHTML: (attributes) => (attributes.width ? { style: `width: ${String(attributes.width).replace(/[^0-9.%a-z-]/gi, "")}` } : {}),
       },
+      height: {
+        default: "auto",
+        parseHTML: (element) => element.getAttribute("height") || element.style.height || "auto",
+        renderHTML: (attributes) => attributes.height && attributes.height !== "auto"
+          ? { style: `height: ${String(attributes.height).replace(/[^0-9.%a-z-]/gi, "")}` }
+          : {},
+      },
       align: {
         default: "center",
         parseHTML: (element) => element.getAttribute("data-align") || "center",
@@ -77,17 +84,17 @@ export const DocumentImage = Image.extend<DocumentImageOptions>({
       offsetXmm: {
         default: 0,
         parseHTML: (element) => finiteNumber(element.getAttribute("data-offset-x-mm")),
-        renderHTML: (attributes) => ({ "data-offset-x-mm": boundedNumber(attributes.offsetXmm, -500, 500) }),
+        renderHTML: (attributes) => ({ "data-offset-x-mm": boundedNumber(attributes.offsetXmm, -100_000, 100_000) }),
       },
       offsetYmm: {
         default: 0,
         parseHTML: (element) => finiteNumber(element.getAttribute("data-offset-y-mm")),
-        renderHTML: (attributes) => ({ "data-offset-y-mm": boundedNumber(attributes.offsetYmm, -500, 500) }),
+        renderHTML: (attributes) => ({ "data-offset-y-mm": boundedNumber(attributes.offsetYmm, -100_000, 100_000) }),
       },
       zIndex: {
         default: 0,
         parseHTML: (element) => finiteNumber(element.getAttribute("data-z-index")),
-        renderHTML: (attributes) => ({ "data-z-index": Math.round(boundedNumber(attributes.zIndex, -100, 100)) }),
+        renderHTML: (attributes) => ({ "data-z-index": Math.round(boundedNumber(attributes.zIndex, -100_000, 100_000)) }),
       },
       wrapMode: {
         default: "none",

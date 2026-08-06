@@ -35,6 +35,31 @@ pub struct FileDescription {
     pub targets: Vec<crate::registry::TargetFormat>,
 }
 
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportOriginV1 {
+    pub kind: ImportOriginKind,
+    pub root_id: String,
+    pub root_name: String,
+    pub relative_path: String,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum ImportOriginKind {
+    File,
+    Folder,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportedFileDescription {
+    #[serde(flatten)]
+    pub description: FileDescription,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub import_origin: Option<ImportOriginV1>,
+}
+
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FileWarning {
@@ -106,5 +131,27 @@ mod tests {
             progress,
             serde_json::json!({ "jobId": "job-1", "progress": 42, "phase": "Conversion" })
         );
+    }
+
+    #[test]
+    fn import_origin_serializes_without_a_root_path() {
+        let value = serde_json::to_value(ImportOriginV1 {
+            kind: ImportOriginKind::Folder,
+            root_id: "9ceef0c0-9ef9-44c0-92c7-88500cdf67de".to_string(),
+            root_name: "travail".to_string(),
+            relative_path: "images/photo.png".to_string(),
+        })
+        .unwrap();
+
+        assert_eq!(
+            value,
+            serde_json::json!({
+                "kind": "folder",
+                "rootId": "9ceef0c0-9ef9-44c0-92c7-88500cdf67de",
+                "rootName": "travail",
+                "relativePath": "images/photo.png"
+            })
+        );
+        assert!(value.get("rootPath").is_none());
     }
 }

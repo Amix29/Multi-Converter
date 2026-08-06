@@ -46,7 +46,7 @@ pub struct OcrState {
 }
 
 impl OcrState {
-    pub(super) fn recognize_image(
+    pub(crate) fn recognize_image(
         &self,
         app: &AppHandle,
         source: &str,

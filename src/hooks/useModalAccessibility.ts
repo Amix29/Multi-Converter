@@ -39,8 +39,10 @@ export function useModalAccessibility(options: ModalAccessibilityOptions) {
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
+    window.dispatchEvent(new CustomEvent("multi-converter:modal-open"));
     const id = Symbol("modal");
     modalStack.push({ id, surface });
+    document.body.classList.add("has-open-modal");
 
     const focusFrame = window.requestAnimationFrame(() => {
       const initialFocus = options.initialFocusRef?.current;
@@ -86,6 +88,7 @@ export function useModalAccessibility(options: ModalAccessibilityOptions) {
       document.removeEventListener("keydown", onKeyDown, true);
       const stackIndex = modalStack.findIndex((entry) => entry.id === id);
       if (stackIndex >= 0) modalStack.splice(stackIndex, 1);
+      document.body.classList.toggle("has-open-modal", modalStack.length > 0);
       window.requestAnimationFrame(() => {
         const focusTarget = returnFocusRef.current?.() ?? previousFocus;
         if (!focusTarget?.isConnected) return;

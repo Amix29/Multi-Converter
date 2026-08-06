@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "platform": "windows-x64",
   "packageVersion": "compatible",
   "upstream": {
@@ -19,7 +19,7 @@
   },
   "wrapper": {
     "name": "multi-converter-pdfium-render",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "sourceDir": "tools/pdfium-render-wrapper",
     "binaryPath": "bin/pdfium-render-x86_64-pc-windows-msvc.exe",
     "target": "x86_64-pc-windows-msvc",
@@ -27,19 +27,20 @@
     "buildRustVersion": "1.96.0",
     "linker": "rust-lld",
     "buildEnvironment": "github-actions/windows-2025",
-    "cargoLockSha256": "852c2d5a49ff8254ac8b8065e60645d203a4cd7b5460fe21eeb716bb4641349c",
-    "binarySizeBytes": 969216,
-    "binarySha256": "1d1474c2eff303112f00065d43818c2a4c005acc71c4ae32e3bdc0b37d9cb0d4",
+    "cargoLockSha256": "6462b7bf8f748280d276316c2634f0faf8eb8ecd5c0d794ca0c445edc4decc7f",
+    "binarySizeBytes": 3979776,
+    "binarySha256": "53fc9f3a3b31712603c3a9520f00af2a5e006ec11f88901e92996c290c51000a",
     "pdfiumRenderCrateVersion": "0.9.1",
+    "lopdfCrateVersion": "0.42.0",
     "license": "AGPL-3.0-or-later"
   },
   "package": {
     "archiveName": "pdfium-compatible-windows-x64.zip",
-    "releaseTag": "engines-v0.1.1-alpha.0",
-    "releaseBaseUrl": "https://github.com/Amix29/Multi-Converter/releases/download/engines-v0.1.1-alpha.0/",
+    "publicationStatus": "unpublished",
+    "manifestBaseUrl": "${ENGINE_DOWNLOAD_BASE}/",
     "deterministicTimestamp": "2026-05-04T08:39:24Z",
-    "archiveSizeBytes": 3961574,
-    "archiveSha256": "819104b0fd72c49a81282c0e35552c57a0c98995ef830fc580778e75ef213d6d",
-    "installedSizeBytes": 8257482
+    "archiveSizeBytes": 5138904,
+    "archiveSha256": "f90970a82a066affe6c13a62486025ab072f18808637676b5c00c4a397cc0920",
+    "installedSizeBytes": 11269420
   }
 }

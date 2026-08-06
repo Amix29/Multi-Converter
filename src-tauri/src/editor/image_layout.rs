@@ -1,8 +1,9 @@
 use super::document::CommandResult;
 use serde_json::{Map, Value};
 
-const MAX_OFFSET_MM: f64 = 500.0;
+const MAX_OFFSET_MM: f64 = 100_000.0;
 const MAX_Z_INDEX: i64 = 100;
+const MAX_IMAGE_PIXELS: f64 = 200_000.0;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(super) struct ImageLayout {
@@ -105,12 +106,12 @@ fn valid_measure(value: &str) -> bool {
     }
     let lower = value.to_ascii_lowercase();
     for (unit, maximum) in [
-        ("cm", 100.0),
-        ("mm", 1_000.0),
-        ("in", 40.0),
-        ("px", 4_096.0),
-        ("pt", 4_096.0),
-        ("%", 1_000.0),
+        ("cm", MAX_IMAGE_PIXELS * 2.54 / 96.0),
+        ("mm", MAX_IMAGE_PIXELS * 25.4 / 96.0),
+        ("in", MAX_IMAGE_PIXELS / 96.0),
+        ("px", MAX_IMAGE_PIXELS),
+        ("pt", MAX_IMAGE_PIXELS * 72.0 / 96.0),
+        ("%", 100_000.0),
     ] {
         if let Some(number) = lower.strip_suffix(unit) {
             return number
@@ -164,9 +165,9 @@ mod tests {
     fn image_layout_rejects_unsafe_measures_and_unbounded_values() {
         for value in [
             json!({ "width": "calc(100% + 2px)" }),
-            json!({ "width": "5000px" }),
+            json!({ "width": "200001px" }),
             json!({ "layoutMode": "absolute" }),
-            json!({ "offsetXmm": 501 }),
+            json!({ "offsetXmm": 100001 }),
             json!({ "zIndex": 101 }),
             json!({ "zIndex": 1.5 }),
             json!({ "wrapMode": "through" }),

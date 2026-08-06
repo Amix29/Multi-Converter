@@ -161,7 +161,9 @@ test("offers explicit formatting controls and an escapable editor focus mode", a
   await expect(toolbar.getByRole("button", { name: "Aligner à gauche" })).toBeVisible();
   await expect(toolbar.getByRole("button", { name: "Centrer" })).toBeVisible();
   await expect(toolbar.getByRole("button", { name: "Insérer une image" })).toBeVisible();
-  await expect(toolbar.getByRole("button", { name: "Aucun surlignage" })).toBeVisible();
+  await toolbar.getByRole("button", { name: "Surlignage", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Aucun surlignage", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape"); await expect(page.getByRole("dialog", { name: "Surlignage", exact: true })).toBeHidden();
 
   const fontSize = toolbar.getByRole("combobox", { name: "Taille de police" });
   await fontSize.fill("13,5");
@@ -176,8 +178,7 @@ test("offers explicit formatting controls and an escapable editor focus mode", a
   await focusMode.click();
   const editorShell = page.locator(".document-editor-shell");
   await expect(editorShell).toHaveAttribute("data-focus-mode", "true");
-  const viewport = page.viewportSize();
-  expect(viewport).not.toBeNull();
+  const viewport = page.viewportSize(); expect(viewport).not.toBeNull();
   await expect.poll(async () => {
     const box = await editorShell.boundingBox();
     return box ? [Math.round(box.x), Math.round(box.y), Math.round(box.width), Math.round(box.height)] : null;
@@ -232,7 +233,7 @@ test("keeps editor menus and dialogs above animated content and restores focus",
 test("sanitizes hostile imported and pasted HTML before it reaches Tiptap", async ({ page }, testInfo) => {
   skipUnlessProject(testInfo, "desktop-chromium");
   const consoleErrors = captureConsoleErrors(page);
-  await openPreview(page, "/?mockWelcomeSeen=1&mockMaliciousHtml=1");
+  await openPreview(page, "/?mockWelcomeSeen=1&mockMaliciousHtml=1&mockSingleFile=1");
   await page.getByRole("tab", { name: "Éditeur" }).click();
   await page.getByRole("button", { name: "Ouvrir un document" }).click();
 

@@ -17,7 +17,7 @@ export async function readPdfiumLock(root) {
 }
 
 export function validatePdfiumLock(lock) {
-  if (lock.schemaVersion !== 1 || lock.platform !== "windows-x64") throw new Error("Verrou PDFium Windows x64 invalide.");
+  if (lock.schemaVersion !== 2 || lock.platform !== "windows-x64") throw new Error("Verrou PDFium Windows x64 invalide.");
   if (lock.upstream?.version !== "149.0.7825.0" || lock.upstream?.releaseTag !== "chromium/7825") {
     throw new Error("Version PDFium verrouillee inattendue.");
   }
@@ -27,8 +27,11 @@ export function validatePdfiumLock(lock) {
   ]) {
     if (!/^[a-f0-9]{64}$/.test(value ?? "")) throw new Error(`${label}: SHA-256 invalide.`);
   }
-  if (lock.wrapper?.version !== "0.3.0" || lock.wrapper?.target !== "x86_64-pc-windows-msvc") {
+  if (lock.wrapper?.version !== "0.4.0" || lock.wrapper?.target !== "x86_64-pc-windows-msvc") {
     throw new Error("Wrapper PDFium verrouille inattendu.");
+  }
+  if (lock.wrapper.pdfiumRenderCrateVersion !== "0.9.1" || lock.wrapper.lopdfCrateVersion !== "0.42.0") {
+    throw new Error("Dependances Rust du wrapper PDFium inattendues.");
   }
   if (
     lock.wrapper.buildRustVersion !== "1.96.0"
@@ -38,16 +41,27 @@ export function validatePdfiumLock(lock) {
   ) {
     throw new Error("Toolchain ou Cargo.lock PDFium non verrouille.");
   }
-  if (lock.wrapper.binarySizeBytes !== 969_216 || !/^[a-f0-9]{64}$/.test(lock.wrapper.binarySha256 ?? "")) {
+  if (!Number.isSafeInteger(lock.wrapper.binarySizeBytes) || lock.wrapper.binarySizeBytes <= 0
+      || !/^[a-f0-9]{64}$/.test(lock.wrapper.binarySha256 ?? "")) {
     throw new Error("Binaire du wrapper PDFium non verrouille.");
   }
   if (lock.package?.archiveName !== "pdfium-compatible-windows-x64.zip") throw new Error("Nom d'archive PDFium inattendu.");
-  if (lock.package?.releaseTag !== "engines-v0.1.1-alpha.0") throw new Error("Tag de prerelease PDFium inattendu.");
-  const expectedBase = `https://github.com/Amix29/Multi-Converter/releases/download/${lock.package.releaseTag}/`;
-  if (lock.package.releaseBaseUrl !== expectedBase) throw new Error("URL de prerelease PDFium inattendue.");
+  if (!new Set(["unpublished", "published"]).has(lock.package?.publicationStatus)) {
+    throw new Error("Statut de publication PDFium invalide.");
+  }
+  if (lock.package.publicationStatus === "unpublished") {
+    if (lock.package.manifestBaseUrl !== "${ENGINE_DOWNLOAD_BASE}/" || lock.package.releaseBaseUrl !== undefined) {
+      throw new Error("Base de manifeste PDFium candidate inattendue.");
+    }
+  } else if (!/^https:\/\//.test(lock.package.releaseBaseUrl ?? "")
+      || lock.package.manifestBaseUrl !== lock.package.releaseBaseUrl) {
+    throw new Error("Provenance publique PDFium invalide.");
+  }
   const timestamp = new Date(lock.package.deterministicTimestamp);
   if (!Number.isFinite(timestamp.valueOf()) || timestamp.getUTCFullYear() < 1980) throw new Error("Horodatage deterministe PDFium invalide.");
-  if (!/^[a-f0-9]{64}$/.test(lock.package.archiveSha256 ?? "") || !Number.isSafeInteger(lock.package.archiveSizeBytes)) {
+  if (!/^[a-f0-9]{64}$/.test(lock.package.archiveSha256 ?? "")
+      || !Number.isSafeInteger(lock.package.archiveSizeBytes) || lock.package.archiveSizeBytes <= 0
+      || !Number.isSafeInteger(lock.package.installedSizeBytes) || lock.package.installedSizeBytes <= 0) {
     throw new Error("Archive finale PDFium non verrouillee.");
   }
 }
@@ -70,7 +84,7 @@ export async function runPdfiumHealth({ wrapper, dll, fixtureRoot }) {
   await assertRegularFile(scannedPdf, "fixture PDF scannee");
   const before = [await sha256File(nativePdf), await sha256File(scannedPdf)];
   const version = run(wrapper, ["--version"], dll, "version PDFium");
-  if (version.stdout.trim() !== "pdfium-render-wrapper 0.3.0") {
+  if (version.stdout.trim() !== "pdfium-render-wrapper 0.4.0") {
     throw new Error(`Wrapper PDFium obsolete ou inattendu: ${version.stdout.trim() || "sortie vide"}.`);
   }
   run(wrapper, ["--check"], dll, "chargement PDFium");

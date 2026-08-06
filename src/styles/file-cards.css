@@ -1,0 +1,185 @@
+.file-summary {
+  margin: 12px 0 0;
+  color: var(--vlm-text-muted);
+  font-size: 14px;
+  font-weight: 720;
+}
+
+.file-lane {
+  display: block;
+  min-height: 68px;
+  max-height: calc(3 * 132px + 2 * 12px);
+  margin-top: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.virtual-file-grid-content {
+  position: relative;
+  width: 100%;
+}
+
+.virtual-file-grid-window {
+  position: absolute;
+  inset: 0 0 auto;
+  display: grid;
+  gap: 12px;
+  will-change: transform;
+}
+
+.file-ticket {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+  height: 132px;
+  padding: 12px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-md);
+  background: var(--vlm-surface);
+  box-shadow: var(--vlm-edge-paper);
+  transition: transform var(--vlm-motion-fast) var(--vlm-ease-standard), box-shadow var(--vlm-motion-fast) var(--vlm-ease-standard), border-color var(--vlm-motion-fast) var(--vlm-ease-standard), background var(--vlm-motion-fast) var(--vlm-ease-standard);
+}
+
+.file-ticket:hover,
+.file-ticket:focus-within {
+  transform: translateY(-1px);
+  border-color: var(--vlm-border-strong);
+  background: var(--vlm-surface);
+  box-shadow: var(--vlm-shadow-xs);
+}
+
+.file-ticket-header,
+.file-ticket-meta,
+.file-ticket-actions {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.file-ticket-header {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.file-ticket-identity {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.file-ticket .file-ticket-type {
+  display: grid;
+  min-width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid var(--vlm-accent-border);
+  border-radius: var(--vlm-radius-sm);
+  color: var(--vlm-accent-strong);
+  background: var(--vlm-accent-soft);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+.file-ticket-header strong {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--vlm-text);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.file-ticket-meta {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 7px;
+}
+
+.file-ticket-meta > span:not(.ticket-status) {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--vlm-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-ticket-actions {
+  align-self: end;
+  justify-content: flex-start;
+}
+
+.file-ticket-actions .file-ticket-ocr {
+  width: 100%;
+  min-height: var(--vlm-target-min);
+  justify-content: center;
+}
+
+.remove-file-button {
+  display: inline-grid;
+  width: var(--vlm-target-min);
+  height: var(--vlm-target-min);
+  flex: 0 0 var(--vlm-target-min);
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--vlm-danger-text);
+  border-radius: var(--vlm-radius-pill);
+  background: var(--vlm-danger-bg);
+  color: var(--vlm-danger-text);
+  font-size: 17px;
+  font-weight: 760;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--vlm-motion-fast) var(--vlm-ease-standard), color var(--vlm-motion-fast) var(--vlm-ease-standard), transform var(--vlm-motion-fast) var(--vlm-ease-standard), border-color var(--vlm-motion-fast) var(--vlm-ease-standard);
+}
+
+.remove-file-button:hover {
+  transform: scale(1.04);
+  border-color: var(--vlm-danger-text);
+  background: var(--vlm-danger-text);
+  color: var(--vlm-text-inverse);
+}
+
+.file-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+@media (max-width: 720px) {
+  .file-lane {
+    max-height: calc(3 * 132px + 2 * 12px);
+  }
+
+  .remove-file-button {
+    width: var(--vlm-target-min);
+    height: var(--vlm-target-min);
+    flex-basis: var(--vlm-target-min);
+  }
+
+  .file-action-group {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .file-ticket,
+  .remove-file-button {
+    transition: none;
+  }
+}

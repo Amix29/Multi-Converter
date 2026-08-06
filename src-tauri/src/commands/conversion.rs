@@ -10,10 +10,15 @@ pub(crate) async fn start_conversion(
     app: AppHandle,
     job: ConversionJob,
 ) -> CommandResult<ConversionResult> {
-    tauri::async_runtime::spawn_blocking(move || converters::convert(&app, job))
-        .await
-        .map_err(|error| error.to_string())?
-        .map_err(|error| error.to_string())
+    // Register before yielding to the blocking pool so an immediate UI cancel
+    // cannot race ahead of native job activation.
+    let registration = converters::begin_conversion(&job.id).map_err(|error| error.to_string())?;
+    tauri::async_runtime::spawn_blocking(move || {
+        converters::convert_registered(&app, job, registration)
+    })
+    .await
+    .map_err(|error| error.to_string())?
+    .map_err(|error| error.to_string())
 }
 
 #[tauri::command]

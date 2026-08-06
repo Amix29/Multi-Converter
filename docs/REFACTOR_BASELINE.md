@@ -579,7 +579,7 @@ remove a converter, format, engine, OCR model or public IPC contract.
 | Rust regression coverage | passed |
 | Compiled-preview editor/OCR regressions | passed |
 | Preview visual measurements | exact focus viewport; 44 px mobile toolbar and media/table targets; no unintended page overflow |
-| Production frontend bundle | 1,578,312 raw bytes / 739,728 independently gzipped bytes; largest chunk 496,337 bytes; 405,128 bytes are the four requested local font files |
+| Production frontend bundle | Historical pre-audit candidate: 1,578,312 raw bytes / 739,728 independently gzipped bytes; largest chunk 496,337 bytes. Its 405,128 bytes of embedded WOFF2 were removed by the post-audit system-font migration; a new final checkpoint measurement is required. |
 | Real Windows OCR correction fixture and corpus | packaged fixture 100% in 24,672 ms; 40 cases at 100% clean / 99.76% difficult, 13,330 ms median, 714.8 MiB peak, zero remote connections in 251 process samples |
 | Windows LibreOffice bridge probe | rich ODT normalization 10.593 s; normalized ODT-to-PDF 11.102 s / 62,348 bytes; normalized ODT-to-DOCX 11.713 s / 8,943 bytes; DOCX structure and reopen passed |
 | Windows correction NSIS | 998,639,971 bytes; SHA-256 `18f291363def793474932222e8f8abd8e89f62d6e819b938016038158649d8c0` |
@@ -593,5 +593,48 @@ probe confirms ODT normalization plus DOCX/PDF generation, structural inspection
 and DOCX reopening. It does not establish a speed improvement, package-size
 improvement or the complete packaged-app export interaction. Final frontend bundle,
 executable and platform-package measurements must be captured from the exact
-checkpoint after all concurrent correction files, including local font assets,
+checkpoint after all concurrent correction files, including system-font controls,
 are settled.
+
+## V1.0.7 Post-Audit Local Source Baseline
+
+The 2026-08-06 post-audit source tree replaces every application package measured
+above. The values below come from the dedicated
+`codex/v1-0-7-post-audit` worktree on Windows. They combine source/preview
+measurements with a focused installed Windows PDF editor correction. They do
+not qualify macOS, Linux or a release candidate.
+
+| Measurement | Post-audit local result |
+| --- | --- |
+| Frontend preview output | 13 files; 2,179,773 raw bytes; 611,204 independently gzipped bytes |
+| Largest frontend chunk | 496,347 bytes; no chunk exceeds 500 kB |
+| Direct DOCX worker | 424,873 bytes, loaded only for DOCX generation |
+| Source structure | 380 checked files; largest checked file 500 non-empty lines; 51 above the 300-line target |
+| Rust structure | 137 checked files; largest checked file 481 non-empty lines; 24 above the 300-line target |
+| Unit and UI guardrails | 133 Vitest tests; Playwright 31 passed / 27 skipped; `npm run check` passed |
+| Conversion matrix | 6/6 ignored integration fixtures passed when run explicitly |
+| Preview interaction suite | large-list, document-editor and structural-PDF scenarios pass; the complete guardrail result is recorded separately after its final rerun |
+| Focused structural-PDF tests | Complete wrapper split: 45 passed (`16 + 14 + 1 + 4 + 1 + 7 + 2`) with the real Windows DLL |
+| Windows PDFium 0.4.0 Cargo lock | SHA-256 `6462b7bf8f748280d276316c2634f0faf8eb8ecd5c0d794ca0c445edc4decc7f` |
+| Windows PDFium 0.4.0 wrapper | 3,979,776 bytes; SHA-256 `53fc9f3a3b31712603c3a9520f00af2a5e006ec11f88901e92996c290c51000a` |
+| Windows PDFium 0.4.0 archive | 5,138,904 bytes; SHA-256 `f90970a82a066affe6c13a62486025ab072f18808637676b5c00c4a397cc0920` |
+| Installed PDFium DLL | SHA-256 `01be7a757183793f15eb35de9d9da424fc07d24b5560e8c3822f52812b2ad89a` |
+| Windows post-audit NSIS | 999,932,692 bytes; SHA-256 `58b66d692e443b573f94b5a222398373052385e1bf8d8a95ef1bc2bd77047ac6` |
+| Installed Windows application | 28,018,176 bytes; no hash asserted because NSIS patches the installed executable |
+| Installed PDF editor smoke | Two `test:windows:pdfium-native` cycles passed; exact `Native editor smoke` after reopen; source unchanged; stale hash rejected |
+| Dependency audits | npm production/development and five Python runtime locks report no known vulnerability; Rust reports 20 allowed transitive maintenance/GTK warnings |
+| Native package state | Focused local Windows PDFium/NSIS path passed; artifacts remain unpublished; macOS universal and Linux x64 post-audit packages remain unbuilt |
+
+The raw frontend total is larger because the direct DOCX generator is now present
+as two lazy chunks. Its independently compressed total is 128,524 bytes smaller
+than the historical pre-audit bundle after removing 405,128 bytes of bundled font
+files.
+
+The first local 0.4.0 wrapper candidate is excluded from this baseline: a real
+native edit exposed corruption when PDFium reused an embedded subset font. The
+corrected path tries that font only with exact serialization/reopen equality,
+uses Helvetica solely for WinAnsi-safe fallback text and rejects unsupported
+Unicode without producing a destination. Wrapper version is checked on every
+request, and output publication uses staging, immediate source re-hash and an
+atomic validated commit. These measurements do not claim a manual user UI test,
+macOS/Linux validation or release readiness.

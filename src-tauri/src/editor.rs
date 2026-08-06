@@ -1,6 +1,7 @@
 mod assets;
 mod document;
 mod export;
+pub(crate) mod generated_write;
 mod image_layout;
 mod import;
 mod odt;
@@ -12,6 +13,11 @@ use document::{
 };
 use std::path::PathBuf;
 use tauri::AppHandle;
+
+pub use generated_write::GeneratedWriteState;
+pub fn cleanup_stale_generated_writes() -> CommandResult<()> {
+    generated_write::cleanup_stale_generated_writes()
+}
 
 #[tauri::command]
 pub fn editor_create_document() -> CommandResult<EditorDocument> {

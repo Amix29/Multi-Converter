@@ -14,15 +14,27 @@
   }
 
   .topbar {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand actions"
+      "context context";
+    row-gap: 8px;
   }
 
+  .brand { grid-area: brand; }
+  .process-strip,
+  .editor-context-pill { grid-area: context; }
+  .topbar-actions { grid-area: actions; }
+
   .process-strip {
-    grid-column: 1 / -1;
-    order: 3;
     width: 100%;
     overflow: auto;
     justify-content: flex-start;
+  }
+
+  .editor-context-pill {
+    width: 100%;
+    justify-self: stretch;
   }
 
   .format-screen {
@@ -47,8 +59,10 @@
   }
 
   .rail-scroll {
-    display: flex;
-    max-height: none;
+    display: block;
+    height: min(320px, 36dvh);
+    max-height: 320px;
+    overflow: auto;
     padding: 2px 2px 12px;
   }
 
@@ -56,31 +70,19 @@
     overflow: visible;
   }
 
-  .rail-button {
-    min-width: 170px;
-  }
+  .rail-button { min-width: 0; }
 
   .progress-screen {
-    height: auto;
-    overflow: visible;
+    height: clamp(520px, calc(100dvh - 180px), 820px);
+    overflow: hidden;
   }
 
   .progress-screen.is-active {
-    grid-template-rows: auto;
+    grid-template-rows: minmax(0, 1fr);
   }
 
   .progress-panel {
-    max-height: none;
-  }
-
-  .progress-hero {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    text-align: center;
-  }
-
-  .progress-hero .screen-copy {
-    justify-self: center;
+    max-height: 100%;
   }
 
   .drop-zone {
@@ -100,22 +102,6 @@
   .topbar {
     gap: 12px;
   }
-
-  .app-shell.is-editor-mode .topbar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "brand actions"
-      "context context";
-    row-gap: 8px;
-  }
-
-  .app-shell.is-editor-mode .brand { grid-area: brand; }
-  .app-shell.is-editor-mode .editor-context-pill {
-    grid-area: context;
-    width: 100%;
-    justify-self: stretch;
-  }
-  .app-shell.is-editor-mode .topbar-actions { grid-area: actions; }
 
   .brand h1 {
     font-size: 18px;
@@ -154,24 +140,42 @@
   }
 
   .drop-zone {
-    grid-template-columns: 1fr;
-    min-height: 210px;
-    padding: 22px;
+    grid-template-columns: 64px minmax(0, 1fr);
+    min-height: 152px;
+    padding: 16px;
     border-radius: var(--vlm-radius-xl);
-    text-align: center;
+    text-align: left;
   }
 
   .sketch-orbit {
-    justify-self: center;
+    width: 64px;
+    height: 64px;
   }
 
   .drop-zone strong {
-    font-size: 38px;
+    font-size: 28px;
   }
 
-  .file-ticket,
-  .job-row {
+  .drop-zone > .primary-button {
+    grid-column: 1 / -1;
+  }
+
+  .file-ticket {
     grid-template-columns: 1fr;
+  }
+
+  .progress-hero {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 6px 12px;
+    padding-inline: 14px;
+  }
+
+  .progress-percentage {
+    font-size: 30px;
+  }
+
+  .output-filters button {
+    min-height: var(--vlm-target-min);
   }
 
   .rail-button {
@@ -198,6 +202,10 @@
   .destination-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .upload-screen > .screen-actions {
+    flex-direction: column-reverse;
   }
 
   .primary-button,

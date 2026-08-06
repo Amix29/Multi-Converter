@@ -51,7 +51,7 @@ const merged = {
 };
 await fs.writeFile(path.join(output, "engines-manifest.json"), `${JSON.stringify(merged, null, 2)}\n`);
 await verifyAssets(output, merged.engines.filter((entry) => entry.platform === platform), false);
-console.log(`${platform}: V1.0.6 engine artifact preserved byte-for-byte except locked PDFium 0.3.0.`);
+console.log(`${platform}: approved engine artifact preserved byte-for-byte except locked PDFium 0.4.0.`);
 
 function parseArgs(values) {
   const parsed = {};

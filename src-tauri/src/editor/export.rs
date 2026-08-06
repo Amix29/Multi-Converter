@@ -58,7 +58,7 @@ pub(super) async fn write_document_with_picker(
     }
 }
 
-fn available_destination(folder: &Path, suggested: &str) -> CommandResult<PathBuf> {
+pub(super) fn available_destination(folder: &Path, suggested: &str) -> CommandResult<PathBuf> {
     if !folder.is_dir() {
         return Err(
             "EDITOR_DESTINATION_INVALID:Le dossier de destination est introuvable.".to_string(),
@@ -116,7 +116,7 @@ fn filesystem_picker_path(path: PathBuf) -> PathBuf {
     path
 }
 
-fn associated_title(document: &EditorDocument, destination: &Path) -> String {
+pub(super) fn associated_title(document: &EditorDocument, destination: &Path) -> String {
     if document.source.as_ref().is_some_and(|source| {
         let source = Path::new(&source.path);
         source == destination
@@ -197,6 +197,7 @@ fn generate_editor_output(
     document: &EditorDocument,
     target: &str,
 ) -> CommandResult<PathBuf> {
+    ensure_direct_docx(target)?;
     let temp = tempfile::Builder::new()
         .prefix("multi-converter-editor-export-")
         .tempdir()
@@ -209,7 +210,7 @@ fn generate_editor_output(
             let persisted = temp.keep();
             Ok(persisted.join(format!("{stem}.odt")))
         }
-        "docx" | "rtf" | "pdf" => {
+        "rtf" | "pdf" => {
             // Some portable LibreOffice builds mishandle non-ASCII temporary
             // input names even though the ODT payload is valid. Keep the
             // internal bridge deterministic and ASCII-only; the user-facing
@@ -268,6 +269,16 @@ fn generate_editor_output(
     }
 }
 
+fn ensure_direct_docx(target: &str) -> CommandResult<()> {
+    if target == "docx" {
+        return Err(
+            "EDITOR_DOCX_DIRECT_REQUIRED:L’export DOCX doit utiliser le générateur direct docx.js."
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 fn render_text_document(document: &EditorDocument, markdown: bool) -> String {
     let render = |value: &serde_json::Value| {
         if markdown {
@@ -312,6 +323,17 @@ mod tests {
     fn office_bridge_uses_a_portable_ascii_intermediate_name() {
         assert!(OFFICE_INTERMEDIATE_STEM.is_ascii());
         assert_eq!(OFFICE_INTERMEDIATE_STEM, "editor-document");
+    }
+
+    #[test]
+    fn docx_cannot_fall_back_to_libreoffice() {
+        let result = ensure_direct_docx("docx");
+        assert!(matches!(
+            result,
+            Err(error) if error.starts_with("EDITOR_DOCX_DIRECT_REQUIRED:")
+        ));
+        assert!(ensure_direct_docx("rtf").is_ok());
+        assert!(ensure_direct_docx("pdf").is_ok());
     }
 
     #[test]

@@ -481,7 +481,7 @@ mod tests {
                     "src": format!("mc-asset://{id}"),
                     "width": "15cm",
                     "layoutMode": "floating",
-                    "offsetXmm": 501,
+                    "offsetXmm": 100001,
                     "zIndex": 0,
                     "wrapMode": "parallel"
                 }

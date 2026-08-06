@@ -4,7 +4,7 @@
 
 - Target version: **V1.0.7**
 - Published baseline: **V1.0.6**
-- Last documentation review: **2026-08-04**
+- Last documentation review: **2026-08-06**
 - Overall gate: **blocked**
 - Version metadata: **1.0.7**
 - Phase 1 checkpoint: local commit **`9f89a8d2`** on `codex/phase-1-guardrails`, not pushed
@@ -493,11 +493,12 @@ inspected native text and rendered the scanned fixture at 300 DPI to a decoded
 2483 x 3512 PNG. The installed OCR and LibreOffice archives match their prepared
 SHA-256 values. This proves installation, startup and installed resource shape;
 it does not replace the maintainer's complete interactive editor/OCR review.
-The production frontend contains 1,578,312 raw bytes and 739,728 bytes when
-each file is gzipped independently. Its largest JavaScript chunk is 496,337
-bytes, below the 500 kB chunk ceiling; 405,128 raw bytes are the four explicitly
-requested local WOFF2 files. The earlier total-raw frontend target is therefore
-not retained as a claim after adding three locally embedded font families.
+The historical pre-audit frontend contained 1,578,312 raw bytes and 739,728
+bytes when each file was gzipped independently. Its largest JavaScript chunk
+was 496,337 bytes and 405,128 raw bytes came from four embedded WOFF2 files.
+Those fonts and their distribution pipeline were removed by the post-audit
+system-font migration, so that candidate and its bundle measurements are
+obsolete. The final checkpoint requires a fresh measurement.
 
 This does not yet prove a native runtime, DMG or AppImage. The following remain
 pending until the exact checkpoint is pushed to `codex/test`: three OCR staging
@@ -612,6 +613,62 @@ The final V1.0.7 security review must cover:
 - dependency and license review for the exact packaged OCR stack.
 
 Record the final reviewer, date, scope, commands and result here when the implementation is complete.
+
+## Post-audit V1.0.7 correction checkpoint
+
+Status: **Windows PDF editor correction validated locally; cross-platform and
+release gates remain open**.
+
+The branch based on `80a0c3838e48e470d99e6a6e27f44c245509bc84`
+supersedes every Phase 8 application candidate described above. Its scalable
+converter, hierarchical folder export, system-font toolbar, direct docx.js
+writer and separate PDFium structural editor materially change the application.
+Historical NSIS, DMG, AppImage, updater hashes and package measurements remain
+evidence for their original checkpoints only.
+
+Development checks include `npm run check`, 133 frontend unit tests and the
+Playwright guardrails at 31 passed and 27 skipped. The complete wrapper split
+passed 45 tests (`16 + 14 + 1 + 4 + 1 + 7 + 2`) with the real Windows DLL.
+The detailed architecture and unresolved package/native gates are recorded in
+[`V1_0_7_POST_AUDIT.md`](V1_0_7_POST_AUDIT.md).
+
+The corrected Windows PDFium 0.4.0 wrapper is 3,979,776 bytes at SHA-256
+`53fc9f3a3b31712603c3a9520f00af2a5e006ec11f88901e92996c290c51000a`.
+Its 5,138,904-byte deterministic ZIP has SHA-256
+`f90970a82a066affe6c13a62486025ab072f18808637676b5c00c4a397cc0920`.
+The installed `pdfium.dll` has SHA-256
+`01be7a757183793f15eb35de9d9da424fc07d24b5560e8c3822f52812b2ad89a`.
+The local unsigned NSIS is 999,932,692 bytes at SHA-256
+`58b66d692e443b573f94b5a222398373052385e1bf8d8a95ef1bc2bd77047ac6`;
+the installed application executable is 28,018,176 bytes. No installed/raw
+executable hash is claimed because NSIS patches the installed executable.
+
+Two complete `npm run test:windows:pdfium-native` cycles passed. The installed
+wrapper changed the fixture text to exactly `Native editor smoke`, reopened it
+with exact equality, preserved the source hash and rejected a stale source
+hash. This native regression closes the previously missed failure in which an
+embedded subset font silently serialized different glyphs.
+
+The writer now tries the existing font and verifies the exact reopened text.
+It falls back to Helvetica only for explicitly WinAnsi-safe text; unsupported
+Unicode is rejected with `PDF_EDITOR_TEXT_UNREPRESENTABLE` without publishing
+an output. The Tauri boundary checks exact wrapper version `0.4.0` on every
+request. Save As stages the result, re-hashes the source immediately before
+commit, validates the reopened file and publishes atomically.
+
+The corrected archive and NSIS remain local and unpublished. The installed
+smoke is not a manual user-interface acceptance test. macOS universal and
+Linux x64 remain `pending-native-rebuild` with no asserted package hashes.
+
+Automated regressions cover bounded active-content inspection without executing
+or exposing payload bodies, as well as explicit creation of a separate unsigned
+editable copy that removes signature/DocMDP structures and leaves the original
+untouched. They do not prove active-content preservation after a native
+edit/save/reopen cycle or signature behavior across the complete corpus.
+
+No Word/LibreOffice visual corpus, user-driven PDF editor acceptance, native
+macOS or Linux PDFium 0.4.0 package, universal DMG or Linux AppImage has yet
+been accepted for this post-audit SHA. V1.0.7 remains blocked from publication.
 
 ## Release Closure
 

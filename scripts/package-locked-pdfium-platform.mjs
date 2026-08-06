@@ -4,13 +4,17 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { readPlatformProvenance } from "./lib/platform-provenance.mjs";
 
 const root = process.cwd();
 const args = parseArgs(process.argv.slice(2));
 const platform = args.platform;
-if (!new Set(["macos-universal", "linux-x64"]).has(platform) || !args.outputDir) {
-  throw new Error("--platform macos-universal|linux-x64 et --output-dir sont requis.");
+if (!new Set(["macos-universal", "linux-x64"]).has(platform) || !args.outputDir || !args.evidence) {
+  throw new Error("--platform macos-universal|linux-x64, --output-dir et --evidence sont requis.");
 }
+
+const provenance = await readPlatformProvenance(root);
+const lockedPlatform = provenance.pdfium.platforms[platform];
 
 const configName = platform === "macos-universal"
   ? "engine-packages.macos.config.json" : "engine-packages.linux.config.json";
@@ -33,6 +37,43 @@ try {
   const output = path.resolve(args.outputDir);
   await fs.rm(output, { recursive: true, force: true });
   await fs.cp(second, output, { recursive: true, force: true });
+  const manifest = JSON.parse(await fs.readFile(path.join(second, "engines-manifest.json"), "utf8"));
+  const engine = manifest.engines?.find((entry) => entry.id === "pdfium");
+  if (!engine || engine.sha256 !== secondHash) throw new Error(`${platform}: manifeste PDFium incohérent.`);
+  const wrapperRelative = pdfium.binaryPaths.find((entry) => path.posix.basename(entry).startsWith("pdfium-render"));
+  if (!wrapperRelative) throw new Error(`${platform}: wrapper PDFium absent de la configuration.`);
+  const wrapperPath = path.join(root, pdfium.sourceDir, ...wrapperRelative.split("/"));
+  const wrapperStat = await fs.stat(wrapperPath);
+  const evidence = {
+    schemaVersion: 1,
+    platform,
+    upstream: {
+      version: provenance.pdfium.version,
+      tag: provenance.pdfium.tag,
+      archiveSha256: lockedPlatform.sha256,
+      librarySha256: lockedPlatform.librarySha256,
+    },
+    wrapper: {
+      version: provenance.pdfium.wrapperVersion,
+      cargoLockSha256: provenance.pdfium.wrapperCargoLockSha256,
+      buildRustVersion: provenance.pdfium.wrapperBuildRustVersion,
+      fileName: path.basename(wrapperPath),
+      sizeBytes: wrapperStat.size,
+      sha256: await sha256(wrapperPath),
+    },
+    package: {
+      status: lockedPlatform.package.status,
+      reproducible: true,
+      archiveName,
+      archiveSizeBytes: (await fs.stat(path.join(second, archiveName))).size,
+      archiveSha256: secondHash,
+      installedSizeBytes: engine.installedSizeBytes,
+    },
+  };
+  assertPackageLock(evidence, lockedPlatform.package);
+  const evidencePath = path.resolve(args.evidence);
+  await fs.mkdir(path.dirname(evidencePath), { recursive: true });
+  await fs.writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
   console.log(`${platform}: PDFium packaged reproducibly as ${archiveName} (${secondHash}).`);
 } finally {
   await fs.rm(temporary, { recursive: true, force: true });
@@ -43,6 +84,7 @@ function parseArgs(values) {
   for (let index = 0; index < values.length; index += 1) {
     if (values[index] === "--platform") parsed.platform = values[++index];
     else if (values[index] === "--output-dir") parsed.outputDir = values[++index];
+    else if (values[index] === "--evidence") parsed.evidence = values[++index];
     else throw new Error(`Argument PDFium inconnu: ${values[index]}`);
   }
   return parsed;
@@ -57,4 +99,25 @@ function packageOnce(configPath, output) {
 
 async function sha256(filePath) {
   return createHash("sha256").update(await fs.readFile(filePath)).digest("hex");
+}
+
+function assertPackageLock(evidence, locked) {
+  if (locked.status === "pending-native-rebuild") {
+    for (const field of ["archiveSizeBytes", "archiveSha256", "installedSizeBytes", "wrapperSizeBytes", "wrapperSha256"]) {
+      if (locked[field] !== null) throw new Error(`${evidence.platform}: ${field} doit rester nul tant que la reconstruction native n'est pas vérifiée.`);
+    }
+    return;
+  }
+  if (locked.status !== "verified") throw new Error(`${evidence.platform}: statut de paquet PDFium inconnu.`);
+  const comparisons = {
+    archiveName: evidence.package.archiveName,
+    archiveSizeBytes: evidence.package.archiveSizeBytes,
+    archiveSha256: evidence.package.archiveSha256,
+    installedSizeBytes: evidence.package.installedSizeBytes,
+    wrapperSizeBytes: evidence.wrapper.sizeBytes,
+    wrapperSha256: evidence.wrapper.sha256,
+  };
+  for (const [field, actual] of Object.entries(comparisons)) {
+    if (locked[field] !== actual) throw new Error(`${evidence.platform}: ${field} diffère du verrou natif vérifié.`);
+  }
 }

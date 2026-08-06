@@ -1,16 +1,24 @@
-import { useRef, type CSSProperties } from "react";
+import { memo, useMemo, useRef, useState } from "react";
 import type { ExportResult } from "../../lib/api";
-import { t, type LanguageCode } from "../../i18n";
+import { t, type LanguageCode, type TranslationKey } from "../../i18n";
+import { filterOutputFiles, type OutputFilter } from "../conversion/largeListModel";
 import {
   clamp,
-  displayFileName,
   exportedFilesText,
   progressErrorSummary,
   progressSummaryText,
 } from "../conversion/model";
-import { statusLabelKeys, type FileItem } from "../types";
+import type { FileItem } from "../types";
+import { VirtualizedJobList } from "./VirtualizedJobList";
 
-export function ProgressScreen(props: {
+const filterKeys: Array<{ id: OutputFilter; key: TranslationKey }> = [
+  { id: "all", key: "progress.filterAll" },
+  { id: "running", key: "progress.filterRunning" },
+  { id: "done", key: "progress.filterDone" },
+  { id: "errors", key: "progress.filterErrors" },
+];
+
+export const ProgressScreen = memo(function ProgressScreen(props: {
   isActive: boolean;
   language: LanguageCode;
   files: FileItem[];
@@ -29,85 +37,78 @@ export function ProgressScreen(props: {
   onRetryFile(fileId: string): void;
   onRetryFailed(): void;
 }) {
-  const convertibles = props.files.filter((file) => file.selectedFormat);
-  const completed = convertibles.filter((file) => file.status === "done").length;
-  const failed = convertibles.filter((file) => file.status === "error").length;
-  const canceled = convertibles.filter((file) => file.status === "canceled" || file.status === "canceling").length;
-  const total = convertibles.length;
-  const rawAverage = total
-    ? Math.round(convertibles.reduce((sum, file) => sum + (file.status === "done" ? 100 : clamp(file.progress || 0, 0, 100)), 0) / total)
-    : 0;
+  const [filter, setFilter] = useState<OutputFilter>("all");
+  const summary = useMemo(() => summarizeFiles(props.files), [props.files]);
+  const { canceled, completed, convertibles, failed, rawAverage, running, total } = summary;
   const canExport = completed > 0 && !props.isConverting && !props.isExporting && !props.isTempOutputCleaned;
   const isFinished = total > 0 && !props.isConverting && completed + failed + canceled === total;
   const canContinue = !props.isConverting && convertibles.some((file) => file.status !== "done" && file.status !== "unsupported");
-  const progressSessionKey = convertibles.map((file) => file.jobId).join("|");
+  const firstJobId = convertibles[0]?.jobId ?? "empty";
+  const lastJobId = convertibles.at(-1)?.jobId ?? "empty";
+  const progressSessionKey = `${total}:${firstJobId}:${lastJobId}`;
   const lastGlobalProgressRef = useRef({ key: progressSessionKey, value: 0 });
-  if (lastGlobalProgressRef.current.key !== progressSessionKey) lastGlobalProgressRef.current = { key: progressSessionKey, value: 0 };
-  const average = isFinished && completed + failed + canceled === total && failed + canceled === 0 ? 100 : Math.max(lastGlobalProgressRef.current.value, rawAverage);
-  lastGlobalProgressRef.current.value = average;
-
-  let title = t(props.language, "progress.pendingTitle");
-  let subtitle = t(props.language, "progress.pendingSubtitle");
-  if (total && props.isConverting) {
-    title = props.isCancelling ? t(props.language, "progress.cancelingTitle") : t(props.language, "progress.workingTitle");
-    subtitle = "";
-  } else if (canceled && completed + failed + canceled === total) {
-    title = t(props.language, "progress.canceledTitle");
-    subtitle = "";
-  } else if (failed) {
-    title = t(props.language, "progress.errorTitle");
-    subtitle = progressErrorSummary(props.language, completed, failed);
-  } else if (props.exportResult) {
-    title = t(props.language, "progress.savedTitle");
-    subtitle = t(props.language, "progress.exportReady");
-  } else if (completed === total && total > 0) {
-    title = t(props.language, "progress.doneTitle");
-    subtitle = "";
+  if (lastGlobalProgressRef.current.key !== progressSessionKey) {
+    lastGlobalProgressRef.current = { key: progressSessionKey, value: 0 };
   }
+  const average = isFinished && failed + canceled === 0
+    ? 100
+    : Math.max(lastGlobalProgressRef.current.value, rawAverage);
+  lastGlobalProgressRef.current.value = average;
+  const filteredFiles = useMemo(() => filterOutputFiles(convertibles, filter), [convertibles, filter]);
+  const filterCounts: Record<OutputFilter, number> = {
+    all: total,
+    running,
+    done: completed,
+    errors: failed,
+  };
+  const { title, subtitle } = progressCopy(props, { canceled, completed, failed, total });
 
   return (
     <section className={`screen progress-screen ${props.isActive ? "is-active" : ""}`} aria-labelledby="progress-title">
       <section className="progress-panel">
         <section className="progress-hero">
-          <div className="progress-dial-cluster">
-            <div className="conversion-dial" aria-hidden="true">
-              <span style={{ "--value": `${average}%` } as CSSProperties} />
-              <strong>{average}%</strong>
-            </div>
-          </div>
+          <div className="progress-percentage" aria-hidden="true">{average}%</div>
           <div className="screen-copy compact">
             <h2 id="progress-title">{title}</h2>
             {subtitle && <p>{subtitle}</p>}
             {props.exportResult && <p>{exportedFilesText(props.language, props.exportResult.files.length)}</p>}
             {total > 0 && <p className="conversion-count">{progressSummaryText(props.language, completed, failed, canceled, total)}</p>}
           </div>
+          <div
+            className="global-progress-track"
+            role="progressbar"
+            aria-label={t(props.language, "progress.fileProgress")}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={average}
+          >
+            <div className="global-progress-bar" style={{ width: `${average}%` }} />
+          </div>
         </section>
 
-        <section className="job-list" aria-label={t(props.language, "app.progress")}>
-          {!convertibles.length && <div className="empty-state">{t(props.language, "progress.empty")}</div>}
-          {convertibles.map((file) => {
-            const fileProgress = file.status === "done" ? 100 : file.status === "error" || file.status === "canceled" ? file.progress : clamp(file.progress, 0, 100);
-            return (
-              <article className="job-row" key={file.id}>
-                <div className="job-main">
-                  <div><strong>{displayFileName(file)}</strong><span>→ {(file.convertedFormat || file.selectedFormat || "").toUpperCase()}</span></div>
-                  <em className={`job-state ${file.status === "done" ? "is-done" : ""} ${file.status === "error" ? "is-error" : ""}`}>
-                    {t(props.language, statusLabelKeys[file.status])}
-                  </em>
-                </div>
-                <div className="file-progress-line">
-                  <div className="progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={fileProgress}>
-                    <div className={`progress-bar ${file.status === "error" ? "is-error" : ""}`} style={{ width: `${fileProgress}%` }} />
-                  </div>
-                  <span>{file.status === "done" ? "100%" : `${Math.floor(fileProgress)}%`}</span>
-                </div>
-                {file.status === "error" && isFinished && (
-                  <button className="secondary-button retry-button" type="button" disabled={props.isExporting} onClick={() => props.onRetryFile(file.id)}>{t(props.language, "progress.retry")}</button>
-                )}
-              </article>
-            );
-          })}
-        </section>
+        <div className="output-filters" role="group" aria-label={t(props.language, "app.progress")}>
+          {filterKeys.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              aria-pressed={filter === item.id}
+              onClick={() => setFilter(item.id)}
+            >
+              <span>{t(props.language, item.key)}</span>
+              <strong>{filterCounts[item.id]}</strong>
+            </button>
+          ))}
+        </div>
+
+        <VirtualizedJobList
+          files={filteredFiles}
+          language={props.language}
+          isActive={props.isActive}
+          isFinished={isFinished}
+          isExporting={props.isExporting}
+          resetKey={filter}
+          onRetryFile={props.onRetryFile}
+        />
 
         <footer className="screen-actions progress-actions">
           <div className="conversion-actions">
@@ -140,4 +141,51 @@ export function ProgressScreen(props: {
       </section>
     </section>
   );
+});
+
+function summarizeFiles(files: FileItem[]) {
+  const convertibles: FileItem[] = [];
+  let completed = 0;
+  let failed = 0;
+  let canceled = 0;
+  let running = 0;
+  let progressTotal = 0;
+
+  for (const file of files) {
+    if (!file.selectedFormat) continue;
+    convertibles.push(file);
+    if (file.status === "done") completed += 1;
+    if (file.status === "error") failed += 1;
+    if (file.status === "canceled" || file.status === "canceling") canceled += 1;
+    if (["queued", "working", "canceling"].includes(file.status)) running += 1;
+    progressTotal += file.status === "done" ? 100 : clamp(file.progress || 0, 0, 100);
+  }
+
+  const total = convertibles.length;
+  return { canceled, completed, convertibles, failed, running, total, rawAverage: total ? Math.round(progressTotal / total) : 0 };
+}
+
+function progressCopy(
+  props: { language: LanguageCode; exportResult: ExportResult | null; isCancelling: boolean; isConverting: boolean },
+  counts: { canceled: number; completed: number; failed: number; total: number },
+) {
+  let title = t(props.language, "progress.pendingTitle");
+  let subtitle = t(props.language, "progress.pendingSubtitle");
+  if (counts.total && props.isConverting) {
+    title = props.isCancelling ? t(props.language, "progress.cancelingTitle") : t(props.language, "progress.workingTitle");
+    subtitle = "";
+  } else if (counts.canceled && counts.completed + counts.failed + counts.canceled === counts.total) {
+    title = t(props.language, "progress.canceledTitle");
+    subtitle = "";
+  } else if (counts.failed) {
+    title = t(props.language, "progress.errorTitle");
+    subtitle = progressErrorSummary(props.language, counts.completed, counts.failed);
+  } else if (props.exportResult) {
+    title = t(props.language, "progress.savedTitle");
+    subtitle = t(props.language, "progress.exportReady");
+  } else if (counts.completed === counts.total && counts.total > 0) {
+    title = t(props.language, "progress.doneTitle");
+    subtitle = "";
+  }
+  return { subtitle, title };
 }

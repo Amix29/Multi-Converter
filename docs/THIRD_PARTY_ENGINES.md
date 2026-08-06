@@ -83,16 +83,29 @@ The normal committed embedded manifest remains conservative for public builds un
 
 The Windows x64 PDFium package is built only from the locked official
 `pdfium-win-x64.tgz` for PDFium `149.0.7825.0` (`chromium/7825`). The archive
-and extracted `pdfium.dll` have separate SHA-256 checks. The Multi-Converter
-wrapper is version `0.3.0`, is distributed under `AGPL-3.0-or-later`, and uses
-the separately licensed Rust `pdfium-render` crate. PDFium retains its
-BSD-3-Clause license and the package embeds the Chromium/PDFium third-party
-notices. Do not describe the wrapper as being licensed by PDFium or the Rust
-crate license, and do not remove the upstream notices when repackaging.
+and extracted `pdfium.dll` have separate SHA-256 checks. The post-audit
+Multi-Converter wrapper is version `0.4.0`, is distributed under
+`AGPL-3.0-or-later`, and uses the separately licensed Rust `pdfium-render`
+crate at `0.9.1` (`MIT OR Apache-2.0`) plus `lopdf` `0.42.0` (`MIT`) for
+bounded structural inspection and explicit unsigned-copy creation. Neither
+crate executes active PDF content. PDFium retains its BSD-3-Clause license and the package embeds the
+Chromium/PDFium third-party notices. Do not describe the wrapper as being
+licensed by PDFium or the Rust crate license, and do not remove the upstream
+notices when repackaging.
 
-The engine prerelease contains only the versioned engine ZIP, its checksum and
-the one-entry engine manifest. It is a build-time resource source, not an
-application release and not a runtime download endpoint.
+The local Windows candidate is deliberately `unpublished`. Its wrapper is
+compiled from the Cargo lock at SHA-256
+`6462b7bf8f748280d276316c2634f0faf8eb8ecd5c0d794ca0c445edc4decc7f`.
+The resulting 3,943,936-byte executable has SHA-256
+`07b3e7e61483de6e7ceb1de3596d839fa0b421118c42605de8accf62835388ec`.
+Two package runs produced the same 5,127,516-byte ZIP at SHA-256
+`6627a3ca4ff30c302838b51c3830847419a30000fc155deea07b638edc8f02ea`;
+the extracted engine tree measures 11,233,580 bytes.
+The committed application manifest continues to identify the historical
+published 0.3.0 package until a reviewed 0.4.0 staging artifact has a real
+public URL. The engine prerelease, when authorized, contains only the versioned
+engine ZIP, its checksum and the one-entry engine manifest. It is a build-time
+resource source, not an application release or a runtime download endpoint.
 
 ## User-facing warning
 

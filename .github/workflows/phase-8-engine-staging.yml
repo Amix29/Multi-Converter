@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   stage:
-    name: Preserve V1.0.6 engines and replace PDFium (${{ matrix.platform }})
+    name: Preserve approved engines and stage PDFium 0.4.0 (${{ matrix.platform }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 180
     strategy:
@@ -63,7 +63,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.96.0
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin,x86_64-unknown-linux-gnu
       - name: Install archive tools
@@ -88,7 +88,7 @@ jobs:
           path: ${{ runner.temp }}/mc-engine-baseline
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ matrix.baseline_run_id }}
-      - name: Prepare locked PDFium 149.0.7825.0 and wrapper 0.3.0
+      - name: Prepare locked PDFium 149.0.7825.0 and wrapper 0.4.0
         shell: bash
         run: |
           set -euo pipefail
@@ -97,13 +97,25 @@ jobs:
           else
             npm run prepare:pdfium-engine:linux
           fi
+      - name: Test and lint wrapper against the staged native library
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ matrix.platform }}" == "macos-universal" ]]; then
+            export MULTI_CONVERTER_TEST_PDFIUM_LIBRARY="$GITHUB_WORKSPACE/engine-sources/macos-universal/pdfium/bin/libpdfium.dylib"
+          else
+            export MULTI_CONVERTER_TEST_PDFIUM_LIBRARY="$GITHUB_WORKSPACE/engine-sources/linux-x64/pdfium/bin/libpdfium.so"
+          fi
+          npm run test:pdfium-wrapper
+          npm run clippy:pdfium-wrapper
       - name: Package PDFium twice and merge with exact V1.0.6 engines
         shell: bash
         run: |
           set -euo pipefail
           replacement="$RUNNER_TEMP/mc-pdfium-replacement"
           output="$RUNNER_TEMP/mc-phase-8-engine-assets"
-          node scripts/package-locked-pdfium-platform.mjs --platform "${{ matrix.platform }}" --output-dir "$replacement"
+          evidence="$RUNNER_TEMP/mc-pdfium-evidence/${{ matrix.platform }}.json"
+          node scripts/package-locked-pdfium-platform.mjs --platform "${{ matrix.platform }}" --output-dir "$replacement" --evidence "$evidence"
           node scripts/restage-platform-pdfium.mjs --platform "${{ matrix.platform }}" --baseline-dir "$RUNNER_TEMP/mc-engine-baseline" --replacement-dir "$replacement" --output-dir "$output"
           if [[ "${{ matrix.platform }}" == "macos-universal" ]]; then
             node scripts/complete-macos-sidecar-set.mjs --asset-dir "$output"
@@ -113,5 +125,11 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ runner.temp }}/mc-phase-8-engine-assets
+          if-no-files-found: error
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pdfium-0.4-package-evidence-${{ matrix.platform }}
+          path: ${{ runner.temp }}/mc-pdfium-evidence/${{ matrix.platform }}.json
           if-no-files-found: error
           compression-level: 0

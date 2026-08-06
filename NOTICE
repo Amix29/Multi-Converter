@@ -37,6 +37,19 @@ HTML imports and pastes in the document editor are sanitized with DOMPurify
 package contains both `LICENSE` and `LICENSE-MPL`; the exact package version,
 registry artifact and integrity hash are pinned in `package-lock.json`.
 
+Direct DOCX generation in the document editor uses docx.js 9.7.1, distributed
+under the MIT License. The generator is loaded locally only when a DOCX write
+is requested; it does not download fonts or document resources. The exact npm
+artifact and integrity hash are pinned in `package-lock.json`, and the package
+license text is retained at `public/third-party/docx/LICENSE.txt` and copied to
+the packaged frontend as `third-party/docx/LICENSE.txt`.
+
+The PDFium editing wrapper uses pdfium-render 0.9.1 under MIT OR Apache-2.0
+and lopdf 0.42.0 under MIT. lopdf is used only for bounded structural
+inspection of inactive PDF dictionaries and for the explicit creation of a
+separate unsigned editable copy; it never executes JavaScript, launch actions,
+XFA, 3D or media content. Each crate retains its own license.
+
 The bounded OpenDocument parser uses quick-xml 0.41.0 under the MIT License.
 Standalone HTML export uses base64 0.22.1 under the MIT OR Apache-2.0 License
 to embed local editor assets without exposing file-system paths. The applicable

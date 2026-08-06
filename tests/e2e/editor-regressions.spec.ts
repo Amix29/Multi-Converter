@@ -54,17 +54,13 @@ test("exposes free typography, explicit colors, resizable tables and complete im
   await expect(toolbar.getByRole("button", { name: "Aligner à droite" })).toBeVisible();
   await expect(toolbar.getByRole("button", { name: "Insérer une image" })).toBeVisible();
 
-  const fontFamily = toolbar.getByRole("combobox", { name: "Police" });
-  expect(await fontFamily.locator("option").count()).toBeGreaterThanOrEqual(20);
-  await expect(fontFamily.locator("option", { hasText: "Atkinson Hyperlegible Next" })).toHaveCount(1);
-  for (const family of ["Source Sans 3", "Atkinson Hyperlegible Next", "JetBrains Mono"]) {
-    const loaded = await page.evaluate(async (font) => {
-      const query = `16px "${font}"`;
-      const faces = await document.fonts.load(query);
-      return faces.length > 0 && document.fonts.check(query);
-    }, family);
-    expect(loaded, `${family} must decode from the bundled WOFF2 asset`).toBe(true);
-  }
+  const fontFamily = toolbar.getByRole("button", { name: "Police", exact: true });
+  await fontFamily.click();
+  const fontList = page.getByRole("listbox", { name: "Police", exact: true });
+  await expect(fontList).toBeVisible();
+  await expect(fontList.getByRole("option", { name: "Arial", exact: true }).first()).toBeVisible();
+  expect(await fontList.getByRole("option").count()).toBeGreaterThanOrEqual(10);
+  await page.keyboard.press("Escape");
 
   await editor.fill("Mise en forme libre");
   await editor.press("Control+A");
@@ -72,21 +68,33 @@ test("exposes free typography, explicit colors, resizable tables and complete im
   await fontSize.fill("13,5");
   await fontSize.press("Enter");
   await expect(editor.locator('span[style*="font-size: 13.5pt"]')).toContainText("Mise en forme libre");
+  const lineHeight = toolbar.getByRole("combobox", { name: "Interligne" });
+  await lineHeight.fill("1,37");
+  await lineHeight.press("Enter");
+  await expect(editor.locator('p[style*="line-height: 1.37"]')).toContainText("Mise en forme libre");
 
   await editor.press("Control+A");
-  await toolbar.locator('input[type="color"][aria-label="Couleur du texte"]').fill("#9a3412");
+  await toolbar.getByRole("button", { name: "Couleur du texte" }).click();
+  const textColorDialog = page.getByRole("dialog", { name: "Couleur du texte" });
+  const firstThemeColor = textColorDialog.getByRole("gridcell", { name: "#ffffff", exact: true }).first();
+  await firstThemeColor.focus();
+  await firstThemeColor.press("End");
+  await expect(textColorDialog.getByRole("gridcell", { name: "#713f12" })).toBeFocused();
+  await page.keyboard.press("Home");
+  await expect(firstThemeColor).toBeFocused();
+  await textColorDialog.getByRole("gridcell", { name: "#c46f3a" }).click();
   await expect(editor.locator('span[style*="color"]')).toContainText("Mise en forme libre");
-  await expect(toolbar.getByRole("button", { name: "Couleur de texte par défaut" })).toBeEnabled();
 
   const highlightGlyph = toolbar.locator(".toolbar-color-glyph.is-highlight");
-  const defaultHighlightGlyphColor = await highlightGlyph.evaluate((element) => getComputedStyle(element).color);
   await editor.press("Control+A");
-  await toolbar.locator('input[type="color"][aria-label="Surlignage"]').fill("#ffcc00");
-  await expect(highlightGlyph).toHaveCSS("color", "rgb(255, 204, 0)");
-  const clearHighlight = toolbar.getByRole("button", { name: "Aucun surlignage" });
+  await toolbar.getByRole("button", { name: "Surlignage" }).click();
+  await page.getByRole("dialog", { name: "Surlignage" }).getByRole("gridcell", { name: "#ffd400" }).click();
+  await expect(highlightGlyph).toHaveCSS("background-color", "rgb(255, 212, 0)");
+  await expect(highlightGlyph).toHaveCSS("color", "rgb(17, 17, 17)");
+  await toolbar.getByRole("button", { name: "Surlignage" }).click();
+  const clearHighlight = page.getByRole("dialog", { name: "Surlignage" }).getByRole("button", { name: "Aucun surlignage" });
   await expect(clearHighlight).toBeEnabled();
   await clearHighlight.click();
-  await expect(highlightGlyph).toHaveCSS("color", defaultHighlightGlyphColor);
 
   await editor.press("End");
   await editor.press("Enter");
@@ -119,7 +127,8 @@ test("exposes free typography, explicit colors, resizable tables and complete im
   await moveImage.press("ArrowRight");
   await expect(image).toHaveCSS("transform", /matrix\(.+/);
 
-  const resize = image.getByRole("button", { name: "Redimensionner l’image" });
+  await expect(image.locator(".document-image-resize-handle")).toHaveCount(8);
+  const resize = image.getByRole("button", { name: /Redimensionner l’image — SE/ });
   const frame = image.locator(".document-image-frame");
   const widthBefore = (await frame.boundingBox())?.width ?? 0;
   await dragBy(page, resize, 70, 0);
@@ -141,6 +150,58 @@ test("exposes free typography, explicit colors, resizable tables and complete im
     await nextTools.click();
   }
   await revealTableResizeHandle(page, tableWrapper);
+  const columnHandle = page.getByRole("button", { name: "Redimensionner la colonne" });
+  const firstCell = tableWrapper.locator("th, td").first();
+  const initialCellWidth = (await firstCell.boundingBox())?.width ?? 0;
+  await columnHandle.hover();
+  await expect(columnHandle).toBeVisible();
+  await columnHandle.focus();
+  await columnHandle.press("ArrowRight");
+  await expect.poll(async () => (await firstCell.boundingBox())?.width ?? 0).toBeGreaterThan(initialCellWidth);
+  const keyboardCellWidth = (await firstCell.boundingBox())?.width ?? initialCellWidth;
+  const handleBox = await columnHandle.boundingBox();
+  expect(handleBox).not.toBeNull();
+  await columnHandle.dispatchEvent("pointerdown", {
+    pointerId: 42,
+    pointerType: "touch",
+    clientX: handleBox!.x + handleBox!.width / 2,
+    clientY: handleBox!.y + handleBox!.height / 2,
+  });
+  await page.evaluate(({ x, y }) => {
+    window.dispatchEvent(new PointerEvent("pointermove", {
+      bubbles: true, pointerId: 42, pointerType: "touch", clientX: x + 16, clientY: y,
+    }));
+    window.dispatchEvent(new PointerEvent("pointerup", {
+      bubbles: true, pointerId: 42, pointerType: "touch", clientX: x + 16, clientY: y,
+    }));
+  }, { x: handleBox!.x + handleBox!.width / 2, y: handleBox!.y + handleBox!.height / 2 });
+  await expect.poll(async () => (await firstCell.boundingBox())?.width ?? 0).toBeGreaterThan(keyboardCellWidth);
+  await toolbar.getByRole("button", { name: "En-tête" }).click();
+  await expect(page.getByRole("dialog", { name: "Modifier l’en-tête" })).toBeVisible();
+  await expect(columnHandle).toBeHidden();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Modifier l’en-tête" })).toBeHidden();
+  await expect(columnHandle).toBeVisible();
+
+  await page.getByRole("button", { name: "Exporter", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Donnez un nom au document" })).toBeVisible();
+  await expect(columnHandle).toBeHidden();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Donnez un nom au document" })).toBeHidden();
+});
+
+test("keeps font selection usable when native enumeration fails and retries it", async ({ page }, testInfo) => {
+  skipUnlessDesktop(testInfo);
+  await openEditorLanding(page, "&mockFontEnumerationFailure=once");
+  await page.getByRole("button", { name: "Nouveau document" }).click();
+  const toolbar = page.getByRole("toolbar", { name: "Outils de mise en forme" });
+  await toolbar.getByRole("button", { name: "Police", exact: true }).click();
+
+  await expect(page.getByText("Impossible de lire les polices installées.", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Réessayer" }).click();
+  const fontList = page.getByRole("listbox", { name: "Police", exact: true });
+  await expect(fontList).toHaveAttribute("aria-busy", "false");
+  await expect(fontList.getByRole("option", { name: "Arial", exact: true }).first()).toBeVisible();
 });
 
 test("requires a title, defaults to Markdown and exposes export progress", async ({ page }, testInfo) => {
@@ -177,10 +238,11 @@ test("uses an in-app overwrite dialog and preserves the edited document title", 
     nativeDialogs += 1;
     await dialog.dismiss();
   });
-  await openEditorLanding(page);
+  await openEditorLanding(page, "&mockSingleFile=1");
   await page.getByRole("button", { name: "Ouvrir un document" }).click();
 
-  const title = page.getByRole("textbox", { name: "Nom du document" });
+  const title = page.getByRole("textbox", { name: "Nom du document", exact: true });
+  await expect(title).toHaveValue("test");
   await title.fill("Rapport révisé");
   await expect(page.getByText("Enregistré", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
@@ -194,11 +256,11 @@ test("uses an in-app overwrite dialog and preserves the edited document title", 
   expect(nativeDialogs).toBe(0);
 });
 
-test("starts recent-document multiselect with a long press and deletes the batch", async ({ page }, testInfo) => {
-  skipUnlessDesktop(testInfo);
-  await openEditorLanding(page);
+test("starts recent-document multiselect with a long press and deletes the batch", async ({ page }) => {
+  await openEditorLanding(page, "&mockRecentRefreshRace=1");
   await createRecentDocument(page, "Alpha local");
   await createRecentDocument(page, "Bêta local");
+  await page.waitForTimeout(700);
 
   const betaCard = recentCard(page, "Bêta local");
   await betaCard.getByRole("button").first().click({ delay: 650 });
@@ -217,9 +279,9 @@ test("starts recent-document multiselect with a long press and deletes the batch
   await expect(recentCard(page, "Bêta local")).toHaveCount(0);
 });
 
-async function openEditorLanding(page: Page) {
+async function openEditorLanding(page: Page, previewParams = "") {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  const response = await page.goto("/?mockWelcomeSeen=1");
+  const response = await page.goto(`/?mockWelcomeSeen=1${previewParams}`);
   expect(response?.ok()).toBe(true);
   await page.getByRole("tab", { name: "Éditeur" }).click();
   await expect(page.getByRole("button", { name: "Nouveau document" })).toBeVisible();
@@ -233,10 +295,13 @@ async function openNewDocument(page: Page) {
 
 async function createRecentDocument(page: Page, title: string) {
   await page.getByRole("button", { name: "Nouveau document" }).click();
-  await page.getByRole("textbox", { name: "Nom du document" }).fill(title);
+  const titleInput = page.getByRole("textbox", { name: "Nom du document" });
+  await titleInput.fill(title);
+  await expect(titleInput).toHaveValue(title);
   await page.locator(".ProseMirror").fill(`Contenu de ${title}`);
-  await expect(page.getByText("Modifications non enregistrées", { exact: true })).toBeVisible();
-  await expect(page.getByText("Enregistré", { exact: true })).toBeVisible();
+  const saveState = page.locator(".document-save-state");
+  await expect(saveState).toHaveText("Modifications non enregistrées");
+  await expect(saveState).toHaveText("Enregistré");
   await page.getByRole("button", { name: "Revenir aux documents" }).click();
   await expect(recentCard(page, title)).toBeVisible();
 }
@@ -247,10 +312,9 @@ function recentCard(page: Page, title: string) {
 
 async function revealTableResizeHandle(page: Page, wrapper: Locator) {
   const firstCell = wrapper.locator("th, td").first();
-  const box = await firstCell.boundingBox();
-  expect(box).not.toBeNull();
-  await page.mouse.move(box!.x + box!.width - 1, box!.y + box!.height / 2);
-  await expect.poll(() => wrapper.locator(".column-resize-handle").count()).toBeGreaterThan(0);
+  await firstCell.click();
+  await expect(page.getByRole("button", { name: "Redimensionner la colonne" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Redimensionner la ligne" })).toBeVisible();
 }
 
 async function dragBy(page: Page, locator: Locator, deltaX: number, deltaY: number) {

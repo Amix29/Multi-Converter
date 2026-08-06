@@ -1,10 +1,12 @@
-import type { DragEvent } from "react";
+import { memo, useMemo, type DragEvent } from "react";
 import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
 import { t, type LanguageCode } from "../../i18n";
-import { compactFileMeta, fileSummary, hasAvailableTargets, uploadedFilesSummary } from "../conversion/model";
+import { fileSummary, hasAvailableTargets, uploadedFilesSummary } from "../conversion/model";
+import { useVirtualGridWindow } from "../conversion/useVirtualGridWindow";
 import type { FileItem } from "../types";
+import { FileTicket } from "./FileTicket";
 
-export function FilesScreen(props: {
+export const FilesScreen = memo(function FilesScreen(props: {
   isActive: boolean;
   language: LanguageCode;
   files: FileItem[];
@@ -12,6 +14,7 @@ export function FilesScreen(props: {
   isDragOver: boolean;
   onAddFiles(): void;
   onClear(): void;
+  onClearUnsupported(): void;
   onDragOver(active: boolean): void;
   onDrop(event: DragEvent<HTMLElement>): void;
   onFormats(): void;
@@ -20,6 +23,20 @@ export function FilesScreen(props: {
 }) {
   const hasFiles = props.files.length > 0;
   const hasConvertibleFiles = props.files.some(hasAvailableTargets);
+  const unsupportedCount = useMemo(
+    () => props.files.reduce((count, file) => count + (hasAvailableTargets(file) ? 0 : 1), 0),
+    [props.files],
+  );
+  const { onScroll, viewportRef, windowState } = useVirtualGridWindow({
+    itemCount: props.files.length,
+    rowHeight: 144,
+    minimumColumnWidth: 270,
+    gap: 12,
+    overscan: 1,
+    isActive: props.isActive,
+    resetKey: props.files[0]?.id ?? "empty",
+  });
+  const visibleFiles = props.files.slice(windowState.startItemIndex, windowState.endItemIndex);
 
   return (
     <section className={`screen upload-screen ${props.isActive ? "is-active" : ""}`} aria-labelledby="upload-title">
@@ -48,33 +65,48 @@ export function FilesScreen(props: {
         </p>
       )}
 
-      <section className="file-lane" aria-label={t(props.language, "upload.selectedFiles")}>
+      <section
+        ref={viewportRef}
+        className="file-lane"
+        aria-label={t(props.language, "upload.selectedFiles")}
+        data-testid="virtual-file-grid"
+        data-total-count={props.files.length}
+        onScroll={onScroll}
+      >
         {!hasFiles && <div className="empty-state">{t(props.language, "upload.empty")}</div>}
-        {props.files.map((file) => (
-          <article className="file-ticket" key={file.id}>
-            <header className="file-ticket-header">
-              <div className="file-ticket-identity">
-                <span className="file-ticket-type" aria-hidden="true">{file.extension.replace(/^\./, "").slice(0, 5).toUpperCase() || "FILE"}</span>
-                <strong title={file.name}>{file.name}</strong>
-              </div>
-              <button className="remove-file-button" type="button" aria-label={`${t(props.language, "upload.removeFile")} ${file.name}`} onClick={() => props.onRemove(file.id)}>×</button>
-            </header>
-            <div className="file-ticket-meta">
-              <span>{compactFileMeta(file, props.language)}</span>
-              {!file.targets.length && <span className="ticket-status is-error">{t(props.language, "upload.unsupported")}</span>}
+        {hasFiles && (
+          <div className="virtual-file-grid-content" style={{ height: `${windowState.totalHeight}px` }}>
+            <div
+              className="virtual-file-grid-window"
+              style={{
+                gridTemplateColumns: `repeat(${windowState.columnCount}, minmax(0, 1fr))`,
+                transform: `translateY(${windowState.offsetTop}px)`,
+              }}
+            >
+              {visibleFiles.map((file) => (
+                <FileTicket
+                  key={file.id}
+                  file={file}
+                  language={props.language}
+                  onExtractText={props.onExtractText}
+                  onRemove={props.onRemove}
+                />
+              ))}
             </div>
-            {isOcrImage(file) && (
-              <footer className="file-ticket-actions">
-                <button className="ghost-button file-ticket-ocr" type="button" onClick={() => props.onExtractText(file)}>{t(props.language, "ocr.extract")}</button>
-              </footer>
-            )}
-          </article>
-        ))}
+          </div>
+        )}
       </section>
 
       {hasFiles && (
         <footer className="screen-actions">
-          <button className="ghost-button" type="button" disabled={props.isConverting} onClick={props.onClear}>{t(props.language, "upload.clear")}</button>
+          <div className="file-action-group">
+            <button className="ghost-button" type="button" disabled={props.isConverting} onClick={props.onClear}>{t(props.language, "upload.clear")}</button>
+            {unsupportedCount > 0 && (
+              <button className="secondary-button" type="button" disabled={props.isConverting} onClick={props.onClearUnsupported}>
+                {t(props.language, "upload.removeUnsupported")}
+              </button>
+            )}
+          </div>
           {hasConvertibleFiles && (
             <button className="primary-button" type="button" disabled={props.isConverting} onClick={props.onFormats}>{t(props.language, "upload.goFormat")}</button>
           )}
@@ -82,9 +114,4 @@ export function FilesScreen(props: {
       )}
     </section>
   );
-}
-
-function isOcrImage(file: FileItem) {
-  const extension = file.extension.toLowerCase().replace(/^\./, "");
-  return ["png", "jpg", "jpeg", "webp", "tif", "tiff", "bmp"].includes(extension);
-}
+});

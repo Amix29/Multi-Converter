@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, type EditorDocumentSummary, type EditorDocumentV1 } from "../lib/api";
+import {
+  api,
+  type EditorDocumentSummary,
+  type EditorDocumentV1,
+  type PdfEditorSessionV1,
+} from "../lib/api";
 import { t, type LanguageCode } from "../i18n";
+import { PdfEditor } from "../pdf-editor/PdfEditor";
+import { PdfPasswordDialog } from "../pdf-editor/PdfPasswordDialog";
 import { DocumentEditor } from "./DocumentEditor";
 import { EditorLanding } from "./EditorLanding";
 import { normalizeLegacyDocumentAssets, prepareImportedHtmlAssets } from "./editorAssets";
@@ -17,15 +24,34 @@ interface ImportedContent {
   html: string;
 }
 
+interface PdfPasswordRequest {
+  path: string;
+  sourceName: string;
+  error: string | null;
+}
+
 export function EditorWorkspace(props: EditorWorkspaceProps) {
   const [document, setDocument] = useState<EditorDocumentV1 | null>(null);
+  const [pdfSession, setPdfSession] = useState<PdfEditorSessionV1 | null>(null);
+  const [pdfPassword, setPdfPassword] = useState<PdfPasswordRequest | null>(null);
   const [recent, setRecent] = useState<EditorDocumentSummary[]>([]);
   const [imported, setImported] = useState<ImportedContent | null>(null);
   const [busy, setBusy] = useState(false);
   const lastNativeDropId = useRef<number | null>(null);
+  const recentRefreshId = useRef(0);
 
   const refreshRecent = useCallback(async () => {
-    setRecent(await api.editorListRecentDocuments());
+    const refreshId = recentRefreshId.current + 1;
+    recentRefreshId.current = refreshId;
+    try {
+      const next = await api.editorListRecentDocuments();
+      if (refreshId !== recentRefreshId.current) return false;
+      setRecent(next);
+      return true;
+    } catch (error) {
+      if (refreshId !== recentRefreshId.current) return false;
+      throw error;
+    }
   }, []);
 
   useEffect(() => {
@@ -33,7 +59,35 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     void refreshRecent().catch((error) => props.onNotice("error", editorError(error)));
   }, [props.isActive, props.onNotice, refreshRecent]);
 
-  const openPath = useCallback(async (path?: string | null) => {
+  const openPdf = useCallback(async (path: string, password?: string | null) => {
+    setBusy(true);
+    try {
+      const session = await api.pdfEditorOpen(path, password);
+      setPdfSession(session);
+      setDocument(null);
+      setImported(null);
+      setPdfPassword(null);
+    } catch (error) {
+      const code = editorErrorCode(error);
+      if (code === "PDF_EDITOR_PASSWORD_REQUIRED" || code === "PDF_EDITOR_PASSWORD_INVALID") {
+        setPdfPassword({
+          path,
+          sourceName: fileName(path),
+          error: code === "PDF_EDITOR_PASSWORD_INVALID" ? editorError(error) : null,
+        });
+      } else {
+        props.onNotice("error", editorError(error));
+      }
+    } finally {
+      setBusy(false);
+    }
+  }, [props.onNotice]);
+
+  const openPath = useCallback(async (path: string) => {
+    if (isPdfPath(path)) {
+      await openPdf(path);
+      return;
+    }
     setBusy(true);
     try {
       const result = await api.editorImportDocument(path);
@@ -46,6 +100,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
         importedHtml = normalized.html;
       }
       setDocument(prepared);
+      setPdfSession(null);
       setImported(importedHtml ? { documentId: prepared.id, html: importedHtml } : null);
       await refreshRecent();
     } catch (error) {
@@ -53,7 +108,24 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     } finally {
       setBusy(false);
     }
-  }, [props.onNotice, refreshRecent]);
+  }, [openPdf, props.onNotice, refreshRecent]);
+
+  const chooseDocument = useCallback(async () => {
+    setBusy(true);
+    try {
+      const paths = await api.pickFilePaths();
+      if (!paths.length) return;
+      if (paths.length !== 1) {
+        props.onNotice("info", t(props.language, "editor.dropOneDocument"));
+        return;
+      }
+      await openPath(paths[0]);
+    } catch (error) {
+      props.onNotice("error", editorError(error));
+    } finally {
+      setBusy(false);
+    }
+  }, [openPath, props.language, props.onNotice]);
 
   useEffect(() => {
     const request = props.nativeDropRequest;
@@ -71,6 +143,7 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     try {
       const created = await api.editorCreateDocument();
       setDocument(created);
+      setPdfSession(null);
       setImported(null);
       await refreshRecent();
     } catch (error) {
@@ -81,16 +154,22 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
   }, [props.onNotice, refreshRecent]);
 
   const loadRecent = useCallback(async (id: string) => {
+    const summary = recent.find((item) => item.id === id);
+    if (summary?.format.toLowerCase() === "pdf" && summary.sourcePath) {
+      await openPath(summary.sourcePath);
+      return;
+    }
     setBusy(true);
     try {
       setDocument(await normalizeLegacyDocumentAssets(await api.editorLoadDocument(id)));
+      setPdfSession(null);
       setImported(null);
     } catch (error) {
       props.onNotice("error", editorError(error));
     } finally {
       setBusy(false);
     }
-  }, [props.onNotice]);
+  }, [openPath, props.onNotice, recent]);
 
   const renameRecent = useCallback(async (id: string, title: string) => {
     setBusy(true);
@@ -160,17 +239,31 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
     setImported(null);
   }, [refreshRecent]);
 
+  const closePdf = useCallback(async () => {
+    const session = pdfSession;
+    if (!session) return;
+    try {
+      await api.pdfEditorClose(session.sessionId);
+      await refreshRecent();
+    } catch (error) {
+      props.onNotice("error", editorError(error));
+    } finally {
+      setPdfSession(null);
+      setPdfPassword(null);
+    }
+  }, [pdfSession, props.onNotice, refreshRecent]);
+
   if (!props.isActive) return null;
 
   return (
     <section className="editor-workspace" aria-label={t(props.language, "editor.workspace")}>
-      {!document ? (
+      {!document && !pdfSession ? (
         <EditorLanding
           language={props.language}
           recent={recent}
           busy={busy}
           onCreate={() => void createDocument()}
-          onOpen={() => void openPath()}
+          onOpen={() => void chooseDocument()}
           onOpenRecent={(id) => void loadRecent(id)}
           onRenameRecent={(id, title) => void renameRecent(id, title)}
           onDuplicateRecent={(item) => void duplicateRecent(item)}
@@ -189,7 +282,15 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
             }
           }}
         />
-      ) : (
+      ) : pdfSession ? (
+        <PdfEditor
+          key={pdfSession.sessionId}
+          language={props.language}
+          session={pdfSession}
+          onClose={() => void closePdf()}
+          onNotice={props.onNotice}
+        />
+      ) : document ? (
         <DocumentEditor
           key={document.id}
           language={props.language}
@@ -199,9 +300,32 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
           onClose={closeDocument}
           onNotice={props.onNotice}
         />
+      ) : null}
+      {pdfPassword && (
+        <PdfPasswordDialog
+          language={props.language}
+          sourceName={pdfPassword.sourceName}
+          busy={busy}
+          error={pdfPassword.error}
+          onCancel={() => setPdfPassword(null)}
+          onSubmit={(password) => void openPdf(pdfPassword.path, password)}
+        />
       )}
     </section>
   );
+}
+
+function isPdfPath(path: string) {
+  return /\.pdf$/i.test(path.trim());
+}
+
+function fileName(path: string) {
+  return path.split(/[\\/]/).pop() || "document.pdf";
+}
+
+function editorErrorCode(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /^([A-Z][A-Z0-9_]+):/.exec(message)?.[1] ?? "";
 }
 
 function editorError(error: unknown) {

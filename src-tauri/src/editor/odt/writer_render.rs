@@ -202,14 +202,32 @@ fn render_odt_table(
     }
 
     let mut row_spans = vec![0usize; column_count];
-    for row in rows {
+    for (row_index, row) in rows.iter().enumerate() {
         let current_spans = row_spans.clone();
         let mut next_spans = current_spans
             .iter()
             .map(|remaining| remaining.saturating_sub(1))
             .collect::<Vec<_>>();
         let mut column = 0usize;
-        output.push_str("<table:table-row>");
+        let row_style = row
+            .pointer("/attrs/height")
+            .and_then(Value::as_f64)
+            .filter(|height| height.is_finite() && (1.0..=4_096.0).contains(height))
+            .map(|height| {
+                let name = format!("{table_name}.Row{}", row_index + 1);
+                let millimeters = height.clamp(24.0, 4_096.0) * 25.4 / 96.0;
+                state.automatic_styles.push_str(&format!(
+                    "<style:style style:name=\"{name}\" style:family=\"table-row\"><style:table-row-properties style:row-height=\"{millimeters:.3}mm\" style:use-optimal-row-height=\"false\"/></style:style>"
+                ));
+                name
+            });
+        if let Some(row_style) = row_style {
+            output.push_str(&format!(
+                "<table:table-row table:style-name=\"{row_style}\">"
+            ));
+        } else {
+            output.push_str("<table:table-row>");
+        }
         for cell in row
             .get("content")
             .and_then(Value::as_array)

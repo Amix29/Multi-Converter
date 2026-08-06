@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   stage:
-    name: Reproducible Windows x64 PDFium package
+    name: Reproducible Windows x64 PDFium 0.4.0 candidate
     runs-on: windows-2025
     timeout-minutes: 45
     steps:
@@ -48,7 +48,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Prepare locked PDFium source tree
+      - name: Prepare locked PDFium 149.0.7825.0 and wrapper 0.4.0
         run: npm run prepare:pdfium-engine
 
       - name: Preserve wrapper for failed reproducibility diagnosis
@@ -75,7 +75,7 @@ jobs:
           }
           git diff --exit-code -- src-tauri/engines-manifest.json
 
-      - name: Validate exact release asset set
+      - name: Validate exact unpublished candidate asset set
         run: npm run validate:pdfium-engine-release -- --dir dist-engines-advanced
 
       - name: Test and lint wrapper with locked DLL

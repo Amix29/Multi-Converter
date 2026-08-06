@@ -13,13 +13,13 @@ export function assertWindowsCiContracts({ packageJson, buildWorkflow, windowsBu
   );
   assert.equal(
     packageJson.scripts["build:frontend:preview"],
-    "npm run validate:i18n && npm run typecheck && vite build --mode preview && npm run test:editor-fonts:dist",
-    "browser-preview builds must opt into preview fixtures and verify their packaged local font assets",
+    "npm run validate:i18n && npm run typecheck && vite build --mode preview",
+    "browser-preview builds must opt into preview fixtures",
   );
   assert.equal(
     packageJson.scripts["build:frontend"],
-    "npm run validate:i18n && npm run typecheck && vite build && npm run test:editor-fonts:dist",
-    "the production frontend build must avoid preview fixtures and verify its packaged local font assets",
+    "npm run validate:i18n && npm run typecheck && vite build",
+    "the production frontend build must avoid preview fixtures",
   );
   assert.doesNotMatch(packageJson.scripts.build, /vite build\s+--mode preview/, "the packaged Tauri build must never include browser-preview fixtures");
   assert.match(packageJson.scripts.check, /(?:^|&&\s*)npm run typecheck:tests(?:\s*&&|$)/, "the canonical check command must typecheck test and runner configuration files");

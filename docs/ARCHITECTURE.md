@@ -132,15 +132,15 @@ Paper is the active application theme. Multi-Converter does not expose a
 Carbon preference, and it does not fetch fonts, stylesheets or visual assets at
 runtime.
 
-The editor additionally loads four local WOFF2 resources from
-`src/assets/fonts/`: Source Sans 3, Atkinson Hyperlegible Next and JetBrains
-Mono. `public/third-party/fonts/fonts-manifest.json` pins their upstream
-commits, sizes, SHA-256 hashes and OFL-1.1 license files. Vite copies that
-compliance tree to `dist/third-party/fonts/` while content-hashing each WOFF2
-once under `dist/assets/`; the source and distribution font contracts enforce
-this offline supply-chain boundary. Optional system-family entries in the
-toolbar remain fallbacks and are not downloaded or redistributed. See
-[`THIRD_PARTY_FONTS.md`](THIRD_PARTY_FONTS.md).
+The editor embeds and installs no font. The native backend enumerates installed
+families with DirectWrite on Windows, CoreText on macOS and Fontconfig on
+Linux, and returns names only: physical font paths never cross IPC. The toolbar
+shows the system default, three locally remembered recent names, then a
+virtualized alphabetical catalogue. PDF export inspects the OpenType
+`OS/2.fsType` permission and glyph coverage locally; restricted, bitmap-only or
+indeterminate faces are substituted by an installed embeddable face with a
+visible warning. DOCX output keeps the selected family name without embedding
+or substituting it. No font is downloaded at runtime.
 
 `src/styles.css` is only the ordered stylesheet entry point. Shell, files,
 formats, progress, welcome, settings, notices, feedback, motion and responsive
@@ -196,14 +196,30 @@ This keeps archive limits and path checks independent from document semantics
 while preserving the existing import/export facade and serialized document
 schema.
 
-Office and PDF exports originate from the editor document model through the
-rich ODT generator. ODT is published directly. DOCX, RTF and PDF pass the
-generated file through a strict local LibreOffice ODT normalization, then use
-that normalized ODT for the requested LibreOffice conversion. Output still
-uses the existing conflict check and atomic replacement boundary. A corrected
-Windows probe confirms ODT normalization plus DOCX/PDF engine completion;
-packaged-app reopening, document structure and visual fidelity remain release
-validation work, not an architectural assumption.
+Editor exports keep one public facade but use format-specific local writers.
+ODT is published from the rich ODT generator. RTF and document-to-PDF pass that
+ODT through the strict local LibreOffice normalization/conversion bridge. DOCX
+instead maps Tiptap JSON directly to `docx.js` primitives in a dedicated Web
+Worker, then transfers the finished OOXML package through a 1 MiB chunked,
+128 MiB-bounded Rust session. Rust validates archive paths, duplicate entries,
+expanded sizes, compression ratios, CRC reads and XML well-formedness before
+the shared conflict check and atomic commit. Inline and block images both map
+to real OOXML media relationships. Cancelling terminates the worker and remains
+effective during native flush and validation until the atomic publication
+boundary; a canceled session drops its staging file. Word/LibreOffice visual
+fidelity remains a native corpus gate rather than an architectural assumption.
+
+PDF files opened for structural editing do not enter `EditorDocumentV1`.
+`PdfEditorSessionV1` is a separate PDFium-backed domain with source SHA-256
+identity, lazy page inspection/rendering, typed patches and Save As only.
+Permissions and DocMDP constrain each operation. When those constraints forbid
+an edit, an explicit unsigned-copy command atomically writes a distinct file,
+removes signature/DocMDP structures, verifies the new source identity and
+rebases the session without touching the original. A bounded structural scan
+reports JavaScript, Launch actions, XFA, 3D and media as non-editable inspector
+objects without executing them or returning their payload bodies. The existing
+PDF-to-text and PDF-to-Tiptap OCR paths remain explicit conversion/import paths,
+not the storage model for structural PDF edits.
 
 A new document defaults its export selector to Markdown. Export refuses an
 untitled placeholder until the user supplies a normalized title, then exposes
@@ -214,8 +230,9 @@ never the imported source; batch deletion applies that rule independently to
 each selected draft.
 
 The Tiptap image node remains backed by `mc-asset://`. Its optional floating
-layout adds bounded offsets, width, wrap mode and a `z-index` from -100 to 100;
-Rust validates those attributes before persistence or ODT generation. Toolbar
+layout adds safety-bounded finite offsets/dimensions, wrap mode and a bounded
+layer index; Rust validates those attributes before persistence or generation.
+Eight visual handles have no former 30 cm UI cap. Toolbar
 heading presets are intentionally absent, while imported heading nodes remain
 accepted for compatibility. Table column widths continue through TableKit's
 bounded `colwidth` contract.
@@ -246,11 +263,11 @@ a cancelled job cannot overwrite a retry with late progress or a late result.
 Cancelling resource verification is never cached as a permanent verification
 failure, and the next attempt starts from a valid clean state.
 
-PDFium 0.3 inspects every PDF page. Usable native text is retained, while only
-insufficient pages are rendered at 300 DPI for OCR. The normalized result then
-feeds the existing text serializers or `EditorDocumentV1` with explicit page
-breaks. Image OCR accepts the five bounded local raster formats and returns
-structured text for an explicit write-only clipboard action.
+PDFium wrapper 0.4 inspects every PDF page. Usable native text is retained,
+while only insufficient pages are rendered at 300 DPI for OCR. The normalized
+result then feeds the existing text serializers or `EditorDocumentV1` with
+explicit page breaks. Image OCR accepts the five bounded local raster formats
+and returns structured text for an explicit write-only clipboard action.
 
 On Windows, the official CPU runtime is stored as one verified compressed
 archive and extracted into application-local data on first use. Its complete
@@ -297,6 +314,13 @@ architecture, validates the archive hash and every extracted file, then checks
 the Mach-O, ELF or PE machine type before launch. Foreign runtimes, duplicate
 archive entries, links, traversal and missing executable permissions fail
 closed. CoreML, OpenVINO and the native ONNX candidate remain unselected.
+
+The post-audit wrapper is 0.4.0 while PDFium stays at 149.0.7825.0. Its Windows
+package has a reproducible local fingerprint but remains unpublished, so the
+committed historical 0.3.0 engine manifest is not a post-audit candidate.
+macOS universal and Linux x64 package records fail closed as
+`pending-native-rebuild` with unset measurements until native runners rebuild
+and validate them.
 
 ## Sources Of Truth
 
