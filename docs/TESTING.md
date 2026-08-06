@@ -785,7 +785,10 @@ npm run validate:pdfium-engine-release -- --download
 
 The validator checks exact asset names, manifest metadata, hashes, x64 PE
 payloads, archive paths, wrapper `0.4.0`, `--check`, `--inspect-text` on a native
-PDF and `--render` on a scanned page with PNG decoding. While the lock remains
+PDF, `--inspect-objects` with a valid `contentKind`, and `--render` on a scanned
+page with PNG decoding. This rejects an older `0.4.0` binary whose structural
+response predates the digital/mixed/scanned editor contract. While the lock
+remains
 `unpublished`, `--download` is expected to fail closed instead of inventing a
 release URL. The `Windows PDFium Engine Staging` workflow performs the same
 locked preparation twice on Windows and uploads an Actions artifact; it does

@@ -123,10 +123,11 @@ actions, XFA, 3D and media as non-editable inspector records without executing
 them or exposing their bodies.
 
 The wrapper source is now `0.4.0` while PDFium remains `149.0.7825.0`. The
-corrected Windows wrapper is 3,979,776 bytes at SHA-256
-`53fc9f3a3b31712603c3a9520f00af2a5e006ec11f88901e92996c290c51000a`.
-Its deterministic 5,138,904-byte ZIP has SHA-256
-`f90970a82a066affe6c13a62486025ab072f18808637676b5c00c4a397cc0920`.
+current Windows wrapper, including the required `contentKind` inspection field,
+is 3,982,336 bytes at SHA-256
+`7856798b0deaae4c48b90ce985148a69aa00a0cbf5924337c18f4eee9e4002bd`.
+Its deterministic 5,139,663-byte ZIP has SHA-256
+`41452be58440ce6652ec5aacf240188cfd60ffefd856a1b67b69537296f86072`.
 The installed DLL retained the locked SHA-256
 `01be7a757183793f15eb35de9d9da424fc07d24b5560e8c3822f52812b2ad89a`.
 
@@ -165,15 +166,16 @@ Current explicit limitations pending native PDF corpus evidence:
 
 Evidence already obtained in this worktree includes `npm run check`, 133
 frontend unit tests and a Playwright guardrail result of 31 passed and 27
-skipped. The complete PDFium wrapper split passed 45 tests
-(`16 + 14 + 1 + 4 + 1 + 7 + 2`) against the real Windows DLL. Two native
+skipped. The complete PDFium wrapper split passed 46 tests
+(`17 + 14 + 1 + 4 + 1 + 7 + 2`) against the real Windows DLL. Two native
 Windows package cycles passed with the corrected wrapper and installed DLL.
 The installed smoke changed text to exactly `Native editor smoke`, reopened it
 with the same exact value, preserved the source byte-for-byte and rejected a
-stale hash. The local unsigned NSIS is 999,932,692 bytes at SHA-256
-`58b66d692e443b573f94b5a222398373052385e1bf8d8a95ef1bc2bd77047ac6`;
-its installed application executable is 28,018,176 bytes. No raw executable
-hash is asserted because NSIS patches the installed executable.
+stale hash. The current local unsigned NSIS is 999,950,451 bytes at SHA-256
+`bc0f9169d11ff56eb74fe212f7f829d9a3299b0750c4c48ddb1c628bc79e5705`;
+its isolated installed application is 27,969,536 bytes at SHA-256
+`60e35267561355421a53710847b4210d734bd710e08eee82e82f15a9d7398494`.
+This is test-package evidence only; the installer is not Authenticode-signed.
 
 These results prove the corrected local Windows package path. They do not prove
 a user-driven manual acceptance session, macOS/Linux behavior or release
@@ -203,11 +205,12 @@ The focused preview suite passed 10/10 scenarios and the unit suite passed
 136/136 tests.
 
 This Tauri run used the wrapper rebuilt from the current source tree. The
-ignored prepared Windows PDFium resource present in this worktree reports
-version `0.4.0` but its `--inspect-objects` response omits `contentKind`; it is
-therefore stale and is not package evidence. The corrected archive must be
-restaged and the NSIS rebuilt before an installed candidate can inherit this
-proof.
+prepared Windows resource that omitted `contentKind` is now rejected by the
+packaging health check even though it reports version `0.4.0`. The corrected
+archive was built twice with exact byte equality, restaged and validated.
+`Plan ECHO.pdf` now inspects as a 21-page digital document with 73 objects on
+its first page and an unchanged source hash. The rebuilt NSIS passed two
+isolated install/reinstall cycles with this exact wrapper and DLL.
 
 Still required before a final checkpoint can be called a V1.0.7 candidate:
 

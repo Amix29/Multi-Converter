@@ -628,20 +628,22 @@ evidence for their original checkpoints only.
 
 Development checks include `npm run check`, 133 frontend unit tests and the
 Playwright guardrails at 31 passed and 27 skipped. The complete wrapper split
-passed 45 tests (`16 + 14 + 1 + 4 + 1 + 7 + 2`) with the real Windows DLL.
+passed 46 tests (`17 + 14 + 1 + 4 + 1 + 7 + 2`) with the real Windows DLL.
 The detailed architecture and unresolved package/native gates are recorded in
 [`V1_0_7_POST_AUDIT.md`](V1_0_7_POST_AUDIT.md).
 
-The corrected Windows PDFium 0.4.0 wrapper is 3,979,776 bytes at SHA-256
-`53fc9f3a3b31712603c3a9520f00af2a5e006ec11f88901e92996c290c51000a`.
-Its 5,138,904-byte deterministic ZIP has SHA-256
-`f90970a82a066affe6c13a62486025ab072f18808637676b5c00c4a397cc0920`.
+The current Windows PDFium 0.4.0 wrapper, including the required `contentKind`
+inspection field, is 3,982,336 bytes at SHA-256
+`7856798b0deaae4c48b90ce985148a69aa00a0cbf5924337c18f4eee9e4002bd`.
+Its 5,139,663-byte deterministic ZIP has SHA-256
+`41452be58440ce6652ec5aacf240188cfd60ffefd856a1b67b69537296f86072`.
 The installed `pdfium.dll` has SHA-256
 `01be7a757183793f15eb35de9d9da424fc07d24b5560e8c3822f52812b2ad89a`.
-The local unsigned NSIS is 999,932,692 bytes at SHA-256
-`58b66d692e443b573f94b5a222398373052385e1bf8d8a95ef1bc2bd77047ac6`;
-the installed application executable is 28,018,176 bytes. No installed/raw
-executable hash is claimed because NSIS patches the installed executable.
+The current local unsigned NSIS is 999,950,451 bytes at SHA-256
+`bc0f9169d11ff56eb74fe212f7f829d9a3299b0750c4c48ddb1c628bc79e5705`.
+Its isolated installed application is 27,969,536 bytes at SHA-256
+`60e35267561355421a53710847b4210d734bd710e08eee82e82f15a9d7398494`.
+This is test-package evidence only; the installer is not Authenticode-signed.
 
 Two complete `npm run test:windows:pdfium-native` cycles passed. The installed
 wrapper changed the fixture text to exactly `Native editor smoke`, reopened it
@@ -671,12 +673,15 @@ the copy was
 `d9c4d76abc54b94787c496e0d8854298024b766100fa9623ac58b7c7766b4d5a`.
 The focused PDF Playwright suite passed 10 tests and all 136 unit tests passed.
 
-The run used the current source-built wrapper. A separate inspection of the
-ignored prepared PDFium resource in this worktree found that it announces
-`0.4.0` but omits `contentKind` from `--inspect-objects`. That prepared resource
-is stale and cannot support the digital/mixed/scanned gate. It must be replaced
-from the corrected deterministic archive before rebuilding and validating a
-new installed Windows candidate.
+The run used the current source-built wrapper. A separate inspection found that
+the then-prepared PDFium resource announced `0.4.0` but omitted `contentKind`
+from `--inspect-objects`. The packaging health check now exercises that command
+and rejects this stale schema. The corrected deterministic archive was built
+twice with identical bytes, restaged locally and passed bundled-engine
+validation. Direct inspection of `Plan ECHO.pdf` returned `contentKind: digital`,
+21 pages and 73 first-page objects while preserving the source SHA-256. The
+rebuilt NSIS then passed two isolated install/reinstall cycles with this exact
+wrapper and DLL.
 
 Automated regressions cover bounded active-content inspection without executing
 or exposing payload bodies, as well as explicit creation of a separate unsigned

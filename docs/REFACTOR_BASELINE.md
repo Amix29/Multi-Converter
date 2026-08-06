@@ -614,13 +614,13 @@ not qualify macOS, Linux or a release candidate.
 | Unit and UI guardrails | 133 Vitest tests; Playwright 31 passed / 27 skipped; `npm run check` passed |
 | Conversion matrix | 6/6 ignored integration fixtures passed when run explicitly |
 | Preview interaction suite | large-list, document-editor and structural-PDF scenarios pass; the complete guardrail result is recorded separately after its final rerun |
-| Focused structural-PDF tests | Complete wrapper split: 45 passed (`16 + 14 + 1 + 4 + 1 + 7 + 2`) with the real Windows DLL |
+| Focused structural-PDF tests | Complete wrapper split: 46 passed (`17 + 14 + 1 + 4 + 1 + 7 + 2`) with the real Windows DLL |
 | Windows PDFium 0.4.0 Cargo lock | SHA-256 `6462b7bf8f748280d276316c2634f0faf8eb8ecd5c0d794ca0c445edc4decc7f` |
-| Windows PDFium 0.4.0 wrapper | 3,979,776 bytes; SHA-256 `53fc9f3a3b31712603c3a9520f00af2a5e006ec11f88901e92996c290c51000a` |
-| Windows PDFium 0.4.0 archive | 5,138,904 bytes; SHA-256 `f90970a82a066affe6c13a62486025ab072f18808637676b5c00c4a397cc0920` |
+| Windows PDFium 0.4.0 wrapper | 3,982,336 bytes; SHA-256 `7856798b0deaae4c48b90ce985148a69aa00a0cbf5924337c18f4eee9e4002bd` |
+| Windows PDFium 0.4.0 archive | 5,139,663 bytes; SHA-256 `41452be58440ce6652ec5aacf240188cfd60ffefd856a1b67b69537296f86072` |
 | Installed PDFium DLL | SHA-256 `01be7a757183793f15eb35de9d9da424fc07d24b5560e8c3822f52812b2ad89a` |
-| Windows post-audit NSIS | 999,932,692 bytes; SHA-256 `58b66d692e443b573f94b5a222398373052385e1bf8d8a95ef1bc2bd77047ac6` |
-| Installed Windows application | 28,018,176 bytes; no hash asserted because NSIS patches the installed executable |
+| Windows post-audit NSIS | 999,950,451 bytes; SHA-256 `bc0f9169d11ff56eb74fe212f7f829d9a3299b0750c4c48ddb1c628bc79e5705`; unsigned test package |
+| Installed Windows application | 27,969,536 bytes; SHA-256 `60e35267561355421a53710847b4210d734bd710e08eee82e82f15a9d7398494` in both isolated cycles |
 | Installed PDF editor smoke | Two `test:windows:pdfium-native` cycles passed; exact `Native editor smoke` after reopen; source unchanged; stale hash rejected |
 | Dependency audits | npm production/development and five Python runtime locks report no known vulnerability; Rust reports 20 allowed transitive maintenance/GTK warnings |
 | Native package state | Focused local Windows PDFium/NSIS path passed; artifacts remain unpublished; macOS universal and Linux x64 post-audit packages remain unbuilt |

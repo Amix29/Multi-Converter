@@ -93,6 +93,26 @@ export async function runPdfiumHealth({ wrapper, dll, fixtureRoot }) {
   if (parsed.schemaVersion !== 1 || parsed.pageCount < 1 || !parsed.pages?.some(({ text }) => String(text).trim())) {
     throw new Error("Inspection PDFium sans texte natif exploitable.");
   }
+  const objectInspection = run(
+    wrapper,
+    ["--inspect-objects"],
+    dll,
+    "inspection structurelle PDFium",
+    JSON.stringify({
+      schemaVersion: 1,
+      sourcePath: nativePdf,
+      sourceSha256: null,
+      password: null,
+      pageStart: 1,
+      pageCount: 1,
+    }),
+  );
+  const objectPayload = JSON.parse(objectInspection.stdout);
+  if (objectPayload.schemaVersion !== 1
+      || objectPayload.pageCount < 1
+      || !new Set(["digital", "mixed", "scanned"]).has(objectPayload.contentKind)) {
+    throw new Error("Inspection structurelle PDFium sans contentKind compatible avec l'editeur V1.0.7.");
+  }
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "mc-pdfium-health-"));
   try {
     const output = path.join(temporary, "page.png");
@@ -161,11 +181,12 @@ async function assertPng(filePath) {
   if (bytes.readUInt32BE(16) === 0 || bytes.readUInt32BE(20) === 0) throw new Error("Rendu PDFium: dimensions PNG invalides.");
 }
 
-function run(executable, args, dll, label) {
+function run(executable, args, dll, label, input = undefined) {
   const result = spawnSync(executable, args, {
     cwd: path.dirname(executable),
     env: { ...process.env, PDFIUM_LIBRARY_PATH: dll, PDFIUM_DLL_PATH: dll },
     encoding: "utf8",
+    input,
     timeout: 120_000,
     windowsHide: true,
   });
