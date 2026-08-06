@@ -3,6 +3,21 @@ import { expect, test, type Page, type TestInfo } from "@playwright/test";
 test("opens PDFs outside Tiptap, virtualizes pages and keeps edits through focus transitions", async ({ page }) => {
   await openPreviewPdf(page);
 
+  const inspectorToggle = page.getByRole("button", { name: "Inspecteur PDF" });
+  const inspectorStartsOpen = (page.viewportSize()?.width ?? 0) >= 900;
+  await expect(inspectorToggle).toHaveAttribute("aria-expanded", String(inspectorStartsOpen));
+  if (inspectorStartsOpen) {
+    await inspectorToggle.click();
+    await expect(page.locator("#pdf-editor-inspector")).toHaveCount(0);
+    await expect(inspectorToggle).toHaveAttribute("aria-expanded", "false");
+  }
+  await inspectorToggle.click();
+  await expect(page.locator("#pdf-editor-inspector")).toBeVisible();
+  if (!inspectorStartsOpen) {
+    await inspectorToggle.click();
+    await expect(page.locator("#pdf-editor-inspector")).toHaveCount(0);
+  }
+
   await expect(page.getByRole("heading", { name: "Contrat-local.pdf" })).toBeVisible();
   await expect(page.locator(".ProseMirror")).toHaveCount(0);
   await expect(page.locator(".pdf-page-frame")).toHaveCount(2);
@@ -14,20 +29,20 @@ test("opens PDFs outside Tiptap, virtualizes pages and keeps edits through focus
   await textEditor.fill("Modification annulée");
   await page.keyboard.press("Escape");
   await expect(textEditor).toBeHidden();
-  await expect(page.getByText("0 modification(s) en attente", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("0 modification(s) en attente", { exact: true })).toBeVisible();
 
   await firstTextObject.click();
   await textEditor.fill("Texte structurel corrigé");
   await page.keyboard.press("Control+Enter");
   await expect(textEditor).toBeHidden();
   await expect(page.locator('[data-object-kind="text"].is-text-modified').first()).toContainText("Texte structurel corrigé");
-  await expect(page.getByText("1 modification(s) en attente", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("1 modification(s) en attente", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Mode concentration" }).click();
   await expect(page.locator(".pdf-editor-shell")).toHaveClass(/is-focus-mode/);
   await page.keyboard.press("Escape");
   await expect(page.locator(".pdf-editor-shell")).not.toHaveClass(/is-focus-mode/);
-  await expect(page.getByText("1 modification(s) en attente", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("1 modification(s) en attente", { exact: true })).toBeVisible();
 
   const pageInput = page.getByRole("spinbutton", { name: "Page" });
   await pageInput.fill("4");
@@ -45,11 +60,11 @@ test("opens PDFs outside Tiptap, virtualizes pages and keeps edits through focus
   await expect(discard).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(discard).toBeHidden();
-  await expect(page.getByText("1 modification(s) en attente", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("1 modification(s) en attente", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Enregistrer sous" }).click();
   await expect(page.getByText("La copie PDF a été créée sans modifier l’original.")).toBeVisible();
-  await expect(page.getByText("0 modification(s) en attente", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("0 modification(s) en attente", { exact: true })).toBeVisible();
 
   const rebasedPage = await pageInput.inputValue();
   await page.locator(`[data-page-number="${rebasedPage}"] [data-object-kind="text"] .pdf-object-hitbox`).first().click();
@@ -57,7 +72,7 @@ test("opens PDFs outside Tiptap, virtualizes pages and keeps edits through focus
   await page.keyboard.press("Control+Enter");
   await page.getByRole("button", { name: "Enregistrer sous" }).click();
   await expect(page.getByText("La copie PDF a été créée sans modifier l’original.")).toBeVisible();
-  await expect(page.getByText("0 modification(s) en attente", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("0 modification(s) en attente", { exact: true })).toBeVisible();
 });
 
 test("keeps a scanned PDF read-only until the complete local digitization succeeds", async ({ page }, testInfo) => {

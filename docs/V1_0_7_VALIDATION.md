@@ -688,6 +688,24 @@ No Word/LibreOffice visual corpus, user-driven PDF editor acceptance, native
 macOS or Linux PDFium 0.4.0 package, universal DMG or Linux AppImage has yet
 been accepted for this post-audit SHA. V1.0.7 remains blocked from publication.
 
+### 2026-08-06 document and PDF editor visual polish
+
+The two editing surfaces now use one Vellum Paper workspace treatment. The
+document title, save and export controls are grouped by intent; the editing
+page remains visually dominant. The PDF toolbar exposes its inspector through
+an accessible toggle. The inspector remains a contextual card on desktop and
+starts closed as an overlay drawer below 900 px. Dense desktop controls keep a
+40 px target while touch layouts retain 44 px targets.
+
+Current-source validation passed `npm run build:frontend:preview`,
+`npm run test:editor`, `npm run test:ui-layout`, the source-structure guard and
+the combined document/PDF editor browser matrix: 18 passed and 14 intentionally
+desktop-only scenarios skipped on mobile. The PDF coverage now includes
+opening, hiding and restoring the inspector while retaining the active session.
+Fresh screenshots were generated at 375, 768, 1024 and 1440 px from the rebuilt
+preview and inspected locally. These are browser-interface proofs only; they do
+not replace native Tauri file-system, PDFium or package evidence.
+
 ## Release Closure
 
 V1.0.7 may be marked ready only when:

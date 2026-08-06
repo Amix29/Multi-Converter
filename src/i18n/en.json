@@ -488,7 +488,7 @@
   "editor.exportingTitle": "Export in progress…",
   "editor.exportingDescription": "Multi-Converter is preparing the {format} file on this device.",
   "editor.exportingKeepOpen": "Keep this window open until the export finishes.",
-  "pdfEditor.structural": "Structural PDF editor",
+  "pdfEditor.structural": "PDF editing",
   "pdfEditor.localSafe": "Local, controlled, no execution",
   "pdfEditor.inspector": "PDF inspector",
   "pdfEditor.objectText": "Text",

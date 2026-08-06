@@ -53,7 +53,7 @@ export function PdfInspector(props: PdfInspectorProps) {
   useEffect(() => setText(object?.text ?? ""), [object?.objectId, object?.text]);
 
   return (
-    <aside className="pdf-inspector" aria-label={t(props.language, "pdfEditor.inspector")}>
+    <aside id="pdf-editor-inspector" className="pdf-inspector" aria-label={t(props.language, "pdfEditor.inspector")}>
       <header>
         <span className="editor-eyebrow">{t(props.language, "pdfEditor.localSafe")}</span>
         <h2>{t(props.language, "pdfEditor.inspector")}</h2>

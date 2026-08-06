@@ -51,6 +51,7 @@ import {
   verifySaveResult,
 } from "./pdfEditorSessionModel";
 import "./pdf-editor.css";
+import "../editor/editor-workspace-polish.css";
 import { usePdfDigitization } from "./usePdfDigitization";
 
 interface PdfEditorProps {
@@ -75,6 +76,7 @@ export function PdfEditor(props: PdfEditorProps) {
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [confirmClose, setConfirmClose] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(() => window.innerWidth >= 900);
   const [ocrProgress, setOcrProgress] = useState<number | null>(null);
   const requestId = useRef(0);
   const ocrJobRef = useRef<string | null>(null);
@@ -104,6 +106,14 @@ export function PdfEditor(props: PdfEditorProps) {
   useEffect(() => { backgroundRef.current = backgrounds; }, [backgrounds]);
   useEffect(() => { pageOrderRef.current = pageOrder; }, [pageOrder]);
   useEffect(() => { patchesRef.current = patches; }, [patches]);
+  useEffect(() => {
+    const compactWorkspace = window.matchMedia("(max-width: 899px)");
+    const closeInspectorForCompactWorkspace = () => {
+      if (compactWorkspace.matches) setInspectorOpen(false);
+    };
+    compactWorkspace.addEventListener("change", closeInspectorForCompactWorkspace);
+    return () => compactWorkspace.removeEventListener("change", closeInspectorForCompactWorkspace);
+  }, []);
   useEffect(() => () => {
     for (const entry of backgroundRef.current.values()) URL.revokeObjectURL(entry.url);
   }, []);
@@ -346,6 +356,7 @@ export function PdfEditor(props: PdfEditorProps) {
         focusMode={focusMode}
         focusButtonRef={focusButtonRef}
         pendingPatchCount={patches.length}
+        inspectorOpen={inspectorOpen}
         saving={saving}
         onClose={close}
         onPage={page}
@@ -362,6 +373,7 @@ export function PdfEditor(props: PdfEditorProps) {
           setPageRevision((current) => current + 1);
         }}
         onToggleFocus={toggleFocusMode}
+        onToggleInspector={() => setInspectorOpen((current) => !current)}
         onSaveAs={() => void saveAs()}
       />
       <div className="pdf-editor-body">
@@ -402,23 +414,25 @@ export function PdfEditor(props: PdfEditorProps) {
             ))}
           </div>
         </main>
-        <PdfInspector
-          language={props.language}
-          session={effectiveSession}
-          activePage={pages.find((item) => item.pageNumber === activePage) ?? null}
-          selectedObject={selectedObject}
-          activeContentFindings={activeContentFindings}
-          pendingPatchCount={patches.length}
-          editableCopyBusy={saving}
-          ocrProgress={ocrProgress}
-          onObjectPatch={queueObjectPatch}
-          onPagePatch={queuePagePatch}
-          onInsertImage={() => void pickPdfImage()}
-          onReplaceImage={(object) => void pickPdfImage(object)}
-          onRecognizePage={() => void recognizePage()}
-          onCancelOcr={() => void cancelPageOcr()}
-          onCreateEditableCopy={() => void createEditableCopy()}
-        />
+        {inspectorOpen && (
+          <PdfInspector
+            language={props.language}
+            session={effectiveSession}
+            activePage={pages.find((item) => item.pageNumber === activePage) ?? null}
+            selectedObject={selectedObject}
+            activeContentFindings={activeContentFindings}
+            pendingPatchCount={patches.length}
+            editableCopyBusy={saving}
+            ocrProgress={ocrProgress}
+            onObjectPatch={queueObjectPatch}
+            onPagePatch={queuePagePatch}
+            onInsertImage={() => void pickPdfImage()}
+            onReplaceImage={(object) => void pickPdfImage(object)}
+            onRecognizePage={() => void recognizePage()}
+            onCancelOcr={() => void cancelPageOcr()}
+            onCreateEditableCopy={() => void createEditableCopy()}
+          />
+        )}
       </div>
       {confirmClose && <PdfDiscardDialog
         language={props.language}

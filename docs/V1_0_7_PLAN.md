@@ -130,6 +130,12 @@ keeps the PDF locked and the original remains untouched. The original
 PDF-to-text/OCR serializers remain available as conversion paths and do not
 replace this structural editor.
 
+The document and PDF editors now share the same quiet Vellum Paper workspace:
+compact grouped actions, restrained canvas chrome, consistent focus treatment
+and responsive toolbars. The PDF inspector is an explicit contextual panel;
+it can be hidden on desktop and starts closed as an overlay drawer below
+900 px so that the page remains the primary editing surface.
+
 ## Workstream B — Local OCR
 
 ### Implemented in the Phase 3 Windows checkpoint

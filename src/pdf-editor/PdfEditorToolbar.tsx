@@ -10,6 +10,7 @@ interface PdfEditorToolbarProps {
   focusMode: boolean;
   focusButtonRef: RefObject<HTMLButtonElement | null>;
   pendingPatchCount: number;
+  inspectorOpen: boolean;
   saving: boolean;
   onClose(): void;
   onPage(page: number): void;
@@ -17,6 +18,7 @@ interface PdfEditorToolbarProps {
   onRotate(): void;
   onReset(): void;
   onToggleFocus(): void;
+  onToggleInspector(): void;
   onSaveAs(): void;
 }
 
@@ -35,8 +37,15 @@ export function PdfEditorToolbar(props: PdfEditorToolbarProps) {
           <span>{t(props.language, "editor.backToDocuments")}</span>
         </button>
         <div>
-          <span className="editor-eyebrow">{t(props.language, "pdfEditor.structural")}</span>
+          <span className="pdf-editor-kicker">{t(props.language, "pdfEditor.structural")}</span>
           <h1 title={props.session.sourceName}>{props.session.sourceName}</h1>
+          <span
+            className="pdf-editor-change-state"
+            aria-label={t(props.language, "pdfEditor.pending", { count: props.pendingPatchCount })}
+            title={t(props.language, "pdfEditor.pending", { count: props.pendingPatchCount })}
+          >
+            <span aria-hidden="true">{props.pendingPatchCount}</span>
+          </span>
         </div>
       </div>
 
@@ -104,6 +113,17 @@ export function PdfEditorToolbar(props: PdfEditorToolbarProps) {
           <span>{t(props.language, props.focusMode ? "editor.exitFocusMode" : "editor.enterFocusMode")}</span>
         </button>
         <button
+          className="pdf-inspector-toggle"
+          type="button"
+          aria-label={t(props.language, "pdfEditor.inspector")}
+          aria-expanded={props.inspectorOpen}
+          aria-controls="pdf-editor-inspector"
+          onClick={props.onToggleInspector}
+        >
+          <InspectorIcon />
+          <span>{t(props.language, "pdfEditor.inspector")}</span>
+        </button>
+        <button
           className="pdf-save-as"
           type="button"
           aria-label={props.saving ? t(props.language, "pdfEditor.saving") : t(props.language, "editor.saveAs")}
@@ -140,4 +160,8 @@ function FocusIcon(props: { active: boolean }) {
   ) : (
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9V3h6m6 0h6v6m0 6v6h-6M9 21H3v-6" /></svg>
   );
+}
+
+function InspectorIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M15 4v16M7 8h4M7 12h4M7 16h3" /></svg>;
 }

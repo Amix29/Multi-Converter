@@ -28,6 +28,7 @@ import { repositoryUrl } from "./lib/updateService";
 import { ImageOcrDialog } from "./ocr/ImageOcrDialog";
 import type { FileItem } from "./app/types";
 import "./editor/editor.css";
+import "./editor/editor-workspace-polish.css";
 
 const EditorWorkspace = lazy(() => import("./editor/EditorWorkspace").then((module) => ({ default: module.EditorWorkspace })));
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
