@@ -220,6 +220,13 @@ to a managed temporary copy, re-inspects it, then rebases the same session as
 `digitized`. Cancellation, an empty OCR result or an incomplete page set keeps
 the session locked; closing it removes the managed copy. The source PDF is
 never modified.
+For digital and successfully digitized PDFs, editable text objects are changed
+directly on the rendered page rather than through the inspector. A single click
+opens a positioned text control that inherits the inspected font, size and
+color. `Ctrl+Enter`/`Cmd+Enter` commits a typed `setText` patch, `Escape`
+restores the object, and focus returns to the page object. The inspector remains
+available for advanced object properties and non-text structures. Pending text
+is rendered in place before Save As, while the original PDF stays untouched.
 Permissions and DocMDP constrain each operation. When those constraints forbid
 an edit, an explicit unsigned-copy command atomically writes a distinct file,
 removes signature/DocMDP structures, verifies the new source identity and

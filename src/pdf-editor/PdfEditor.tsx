@@ -8,11 +8,9 @@ import {
 import {
   api,
   type PdfEditPatchV1,
-  type PdfEditableCopyResultV1,
   type PdfEditorSessionV1,
   type PdfObjectV1,
   type PdfPageV1,
-  type PdfSaveResultV1,
 } from "../lib/api";
 import { t, type LanguageCode } from "../i18n";
 import { useEditorFocusMode } from "../editor/useEditorFocusMode";
@@ -29,7 +27,6 @@ import {
   createPdfPatch,
   mergePdfPatch,
   pdfOcrBlocksToPage,
-  transformPdfBounds,
   type PdfPatchOperation,
   type PdfPatchValues,
 } from "./pdfEditorModel";
@@ -46,6 +43,13 @@ import {
   replacePdfBackgrounds,
   type PdfBackgroundEntry,
 } from "./pdfPageLoader";
+import {
+  mergeActiveContentFindings,
+  optimisticPages,
+  pdfError,
+  verifyEditableCopyResult,
+  verifySaveResult,
+} from "./pdfEditorSessionModel";
 import "./pdf-editor.css";
 import { usePdfDigitization } from "./usePdfDigitization";
 
@@ -133,6 +137,10 @@ export function PdfEditor(props: PdfEditorProps) {
     () => pages.flatMap((page) => page.objects).find((object) => object.objectId === selectedObjectId) ?? null,
     [pages, selectedObjectId],
   );
+  const modifiedTextObjectIds = useMemo(() => new Set(
+    patches.filter((patch) => patch.operation === "setText" && patch.objectId)
+      .map((patch) => patch.objectId as string),
+  ), [patches]);
 
   function page(number: number) {
     setActivePage(clampPage(number, pageOrderRef.current.length));
@@ -385,9 +393,11 @@ export function PdfEditor(props: PdfEditorProps) {
                 selectedObjectId={selectedObjectId}
                 isObjectEditable={(object) => canEditPdfObject(effectiveSession.permissions, object)}
                 canTransformObject={(object) => canTransformPdfObject(effectiveSession.permissions, object)}
+                isTextModified={(object) => modifiedTextObjectIds.has(object.objectId)}
                 onActivePage={page}
                 onSelect={(object) => setSelectedObjectId(object?.objectId ?? null)}
                 onTransform={(object, matrix) => queueObjectPatch("transformObject", object, { matrix })}
+                onTextPatch={(object, text) => queueObjectPatch("setText", object, { text })}
               />
             ))}
           </div>
@@ -417,77 +427,4 @@ export function PdfEditor(props: PdfEditorProps) {
       />}
     </div>
   );
-}
-
-function verifySaveResult(result: PdfSaveResultV1, expected: PdfEditorSessionV1) {
-  if (result.sourceSha256 !== expected.sourceSha256
-    || result.rebasedSession.sessionId !== expected.sessionId
-    || result.rebasedSession.sourceSha256.length !== 64
-    || result.signatureValidity !== "not-cryptographically-checked") {
-    throw new Error("PDF_EDITOR_SOURCE_CHANGED:La copie ne correspond pas à la session.");
-  }
-}
-
-function verifyEditableCopyResult(result: PdfEditableCopyResultV1, expected: PdfEditorSessionV1) {
-  if (result.sourceSha256 !== expected.sourceSha256
-    || result.removedSignatureStructures < 1
-    || result.rebasedSession.sessionId !== expected.sessionId
-    || result.rebasedSession.sourceSha256.length !== 64
-    || result.rebasedSession.signatures.length
-    || result.rebasedSession.permissions.docMdpLevel !== null) {
-    throw new Error("PDF_EDITOR_UNSIGNED_COPY_INVALID:La copie modifiable est incohérente.");
-  }
-}
-
-function mergeActiveContentFindings(current: PdfActiveContentFinding[], pages: PdfPageV1[]) {
-  const merged = new Map(current.map((finding) => [`${finding.pageNumber}:${finding.object.objectId}`, finding]));
-  for (const page of pages) {
-    for (const object of page.objects) {
-      if (object.activeContent) merged.set(`${page.pageNumber}:${object.objectId}`, { pageNumber: page.pageNumber, object });
-    }
-  }
-  return Array.from(merged.values()).sort((left, right) => left.pageNumber - right.pageNumber
-    || left.object.objectId.localeCompare(right.object.objectId));
-}
-
-function optimisticPages(pages: PdfPageV1[], patch: PdfEditPatchV1) {
-  return pages.map((page) => ({
-    ...page,
-    objects: page.objects.flatMap((object) => {
-      if (object.objectId !== patch.objectId) return [object];
-      if (patch.operation === "deleteObject" || patch.operation === "deleteAnnotation") return [];
-      if (patch.operation === "setText" || patch.operation === "setAnnotationContents") return [{ ...object, text: patch.text }];
-      if (patch.operation === "setFormValue") return [{ ...object, text: patch.text }];
-      if (patch.operation === "setFillColor") return [{ ...object, fillColor: patch.color }];
-      if (patch.operation === "setStrokeColor") return [{ ...object, strokeColor: patch.color }];
-      if (patch.operation === "transformObject" && patch.matrix) return [{ ...object, bounds: transformPdfBounds(object.bounds, patch.matrix) }];
-      return [object];
-    }),
-  })).map((page) => ({
-    ...page,
-    objects: reorderOptimisticObjects(page.objects, patch),
-  }));
-}
-
-function reorderOptimisticObjects(objects: PdfObjectV1[], patch: PdfEditPatchV1) {
-  if (!["moveObjectForward", "moveObjectBackward", "bringObjectFront", "sendObjectBack"].includes(patch.operation)) {
-    return objects;
-  }
-  const index = objects.findIndex((object) => object.objectId === patch.objectId);
-  if (index < 0) return objects;
-  const next = objects.slice();
-  const [selected] = next.splice(index, 1);
-  if (!selected) return objects;
-  const target = patch.operation === "moveObjectForward"
-    ? Math.min(objects.length - 1, index + 1)
-    : patch.operation === "moveObjectBackward"
-      ? Math.max(0, index - 1)
-      : patch.operation === "bringObjectFront" ? objects.length - 1 : 0;
-  next.splice(target, 0, selected);
-  return next;
-}
-
-function pdfError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.replace(/^[A-Z][A-Z0-9_]+:/, "");
 }

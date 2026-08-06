@@ -105,6 +105,11 @@ mounted. Text, images, vectors, common annotations, supported AcroForm values
 and page operations use the same Vellum selection, palette, eight-handle and
 layer vocabulary as the document editor. Scanned pages may request the local
 OCR worker and place a text layer without changing the source file.
+Editable text is changed directly over its rendered page object: click to edit,
+`Ctrl+Enter`/`Cmd+Enter` to apply and `Escape` to cancel. The inspector no longer
+duplicates the primary text field; it remains the advanced-property surface.
+The in-page preview is backed by the same pending `setText` patch that Save As
+passes to the native boundary.
 
 Every write is Save As and atomic. A changed source hash, forbidden permission
 or forbidden DocMDP operation is rejected again in Rust. DocMDP 1 is read-only;
@@ -171,7 +176,7 @@ its installed application executable is 28,018,176 bytes. No raw executable
 hash is asserted because NSIS patches the installed executable.
 
 These results prove the corrected local Windows package path. They do not prove
-a user-driven manual PDF editing session, macOS/Linux behavior or release
+a user-driven manual acceptance session, macOS/Linux behavior or release
 readiness.
 
 The post-audit PDF flow now distinguishes native digital, mixed and scanned
@@ -183,6 +188,26 @@ focused Tauri PDF suite passes 12 tests, and preview Playwright regressions pass
 both successful digitization-to-editing and cancellation-that-remains-locked.
 These preview results prove interface state only; packaged PP-OCRv6 inference
 remains governed by the native OCR gates.
+
+On 2026-08-06, Playwright connected to the real Windows Tauri WebView through
+its private debugging port without controlling the user's screen. It opened
+`Plan ECHO.pdf` (21 pages), clicked the first native text object, changed
+`Il faut distinguer deux objectifs :` to
+`Il faut distinguer quatre objectifs :`, committed the inline edit, saved a
+separate PDF and reopened it through the native commands. The reopened object
+contained the exact replacement. The source SHA-256 remained
+`80ee1aa9f29e5965844f83b954c51a714fab4c45809af8bb33506845f55719e1`;
+the test copy SHA-256 was
+`d9c4d76abc54b94787c496e0d8854298024b766100fa9623ac58b7c7766b4d5a`.
+The focused preview suite passed 10/10 scenarios and the unit suite passed
+136/136 tests.
+
+This Tauri run used the wrapper rebuilt from the current source tree. The
+ignored prepared Windows PDFium resource present in this worktree reports
+version `0.4.0` but its `--inspect-objects` response omits `contentKind`; it is
+therefore stale and is not package evidence. The corrected archive must be
+restaged and the NSIS rebuilt before an installed candidate can inherit this
+proof.
 
 Still required before a final checkpoint can be called a V1.0.7 candidate:
 

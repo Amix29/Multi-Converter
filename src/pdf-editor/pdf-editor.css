@@ -174,10 +174,79 @@
 .pdf-object-hitbox { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 2px; color: transparent; background: transparent; cursor: default; touch-action: none; }
 .pdf-object-hitbox > span { display: block; overflow: hidden; color: transparent; font-size: 10px; line-height: 1; white-space: pre-wrap; }
 .pdf-object.is-transformable .pdf-object-hitbox { cursor: move; }
+.pdf-object[data-object-kind="text"] .pdf-object-hitbox { cursor: text; }
 .pdf-object:hover .pdf-object-hitbox { box-shadow: inset 0 0 0 1px rgba(204, 120, 92, 0.58); }
 .pdf-object.is-selected .pdf-object-hitbox { box-shadow: inset 0 0 0 2px var(--vlm-accent), 0 0 0 1px rgba(255, 255, 255, 0.9); }
 .pdf-object.is-readonly.is-selected .pdf-object-hitbox { box-shadow: inset 0 0 0 2px var(--vlm-stone-500); }
 .pdf-object.is-active-content .pdf-object-hitbox { background: repeating-linear-gradient(135deg, rgba(154, 63, 53, 0.10) 0 6px, transparent 6px 12px); }
+.pdf-object.is-text-modified { z-index: 4; }
+.pdf-object-text-preview {
+  position: absolute;
+  inset: -2px;
+  display: block;
+  overflow: hidden;
+  padding: 2px;
+  color: var(--vlm-text);
+  background: #fff;
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
+.pdf-inline-text-editor {
+  position: absolute;
+  z-index: 8;
+  top: -5px;
+  left: -5px;
+  width: max(calc(100% + 10px), 160px);
+  min-width: 160px;
+  pointer-events: auto;
+}
+.pdf-inline-text-editor textarea {
+  display: block;
+  width: 100%;
+  min-height: max(calc(100% + 10px), 38px);
+  padding: 6px 8px;
+  overflow: auto;
+  resize: both;
+  border: 2px solid var(--vlm-accent);
+  border-radius: var(--vlm-radius-xs);
+  color: var(--vlm-text);
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(45, 38, 31, 0.18);
+  outline: none;
+  white-space: pre-wrap;
+}
+.pdf-inline-text-actions {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: min(320px, calc(100vw - 32px));
+  padding: 7px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-sm);
+  color: var(--vlm-text-muted);
+  background: var(--vlm-surface-pure);
+  box-shadow: var(--vlm-shadow-md);
+  font-size: var(--vlm-text-folio);
+  line-height: 1.3;
+}
+.pdf-inline-text-actions > span { flex: 1; text-wrap: balance; }
+.pdf-inline-text-actions > div { display: flex; gap: 5px; }
+.pdf-inline-text-actions button {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-xs);
+  color: var(--vlm-text-soft);
+  background: var(--vlm-surface);
+  font-size: var(--vlm-text-folio);
+  font-weight: 850;
+  cursor: pointer;
+}
+.pdf-inline-text-actions button.is-primary { color: var(--vlm-primary-text); background: var(--vlm-primary-bg); }
 
 .pdf-object-handle {
   position: absolute;
@@ -219,6 +288,19 @@
 .pdf-object-metadata > div { display: flex; justify-content: space-between; gap: 12px; font-size: var(--vlm-text-caption); }
 .pdf-object-metadata dt { color: var(--vlm-text-muted); }
 .pdf-object-metadata dd { margin: 0; color: var(--vlm-text-soft); font-variant-numeric: tabular-nums; }
+.pdf-inline-edit-guidance {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-sm);
+  color: var(--vlm-text-muted);
+  background: var(--vlm-info-bg);
+  font-size: var(--vlm-text-caption);
+  line-height: 1.45;
+}
+.pdf-inline-edit-guidance strong { color: var(--vlm-text-soft); }
+.pdf-inline-edit-keys { font-size: var(--vlm-text-folio); font-weight: 800; }
 .pdf-text-editor { display: grid; gap: 7px; color: var(--vlm-text-muted); font-size: var(--vlm-text-caption); font-weight: 800; }
 .pdf-text-editor textarea { min-height: 92px; resize: vertical; padding: 9px; border: 1px solid var(--vlm-border); border-radius: var(--vlm-radius-sm); color: var(--vlm-text); background: var(--vlm-surface-pure); font: inherit; font-weight: 500; line-height: 1.45; }
 .pdf-text-editor button,
@@ -377,6 +459,7 @@
   .pdf-object-handle.is-s { bottom: -8px; left: calc(50% - 8px); }
   .pdf-object-handle.is-sw { bottom: -8px; left: -8px; }
   .pdf-object-handle.is-w { top: calc(50% - 8px); left: -8px; }
+  .pdf-inline-text-actions button { min-height: 44px; }
 }
 
 @media (max-width: 460px) {

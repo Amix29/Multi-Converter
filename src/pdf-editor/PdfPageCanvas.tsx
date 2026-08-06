@@ -1,4 +1,4 @@
-import { useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { PdfObjectV1, PdfPageV1 } from "../lib/api";
 import { t, type LanguageCode } from "../i18n";
 import {
@@ -8,6 +8,8 @@ import {
   transformPdfBounds,
   type PdfResizeHandle,
 } from "./pdfEditorModel";
+import { PdfInlineTextEditor } from "./PdfInlineTextEditor";
+import { pdfInlineTextStyle } from "./pdfInlineTextModel";
 
 const HANDLES: PdfResizeHandle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 
@@ -19,9 +21,11 @@ interface PdfPageCanvasProps {
   selectedObjectId: string | null;
   isObjectEditable(object: PdfObjectV1): boolean;
   canTransformObject(object: PdfObjectV1): boolean;
+  isTextModified(object: PdfObjectV1): boolean;
   onActivePage(pageNumber: number): void;
   onSelect(object: PdfObjectV1 | null): void;
   onTransform(object: PdfObjectV1, matrix: [number, number, number, number, number, number]): void;
+  onTextPatch(object: PdfObjectV1, text: string): void;
 }
 
 interface Gesture {
@@ -39,6 +43,8 @@ interface Gesture {
 
 export function PdfPageCanvas(props: PdfPageCanvasProps) {
   const [gesture, setGesture] = useState<Gesture | null>(null);
+  const [editingObjectId, setEditingObjectId] = useState<string | null>(null);
+  const objectButtons = useRef(new Map<string, HTMLButtonElement>());
   const width = props.page.widthPoints * props.zoom;
   const height = props.page.heightPoints * props.zoom;
 
@@ -48,7 +54,7 @@ export function PdfPageCanvas(props: PdfPageCanvasProps) {
     mode: Gesture["mode"],
     handle?: PdfResizeHandle,
   ) {
-    if (!props.canTransformObject(object) || event.button !== 0) return;
+    if (editingObjectId === object.objectId || !props.canTransformObject(object) || event.button !== 0) return;
     event.preventDefault();
     event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -65,6 +71,12 @@ export function PdfPageCanvas(props: PdfPageCanvasProps) {
       preserveAspect: !event.shiftKey,
       resizeFromCenter: event.altKey,
     });
+  }
+
+  function finishTextEditing(object: PdfObjectV1, text?: string) {
+    if (text !== undefined && text !== object.text) props.onTextPatch(object, text);
+    setEditingObjectId(null);
+    requestAnimationFrame(() => objectButtons.current.get(object.objectId)?.focus());
   }
 
   function updateGesture(event: ReactPointerEvent<HTMLElement>) {
@@ -128,16 +140,23 @@ export function PdfPageCanvas(props: PdfPageCanvasProps) {
             const transformable = props.canTransformObject(object);
             const activeGesture = gesture?.object.objectId === object.objectId ? gesture : null;
             const bounds = previewBounds(object, activeGesture, props.zoom);
+            const editing = editingObjectId === object.objectId;
+            const textModified = object.kind === "text" && props.isTextModified(object);
             return (
               <div
-                className={`pdf-object ${selected ? "is-selected" : ""} ${editable ? "is-editable" : "is-readonly"} ${transformable ? "is-transformable" : ""} ${object.activeContent ? "is-active-content" : ""}`}
+                className={`pdf-object ${selected ? "is-selected" : ""} ${editable ? "is-editable" : "is-readonly"} ${transformable ? "is-transformable" : ""} ${object.activeContent ? "is-active-content" : ""} ${editing ? "is-inline-editing" : ""} ${textModified ? "is-text-modified" : ""}`}
                 key={object.objectId}
                 style={{
                   ...objectStyle(bounds, props.page, props.zoom),
                 }}
                 data-object-kind={object.kind}
+                data-object-id={object.objectId}
               >
-                <button
+                {!editing && <button
+                  ref={(node) => {
+                    if (node) objectButtons.current.set(object.objectId, node);
+                    else objectButtons.current.delete(object.objectId);
+                  }}
                   className="pdf-object-hitbox"
                   type="button"
                   aria-label={`${t(props.language, pdfObjectLabelKey(object.kind))}${editable ? "" : `, ${t(props.language, "pdfEditor.readOnly")}`}`}
@@ -145,8 +164,20 @@ export function PdfPageCanvas(props: PdfPageCanvasProps) {
                   onClick={(event) => {
                     event.stopPropagation();
                     props.onSelect(object);
+                    if (object.kind === "text" && editable) setEditingObjectId(object.objectId);
+                  }}
+                  onDoubleClick={(event) => {
+                    if (object.kind !== "text" || !editable) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setEditingObjectId(object.objectId);
                   }}
                   onKeyDown={(event) => {
+                    if (object.kind === "text" && editable && (event.key === "Enter" || event.key === "F2")) {
+                      event.preventDefault();
+                      setEditingObjectId(object.objectId);
+                      return;
+                    }
                     if (!transformable || !["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
                     event.preventDefault();
                     const step = event.shiftKey ? 10 : 1;
@@ -154,18 +185,34 @@ export function PdfPageCanvas(props: PdfPageCanvasProps) {
                     const yPoints = event.key === "ArrowDown" ? -step : event.key === "ArrowUp" ? step : 0;
                     props.onTransform(object, pdfMoveMatrix({ xPoints, yPoints }));
                   }}
-                  onPointerDown={(event) => beginGesture(event, object, "move")}
+                  onPointerDown={(event) => {
+                    if (object.kind !== "text") {
+                      beginGesture(event, object, "move");
+                    }
+                  }}
                   onPointerMove={updateGesture}
                   onPointerUp={finishGesture}
                   onPointerCancel={() => setGesture(null)}
                 >
-                  {object.kind === "text" && object.text ? (
+                  {object.kind === "text" && object.text && !textModified ? (
                     <span style={{ fontFamily: object.fontFamily ?? undefined }} aria-hidden="true">
                       {object.text.slice(0, 120)}
                     </span>
                   ) : null}
-                </button>
-                {selected && transformable && HANDLES.map((handle) => (
+                  {textModified && object.text ? (
+                    <span className="pdf-object-text-preview" style={pdfInlineTextStyle(object, props.zoom)} aria-hidden="true">
+                      {object.text}
+                    </span>
+                  ) : null}
+                </button>}
+                {editing && <PdfInlineTextEditor
+                  language={props.language}
+                  object={object}
+                  zoom={props.zoom}
+                  onCommit={(text) => finishTextEditing(object, text)}
+                  onCancel={() => finishTextEditing(object)}
+                />}
+                {selected && transformable && !editing && HANDLES.map((handle) => (
                   <button
                     className={`pdf-object-handle is-${handle}`}
                     key={handle}

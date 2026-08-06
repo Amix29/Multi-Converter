@@ -17,6 +17,10 @@ import {
   transformPdfBounds,
   pdfWindowRange,
 } from "../../src/pdf-editor/pdfEditorModel";
+import {
+  pdfInlineEditAction,
+  pdfInlineTextStyle,
+} from "../../src/pdf-editor/pdfInlineTextModel";
 
 const editable: PdfPermissionV1 = {
   schemaVersion: 1,
@@ -47,6 +51,29 @@ describe("pdf editor model", () => {
     expect(pdfWindowRange(1, 2_000)).toEqual({ start: 1, count: 2, activePage: 1 });
     expect(pdfWindowRange(1_000, 2_000)).toEqual({ start: 999, count: 3, activePage: 1_000 });
     expect(pdfWindowRange(2_000, 2_000)).toEqual({ start: 1_999, count: 2, activePage: 2_000 });
+  });
+
+  it("maps direct text-edit shortcuts without intercepting ordinary line breaks", () => {
+    expect(pdfInlineEditAction("Escape")).toBe("cancel");
+    expect(pdfInlineEditAction("Enter", true)).toBe("commit");
+    expect(pdfInlineEditAction("Enter", false, true)).toBe("commit");
+    expect(pdfInlineEditAction("Enter")).toBeNull();
+    expect(pdfInlineEditAction("a", true)).toBeNull();
+  });
+
+  it("uses the inspected PDF font and text colour for the inline editor", () => {
+    const style = pdfInlineTextStyle({
+      ...object,
+      kind: "text",
+      fontFamily: "Arial",
+      fontSizePoints: 12,
+      fillColor: "#336699FF",
+    }, 1.5);
+    expect(style).toMatchObject({
+      color: "#336699",
+      fontFamily: "Arial",
+      fontSize: "18px",
+    });
   });
 
   it("mirrors DocMDP permissions before a patch reaches the backend", () => {

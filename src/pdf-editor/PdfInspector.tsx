@@ -86,21 +86,15 @@ export function PdfInspector(props: PdfInspectorProps) {
           )}
 
           {object.kind === "text" && (
-            <label className="pdf-text-editor">
-              <span>{t(props.language, "pdfEditor.textObject")}</span>
-              <textarea
-                value={text}
-                disabled={!canEditPdfObject(props.session.permissions, object)}
-                onChange={(event) => setText(event.target.value)}
-              />
-              <button
-                type="button"
-                disabled={!canEditPdfObject(props.session.permissions, object) || text === object.text}
-                onClick={() => props.onObjectPatch("setText", object, { text })}
-              >
-                {t(props.language, "editor.apply")}
-              </button>
-            </label>
+            <div className="pdf-inline-edit-guidance" role="note">
+              <strong>{t(props.language, "pdfEditor.inlineTextTitle")}</strong>
+              <span>{t(props.language, canEditPdfObject(props.session.permissions, object)
+                ? "pdfEditor.inlineTextHint"
+                : "pdfEditor.inlineTextReadOnly")}</span>
+              {canEditPdfObject(props.session.permissions, object) && (
+                <span className="pdf-inline-edit-keys">{t(props.language, "pdfEditor.inlineTextKeys")}</span>
+              )}
+            </div>
           )}
 
           {object.kind.startsWith("annotation:") && !object.activeContent && (

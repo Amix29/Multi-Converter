@@ -8,10 +8,19 @@ test("opens PDFs outside Tiptap, virtualizes pages and keeps edits through focus
   await expect(page.locator(".pdf-page-frame")).toHaveCount(2);
   await expect(page.locator('[data-page-number="1"] .pdf-page-render')).toBeVisible();
 
-  await page.locator('[data-object-kind="text"] .pdf-object-hitbox').first().click();
-  const textEditor = page.getByRole("textbox", { name: "Texte de l’objet" });
+  const firstTextObject = page.locator('[data-object-kind="text"] .pdf-object-hitbox').first();
+  await firstTextObject.click();
+  const textEditor = page.getByRole("textbox", { name: "Modifier le texte directement dans la page PDF" });
+  await textEditor.fill("Modification annulée");
+  await page.keyboard.press("Escape");
+  await expect(textEditor).toBeHidden();
+  await expect(page.getByText("0 modification(s) en attente", { exact: true })).toBeVisible();
+
+  await firstTextObject.click();
   await textEditor.fill("Texte structurel corrigé");
-  await page.getByRole("button", { name: "Appliquer" }).click();
+  await page.keyboard.press("Control+Enter");
+  await expect(textEditor).toBeHidden();
+  await expect(page.locator('[data-object-kind="text"].is-text-modified').first()).toContainText("Texte structurel corrigé");
   await expect(page.getByText("1 modification(s) en attente", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Mode concentration" }).click();
@@ -42,9 +51,10 @@ test("opens PDFs outside Tiptap, virtualizes pages and keeps edits through focus
   await expect(page.getByText("La copie PDF a été créée sans modifier l’original.")).toBeVisible();
   await expect(page.getByText("0 modification(s) en attente", { exact: true })).toBeVisible();
 
-  await page.locator('[data-object-kind="text"] .pdf-object-hitbox').first().click();
-  await page.getByRole("textbox", { name: "Texte de l’objet" }).fill("Deuxième sauvegarde cumulée");
-  await page.getByRole("button", { name: "Appliquer" }).click();
+  const rebasedPage = await pageInput.inputValue();
+  await page.locator(`[data-page-number="${rebasedPage}"] [data-object-kind="text"] .pdf-object-hitbox`).first().click();
+  await page.getByRole("textbox", { name: "Modifier le texte directement dans la page PDF" }).fill("Deuxième sauvegarde cumulée");
+  await page.keyboard.press("Control+Enter");
   await page.getByRole("button", { name: "Enregistrer sous" }).click();
   await expect(page.getByText("La copie PDF a été créée sans modifier l’original.")).toBeVisible();
   await expect(page.getByText("0 modification(s) en attente", { exact: true })).toBeVisible();
@@ -74,7 +84,7 @@ test("keeps a scanned PDF read-only until the complete local digitization succee
   await expect(gate).toBeHidden({ timeout: 10_000 });
   await expect(page.getByText("PDF numérisé localement : 8 page(s) contiennent du texte modifiable.")).toBeVisible();
   await page.locator('[data-object-kind="text"] .pdf-object-hitbox').first().click();
-  await expect(page.getByRole("textbox", { name: "Texte de l’objet" })).toBeEnabled();
+  await expect(page.getByRole("textbox", { name: "Modifier le texte directement dans la page PDF" })).toBeEnabled();
 });
 
 test("cancels full-document digitization and leaves the scanned PDF locked", async ({ page }, testInfo) => {
@@ -187,7 +197,8 @@ test("enforces DocMDP level 2 in the interface", async ({ page }, testInfo) => {
 
   await expect(page.getByText("DocMDP 2", { exact: true })).toBeVisible();
   await page.locator('[data-object-kind="text"] .pdf-object-hitbox').first().click();
-  await expect(page.getByRole("textbox", { name: "Texte de l’objet" })).toBeDisabled();
+  await expect(page.getByRole("textbox", { name: "Modifier le texte directement dans la page PDF" })).toHaveCount(0);
+  await expect(page.getByText("Ce texte est protégé par les permissions du PDF et reste en lecture seule.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Pivoter" })).toBeDisabled();
 
   await page.locator('[data-object-kind="form:Checkbox"] .pdf-object-hitbox').first().click();
@@ -220,7 +231,7 @@ test("lists preserved active content and creates a separate unsigned editable co
   await expect(page.getByText("DocMDP 2", { exact: true })).toBeHidden();
   await expect(page.getByText("0 signature(s) détectée(s)", { exact: true })).toBeVisible();
   await page.locator('[data-object-kind="text"] .pdf-object-hitbox').first().click();
-  await expect(page.getByRole("textbox", { name: "Texte de l’objet" })).toBeEnabled();
+  await expect(page.getByRole("textbox", { name: "Modifier le texte directement dans la page PDF" })).toBeEnabled();
 });
 
 test("contains the structural editor at every reference width and 200% zoom", async ({ page }, testInfo) => {

@@ -660,6 +660,24 @@ The corrected archive and NSIS remain local and unpublished. The installed
 smoke is not a manual user-interface acceptance test. macOS universal and
 Linux x64 remain `pending-native-rebuild` with no asserted package hashes.
 
+On 2026-08-06, the direct in-page text workflow was exercised through the real
+Windows Tauri WebView with Playwright over a private CDP port, without desktop
+screen control. `Plan ECHO.pdf` opened as a 21-page digital PDF. A click on its
+first native text object opened the positioned editor; `Ctrl+Enter` committed
+the replacement, Save As created a distinct copy, and native reopening found
+the exact changed text. The source remained at SHA-256
+`80ee1aa9f29e5965844f83b954c51a714fab4c45809af8bb33506845f55719e1`;
+the copy was
+`d9c4d76abc54b94787c496e0d8854298024b766100fa9623ac58b7c7766b4d5a`.
+The focused PDF Playwright suite passed 10 tests and all 136 unit tests passed.
+
+The run used the current source-built wrapper. A separate inspection of the
+ignored prepared PDFium resource in this worktree found that it announces
+`0.4.0` but omits `contentKind` from `--inspect-objects`. That prepared resource
+is stale and cannot support the digital/mixed/scanned gate. It must be replaced
+from the corrected deterministic archive before rebuilding and validating a
+new installed Windows candidate.
+
 Automated regressions cover bounded active-content inspection without executing
 or exposing payload bodies, as well as explicit creation of a separate unsigned
 editable copy that removes signature/DocMDP structures and leaves the original
