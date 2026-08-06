@@ -42,7 +42,7 @@ export async function loadPdfLogicalWindow(
         session.sessionId,
         session.sourceSha256,
         page.sourcePageNumber,
-        1,
+        2,
       ),
     ]);
     if (window.sourceSha256 !== session.sourceSha256

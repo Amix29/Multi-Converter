@@ -80,6 +80,17 @@ describe("pdf editor model", () => {
     expect(matrix[3]).toBe(matrix[0]);
   });
 
+  it("projects corner resizing onto the aspect ratio for thin text objects", () => {
+    const thinBounds = { x: 71, y: 746, width: 141, height: 10 };
+    const matrix = pdfResizeMatrix("se", thinBounds, { xPoints: 24, yPoints: -9.6 }, true);
+    const resized = transformPdfBounds(thinBounds, matrix);
+    expect(resized.width).toBeGreaterThan(164);
+    expect(resized.width).toBeLessThan(167);
+    expect(resized.height).toBeGreaterThan(11);
+    expect(resized.height).toBeLessThan(12);
+    expect(resized.width / resized.height).toBeCloseTo(14.1);
+  });
+
   it("resizes symmetrically around the centre while Alt is held", () => {
     const matrix = pdfResizeMatrix("se", object.bounds, { xPoints: 20, yPoints: -10 }, false, true);
     const resized = transformPdfBounds(object.bounds, matrix);

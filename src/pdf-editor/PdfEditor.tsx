@@ -69,7 +69,7 @@ export function PdfEditor(props: PdfEditorProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(0.85);
+  const [zoom, setZoom] = useState(1);
   const [confirmClose, setConfirmClose] = useState(false);
   const [ocrProgress, setOcrProgress] = useState<number | null>(null);
   const requestId = useRef(0);

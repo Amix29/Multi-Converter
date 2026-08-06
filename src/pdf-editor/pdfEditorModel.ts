@@ -234,7 +234,18 @@ export function pdfResizeMatrix(
   let width = Math.max(minimum, right - left);
   let height = Math.max(minimum, top - bottom);
   if (preserveAspect && handle.length === 2) {
-    const scale = Math.max(width / bounds.width, height / bounds.height);
+    // Project the pointer movement onto the object's aspect-ratio diagonal.
+    // Taking the largest axis made thin text objects jump dramatically when
+    // the pointer moved only a few pixels vertically.
+    const widthSquared = bounds.width * bounds.width;
+    const heightSquared = bounds.height * bounds.height;
+    const projectedScale = (width * bounds.width + height * bounds.height)
+      / Math.max(1, widthSquared + heightSquared);
+    const minimumScale = Math.max(
+      minimum / Math.max(minimum, bounds.width),
+      minimum / Math.max(minimum, bounds.height),
+    );
+    const scale = Math.max(minimumScale, projectedScale);
     width = Math.max(minimum, bounds.width * scale);
     height = Math.max(minimum, bounds.height * scale);
     if (fromCenter) {
