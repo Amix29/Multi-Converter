@@ -60,6 +60,34 @@ pub(super) fn inspect_permissions(
     })
 }
 
+pub(super) fn inspect_content_kind(document: &PdfDocument<'_>) -> Result<&'static str, String> {
+    let page_count = usize::try_from(document.pages().len())
+        .map_err(|_| "PDF_EDITOR_PAGE_COUNT:Nombre de pages invalide.".to_string())?;
+    let mut native_text_pages = 0usize;
+    for page_index in 0..page_count {
+        let page = document
+            .pages()
+            .get(page_index as i32)
+            .map_err(|error| format!("PDF_EDITOR_PAGE_READ:{}:{error}", page_index + 1))?;
+        let has_native_text = page
+            .text()
+            .map_err(|error| format!("PDF_EDITOR_PAGE_TEXT:{}:{error}", page_index + 1))?
+            .all()
+            .chars()
+            .any(char::is_alphanumeric);
+        native_text_pages += usize::from(has_native_text);
+    }
+    Ok(classify_content_kind(native_text_pages, page_count))
+}
+
+fn classify_content_kind(native_text_pages: usize, page_count: usize) -> &'static str {
+    match native_text_pages {
+        0 => "scanned",
+        count if count == page_count => "digital",
+        _ => "mixed",
+    }
+}
+
 fn permission_error(error: PdfiumError) -> String {
     format!("PDF_EDITOR_PERMISSIONS:{error}")
 }
@@ -281,5 +309,12 @@ mod tests {
         assert!(!annotation_is_classic_editable(
             PdfPageAnnotationType::FileAttachment
         ));
+    }
+
+    #[test]
+    fn content_kind_distinguishes_scanned_mixed_and_digital_documents() {
+        assert_eq!(classify_content_kind(0, 3), "scanned");
+        assert_eq!(classify_content_kind(1, 3), "mixed");
+        assert_eq!(classify_content_kind(3, 3), "digital");
     }
 }

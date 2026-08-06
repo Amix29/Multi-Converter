@@ -48,6 +48,9 @@ pub(super) struct PdfSession {
     pub password: Option<SecretBytes>,
     pub permissions: PdfPermissionV1,
     pub signatures: Vec<PdfSignatureInfoV1>,
+    pub page_count: usize,
+    pub content_kind: String,
+    pub managed_temp_dir: Option<PathBuf>,
 }
 
 pub(super) struct SessionAccess {
@@ -56,6 +59,8 @@ pub(super) struct SessionAccess {
     pub password: Option<SecretBytes>,
     pub permissions: PdfPermissionV1,
     pub signatures: Vec<PdfSignatureInfoV1>,
+    pub page_count: usize,
+    pub content_kind: String,
 }
 
 impl SessionAccess {
@@ -96,6 +101,8 @@ impl PdfEditorState {
             password: session.password.clone(),
             permissions: session.permissions.clone(),
             signatures: session.signatures.clone(),
+            page_count: session.page_count,
+            content_kind: session.content_kind.clone(),
         })
     }
 
@@ -117,7 +124,10 @@ impl PdfEditorState {
                 "PDF_EDITOR_SOURCE_CHANGED:La session a changé pendant la sauvegarde.".into(),
             );
         }
+        let stale_temp_dir = current.managed_temp_dir.take();
         *current = replacement;
+        drop(sessions);
+        cleanup_managed_temp_dir(stale_temp_dir);
         Ok(())
     }
 
@@ -126,7 +136,17 @@ impl PdfEditorState {
             .sessions
             .lock()
             .map_err(|_| "PDF_EDITOR_STATE:État des sessions indisponible.".to_string())?;
-        Ok(sessions.remove(id).is_some())
+        let removed = sessions.remove(id);
+        drop(sessions);
+        let existed = removed.is_some();
+        cleanup_managed_temp_dir(removed.and_then(|session| session.managed_temp_dir));
+        Ok(existed)
+    }
+}
+
+fn cleanup_managed_temp_dir(path: Option<PathBuf>) {
+    if let Some(path) = path {
+        let _ = std::fs::remove_dir_all(path);
     }
 }
 
@@ -173,6 +193,9 @@ mod tests {
             password: None,
             permissions: permissions.clone(),
             signatures: Vec::new(),
+            page_count: 1,
+            content_kind: "digital".into(),
+            managed_temp_dir: None,
         };
         state
             .insert("id".into(), session("old", "old.pdf"))

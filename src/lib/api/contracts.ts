@@ -222,6 +222,7 @@ export interface PdfEditorSessionV1 {
   sourceSha256: string;
   sourceName: string;
   pageCount: number;
+  contentKind: "digital" | "mixed" | "scanned" | "digitized";
   permissions: PdfPermissionV1;
   signatures: PdfSignatureInfoV1[];
   activeContentPolicy: string;
@@ -259,6 +260,14 @@ export interface PdfEditableCopyResultV1 {
   sourceSha256: string;
   destinationPath: string;
   removedSignatureStructures: number;
+  rebasedSession: PdfEditorSessionV1;
+}
+
+export interface PdfDigitizeResultV1 {
+  schemaVersion: 1;
+  sourceSha256: string;
+  attemptedPages: number;
+  recognizedPages: number;
   rebasedSession: PdfEditorSessionV1;
 }
 
@@ -491,6 +500,7 @@ export interface MultiConverterApi {
   pdfEditorInspectPages(sessionId: string, sourceSha256: string, pageStart: number, pageCount: number): Promise<PdfPageWindowV1>;
   pdfEditorRenderPage(sessionId: string, sourceSha256: string, pageNumber: number, scale?: number | null): Promise<PdfRenderedPageV1>;
   pdfEditorRecognizePage(sessionId: string, sourceSha256: string, pageNumber: number, jobId: string): Promise<OcrDocumentResultV1>;
+  pdfEditorDigitize(sessionId: string, sourceSha256: string, patches: PdfEditPatchV1[], attemptedPages: number[]): Promise<PdfDigitizeResultV1>;
   pdfEditorSaveAs(sessionId: string, sourceSha256: string, patches: PdfEditPatchV1[], destinationPath?: string | null): Promise<PdfSaveResultV1 | null>;
   pdfEditorCreateEditableCopy(sessionId: string, sourceSha256: string, destinationPath?: string | null): Promise<PdfEditableCopyResultV1 | null>;
   pdfEditorClose(sessionId: string): Promise<boolean>;

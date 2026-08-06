@@ -11,15 +11,7 @@ import {
   removePreviewDocument,
   upsertPreviewDocument,
 } from "./previewFixtures";
-import {
-  PREVIEW_PDF_SHA256,
-  previewPdfEditableCopyResult,
-  previewPdfPage,
-  previewPdfOcrResult,
-  previewPdfSaveResult,
-  previewPdfSession,
-  previewPdfSvg,
-} from "./previewPdfFixtures";
+import { createPreviewPdfController } from "./previewPdfAdapter";
 import { previewSystemFontCatalog } from "./previewFontFixtures";
 
 export function createPreviewApi(): MultiConverterApi {
@@ -34,11 +26,7 @@ export function createPreviewApi(): MultiConverterApi {
   let shouldFailNextConversion = previewParams.get("mockConversionFailure") === "once";
   const shouldMockFontEnumerationFailure = previewParams.get("mockFontEnumerationFailure") === "once";
   let shouldFailRecentRefresh = false;
-  let previewPdfSessionOpen = false;
-  let previewPdfHash = PREVIEW_PDF_SHA256;
-  let previewPdfPageCount = 8;
-  let previewPdfSaveGeneration = 0;
-  let previewPdfDocMdp = previewParams.get("mockPdfDocMdp");
+  const previewPdf = createPreviewPdfController(previewParams, ocrListeners, canceledJobs);
 
   return {
     async welcomeState() {
@@ -62,7 +50,7 @@ export function createPreviewApi(): MultiConverterApi {
     },
     async pickFilePaths() {
       if (previewParams.get("mockPdfEditor") === "1") {
-        if (previewPdfSessionOpen) return [`${PREVIEW_ROOT}\\Pictures\\Illustration-locale.png`];
+        if (previewPdf.isOpen()) return [`${PREVIEW_ROOT}\\Pictures\\Illustration-locale.png`];
         return [`${PREVIEW_ROOT}\\Documents\\Contrat-local.pdf`];
       }
       const largeBatchSize = Math.min(2_000, Math.max(0, Math.floor(Number(previewParams.get("mockLargeBatch")) || 0)));
@@ -366,104 +354,7 @@ export function createPreviewApi(): MultiConverterApi {
         warning: null,
       };
     },
-    async pdfEditorOpen(sourcePath, password) {
-      if (previewParams.get("mockEncryptedPdf") === "1" && !password) {
-        throw new Error("PDF_EDITOR_PASSWORD_REQUIRED:Ce PDF requiert un mot de passe.");
-      }
-      if (previewParams.get("mockEncryptedPdf") === "1" && password !== "vellum") {
-        throw new Error("PDF_EDITOR_PASSWORD_INVALID:Le mot de passe est incorrect.");
-      }
-      previewPdfSessionOpen = true;
-      previewPdfHash = PREVIEW_PDF_SHA256;
-      previewPdfPageCount = 8;
-      previewPdfSaveGeneration = 0;
-      previewPdfDocMdp = previewParams.get("mockPdfDocMdp");
-      return previewPdfSession(
-        sourcePath.split(/[\\/]/).pop() || "Contrat-local.pdf",
-        previewPdfHash,
-        previewPdfPageCount,
-        previewPdfDocMdp,
-      );
-    },
-    async pdfEditorInspectPages(_sessionId, sourceSha256, pageStart, pageCount) {
-      if (sourceSha256 !== previewPdfHash) {
-        throw new Error("PDF_EDITOR_SOURCE_CHANGED:Le PDF source a changé.");
-      }
-      const end = Math.min(previewPdfPageCount, pageStart + pageCount - 1);
-      return {
-        schemaVersion: 1,
-        sourceSha256,
-        pageCount: previewPdfPageCount,
-        pages: Array.from({ length: Math.max(0, end - pageStart + 1) }, (_, index) =>
-          previewPdfPage(pageStart + index),
-        ),
-      };
-    },
-    async pdfEditorRenderPage(_sessionId, sourceSha256, pageNumber) {
-      if (sourceSha256 !== previewPdfHash) {
-        throw new Error("PDF_EDITOR_SOURCE_CHANGED:Le PDF source a changé.");
-      }
-      return {
-        schemaVersion: 1,
-        sourceSha256,
-        pageNumber,
-        mimeType: "image/svg+xml",
-        bytes: Array.from(new TextEncoder().encode(previewPdfSvg(pageNumber))),
-        widthPoints: 595,
-        heightPoints: 842,
-      };
-    },
-    async pdfEditorRecognizePage(_sessionId, sourceSha256, pageNumber, jobId) {
-      if (sourceSha256 !== previewPdfHash) {
-        throw new Error("PDF_EDITOR_SOURCE_CHANGED:Le PDF source a changé.");
-      }
-      ocrListeners.forEach((listener) => listener({
-        schemaVersion: 1,
-        jobId,
-        progress: 72,
-        phase: "recognizing",
-        pageNumber,
-        pageCount: 1,
-      }));
-      if (previewParams.get("mockSlowOcr") === "1") {
-        await new Promise((resolve) => window.setTimeout(resolve, 600));
-      }
-      if (canceledJobs.delete(jobId)) throw new Error("OCR annulé");
-      return previewPdfOcrResult(pageNumber, jobId);
-    },
-    async pdfEditorSaveAs(_sessionId, sourceSha256, patches) {
-      if (previewParams.get("mockPdfSaveCancel") === "1") return null;
-      if (sourceSha256 !== previewPdfHash) {
-        throw new Error("PDF_EDITOR_SOURCE_CHANGED:Le PDF source a changé.");
-      }
-      previewPdfPageCount = patches.reduce((count, patch) => {
-        if (patch.operation === "insertPage" || patch.operation === "duplicatePage") return count + 1;
-        if (patch.operation === "deletePage") return Math.max(1, count - 1);
-        return count;
-      }, previewPdfPageCount);
-      previewPdfSaveGeneration += 1;
-      const savedSourceHash = sourceSha256;
-      previewPdfHash = previewPdfSaveGeneration.toString(16).padStart(64, "a").slice(-64);
-      return previewPdfSaveResult(savedSourceHash, previewPdfHash, previewPdfPageCount, patches.length, previewPdfDocMdp);
-    },
-    async pdfEditorCreateEditableCopy(_sessionId, sourceSha256) {
-      if (previewParams.get("mockPdfEditableCopyCancel") === "1") return null;
-      if (sourceSha256 !== previewPdfHash) {
-        throw new Error("PDF_EDITOR_SOURCE_CHANGED:Le PDF source a changé.");
-      }
-      if (previewPdfDocMdp === null) {
-        throw new Error("PDF_EDITOR_UNSIGNED_COPY_NOT_SIGNED:Ce PDF ne contient aucune signature ou restriction DocMDP.");
-      }
-      previewPdfSaveGeneration += 1;
-      const copiedSourceHash = sourceSha256;
-      previewPdfHash = previewPdfSaveGeneration.toString(16).padStart(64, "b").slice(-64);
-      previewPdfDocMdp = null;
-      return previewPdfEditableCopyResult(copiedSourceHash, previewPdfHash, previewPdfPageCount);
-    },
-    async pdfEditorClose() {
-      previewPdfSessionOpen = false;
-      return true;
-    },
+    ...previewPdf.methods,
     async engineStatuses() {
       return [
         { id: "rust-text", label: "Moteur documents intégré", mode: "base", available: true, status: "ready" },

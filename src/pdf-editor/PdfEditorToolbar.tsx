@@ -110,7 +110,8 @@ export function PdfEditorToolbar(props: PdfEditorToolbarProps) {
           disabled={!props.pendingPatchCount || props.saving}
           onClick={props.onSaveAs}
         >
-          {props.saving ? t(props.language, "pdfEditor.saving") : t(props.language, "editor.saveAs")}
+          <SaveAsIcon />
+          <span>{props.saving ? t(props.language, "pdfEditor.saving") : t(props.language, "editor.saveAs")}</span>
         </button>
       </div>
     </header>
@@ -127,6 +128,10 @@ function RotateIcon() {
 
 function ResetIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M5 5a9 9 0 1 1-1 11" /></svg>;
+}
+
+function SaveAsIcon() {
+  return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z" /><path d="M9 3v6h6V3M9 17h6m-3-3v6" /></svg>;
 }
 
 function FocusIcon(props: { active: boolean }) {

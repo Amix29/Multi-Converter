@@ -50,6 +50,46 @@ test("opens PDFs outside Tiptap, virtualizes pages and keeps edits through focus
   await expect(page.getByText("0 modification(s) en attente", { exact: true })).toBeVisible();
 });
 
+test("keeps a scanned PDF read-only until the complete local digitization succeeds", async ({ page }, testInfo) => {
+  skipUnlessDesktop(testInfo);
+  await openPreviewPdf(page, "&mockScannedPdf=1&mockSlowOcr=1");
+
+  const gate = page.getByRole("region", { name: "PDF scanné en lecture seule" });
+  await expect(gate).toBeVisible();
+  await expect(gate).toContainText("Numérisez-le localement");
+  await expect(page.locator('[data-object-kind="image"] .pdf-object-hitbox')).toHaveCount(2);
+  await page.locator('[data-object-kind="image"] .pdf-object-hitbox').first().click();
+  await expect(page.getByRole("button", { name: "Remplacer l’image" })).toBeDisabled();
+
+  await gate.getByRole("button", { name: "Modifier ce PDF" }).click();
+  const dialog = page.getByRole("dialog", { name: "Numériser ce PDF pour le modifier" });
+  await expect(dialog).toContainText("le texte de chaque page");
+  await dialog.getByRole("button", { name: "Annuler" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(gate).toBeVisible();
+
+  await gate.getByRole("button", { name: "Modifier ce PDF" }).click();
+  await dialog.getByRole("button", { name: "Numériser et modifier" }).click();
+  await expect(dialog.getByRole("progressbar", { name: "Progression de la numérisation" })).toBeVisible();
+  await expect(gate).toBeHidden({ timeout: 10_000 });
+  await expect(page.getByText("PDF numérisé localement : 8 page(s) contiennent du texte modifiable.")).toBeVisible();
+  await page.locator('[data-object-kind="text"] .pdf-object-hitbox').first().click();
+  await expect(page.getByRole("textbox", { name: "Texte de l’objet" })).toBeEnabled();
+});
+
+test("cancels full-document digitization and leaves the scanned PDF locked", async ({ page }, testInfo) => {
+  skipUnlessDesktop(testInfo);
+  await openPreviewPdf(page, "&mockScannedPdf=1&mockSlowOcr=1");
+
+  await page.getByRole("button", { name: "Modifier ce PDF" }).click();
+  const dialog = page.getByRole("dialog", { name: "Numériser ce PDF pour le modifier" });
+  await dialog.getByRole("button", { name: "Numériser et modifier" }).click();
+  await dialog.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(dialog.getByRole("button", { name: "Numériser et modifier" })).toBeEnabled();
+  await expect(page.getByRole("region", { name: "PDF scanné en lecture seule" })).toBeVisible();
+  await expect(page.locator('[data-object-kind="text"]')).toHaveCount(0);
+});
+
 test("exposes eight image handles, layer controls and supported form editing", async ({ page }, testInfo) => {
   skipUnlessDesktop(testInfo);
   await openPreviewPdf(page);

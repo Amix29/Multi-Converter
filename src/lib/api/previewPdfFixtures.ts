@@ -1,6 +1,7 @@
 import type {
   OcrDocumentResultV1,
   PdfEditableCopyResultV1,
+  PdfDigitizeResultV1,
   PdfEditorSessionV1,
   PdfPageV1,
   PdfPermissionV1,
@@ -39,6 +40,7 @@ export function previewPdfSession(
   sourceSha256: string,
   pageCount: number,
   docMdp: string | null,
+  contentKind: PdfEditorSessionV1["contentKind"] = "digital",
 ): PdfEditorSessionV1 {
   return {
     schemaVersion: 1,
@@ -46,6 +48,7 @@ export function previewPdfSession(
     sourceSha256,
     sourceName,
     pageCount,
+    contentKind,
     permissions: previewPdfPermissions(docMdp),
     signatures: previewPdfSignatures(docMdp),
     activeContentPolicy: "preserve-without-execution",
@@ -58,6 +61,7 @@ export function previewPdfSaveResult(
   pageCount: number,
   appliedPatches: number,
   docMdp: string | null,
+  contentKind: PdfEditorSessionV1["contentKind"] = "digital",
 ): PdfSaveResultV1 {
   return {
     schemaVersion: 1,
@@ -66,7 +70,7 @@ export function previewPdfSaveResult(
     appliedPatches,
     hadExistingSignatures: docMdp !== null,
     signatureValidity: "not-cryptographically-checked",
-    rebasedSession: previewPdfSession("Contrat-local-modifie.pdf", rebasedSha256, pageCount, docMdp),
+    rebasedSession: previewPdfSession("Contrat-local-modifie.pdf", rebasedSha256, pageCount, docMdp, contentKind),
   };
 }
 
@@ -84,7 +88,51 @@ export function previewPdfEditableCopyResult(
   };
 }
 
-export function previewPdfPage(pageNumber: number): PdfPageV1 {
+export function previewPdfDigitizeResult(
+  sourceSha256: string,
+  rebasedSha256: string,
+  pageCount: number,
+  recognizedPages: number,
+): PdfDigitizeResultV1 {
+  return {
+    schemaVersion: 1,
+    sourceSha256,
+    attemptedPages: pageCount,
+    recognizedPages,
+    rebasedSession: previewPdfSession(
+      "Contrat-local.pdf",
+      rebasedSha256,
+      pageCount,
+      null,
+      "digitized",
+    ),
+  };
+}
+
+export function previewPdfPage(pageNumber: number, scanned = false): PdfPageV1 {
+  if (scanned) {
+    return {
+      schemaVersion: 1,
+      pageNumber,
+      widthPoints: 595,
+      heightPoints: 842,
+      rotationDegrees: 0,
+      objects: [{
+        schemaVersion: 1,
+        objectId: `p${pageNumber}-o0`,
+        kind: "image",
+        bounds: { x: 0, y: 0, width: 595, height: 842 },
+        editable: true,
+        text: null,
+        fontFamily: null,
+        fontSizePoints: null,
+        fillColor: null,
+        strokeColor: null,
+        rotationDegrees: 0,
+        activeContent: false,
+      }],
+    };
+  }
   const objects: PdfPageV1["objects"] = [{
     schemaVersion: 1,
     objectId: `p${pageNumber}-o0`,

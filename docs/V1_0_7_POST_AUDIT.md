@@ -174,6 +174,16 @@ These results prove the corrected local Windows package path. They do not prove
 a user-driven manual PDF editing session, macOS/Linux behavior or release
 readiness.
 
+The post-audit PDF flow now distinguishes native digital, mixed and scanned
+documents inside the PDFium wrapper. Scanned documents are locked read-only
+until the user explicitly accepts a full-document local OCR pass. The Tauri
+boundary requires every page to have been attempted and accepts only OCR text
+layer patches before creating and re-inspecting a managed digitized copy. The
+focused Tauri PDF suite passes 12 tests, and preview Playwright regressions pass
+both successful digitization-to-editing and cancellation-that-remains-locked.
+These preview results prove interface state only; packaged PP-OCRv6 inference
+remains governed by the native OCR gates.
+
 Still required before a final checkpoint can be called a V1.0.7 candidate:
 
 1. remaining aggregate Rust, OCR and conversion gates beyond the focused pass;

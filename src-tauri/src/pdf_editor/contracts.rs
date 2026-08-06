@@ -107,6 +107,7 @@ pub(crate) struct PdfEditorSessionV1 {
     pub source_sha256: String,
     pub source_name: String,
     pub page_count: usize,
+    pub content_kind: String,
     pub permissions: PdfPermissionV1,
     pub signatures: Vec<PdfSignatureInfoV1>,
     pub active_content_policy: String,
@@ -127,6 +128,7 @@ pub(super) struct WrapperInspectionV1 {
     pub schema_version: u8,
     pub source_sha256: String,
     pub page_count: usize,
+    pub content_kind: String,
     pub permissions: PdfPermissionV1,
     pub signatures: Vec<PdfSignatureInfoV1>,
     pub pages: Vec<PdfPageV1>,
@@ -208,6 +210,16 @@ pub(crate) struct PdfEditableCopyResultV1 {
     pub source_sha256: String,
     pub destination_path: String,
     pub removed_signature_structures: usize,
+    pub rebased_session: PdfEditorSessionV1,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct PdfDigitizeResultV1 {
+    pub schema_version: u8,
+    pub source_sha256: String,
+    pub attempted_pages: usize,
+    pub recognized_pages: usize,
     pub rebased_session: PdfEditorSessionV1,
 }
 

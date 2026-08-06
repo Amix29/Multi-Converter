@@ -1,4 +1,5 @@
 mod contracts;
+pub(crate) mod digitize;
 pub(crate) mod editable_copy;
 mod permissions;
 mod process;
@@ -66,6 +67,9 @@ pub(crate) async fn pdf_editor_open(
                 password,
                 permissions: inspection.permissions.clone(),
                 signatures: inspection.signatures.clone(),
+                page_count: inspection.page_count,
+                content_kind: inspection.content_kind.clone(),
+                managed_temp_dir: None,
             },
         )?;
         Ok(PdfEditorSessionV1 {
@@ -74,6 +78,7 @@ pub(crate) async fn pdf_editor_open(
             source_sha256: inspection.source_sha256,
             source_name,
             page_count: inspection.page_count,
+            content_kind: inspection.content_kind,
             permissions: inspection.permissions,
             signatures: inspection.signatures,
             active_content_policy: inspection.active_content_policy,
@@ -245,6 +250,7 @@ pub(crate) async fn pdf_editor_save_as(
                 source_sha256: inspection.source_sha256.clone(),
                 source_name,
                 page_count: inspection.page_count,
+                content_kind: inspection.content_kind.clone(),
                 permissions: inspection.permissions.clone(),
                 signatures: inspection.signatures.clone(),
                 active_content_policy: inspection.active_content_policy.clone(),
@@ -258,6 +264,9 @@ pub(crate) async fn pdf_editor_save_as(
                     password: session.password.clone(),
                     permissions: inspection.permissions,
                     signatures: inspection.signatures,
+                    page_count: inspection.page_count,
+                    content_kind: inspection.content_kind,
+                    managed_temp_dir: None,
                 },
             )?;
             Ok(PdfSaveResultV1 {
@@ -367,6 +376,10 @@ fn validate_inspection(inspection: &WrapperInspectionV1) -> Result<(), String> {
     if inspection.schema_version != SCHEMA_VERSION
         || inspection.source_sha256.len() != 64
         || inspection.page_count == 0
+        || !matches!(
+            inspection.content_kind.as_str(),
+            "digital" | "mixed" | "scanned"
+        )
         || inspection.active_content_policy != "preserve-without-execution"
     {
         return Err("PDF_EDITOR_INSPECTION_INVALID:Inspection PDFium incohérente.".into());

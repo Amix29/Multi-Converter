@@ -123,8 +123,12 @@ its honest proof limits live in [`V1_0_7_POST_AUDIT.md`](V1_0_7_POST_AUDIT.md).
 The PDF editor is not a Tiptap import. It uses `PdfEditorSessionV1`, lazy page
 inspection and rendering, typed patches and source SHA-256 verification. It is
 Save-As-only, enforces PDF permissions and DocMDP and never executes active PDF
-content. The original PDF-to-text/OCR serializers remain available as conversion
-paths and do not replace this structural editor.
+content. PDFs without native text open in read-only mode and expose an explicit
+local digitization action; only a complete OCR pass over every page can rebase
+the session onto an editable temporary copy. Cancellation or empty recognition
+keeps the PDF locked and the original remains untouched. The original
+PDF-to-text/OCR serializers remain available as conversion paths and do not
+replace this structural editor.
 
 ## Workstream B — Local OCR
 

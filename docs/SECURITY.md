@@ -279,6 +279,16 @@ at 64 MiB. Recognition has a 180-second page timeout. Temporary normalized
 images, PDF renders and results are scoped to unpredictable temporary
 directories and originals are never modified.
 
+The structural PDF editor refuses all content, annotation, form and assembly
+mutations while PDFium classifies a session as scanned. The user must explicitly
+accept **Modifier ce PDF**, after which the existing local OCR boundary attempts
+every page. Rust accepts only `addOcrTextLayer` patches for this transition and
+rejects missing, duplicate or out-of-range page attempts. A successful result
+is written atomically to a managed temporary copy, re-inspected and rebound to
+the session; an empty result, cancellation, crash or validation failure leaves
+the PDF read-only and removes staging data. PDF permissions and DocMDP are
+checked before this path is offered and again at the native patch boundary.
+
 The runtime and model each carry a per-file manifest. The packaged Windows
 runtime archive is extracted only into application-local data through a reader
 that rejects absolute paths, parent traversal, symlinks, excessive entries and

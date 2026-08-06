@@ -18,6 +18,7 @@ import { t, type LanguageCode } from "../i18n";
 import { useEditorFocusMode } from "../editor/useEditorFocusMode";
 import { PdfEditorToolbar } from "./PdfEditorToolbar";
 import { PdfDiscardDialog } from "./PdfDiscardDialog";
+import { PdfDigitizeGate } from "./PdfDigitizeGate";
 import { PdfInspector, type PdfActiveContentFinding } from "./PdfInspector";
 import { PdfPageCanvas } from "./PdfPageCanvas";
 import {
@@ -46,6 +47,7 @@ import {
   type PdfBackgroundEntry,
 } from "./pdfPageLoader";
 import "./pdf-editor.css";
+import { usePdfDigitization } from "./usePdfDigitization";
 
 interface PdfEditorProps {
   language: LanguageCode;
@@ -77,6 +79,23 @@ export function PdfEditor(props: PdfEditorProps) {
   const patchesRef = useRef(patches);
   const backgroundRef = useRef(backgrounds);
   const { focusMode, focusButtonRef, toggleFocusMode } = useEditorFocusMode();
+  const scanLocked = session.contentKind === "scanned";
+  const effectiveSession = useMemo(() => scanLocked ? {
+    ...session,
+    permissions: {
+      ...session.permissions,
+      canModify: false,
+      canAnnotate: false,
+      canFillForms: false,
+      canAssemble: false,
+    },
+  } : session, [scanLocked, session]);
+  const digitization = usePdfDigitization({
+    language: props.language,
+    session,
+    onRebase: rebaseEditor,
+    onNotice: props.onNotice,
+  });
 
   useEffect(() => { backgroundRef.current = backgrounds; }, [backgrounds]);
   useEffect(() => { pageOrderRef.current = pageOrder; }, [pageOrder]);
@@ -124,8 +143,8 @@ export function PdfEditor(props: PdfEditorProps) {
     object: PdfObjectV1,
     values: PdfPatchValues = {},
   ) {
-    if (!canEditPdfObject(session.permissions, object)
-      || !canApplyPdfPatch(session.permissions, operation)) return;
+    if (!canEditPdfObject(effectiveSession.permissions, object)
+      || !canApplyPdfPatch(effectiveSession.permissions, operation)) return;
     const patch = createPdfPatch(operation, activePage, object.objectId, values);
     setPatches((current) => mergePdfPatch(current, patch));
     setPages((current) => optimisticPages(current, patch));
@@ -133,7 +152,7 @@ export function PdfEditor(props: PdfEditorProps) {
   }
 
   function queuePagePatch(operation: PdfPatchOperation, values: PdfPatchValues = {}) {
-    if (!canApplyPdfPatch(session.permissions, operation)) return;
+    if (!canApplyPdfPatch(effectiveSession.permissions, operation)) return;
     const logical = pageOrderRef.current[activePage - 1];
     if (!logical) return;
     const generatedId = `local-${crypto.randomUUID()}`;
@@ -339,6 +358,20 @@ export function PdfEditor(props: PdfEditorProps) {
       />
       <div className="pdf-editor-body">
         <main className="pdf-pages-viewport" aria-busy={loading}>
+          <PdfDigitizeGate
+            language={props.language}
+            session={session}
+            locked={digitization.locked}
+            dialogOpen={digitization.dialogOpen}
+            busy={digitization.busy}
+            progress={digitization.progress}
+            pageNumber={digitization.pageNumber}
+            error={digitization.error}
+            onOpen={digitization.open}
+            onClose={digitization.close}
+            onConfirm={() => void digitization.confirm()}
+            onCancel={() => void digitization.cancel()}
+          />
           {loading && <div className="pdf-window-loading" role="status">{t(props.language, "pdfEditor.rendering")}</div>}
           {error && <div className="pdf-window-error" role="alert">{error}</div>}
           <div className="pdf-pages-window">
@@ -350,8 +383,8 @@ export function PdfEditor(props: PdfEditorProps) {
                 backgroundUrl={backgrounds.get(item.pageNumber)?.url ?? null}
                 zoom={zoom}
                 selectedObjectId={selectedObjectId}
-                isObjectEditable={(object) => canEditPdfObject(session.permissions, object)}
-                canTransformObject={(object) => canTransformPdfObject(session.permissions, object)}
+                isObjectEditable={(object) => canEditPdfObject(effectiveSession.permissions, object)}
+                canTransformObject={(object) => canTransformPdfObject(effectiveSession.permissions, object)}
                 onActivePage={page}
                 onSelect={(object) => setSelectedObjectId(object?.objectId ?? null)}
                 onTransform={(object, matrix) => queueObjectPatch("transformObject", object, { matrix })}
@@ -361,7 +394,7 @@ export function PdfEditor(props: PdfEditorProps) {
         </main>
         <PdfInspector
           language={props.language}
-          session={session}
+          session={effectiveSession}
           activePage={pages.find((item) => item.pageNumber === activePage) ?? null}
           selectedObject={selectedObject}
           activeContentFindings={activeContentFindings}

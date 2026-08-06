@@ -58,6 +58,7 @@ pub fn run() {
             pdf_editor::pdf_editor_inspect_pages,
             pdf_editor::pdf_editor_render_page,
             pdf_editor::pdf_editor_recognize_page,
+            pdf_editor::digitize::pdf_editor_digitize,
             pdf_editor::pdf_editor_save_as,
             pdf_editor::editable_copy::pdf_editor_create_editable_copy,
             pdf_editor::pdf_editor_close,

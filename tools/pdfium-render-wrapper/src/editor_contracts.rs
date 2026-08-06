@@ -96,6 +96,7 @@ pub(crate) struct PdfInspectionV1 {
     pub schema_version: u8,
     pub source_sha256: String,
     pub page_count: usize,
+    pub content_kind: &'static str,
     pub permissions: PdfPermissionV1,
     pub signatures: Vec<PdfSignatureInfoV1>,
     pub pages: Vec<PdfPageV1>,

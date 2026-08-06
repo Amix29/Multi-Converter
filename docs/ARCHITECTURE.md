@@ -212,6 +212,14 @@ fidelity remains a native corpus gate rather than an architectural assumption.
 PDF files opened for structural editing do not enter `EditorDocumentV1`.
 `PdfEditorSessionV1` is a separate PDFium-backed domain with source SHA-256
 identity, lazy page inspection/rendering, typed patches and Save As only.
+PDFium classifies the document from native alphanumeric text objects as
+`digital`, `mixed` or `scanned`. A scanned session is read-only in every
+frontend editing surface. The explicit **Modifier ce PDF** flow recognizes
+every page through the bundled local OCR, writes only OCR text-layer patches
+to a managed temporary copy, re-inspects it, then rebases the same session as
+`digitized`. Cancellation, an empty OCR result or an incomplete page set keeps
+the session locked; closing it removes the managed copy. The source PDF is
+never modified.
 Permissions and DocMDP constrain each operation. When those constraints forbid
 an edit, an explicit unsigned-copy command atomically writes a distinct file,
 removes signature/DocMDP structures, verifies the new source identity and

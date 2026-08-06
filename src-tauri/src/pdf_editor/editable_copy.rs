@@ -107,6 +107,7 @@ pub(crate) async fn pdf_editor_create_editable_copy(
                 source_sha256: inspection.source_sha256.clone(),
                 source_name,
                 page_count: inspection.page_count,
+                content_kind: inspection.content_kind.clone(),
                 permissions: inspection.permissions.clone(),
                 signatures: inspection.signatures.clone(),
                 active_content_policy: inspection.active_content_policy.clone(),
@@ -120,6 +121,9 @@ pub(crate) async fn pdf_editor_create_editable_copy(
                     password: None,
                     permissions: inspection.permissions,
                     signatures: inspection.signatures,
+                    page_count: inspection.page_count,
+                    content_kind: inspection.content_kind,
+                    managed_temp_dir: None,
                 },
             )?;
             Ok(PdfEditableCopyResultV1 {

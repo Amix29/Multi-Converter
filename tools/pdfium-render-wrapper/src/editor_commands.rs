@@ -12,7 +12,7 @@ use crate::editor_contracts::{
     RenderEditorPageResultV1,
 };
 use active_content::{active_content_objects, inspect_active_content};
-use inspection::{inspect_page, inspect_permissions, inspect_signatures};
+use inspection::{inspect_content_kind, inspect_page, inspect_permissions, inspect_signatures};
 use io::{
     constant_time_eq, hash_file, load_document, read_stdin_json, save_atomically,
     unique_pdf_stage_path, unique_stage_path, validate_destination, validate_schema,
@@ -59,6 +59,7 @@ pub(crate) fn inspect_objects() -> Result<(), String> {
 
     let signatures = inspect_signatures(&document);
     let permissions = inspect_permissions(&document, &signatures)?;
+    let content_kind = inspect_content_kind(&document)?;
     let mut pages = (start..start + request.page_count)
         .map(|page_index| inspect_page(&document, page_index))
         .collect::<Result<Vec<_>, _>>()?;
@@ -77,6 +78,7 @@ pub(crate) fn inspect_objects() -> Result<(), String> {
         schema_version: 1,
         source_sha256: source_hash,
         page_count,
+        content_kind,
         permissions,
         signatures,
         pages,

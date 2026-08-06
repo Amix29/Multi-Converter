@@ -20,6 +20,7 @@ import type {
   OcrRuntimeInfoV1,
   PdfEditableCopyResultV1,
   PdfEditorSessionV1,
+  PdfDigitizeResultV1,
   PdfPageWindowV1,
   PdfRenderedPageV1,
   PdfSaveResultV1,
@@ -110,6 +111,13 @@ export function createTauriApi(): MultiConverterApi {
         sourceSha256,
         pageNumber,
         jobId,
+      }),
+    pdfEditorDigitize: (sessionId, sourceSha256, patches, attemptedPages) =>
+      invoke<PdfDigitizeResultV1>("pdf_editor_digitize", {
+        sessionId,
+        sourceSha256,
+        patches,
+        attemptedPages,
       }),
     pdfEditorSaveAs: (sessionId, sourceSha256, patches, destinationPath) =>
       invoke<PdfSaveResultV1 | null>("pdf_editor_save_as", {
