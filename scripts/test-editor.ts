@@ -60,11 +60,11 @@ const tauriConfig = fs.readFileSync(path.join(root, "src-tauri", "tauri.conf.jso
 
 for (const [name, version] of Object.entries(packageJson.dependencies)) {
   assert.ok(!name.startsWith("@tiptap-pro/"), `paid Tiptap dependency is forbidden: ${name}`);
-  if (name.startsWith("@tiptap/")) assert.equal(version, "3.27.3", `${name} must be exactly pinned`);
+  if (name.startsWith("@tiptap/")) assert.equal(version, "3.31.4", `${name} must be exactly pinned`);
 }
 assert.doesNotMatch(packageLock, /node_modules\/@tiptap-pro\//, "package lock must not contain Tiptap Pro packages");
-assert.equal(packageJson.dependencies.dompurify, "3.4.12", "DOMPurify must be exactly pinned");
-assert.match(packageLock, /node_modules\/dompurify[\s\S]*?"version": "3\.4\.12"/, "DOMPurify lock entry is missing");
+assert.equal(packageJson.dependencies.dompurify, "3.4.16", "DOMPurify must be exactly pinned");
+assert.match(packageLock, /node_modules\/dompurify[\s\S]*?"version": "3\.4\.16"/, "DOMPurify lock entry is missing");
 assert.equal(packageJson.dependencies.docx, "9.7.1", "docx.js must be exactly pinned");
 assert.match(packageLock, /node_modules\/docx[\s\S]*?"version": "9\.7\.1"/, "docx.js lock entry is missing");
 assert.ok(fs.existsSync(path.join(root, "public", "third-party", "docx", "LICENSE.txt")), "docx.js MIT license is missing");

@@ -117,7 +117,7 @@ Implemented frontend evidence:
   either failure keeps the document open and exposes the error;
 - dialogs implement Escape handling, focus trapping and focus return, with
   visible keyboard focus and reduced-motion support;
-- rich HTML is sanitized through pinned `dompurify` 3.4.12 with bounded links,
+- rich HTML is sanitized through pinned `dompurify` 3.4.16 with bounded links,
   styles, tables and local-image rules documented in [`SECURITY.md`](SECURITY.md);
 - every current TypeScript, TSX and CSS file under `src/` remains below the
   500-non-blank-line hard limit.

@@ -106,7 +106,7 @@ Tiptap parses it:
 - rich clipboard or dropped HTML in header and footer dialogs uses the same
   hook.
 
-The sanitizer is based on the pinned `dompurify` 3.4.12 package. DOMPurify
+The sanitizer is based on the pinned `dompurify` 3.4.16 package. DOMPurify
 applies an explicit allowlist, then a second DOM pass enforces link, image,
 attribute and inline-style rules. The sanitized string is the only HTML passed
 on to the editor.

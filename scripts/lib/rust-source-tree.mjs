@@ -32,6 +32,19 @@ export function copyRustModuleTree(sourceRoot, destinationRoot, moduleName) {
   );
   const sourceDirectory = path.join(sourceRustRoot, moduleName);
   if (fs.existsSync(sourceDirectory)) {
-    fs.cpSync(sourceDirectory, path.join(destinationRustRoot, moduleName), { recursive: true });
+    copyDirectory(sourceDirectory, path.join(destinationRustRoot, moduleName));
+  }
+}
+
+function copyDirectory(sourceDirectory, destinationDirectory) {
+  fs.mkdirSync(destinationDirectory, { recursive: true });
+  for (const entry of fs.readdirSync(sourceDirectory, { withFileTypes: true })) {
+    const sourcePath = path.join(sourceDirectory, entry.name);
+    const destinationPath = path.join(destinationDirectory, entry.name);
+    if (entry.isDirectory()) {
+      copyDirectory(sourcePath, destinationPath);
+    } else if (entry.isFile()) {
+      fs.copyFileSync(sourcePath, destinationPath);
+    }
   }
 }
