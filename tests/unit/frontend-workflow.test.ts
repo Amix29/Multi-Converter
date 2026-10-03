@@ -13,11 +13,13 @@ import {
 import type { ConversionIntent, FileItem } from "../../src/app/types";
 
 let workflow: typeof import("../../src/app/conversion/model");
+let largeList: typeof import("../../src/app/conversion/largeListModel");
 
 beforeAll(async () => {
   vi.stubGlobal("window", {});
   vi.stubGlobal("navigator", { hardwareConcurrency: 8 });
   workflow = await import("../../src/app/conversion/model");
+  largeList = await import("../../src/app/conversion/largeListModel");
 });
 
 afterAll(() => vi.unstubAllGlobals());
@@ -136,6 +138,144 @@ describe("conversion concurrency and workflow transitions", () => {
     expect(workflow.shouldReconvertCleanedResult(done, true)).toBe(true);
     expect(workflow.shouldReconvertCleanedResult(done, false)).toBe(false);
     expect(workflow.getConvertedOutputPaths([pending, done])).toEqual(["C:\\Temp\\capture.jpg"]);
+  });
+
+  it("sends native cancellation only for jobs that have actually started", () => {
+    const queued = fileItem("queued.png", ".png", 1_024, {
+      selectedFormat: "jpg",
+      status: "queued",
+    });
+    const working = fileItem("working.png", ".png", 1_024, {
+      selectedFormat: "jpg",
+      status: "working",
+    });
+    expect(workflow.nativeCancellationJobs([queued, working])).toEqual([working]);
+  });
+});
+
+describe("large conversion collections", () => {
+  it("keeps supported and unsupported files stable while prioritizing supported files", () => {
+    const unsupportedA = fileItem("unsupported-a.xyz", ".xyz", 1_024, { status: "unsupported", targets: [] });
+    const supportedA = fileItem("supported-a.png", ".png");
+    const unsupportedB = fileItem("unsupported-b.xyz", ".xyz", 1_024, { status: "unsupported", targets: [] });
+    const supportedB = fileItem("supported-b.png", ".png");
+
+    expect(largeList.stablePartitionBySupport([
+      unsupportedA,
+      supportedA,
+      unsupportedB,
+      supportedB,
+    ]).map((file) => file.id)).toEqual([
+      supportedA.id,
+      supportedB.id,
+      unsupportedA.id,
+      unsupportedB.id,
+    ]);
+  });
+
+  it("removes every unsupported file in one pass", () => {
+    const supported = fileItem("supported.png", ".png");
+    const unsupported = fileItem("unsupported.xyz", ".xyz", 1_024, { status: "unsupported", targets: [] });
+
+    expect(largeList.withoutUnsupportedFiles([unsupported, supported, unsupported]))
+      .toEqual([supported]);
+  });
+
+  it("mounts only a bounded window for 2,000 output rows", () => {
+    expect(largeList.calculateVirtualWindow({
+      itemCount: 2_000,
+      scrollTop: 92 * 1_200,
+      viewportHeight: 460,
+      rowHeight: 92,
+    })).toEqual({
+      startIndex: 1_196,
+      endIndex: 1_209,
+      offsetTop: 92 * 1_196,
+      totalHeight: 92 * 2_000,
+    });
+
+    const lastWindow = largeList.calculateVirtualWindow({
+      itemCount: 2_000,
+      scrollTop: Number.MAX_SAFE_INTEGER,
+      viewportHeight: 460,
+      rowHeight: 92,
+    });
+    expect(lastWindow.endIndex).toBe(2_000);
+    expect(lastWindow.endIndex - lastWindow.startIndex).toBeLessThan(20);
+  });
+
+  it("mounts only visible file-card rows for 2,000 imports", () => {
+    const window = largeList.calculateVirtualGridWindow({
+      itemCount: 2_000,
+      scrollTop: 144 * 200,
+      viewportHeight: 420,
+      viewportWidth: 1_128,
+      rowHeight: 144,
+      minimumColumnWidth: 270,
+      gap: 12,
+      overscan: 1,
+    });
+    expect(window.columnCount).toBe(4);
+    expect(window.endItemIndex - window.startItemIndex).toBeLessThanOrEqual(20);
+    expect(window.endItemIndex).toBeLessThan(2_000);
+  });
+
+  it("enforces one global 2,000-file capacity across repeated imports", () => {
+    const existing = Array.from({ length: 1_999 }, (_, index) => ({ path: `C:\\input\\${index}.txt` }));
+    const selection = largeList.selectUniqueImports(existing, [
+      { path: "C:\\input\\new-a.txt" },
+      { path: "C:\\input\\new-b.txt" },
+      { path: existing[0].path },
+    ]);
+    expect(selection.accepted.map(({ path }) => path)).toEqual(["C:\\input\\new-a.txt"]);
+    expect(selection.rejected).toBe(1);
+  });
+
+  it("promotes a prior isolated import to deterministic folder provenance", () => {
+    const isolated = {
+      kind: "file" as const,
+      rootId: "isolated",
+      rootName: "rapport.docx",
+      relativePath: "rapport.docx",
+    };
+    const folder = {
+      kind: "folder" as const,
+      rootId: "folder-work",
+      rootName: "travail",
+      relativePath: "documents/rapport.docx",
+    };
+    expect(largeList.preferredImportOrigin(isolated, folder)).toEqual(folder);
+    expect(largeList.preferredImportOrigin(folder, isolated)).toEqual(folder);
+  });
+
+  it("filters output statuses without mutating the source order", () => {
+    const working = fileItem("working.png", ".png", 1_024, { status: "working" });
+    const done = fileItem("done.png", ".png", 1_024, { status: "done" });
+    const error = fileItem("error.png", ".png", 1_024, { status: "error" });
+    const files = [working, done, error];
+
+    expect(largeList.filterOutputFiles(files, "running")).toEqual([working]);
+    expect(largeList.filterOutputFiles(files, "done")).toEqual([done]);
+    expect(largeList.filterOutputFiles(files, "errors")).toEqual([error]);
+    expect(files).toEqual([working, done, error]);
+  });
+
+  it("batches 2,000 native progress updates into one indexed state replacement", () => {
+    const files = Array.from({ length: 2_000 }, (_, index) => fileItem(
+      `batch-${index}.png`,
+      ".png",
+      1_024,
+      { jobId: `job-${index}`, status: "working" },
+    ));
+    const updated = largeList.applyProgressBatch(files, files.map((file, index) => ({
+      jobId: file.jobId,
+      progress: index % 101,
+      phase: "phase.conversion",
+    })));
+    expect(updated).not.toBe(files);
+    expect(updated).toHaveLength(2_000);
+    expect(updated[1_999].progress).toBe(80);
+    expect(largeList.applyProgressBatch(updated, [])).toBe(updated);
   });
 });
 

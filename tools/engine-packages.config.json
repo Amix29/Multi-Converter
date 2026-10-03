@@ -54,7 +54,11 @@
       "healthCheck": "pdfium-render",
       "licenseName": "BSD-3-Clause",
       "licenseUrl": "https://github.com/bblanchon/pdfium-binaries",
-      "licenseFiles": ["licenses/LICENSE.txt"],
+      "licenseFiles": [
+        "licenses/LICENSE.txt",
+        "licenses/pdfium-render-LICENSE.md",
+        "licenses/lopdf-LICENSE.txt"
+      ],
       "noticeFiles": ["licenses/THIRD_PARTY_NOTICES.txt"],
       "required": true,
       "dependencies": []

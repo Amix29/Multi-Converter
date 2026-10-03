@@ -30,6 +30,10 @@ pub(super) fn collect_styles(root: &XmlNode, catalog: &mut StyleCatalog) -> Comm
                     collect_property_attributes(child, &mut style.text);
                 } else if child.is(NS_STYLE, "paragraph-properties") {
                     collect_property_attributes(child, &mut style.paragraph);
+                } else if child.is(NS_STYLE, "graphic-properties") {
+                    collect_property_attributes(child, &mut style.graphic);
+                } else if child.is(NS_STYLE, "table-column-properties") {
+                    collect_property_attributes(child, &mut style.table_column);
                 }
             }
             catalog.styles.insert(name.to_string(), style);
@@ -113,7 +117,7 @@ pub(super) fn default_page_settings() -> EditorPageSettings {
     }
 }
 
-fn parse_length_mm(value: Option<&str>) -> Option<f32> {
+pub(super) fn parse_length_mm(value: Option<&str>) -> Option<f32> {
     let value = value?.trim();
     for (suffix, factor) in [("mm", 1.0), ("cm", 10.0), ("in", 25.4), ("pt", 25.4 / 72.0)] {
         if let Some(number) = value.strip_suffix(suffix) {
@@ -194,6 +198,8 @@ fn resolve_style_recursive(
     resolved.family = style.family.clone();
     resolved.text.extend(style.text.clone());
     resolved.paragraph.extend(style.paragraph.clone());
+    resolved.graphic.extend(style.graphic.clone());
+    resolved.table_column.extend(style.table_column.clone());
     visited.remove(name);
     Ok(resolved)
 }
@@ -257,14 +263,14 @@ pub(super) fn normalize_alignment(value: &str) -> &str {
 
 pub(super) fn automatic_styles(styles: &WriterStyleCatalog) -> String {
     format!(
-        "<style:style style:name=\"PageBreak\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"><style:paragraph-properties fo:break-before=\"page\"/></style:style><style:style style:name=\"Center\" style:family=\"paragraph\"><style:paragraph-properties fo:text-align=\"center\"/></style:style><style:style style:name=\"Right\" style:family=\"paragraph\"><style:paragraph-properties fo:text-align=\"right\"/></style:style><text:list-style style:name=\"BulletList\"><text:list-level-style-bullet text:level=\"1\" text:bullet-char=\"•\"/></text:list-style><text:list-style style:name=\"NumberList\"><text:list-level-style-number text:level=\"1\" style:num-format=\"1\"/></text:list-style>{}",
+        "<style:style style:name=\"PageBreak\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"><style:paragraph-properties fo:break-before=\"page\"/></style:style><style:style style:name=\"Center\" style:family=\"paragraph\"><style:paragraph-properties fo:text-align=\"center\"/></style:style><style:style style:name=\"Right\" style:family=\"paragraph\"><style:paragraph-properties fo:text-align=\"right\"/></style:style><style:style style:name=\"Justify\" style:family=\"paragraph\"><style:paragraph-properties fo:text-align=\"justify\"/></style:style><style:style style:name=\"TableCell\" style:family=\"table-cell\"><style:table-cell-properties fo:border=\"0.5pt solid #b8b5ad\" fo:padding=\"1.2mm\" style:vertical-align=\"middle\"/></style:style><style:style style:name=\"TableHeaderCell\" style:family=\"table-cell\"><style:table-cell-properties fo:border=\"0.5pt solid #b8b5ad\" fo:padding=\"1.2mm\" fo:background-color=\"#f1eee7\" style:vertical-align=\"middle\"/><style:text-properties fo:font-weight=\"bold\"/></style:style><text:list-style style:name=\"BulletList\"><text:list-level-style-bullet text:level=\"1\" text:bullet-char=\"•\"/></text:list-style><text:list-style style:name=\"NumberList\"><text:list-level-style-number text:level=\"1\" style:num-format=\"1\"/></text:list-style>{}",
         styles.declarations
     )
 }
 
 pub(super) fn named_styles(styles: &WriterStyleCatalog) -> String {
     format!(
-        "<style:default-style style:family=\"paragraph\"><style:text-properties style:font-name=\"Arial\" fo:font-size=\"11pt\"/></style:default-style><style:style style:name=\"Standard\" style:family=\"paragraph\" style:class=\"text\"/><style:style style:name=\"Center\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"><style:paragraph-properties fo:text-align=\"center\"/></style:style><style:style style:name=\"Right\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"><style:paragraph-properties fo:text-align=\"right\"/></style:style>{}",
+        "<style:default-style style:family=\"paragraph\"><style:text-properties style:font-name=\"Arial\" fo:font-size=\"11pt\"/></style:default-style><style:style style:name=\"Standard\" style:family=\"paragraph\" style:class=\"text\"/><style:style style:name=\"Center\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"><style:paragraph-properties fo:text-align=\"center\"/></style:style><style:style style:name=\"Right\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"><style:paragraph-properties fo:text-align=\"right\"/></style:style><style:style style:name=\"Justify\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"><style:paragraph-properties fo:text-align=\"justify\"/></style:style><style:style style:name=\"TableCell\" style:family=\"table-cell\"><style:table-cell-properties fo:border=\"0.5pt solid #b8b5ad\" fo:padding=\"1.2mm\" style:vertical-align=\"middle\"/></style:style><style:style style:name=\"TableHeaderCell\" style:family=\"table-cell\"><style:table-cell-properties fo:border=\"0.5pt solid #b8b5ad\" fo:padding=\"1.2mm\" fo:background-color=\"#f1eee7\" style:vertical-align=\"middle\"/><style:text-properties fo:font-weight=\"bold\"/></style:style>{}",
         styles.declarations
     )
 }

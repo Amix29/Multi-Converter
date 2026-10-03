@@ -4,7 +4,7 @@
 
 - Target version: **V1.0.7**
 - Published baseline: **V1.0.6**
-- Last documentation review: **2026-08-04**
+- Last documentation review: **2026-08-06**
 - Overall gate: **blocked**
 - Version metadata: **1.0.7**
 - Phase 1 checkpoint: local commit **`9f89a8d2`** on `codex/phase-1-guardrails`, not pushed
@@ -427,8 +427,78 @@ Local evidence obtained on Windows:
 - the locked Python runtime audit reports zero known vulnerabilities;
 - the Rust audit passed under the existing allowed-warning policy; it reports
   transitive unmaintained/unsound warnings but no unallowed vulnerability;
-- source limits pass at 262 tooling/frontend files (maximum 500 nonblank lines)
-  and 91 Rust files (maximum 426).
+- source limits pass at 282 tooling/frontend files (maximum 500 nonblank lines)
+  and 95 Rust files (maximum 481).
+
+### 2026-08-04 user-validation correction lot
+
+The Windows test build exposed concrete usability and runtime defects before
+release integration. The current tree now contains the corresponding focused
+corrections:
+
+- the onboarding preview no longer renders its decorative centre stripe, and
+  converter files use structured cards that keep complete names, type, size,
+  status and the OCR action readable;
+- the OCR dialog reports resource preparation, verification, recognition and
+  normalization as distinct phases. Recognition and other non-quantifiable
+  phases use an indeterminate track instead of presenting a misleading fixed
+  percentage;
+- OCR cancellation now reaches archive extraction, manifest hashing, model
+  verification, PDF page preparation and the supervised worker. The dialog
+  immediately leaves the blocking running state, ignores late results from the
+  cancelled job and offers a focused retry action;
+- the editor adds exact-viewport focus mode, labelled local SVG controls,
+  horizontal toolbar navigation, free point sizes, text color, removable
+  highlight color, resizable tables, movable/resizable/layered local images and
+  long-press recent-document multi-selection;
+- new documents default to Markdown export. Export is blocked until a real
+  title is supplied, then shows an in-app Vellum progress dialog. Overwrite
+  confirmation no longer uses the WebView's native `window.confirm` prompt;
+- DOCX, RTF and PDF generation writes one rich ODT intermediate, normalizes it
+  through the strict local LibreOffice ODT path, then converts that normalized
+  ODT with LibreOffice to the requested target. The same-format normalization
+  remains an intentional compatibility step.
+
+Evidence actually obtained for this correction lot includes the passing
+`npm run check` gate, passing Rust tests, targeted compiled-preview E2E and
+visual measurements, and a packaged Windows OCR fixture that matched its
+expected text exactly (100%) in 24,672 ms. The full 40-case corpus passed with
+100% clean mean, 99.76% difficult mean, 13,330 ms median recognition, 714.8 MiB
+peak worker memory and zero remote connections in 251 process samples. A
+corrected Windows probe using bundled LibreOffice
+26.2.3.2 completed rich ODT normalization in 10.593 s, normalized ODT-to-PDF
+in 11.102 s (62,348 bytes) and normalized ODT-to-DOCX in 11.713 s (8,943
+bytes). PDFium and Office-archive inspection confirmed two landscape pages,
+usable text, the table proportions and merges, exact embedded image, header,
+footer, pagination fields, page break, margins and the tested text styling.
+LibreOffice also reopened the DOCX and rendered two pages with the same text
+and no observable visual loss.
+The preview measurements cover the exact focus viewport, 44 px mobile toolbar
+navigation and image/table targets, and absence of unintentional horizontal
+page overflow. They remain Chromium preview evidence, not native Tauri proof.
+The probe proves those engine paths plus structural inspection and DOCX
+reopening. The full packaged-app export interaction is still pending.
+
+The exact local Windows correction candidate was then built as an unsigned
+998,639,971-byte NSIS installer with SHA-256
+`18f291363def793474932222e8f8abd8e89f62d6e819b938016038158649d8c0`.
+It installed successfully into an isolated temporary location: 276 files,
+1,403,221,388 expanded bytes. The patched installed executable is 27,282,944
+bytes, SHA-256
+`5709c28ce717892f445a73d1c1a05584222c993946e85886c089a7f9b3168d34`,
+which is 2.05% above the 26,734,080-byte Phase 6 reference and therefore below
+the 5% ceiling. Its exact process reached a responsive top-level window before
+being closed. Installed PDFium reported wrapper 0.3.0, passed `--check`,
+inspected native text and rendered the scanned fixture at 300 DPI to a decoded
+2483 x 3512 PNG. The installed OCR and LibreOffice archives match their prepared
+SHA-256 values. This proves installation, startup and installed resource shape;
+it does not replace the maintainer's complete interactive editor/OCR review.
+The historical pre-audit frontend contained 1,578,312 raw bytes and 739,728
+bytes when each file was gzipped independently. Its largest JavaScript chunk
+was 496,337 bytes and 405,128 raw bytes came from four embedded WOFF2 files.
+Those fonts and their distribution pipeline were removed by the post-audit
+system-font migration, so that candidate and its bundle measurements are
+obsolete. The final checkpoint requires a fresh measurement.
 
 This does not yet prove a native runtime, DMG or AppImage. The following remain
 pending until the exact checkpoint is pushed to `codex/test`: three OCR staging
@@ -447,17 +517,17 @@ assumption and are not reclassified as evidence.
 | Phase 2 frontend and Vellum Paper | Windows automated checkpoint passed | Raw-total bundle target missed; keep the measured result and complete native/manual gates |
 | Phase 4 Rust backend refactor | Windows checkpoint passed | Preserve compatibility and complete the remaining installed/platform matrices |
 | Phase 5 Windows native validation | Accepted for sequencing by explicit maintainer assumption; native ledger remains incomplete | Execute the 101 installed scenarios later if release-grade native proof is required |
-| Editor automated checks | Passed for unit and compiled-preview scope | Keep preview proof separate from real Tauri behavior |
+| Editor automated checks | Passed for unit and compiled-preview scope, including the 2026-08-04 correction lot | Keep preview proof separate from real Tauri behavior |
 | Editor HTML sanitization | Implemented with preview and static coverage | Complete real Tauri asset persistence and packaged-runtime checks |
-| Windows Tauri Office matrix | Pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios |
+| Windows Tauri Office matrix | Partial; corrected LibreOffice probe completed ODT normalization plus DOCX/PDF generation, while packaged-app reopening and fidelity remain pending | Complete ODT/DOCX/RTF import, edit, export and reopen scenarios, including structural and visual fidelity |
 | Native editor file drop | Pending manual proof | Validate in the real Tauri application |
 | Editor restart and asset persistence | Pending manual proof | Confirm `mc-asset://` images after a clean restart |
-| OCR Windows reference implementation | Phase 7 PDFium package checkpoint closed | Obtain maintainer license approval |
+| OCR Windows reference implementation | Phase 7 PDFium package checkpoint closed; current packaged fixture exact at 100% and current 40-case corpus passed at 100% clean / 99.76% difficult | Preserve cancellation/progress regression coverage and obtain maintainer license approval |
 | OCR Windows NSIS build | Passed with exact candidate identity | Preserve the verified compressed-resource preparation path |
 | OCR Windows packaged PDFium path | Two installed cycles and 40-case corpus passed | Keep this focused proof separate from the unexecuted Phase 5 matrix |
 | macOS V1.0.7 matrix | Blocked | Real universal editor/OCR package and host validation |
 | Linux V1.0.7 matrix | Blocked | Real x64 editor/OCR AppImage and host validation |
-| V1.0.7 version synchronization | Blocked | All feature and release gates must pass first |
+| V1.0.7 development metadata | Synchronized | Keep npm, Cargo, Tauri and lockfiles aligned; this is not a release-readiness claim |
 | Final release notes and assets | Blocked | Derive only from verified V1.0.7 behavior |
 
 ## Editor Evidence
@@ -543,6 +613,103 @@ The final V1.0.7 security review must cover:
 - dependency and license review for the exact packaged OCR stack.
 
 Record the final reviewer, date, scope, commands and result here when the implementation is complete.
+
+## Post-audit V1.0.7 correction checkpoint
+
+Status: **Windows PDF editor correction validated locally; cross-platform and
+release gates remain open**.
+
+The branch based on `80a0c3838e48e470d99e6a6e27f44c245509bc84`
+supersedes every Phase 8 application candidate described above. Its scalable
+converter, hierarchical folder export, system-font toolbar, direct docx.js
+writer and separate PDFium structural editor materially change the application.
+Historical NSIS, DMG, AppImage, updater hashes and package measurements remain
+evidence for their original checkpoints only.
+
+Development checks include `npm run check`, 133 frontend unit tests and the
+Playwright guardrails at 31 passed and 27 skipped. The complete wrapper split
+passed 46 tests (`17 + 14 + 1 + 4 + 1 + 7 + 2`) with the real Windows DLL.
+The detailed architecture and unresolved package/native gates are recorded in
+[`V1_0_7_POST_AUDIT.md`](V1_0_7_POST_AUDIT.md).
+
+The current Windows PDFium 0.4.0 wrapper, including the required `contentKind`
+inspection field, is 3,982,336 bytes at SHA-256
+`7856798b0deaae4c48b90ce985148a69aa00a0cbf5924337c18f4eee9e4002bd`.
+Its 5,139,663-byte deterministic ZIP has SHA-256
+`41452be58440ce6652ec5aacf240188cfd60ffefd856a1b67b69537296f86072`.
+The installed `pdfium.dll` has SHA-256
+`01be7a757183793f15eb35de9d9da424fc07d24b5560e8c3822f52812b2ad89a`.
+The current local unsigned NSIS is 999,950,451 bytes at SHA-256
+`bc0f9169d11ff56eb74fe212f7f829d9a3299b0750c4c48ddb1c628bc79e5705`.
+Its isolated installed application is 27,969,536 bytes at SHA-256
+`60e35267561355421a53710847b4210d734bd710e08eee82e82f15a9d7398494`.
+This is test-package evidence only; the installer is not Authenticode-signed.
+
+Two complete `npm run test:windows:pdfium-native` cycles passed. The installed
+wrapper changed the fixture text to exactly `Native editor smoke`, reopened it
+with exact equality, preserved the source hash and rejected a stale source
+hash. This native regression closes the previously missed failure in which an
+embedded subset font silently serialized different glyphs.
+
+The writer now tries the existing font and verifies the exact reopened text.
+It falls back to Helvetica only for explicitly WinAnsi-safe text; unsupported
+Unicode is rejected with `PDF_EDITOR_TEXT_UNREPRESENTABLE` without publishing
+an output. The Tauri boundary checks exact wrapper version `0.4.0` on every
+request. Save As stages the result, re-hashes the source immediately before
+commit, validates the reopened file and publishes atomically.
+
+The corrected archive and NSIS remain local and unpublished. The installed
+smoke is not a manual user-interface acceptance test. macOS universal and
+Linux x64 remain `pending-native-rebuild` with no asserted package hashes.
+
+On 2026-08-06, the direct in-page text workflow was exercised through the real
+Windows Tauri WebView with Playwright over a private CDP port, without desktop
+screen control. `Plan ECHO.pdf` opened as a 21-page digital PDF. A click on its
+first native text object opened the positioned editor; `Ctrl+Enter` committed
+the replacement, Save As created a distinct copy, and native reopening found
+the exact changed text. The source remained at SHA-256
+`80ee1aa9f29e5965844f83b954c51a714fab4c45809af8bb33506845f55719e1`;
+the copy was
+`d9c4d76abc54b94787c496e0d8854298024b766100fa9623ac58b7c7766b4d5a`.
+The focused PDF Playwright suite passed 10 tests and all 136 unit tests passed.
+
+The run used the current source-built wrapper. A separate inspection found that
+the then-prepared PDFium resource announced `0.4.0` but omitted `contentKind`
+from `--inspect-objects`. The packaging health check now exercises that command
+and rejects this stale schema. The corrected deterministic archive was built
+twice with identical bytes, restaged locally and passed bundled-engine
+validation. Direct inspection of `Plan ECHO.pdf` returned `contentKind: digital`,
+21 pages and 73 first-page objects while preserving the source SHA-256. The
+rebuilt NSIS then passed two isolated install/reinstall cycles with this exact
+wrapper and DLL.
+
+Automated regressions cover bounded active-content inspection without executing
+or exposing payload bodies, as well as explicit creation of a separate unsigned
+editable copy that removes signature/DocMDP structures and leaves the original
+untouched. They do not prove active-content preservation after a native
+edit/save/reopen cycle or signature behavior across the complete corpus.
+
+No Word/LibreOffice visual corpus, user-driven PDF editor acceptance, native
+macOS or Linux PDFium 0.4.0 package, universal DMG or Linux AppImage has yet
+been accepted for this post-audit SHA. V1.0.7 remains blocked from publication.
+
+### 2026-08-06 document and PDF editor visual polish
+
+The two editing surfaces now use one Vellum Paper workspace treatment. The
+document title, save and export controls are grouped by intent; the editing
+page remains visually dominant. The PDF toolbar exposes its inspector through
+an accessible toggle. The inspector remains a contextual card on desktop and
+starts closed as an overlay drawer below 900 px. Dense desktop controls keep a
+40 px target while touch layouts retain 44 px targets.
+
+Current-source validation passed `npm run build:frontend:preview`,
+`npm run test:editor`, `npm run test:ui-layout`, the source-structure guard and
+the combined document/PDF editor browser matrix: 18 passed and 14 intentionally
+desktop-only scenarios skipped on mobile. The PDF coverage now includes
+opening, hiding and restoring the inspector while retaining the active session.
+Fresh screenshots were generated at 375, 768, 1024 and 1440 px from the rebuilt
+preview and inspected locally. These are browser-interface proofs only; they do
+not replace native Tauri file-system, PDFium or package evidence.
 
 ## Release Closure
 

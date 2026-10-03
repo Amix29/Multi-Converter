@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import type { AppMode } from "../../lib/api";
 import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
 import { t, type LanguageCode } from "../../i18n";
@@ -6,7 +6,7 @@ import { FeedbackButton } from "../feedback/FeedbackOverlays";
 import type { Step } from "../types";
 import { DocumentModeIcon, SettingsIcon } from "../components/Icons";
 
-export function AppTopbar(props: {
+export const AppTopbar = memo(function AppTopbar(props: {
   appMode: AppMode;
   step: Step;
   language: LanguageCode;
@@ -44,41 +44,41 @@ export function AppTopbar(props: {
   return (
     <header className="topbar">
       <div className="brand">
-        <div className="brand-mark" aria-hidden="true">
-          <img src={brandLogoUrl} alt="" />
-        </div>
-        <div className="brand-copy">
-          <h1>Multi-Converter</h1>
-          <div
-            className="mode-toggle"
-            role="tablist"
-            aria-label={t(props.language, "mode.label")}
-          >
-            <button
-              ref={converterTabRef}
-              type="button"
-              role="tab"
-              aria-selected={props.appMode === "converter"}
-              tabIndex={props.appMode === "converter" ? 0 : -1}
-              className={props.appMode === "converter" ? "is-converter" : ""}
-              onClick={() => props.onAppMode("converter")}
-              onKeyDown={(event) => selectModeWithKeyboard(event, "converter")}
-            >
-              {t(props.language, "mode.converter")}
-            </button>
-            <button
-              ref={editorTabRef}
-              type="button"
-              role="tab"
-              aria-selected={props.appMode === "editor"}
-              tabIndex={props.appMode === "editor" ? 0 : -1}
-              className={props.appMode === "editor" ? "is-editor" : ""}
-              onClick={() => props.onAppMode("editor")}
-              onKeyDown={(event) => selectModeWithKeyboard(event, "editor")}
-            >
-              {t(props.language, "mode.editor")}
-            </button>
+        <div className="brand-title-row">
+          <div className="brand-mark" aria-hidden="true">
+            <img src={brandLogoUrl} alt="" />
           </div>
+          <h1>Multi-Converter</h1>
+        </div>
+        <div
+          className="mode-toggle"
+          role="tablist"
+          aria-label={t(props.language, "mode.label")}
+        >
+          <button
+            ref={converterTabRef}
+            type="button"
+            role="tab"
+            aria-selected={props.appMode === "converter"}
+            tabIndex={props.appMode === "converter" ? 0 : -1}
+            className={props.appMode === "converter" ? "is-converter" : ""}
+            onClick={() => props.onAppMode("converter")}
+            onKeyDown={(event) => selectModeWithKeyboard(event, "converter")}
+          >
+            {t(props.language, "mode.converter")}
+          </button>
+          <button
+            ref={editorTabRef}
+            type="button"
+            role="tab"
+            aria-selected={props.appMode === "editor"}
+            tabIndex={props.appMode === "editor" ? 0 : -1}
+            className={props.appMode === "editor" ? "is-editor" : ""}
+            onClick={() => props.onAppMode("editor")}
+            onKeyDown={(event) => selectModeWithKeyboard(event, "editor")}
+          >
+            {t(props.language, "mode.editor")}
+          </button>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ export function AppTopbar(props: {
       </div>
     </header>
   );
-}
+});
 
 function stepLabels(
   language: LanguageCode,

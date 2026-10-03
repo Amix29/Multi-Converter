@@ -220,6 +220,10 @@ export function getConvertedOutputPaths(files: FileItem[]) {
   return files.filter((file) => file.status === "done" && file.result?.outputPath).map((file) => file.result!.outputPath);
 }
 
+export function nativeCancellationJobs(files: FileItem[]) {
+  return files.filter((file) => file.selectedFormat && file.status === "working");
+}
+
 export function isEditablePasteTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
   return target.isContentEditable || target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT";

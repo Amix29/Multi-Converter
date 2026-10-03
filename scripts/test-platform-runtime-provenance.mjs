@@ -8,17 +8,23 @@ const source = fs.readFileSync(lockPath, "utf8");
 const lock = JSON.parse(source);
 const failures = [];
 
-expect(lock.schemaVersion === 1, "le verrou de provenance doit utiliser le schéma 1");
+expect(lock.schemaVersion === 2, "le verrou de provenance doit utiliser le schéma 2");
 expect(!/releases\/latest|latest\/download/i.test(source), "aucune provenance ne doit suivre latest");
 expect(lock.pdfium?.version === "149.0.7825.0", "PDFium doit rester verrouillé sur 149.0.7825.0");
 expect(lock.pdfium?.tag === "chromium/7825", "le tag PDFium doit être chromium/7825");
-expect(lock.pdfium?.wrapperVersion === "0.3.0", "le wrapper PDFium doit rester en 0.3.0");
+expect(lock.pdfium?.wrapperVersion === "0.4.0", "le wrapper PDFium doit être verrouillé en 0.4.0");
+expect(lock.pdfium?.wrapperBuildRustVersion === "1.96.0", "la toolchain du wrapper PDFium doit être verrouillée");
+expect(isSha(lock.pdfium?.wrapperCargoLockSha256), "le Cargo.lock du wrapper PDFium doit être verrouillé");
 for (const platform of ["macos-universal", "linux-x64"]) {
   const entry = lock.pdfium.platforms?.[platform];
   expect(entry?.url?.startsWith("https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7825/"), `${platform}: URL PDFium verrouillée absente`);
   expect(Number.isInteger(entry?.bytes) && entry.bytes > 0, `${platform}: taille PDFium absente`);
   expect(isSha(entry?.sha256), `${platform}: SHA-256 de l’archive PDFium invalide`);
   expect(isSha(entry?.librarySha256), `${platform}: SHA-256 de la bibliothèque PDFium invalide`);
+  expect(entry?.package?.status === "pending-native-rebuild", `${platform}: reconstruction native PDFium 0.4.0 non marquée en attente`);
+  for (const field of ["archiveSizeBytes", "archiveSha256", "installedSizeBytes", "wrapperSizeBytes", "wrapperSha256"]) {
+    expect(entry.package?.[field] === null, `${platform}: ${field} ne doit pas être inventé avant le job natif`);
+  }
 }
 
 expect(lock.ocr?.python === "3.12.10", "Python OCR doit rester verrouillé sur 3.12.10");

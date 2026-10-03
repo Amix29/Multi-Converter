@@ -1,0 +1,159 @@
+.document-image-node {
+  position: relative;
+  isolation: isolate;
+  transition: transform var(--vlm-motion-fast) var(--vlm-ease-standard), outline-color var(--vlm-motion-fast) var(--vlm-ease-standard);
+}
+
+.document-image-node[data-layout-mode="floating"] {
+  width: max-content;
+}
+
+.document-image-node.is-selected {
+  z-index: 120 !important;
+}
+
+.document-image-frame {
+  position: relative;
+  max-width: none;
+  overflow: visible;
+}
+
+.document-image-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.document-image-node.is-selected .document-image-frame {
+  outline: 1px solid var(--vlm-text-soft);
+  outline-offset: 0;
+}
+
+.document-image-controls {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 110;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  width: min(620px, calc(100vw - 40px));
+  max-width: calc(100% - 16px);
+  padding: 5px;
+  overflow: visible;
+  border: 1px solid var(--vlm-border-strong);
+  border-radius: var(--vlm-radius-sm);
+  background: var(--vlm-surface-raised);
+  box-shadow: var(--vlm-shadow-overlay);
+  zoom: calc(1 / var(--editor-zoom));
+  animation: editorMediaToolsIn var(--vlm-motion-fast) var(--vlm-ease-standard) both;
+}
+
+.document-image-controls button {
+  display: inline-grid;
+  min-width: var(--vlm-target-min);
+  min-height: var(--vlm-target-min);
+  padding: 0 9px;
+  place-items: center;
+  border-radius: var(--vlm-radius-xs);
+  color: var(--vlm-text-soft);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.document-image-controls button.has-label {
+  display: inline-flex;
+  gap: 5px;
+  padding-inline: 8px;
+}
+
+.document-image-controls button.has-label span {
+  max-width: 108px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.document-image-controls button:hover,
+.document-image-controls button:focus-visible {
+  color: var(--vlm-text-strong);
+  background: var(--vlm-accent-soft);
+}
+
+.document-image-controls button:active {
+  transform: scale(.96);
+}
+
+.document-image-controls svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.document-image-control-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--vlm-border);
+}
+
+.document-image-move {
+  cursor: move !important;
+  touch-action: none;
+}
+
+.document-image-resize-handle {
+  position: absolute;
+  z-index: 130;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  zoom: calc(1 / var(--editor-zoom));
+  touch-action: none;
+}
+
+.document-image-resize-handle::after {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--vlm-text-soft);
+  border-radius: 50%;
+  background: var(--vlm-surface-pure);
+  box-shadow: var(--vlm-shadow-xs);
+}
+
+.document-image-resize-handle:focus-visible {
+  outline: 3px solid var(--vlm-focus);
+  outline-offset: -5px;
+}
+
+.document-image-resize-handle[data-handle="nw"] { top: -16px; left: -16px; cursor: nwse-resize; }
+.document-image-resize-handle[data-handle="n"] { top: -16px; left: calc(50% - 16px); cursor: ns-resize; }
+.document-image-resize-handle[data-handle="ne"] { top: -16px; right: -16px; cursor: nesw-resize; }
+.document-image-resize-handle[data-handle="e"] { top: calc(50% - 16px); right: -16px; cursor: ew-resize; }
+.document-image-resize-handle[data-handle="se"] { right: -16px; bottom: -16px; cursor: nwse-resize; }
+.document-image-resize-handle[data-handle="s"] { bottom: -16px; left: calc(50% - 16px); cursor: ns-resize; }
+.document-image-resize-handle[data-handle="sw"] { bottom: -16px; left: -16px; cursor: nesw-resize; }
+.document-image-resize-handle[data-handle="w"] { top: calc(50% - 16px); left: -16px; cursor: ew-resize; }
+
+@keyframes editorMediaToolsIn {
+  from { opacity: 0; transform: translateY(5px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .document-image-node { transition: none; }
+  .document-image-controls { animation: none; }
+}

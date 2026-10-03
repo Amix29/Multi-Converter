@@ -51,6 +51,7 @@ async function prepareIntelBuildLock() {
     "networkx==3.6.1",
     "numpy==2.3.5",
     "opt_einsum==3.3.0",
+    "packaging==26.2",
     "Pillow==12.3.0",
     "protobuf==7.35.1",
     "safetensors==0.8.0",

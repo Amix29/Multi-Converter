@@ -6,8 +6,7 @@
 - Platforms: Windows x64, universal macOS and Linux x64
 - Repository surfaces: desktop application, static marketing site and branding kit
 - Development release: **V1.0.7**
-- Phase 1 checkpoint: local commit **`9f89a8d2`** on `codex/phase-1-guardrails`, not pushed
-- Phase 2 workspace: `codex/phase-2-frontend-vellum`, based on the Phase 1 checkpoint, not merged or pushed
+- Current post-audit base: **`80a0c383`** on `codex/v1-0-7-post-audit`, not merged or published
 - V1.0.7 objectives:
   - local Tiptap document editor;
   - local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images.
@@ -17,10 +16,11 @@
 | Document | Status | Purpose |
 | --- | --- | --- |
 | [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md) | Active source of truth | Complete V1.0.7 scope, sequencing and release gates |
+| [`V1_0_7_POST_AUDIT.md`](V1_0_7_POST_AUDIT.md) | Active, validation in progress | Six-lot correction implementation and proof limits |
 | [`V1_0_7_VALIDATION.md`](V1_0_7_VALIDATION.md) | Active, overall gate blocked | Combined editor, OCR and platform release ledger |
 | [`V1_0_7_EDITOR_VALIDATION.md`](V1_0_7_EDITOR_VALIDATION.md) | Active, gate open | Editor implementation and real Tauri validation |
 | [`V1_0_7_EDITOR_UI_QA.md`](V1_0_7_EDITOR_UI_QA.md) | Active, Phase 2 preview scope | Historical editor regressions and Vellum Paper responsive evidence |
-| [`V1_0_7_OCR.md`](V1_0_7_OCR.md) | Planned, not implemented | OCR behavior, architecture, security and test contract |
+| [`V1_0_7_OCR.md`](V1_0_7_OCR.md) | Active, broader gate open | OCR behavior, architecture, security and test contract |
 | [`REFACTOR_BASELINE.md`](REFACTOR_BASELINE.md) | Active | Phase 1 measurements and Phase 2 refactor budgets |
 | [`TESTING.md`](TESTING.md) | Active | Commands and platform validation procedures |
 | [`THIRD_PARTY_ENGINES.md`](THIRD_PARTY_ENGINES.md) | Active | Engine licensing, checksums, notices and packaging rules |
@@ -59,6 +59,6 @@
 - Distinguish implemented behavior from planned behavior.
 - Do not claim OCR is available before real packaged `PP-OCRv6_medium` inference passes.
 - Do not claim the editor is release-ready before its real Tauri Office matrix passes.
-- Keep version metadata at `1.0.6` until the V1.0.7 release gate closes.
+- Keep the authorized development metadata synchronized at `1.0.7`; this does not authorize a release.
 - Keep public release notes in English.
 - Keep user files and recognized OCR text local and private.

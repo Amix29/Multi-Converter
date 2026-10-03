@@ -1,4 +1,4 @@
-import type { EditorAssetData, EditorDocumentV1, Engine, FileDescription, TargetFormat } from "./contracts";
+import type { EditorAssetData, EditorDocumentSummary, EditorDocumentV1, Engine, FileDescription, TargetFormat } from "./contracts";
 
 export const PREVIEW_ROOT = "C:\\Users\\Public";
 export const PREVIEW_TEMP = `${PREVIEW_ROOT}\\AppData\\Local\\Temp\\multi-converter-preview`;
@@ -22,6 +22,23 @@ export function upsertPreviewDocument(documents: EditorDocumentV1[], document: E
 
 export function removePreviewDocument(documents: EditorDocumentV1[], id: string) {
   return documents.filter((item) => item.id !== id);
+}
+
+export function previewRecentDocuments(documents: EditorDocumentV1[]): EditorDocumentSummary[] {
+  return documents.slice(0, 10).map((document) => ({
+    id: document.id,
+    title: document.title,
+    format: document.source?.format ?? "draft",
+    sourcePath: document.source?.path ?? null,
+    updatedAt: document.updatedAt,
+    recoverable: true,
+  }));
+}
+
+export async function delayStaleRecentPreview(enabled: boolean, snapshot: EditorDocumentSummary[]) {
+  if (enabled && snapshot[0]?.title === "Sans titre") {
+    await new Promise((resolve) => setTimeout(resolve, 1_350));
+  }
 }
 
 const audioTargets = [

@@ -2,9 +2,17 @@ use super::document::{
     CommandResult, EditorAssetRef, EditorDocument, EditorDocumentSummary, MAX_DRAFT_BYTES,
     RECENT_DOCUMENT_LIMIT, modified_stamp, validate_document, validate_id,
 };
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
-use std::fs;
+use std::fs::{self, File};
+use std::io::Read;
 use std::path::{Path, PathBuf};
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(super) struct DestinationSnapshot {
+    bytes: u64,
+    sha256: [u8; 32],
+}
 
 pub(super) fn editor_root() -> CommandResult<PathBuf> {
     dirs::data_local_dir()
@@ -273,6 +281,150 @@ pub(super) fn write_bytes_atomically(bytes: &[u8], destination: &Path) -> Comman
     Ok(())
 }
 
+pub(super) fn capture_destination_snapshot(
+    destination: &Path,
+) -> CommandResult<Option<DestinationSnapshot>> {
+    let mut file = match File::open(destination) {
+        Ok(file) => file,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(format!("destination-open:{error}")),
+    };
+    let metadata = file
+        .metadata()
+        .map_err(|error| format!("destination-metadata:{error}"))?;
+    if !metadata.is_file() {
+        return Err(
+            "EDITOR_DESTINATION_INVALID:La destination existante n’est pas un fichier.".to_string(),
+        );
+    }
+    let mut digest = Sha256::new();
+    let mut buffer = [0_u8; 64 * 1024];
+    loop {
+        let read = file
+            .read(&mut buffer)
+            .map_err(|error| format!("destination-read:{error}"))?;
+        if read == 0 {
+            break;
+        }
+        digest.update(&buffer[..read]);
+    }
+    Ok(Some(DestinationSnapshot {
+        bytes: metadata.len(),
+        sha256: digest.finalize().into(),
+    }))
+}
+
+#[cfg(test)]
+pub(super) fn commit_staged_file(
+    staged: &Path,
+    destination: &Path,
+    expected_destination: Option<&DestinationSnapshot>,
+) -> CommandResult<()> {
+    commit_staged_file_inner(staged, destination, expected_destination, |_| Ok(()))
+}
+
+pub(super) fn commit_staged_file_checked<F>(
+    staged: &Path,
+    destination: &Path,
+    expected_destination: Option<&DestinationSnapshot>,
+    before_publish: F,
+) -> CommandResult<()>
+where
+    F: FnOnce(&Path) -> CommandResult<()>,
+{
+    commit_staged_file_inner(staged, destination, expected_destination, before_publish)
+}
+
+fn commit_staged_file_inner<F>(
+    staged: &Path,
+    destination: &Path,
+    expected_destination: Option<&DestinationSnapshot>,
+    before_publish: F,
+) -> CommandResult<()>
+where
+    F: FnOnce(&Path) -> CommandResult<()>,
+{
+    let metadata = fs::metadata(staged).map_err(|error| format!("stage-metadata:{error}"))?;
+    if !metadata.is_file() || metadata.len() == 0 {
+        return Err("EDITOR_OUTPUT_EMPTY:La sortie générée est vide.".to_string());
+    }
+    let parent = destination
+        .parent()
+        .ok_or_else(|| "EDITOR_STORAGE_INVALID:Dossier de destination invalide.".to_string())?;
+    fs::create_dir_all(parent).map_err(|error| format!("parent-create:{error}"))?;
+
+    let observed = capture_destination_snapshot(destination)?;
+    if observed.as_ref() != expected_destination {
+        return Err(
+            "EDITOR_DESTINATION_CONFLICT:La destination a changé pendant la génération du DOCX."
+                .to_string(),
+        );
+    }
+
+    let backup = expected_destination.map(|_| sibling_work_path(parent, destination, "backup"));
+    if let Some(backup) = backup.as_ref() {
+        fs::rename(destination, backup).map_err(|error| {
+            format!(
+                "EDITOR_DESTINATION_CONFLICT:La destination n’a pas pu être réservée sans écrasement:{error}"
+            )
+        })?;
+        let moved = match capture_destination_snapshot(backup) {
+            Ok(snapshot) => snapshot,
+            Err(error) => {
+                return Err(commit_failure_with_restore(
+                    backup,
+                    destination,
+                    format!("EDITOR_DESTINATION_CONFLICT:{error}"),
+                ));
+            }
+        };
+        if moved.as_ref() != expected_destination {
+            return Err(commit_failure_with_restore(
+                backup,
+                destination,
+                "EDITOR_DESTINATION_CONFLICT:La destination a changé pendant sa réservation."
+                    .to_string(),
+            ));
+        }
+    }
+
+    if let Err(error) = before_publish(destination) {
+        return Err(match backup.as_ref() {
+            Some(backup) => commit_failure_with_restore(backup, destination, error),
+            None => error,
+        });
+    }
+
+    if let Err(error) = fs::hard_link(staged, destination) {
+        let failure = format!(
+            "EDITOR_DESTINATION_CONFLICT:La destination a changé ou ne peut pas être publiée sans écrasement:{error}"
+        );
+        return Err(match backup.as_ref() {
+            Some(backup) => commit_failure_with_restore(backup, destination, failure),
+            None => failure,
+        });
+    }
+
+    let _ = fs::remove_file(staged);
+    if let Some(backup) = backup {
+        let _ = fs::remove_file(backup);
+    }
+    Ok(())
+}
+
+fn commit_failure_with_restore(backup: &Path, destination: &Path, failure: String) -> String {
+    match fs::hard_link(backup, destination) {
+        Ok(()) => {
+            let _ = fs::remove_file(backup);
+            failure
+        }
+        Err(error) => format!(
+            "{failure} La restauration n’a pas écrasé le fichier concurrent ({error}); la version précédente est conservée dans {}.",
+            backup.display()
+        ),
+    }
+}
+
 fn sibling_work_path(parent: &Path, destination: &Path, role: &str) -> PathBuf {
     let extension = destination
         .extension()
@@ -287,54 +439,5 @@ fn sibling_work_path(parent: &Path, destination: &Path, role: &str) -> PathBuf {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn atomic_replace_keeps_previous_file_when_source_is_empty() {
-        let directory = tempfile::tempdir().unwrap();
-        let source = directory.path().join("source");
-        let destination = directory.path().join("destination");
-        fs::write(&source, []).unwrap();
-        fs::write(&destination, b"original").unwrap();
-        assert!(replace_file_safely(&source, &destination).is_err());
-        assert_eq!(fs::read(destination).unwrap(), b"original");
-    }
-
-    #[test]
-    fn duplicate_metadata_detaches_the_original_source() {
-        let mut document = super::super::document::new_document("Rapport");
-        document.source = Some(super::super::document::EditorSource {
-            path: "C:\\Documents\\rapport.docx".to_string(),
-            format: "docx".to_string(),
-            size: 42,
-            modified_at: "1".to_string(),
-        });
-        let original_id = document.id.clone();
-        let now = super::super::document::now_stamp();
-        document.id = uuid::Uuid::new_v4().to_string();
-        document.title = "Rapport - copie".to_string();
-        document.source = None;
-        document.created_at = now.clone();
-        document.updated_at = now;
-        assert_ne!(document.id, original_id);
-        assert!(document.source.is_none());
-        assert_eq!(document.title, "Rapport - copie");
-    }
-
-    #[test]
-    fn atomic_work_files_keep_the_destination_extension() {
-        let parent = Path::new("C:\\Documents");
-        let staged = sibling_work_path(parent, &parent.join("Rapport.docx"), "staged");
-        assert_eq!(
-            staged.extension().and_then(|value| value.to_str()),
-            Some("docx")
-        );
-        assert!(
-            staged
-                .file_name()
-                .and_then(|value| value.to_str())
-                .is_some_and(|value| value.starts_with("multi-converter-staged-"))
-        );
-    }
-}
+#[path = "storage_tests.rs"]
+mod tests;

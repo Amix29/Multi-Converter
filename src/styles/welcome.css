@@ -149,16 +149,6 @@
   pointer-events: none;
 }
 
-.welcome-preview::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  border-radius: inherit;
-  background: linear-gradient(90deg, transparent 0 49%, color-mix(in srgb, var(--vlm-accent) 24%, transparent) 49% 51%, transparent 51% 100%);
-  pointer-events: none;
-}
-
 .mini-capture-frame {
   position: absolute;
   left: 50%;

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { api, type ExportResult } from "../../lib/api";
+import { api, createExportEntries, type ExportEntryV1, type ExportResult } from "../../lib/api";
 import { t, translateBackendMessage, type LanguageCode } from "../../i18n";
 import type { ExportKind, FileItem, NoticeTone, Step } from "../types";
 import {
   clamp,
   conversionConcurrency,
   exportNoticeMessage,
-  getConvertedOutputPaths,
   notifyConversionFinished,
+  nativeCancellationJobs,
   runWithConcurrency,
   shouldConvertFile,
   shouldReconvertCleanedResult,
@@ -181,7 +181,9 @@ export function useConversionWorkflow(options: {
     if (!isConverting || isCancelling) return;
     cancellationRequested.current = true;
     setIsCancelling(true);
-    const activeJobs = options.files.filter((file) => file.selectedFormat && ["queued", "working"].includes(file.status));
+    // Only jobs that have reached api.convert() exist in the native cancellation
+    // registry. Queued jobs are cancelled locally by cancellationRequested.
+    const activeJobs = nativeCancellationJobs(options.files);
     options.setFiles((items) => items.map((file) => file.selectedFormat && ["queued", "working"].includes(file.status)
       ? { ...file, status: "canceling", phase: "phase.canceling" }
       : file));
@@ -194,13 +196,16 @@ export function useConversionWorkflow(options: {
     await cleanupCurrentTempFolder({ notifyOnError: false });
   }
 
-  async function exportResults(kind: ExportKind, exporter: (paths: string[]) => Promise<ExportResult | null>) {
-    const paths = getConvertedOutputPaths(options.files);
+  async function exportResults(
+    kind: ExportKind,
+    exporter: (paths: string[], entries: ExportEntryV1[]) => Promise<ExportResult | null>,
+  ) {
+    const { entries, paths } = convertedExportPlan(options.files);
     if (!paths.length || isConverting || isExporting || isTempOutputCleaned) return;
     setIsExporting(true);
     options.showNotice("info", kind === "downloads" ? t(options.language, "notice.exportDownloadsPreparing") : t(options.language, "notice.exportFolderChoosing"));
     try {
-      const result = await exporter(paths);
+      const result = await exporter(paths, entries);
       if (!result) {
         options.showNotice("info", t(options.language, "notice.exportCancelled"));
         return;
@@ -214,7 +219,7 @@ export function useConversionWorkflow(options: {
   }
 
   async function exportResultsToFolder() {
-    const paths = getConvertedOutputPaths(options.files);
+    const { entries, paths } = convertedExportPlan(options.files);
     if (!paths.length || isConverting || isExporting || isTempOutputCleaned) return;
     setIsExporting(true);
     options.showNotice("info", t(options.language, "notice.exportFolderChoosing"));
@@ -224,7 +229,7 @@ export function useConversionWorkflow(options: {
         options.showNotice("info", t(options.language, "notice.exportCancelled"));
         return;
       }
-      await finalizeSuccessfulExport("folder", await api.exportToFolder(paths, destinationDir, outputDir));
+      await finalizeSuccessfulExport("folder", await api.exportToFolder(paths, destinationDir, outputDir, entries));
     } catch (error) {
       options.showNotice("error", translateBackendMessage(options.language, error instanceof Error ? error.message : String(error || "")));
     } finally {
@@ -258,5 +263,15 @@ export function useConversionWorkflow(options: {
     retryFile,
     revealCurrentFolder,
     startConversion,
+  };
+}
+
+function convertedExportPlan(files: FileItem[]) {
+  const results = files.flatMap((file) => file.status === "done" && file.result?.outputPath
+    ? [{ outputPath: file.result.outputPath, source: file }]
+    : []);
+  return {
+    entries: createExportEntries(results),
+    paths: results.map(({ outputPath }) => outputPath),
   };
 }

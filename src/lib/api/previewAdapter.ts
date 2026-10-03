@@ -1,14 +1,18 @@
-import type { EditorAssetRef, MultiConverterApi, OcrProgressV1, ProgressPayload } from "./contracts";
+import type { EditorAssetRef, ExportEntryV1, GeneratedWriteStartRequest, MultiConverterApi, OcrProgressV1, ProgressPayload } from "./contracts";
 import {
   createPreviewEditorState,
+  delayStaleRecentPreview,
   makePreviewEditorDocument,
   makePreviewFile,
   PREVIEW_ROOT,
   PREVIEW_TEMP,
   previewExtension,
+  previewRecentDocuments,
   removePreviewDocument,
   upsertPreviewDocument,
 } from "./previewFixtures";
+import { createPreviewPdfController } from "./previewPdfAdapter";
+import { previewSystemFontCatalog } from "./previewFontFixtures";
 
 export function createPreviewApi(): MultiConverterApi {
   const previewParams = new URLSearchParams(window.location.search);
@@ -18,8 +22,11 @@ export function createPreviewApi(): MultiConverterApi {
   let previewDocuments = previewState.documents;
   const previewEditorAssets = previewState.assets;
   const canceledJobs = new Set<string>();
+  const generatedWrites = new Map<string, { payload: GeneratedWriteStartRequest; written: number }>();
   let shouldFailNextConversion = previewParams.get("mockConversionFailure") === "once";
+  const shouldMockFontEnumerationFailure = previewParams.get("mockFontEnumerationFailure") === "once";
   let shouldFailRecentRefresh = false;
+  const previewPdf = createPreviewPdfController(previewParams, ocrListeners, canceledJobs);
 
   return {
     async welcomeState() {
@@ -42,6 +49,17 @@ export function createPreviewApi(): MultiConverterApi {
       return this.bootstrapDependencies();
     },
     async pickFilePaths() {
+      if (previewParams.get("mockPdfEditor") === "1") {
+        if (previewPdf.isOpen()) return [`${PREVIEW_ROOT}\\Pictures\\Illustration-locale.png`];
+        return [`${PREVIEW_ROOT}\\Documents\\Contrat-local.pdf`];
+      }
+      const largeBatchSize = Math.min(2_000, Math.max(0, Math.floor(Number(previewParams.get("mockLargeBatch")) || 0)));
+      if (largeBatchSize > 0) {
+        return Array.from(
+          { length: largeBatchSize },
+          (_, index) => `${PREVIEW_ROOT}\\Pictures\\conversion-${String(index + 1).padStart(4, "0")}.png`,
+        );
+      }
       const paths = [
         `${PREVIEW_ROOT}\\Documents\\test.md`,
         `${PREVIEW_ROOT}\\Pictures\\Grand Theft Auto V Screenshot 2026.01.05 - 18.43.12.84.png`,
@@ -52,6 +70,9 @@ export function createPreviewApi(): MultiConverterApi {
         `${PREVIEW_ROOT}\\Audio\\Capture audio réunion client avec un nom beaucoup trop long.wav`,
       ];
       if (previewParams.get("mockOcrImage") === "1") return paths.slice(1, 2);
+      if (previewParams.get("mockUnsupportedFiles") === "1") {
+        return [...paths.slice(0, 2), `${PREVIEW_ROOT}\\Documents\\archive.non-supported`];
+      }
       return previewParams.get("mockSingleFile") === "1" ? paths.slice(0, 1) : paths;
     },
     async pickOutputFolder() {
@@ -63,17 +84,18 @@ export function createPreviewApi(): MultiConverterApi {
     async cleanupTempOutputFolder() {
       return true;
     },
-    async exportToDownloads(filePaths) {
+    async exportToDownloads(filePaths, _outputDir, entries) {
+      const destinationDir = `${PREVIEW_ROOT}\\Downloads\\Conversion`;
       return {
-        destinationDir: `${PREVIEW_ROOT}\\Downloads\\Conversion`,
-        files: filePaths.map((filePath) => filePath.replace(PREVIEW_TEMP, `${PREVIEW_ROOT}\\Downloads\\Conversion`)),
+        destinationDir,
+        files: previewExportPaths(filePaths, destinationDir, entries),
         destinationCreated: false,
       };
     },
-    async exportToFolder(filePaths, destinationDir) {
+    async exportToFolder(filePaths, destinationDir, _outputDir, entries) {
       return {
         destinationDir,
-        files: filePaths.map((filePath) => filePath.replace(PREVIEW_TEMP, destinationDir)),
+        files: previewExportPaths(filePaths, destinationDir, entries),
         destinationCreated: false,
       };
     },
@@ -81,7 +103,10 @@ export function createPreviewApi(): MultiConverterApi {
       return paths.map((filePath) => {
         const name = filePath.split(/[\\/]/).pop() || "fichier.mp4";
         const extension = previewExtension(name);
-        return makePreviewFile(name, extension, 42865012);
+        const description = makePreviewFile(name, extension, 42865012);
+        return previewParams.get("mockUnsupportedFiles") === "1" && name.endsWith(".non-supported")
+          ? { ...description, category: "Inconnu", categoryId: "unknown", targets: [] }
+          : description;
       });
     },
     async saveClipboardFiles(files) {
@@ -183,14 +208,9 @@ export function createPreviewApi(): MultiConverterApi {
         shouldFailRecentRefresh = false;
         throw new Error("Rafraîchissement des documents récents simulé en échec.");
       }
-      return previewDocuments.slice(0, 10).map((document) => ({
-        id: document.id,
-        title: document.title,
-        format: document.source?.format ?? "draft",
-        sourcePath: document.source?.path ?? null,
-        updatedAt: document.updatedAt,
-        recoverable: true,
-      }));
+      const snapshot = previewRecentDocuments(previewDocuments);
+      await delayStaleRecentPreview(previewParams.get("mockRecentRefreshRace") === "1", snapshot);
+      return snapshot;
     },
     async editorLoadDocument(id) {
       const document = previewDocuments.find((item) => item.id === id);
@@ -255,8 +275,36 @@ export function createPreviewApi(): MultiConverterApi {
       return { path: `${PREVIEW_ROOT}\\Documents\\${document.title}.${request.targetFormat}`, document };
     },
     async editorExportDocument(request) {
+      if (previewParams.get("mockSlowEditorExport") === "1") {
+        await new Promise((resolve) => window.setTimeout(resolve, 300));
+      }
       const document = await this.editorSaveDraft(request.document);
       return { path: `${PREVIEW_ROOT}\\Downloads\\${document.title}.${request.targetFormat}`, document };
+    },
+    async editorBeginGeneratedWrite(payload) {
+      const sessionId = crypto.randomUUID();
+      generatedWrites.set(sessionId, { payload: structuredClone(payload), written: 0 });
+      return { sessionId, chunkSize: 1024 * 1024 };
+    },
+    async editorAppendGeneratedWrite(sessionId, offset, bytes) {
+      const session = generatedWrites.get(sessionId);
+      if (!session || session.written !== offset) throw new Error("EDITOR_GENERATED_OFFSET_INVALID");
+      session.written += bytes.length;
+      return session.written;
+    },
+    async editorCommitGeneratedWrite(sessionId) {
+      const session = generatedWrites.get(sessionId);
+      if (!session) throw new Error("EDITOR_GENERATED_SESSION_MISSING");
+      generatedWrites.delete(sessionId);
+      const document = await this.editorSaveDraft(session.payload.request.document);
+      const base = session.payload.mode === "export" ? `${PREVIEW_ROOT}\\Downloads` : `${PREVIEW_ROOT}\\Documents`;
+      return {
+        path: session.payload.request.destinationPath || `${base}\\${document.title}.docx`,
+        document,
+      };
+    },
+    async editorAbortGeneratedWrite(sessionId) {
+      return generatedWrites.delete(sessionId);
     },
     async editorReadAsset(documentId, assetId) {
       const data = previewEditorAssets.get(`${documentId}:${assetId}`);
@@ -286,6 +334,27 @@ export function createPreviewApi(): MultiConverterApi {
       if (!document) throw new Error("Brouillon introuvable.");
       return structuredClone(document);
     },
+    async editorListSystemFonts(options) {
+      if (shouldMockFontEnumerationFailure && !options?.retry) {
+        throw new Error("EDITOR_FONT_ENUMERATION_FAILED: preview fixture");
+      }
+      return previewSystemFontCatalog();
+    },
+    async editorInspectFontEmbedding(family) {
+      return {
+        schemaVersion: 1,
+        requestedFamily: family,
+        resolvedFamily: family,
+        permission: "preview-print",
+        canEmbedPdf: true,
+        substituted: false,
+        requestedCanEmbedPdf: true,
+        requestedCoversText: true,
+        noSubsetting: false,
+        warning: null,
+      };
+    },
+    ...previewPdf.methods,
     async engineStatuses() {
       return [
         { id: "rust-text", label: "Moteur documents intégré", mode: "base", available: true, status: "ready" },
@@ -306,4 +375,15 @@ export function createPreviewApi(): MultiConverterApi {
       return () => undefined;
     },
   };
+}
+
+function previewExportPaths(
+  filePaths: string[],
+  destinationDir: string,
+  entries?: ExportEntryV1[] | null,
+) {
+  if (entries?.length) {
+    return entries.map((entry) => `${destinationDir}\\${entry.relativePath.replaceAll("/", "\\")}`);
+  }
+  return filePaths.map((filePath) => filePath.replace(PREVIEW_TEMP, destinationDir));
 }

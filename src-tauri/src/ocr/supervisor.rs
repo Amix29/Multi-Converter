@@ -3,8 +3,8 @@ use super::{normalize, runtime, validation};
 use serde::Deserialize;
 use serde_json::json;
 use std::fs;
-use std::io::{BufRead, BufReader, Write};
-use std::process::{Child, ChildStdin, Command, Stdio};
+use std::io::{BufRead, BufReader, Read, Write};
+use std::process::{Child, ChildStderr, ChildStdin, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::sync::{Arc, Mutex};
@@ -13,6 +13,7 @@ use tauri::{AppHandle, Emitter};
 
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
 const PAGE_TIMEOUT: Duration = Duration::from_secs(180);
+const STDERR_TAIL_BYTES: usize = 8 * 1024;
 
 #[derive(Clone)]
 struct ActiveJob {
@@ -25,6 +26,7 @@ struct WorkerProcess {
     child: Child,
     stdin: ChildStdin,
     messages: Receiver<WorkerMessage>,
+    stderr_tail: Arc<Mutex<Vec<u8>>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -44,7 +46,7 @@ pub struct OcrState {
 }
 
 impl OcrState {
-    pub(super) fn recognize_image(
+    pub(crate) fn recognize_image(
         &self,
         app: &AppHandle,
         source: &str,
@@ -132,16 +134,26 @@ impl OcrState {
         canceled: Arc<AtomicBool>,
     ) -> Result<OcrDocumentResultV1, String> {
         emit(app, OcrProgressV1::image(job_id, 2, "starting"));
-        let selected = runtime::selected_runtime(app)?;
-        emit(app, OcrProgressV1::image(job_id, 10, "preparing"));
+        ensure_not_canceled(&canceled)?;
+        let mut runtime_progress = |phase: &'static str, value: u8| {
+            emit(
+                app,
+                OcrProgressV1::image(job_id, map_runtime_progress(phase, value), phase),
+            );
+        };
+        let selected = runtime::selected_runtime(app, &canceled, &mut runtime_progress)?;
+        ensure_not_canceled(&canceled)?;
+        emit(app, OcrProgressV1::image(job_id, 12, "preparing-image"));
         let prepared = validation::prepare_image(source)?;
+        ensure_not_canceled(&canceled)?;
         let temp = tempfile::Builder::new()
             .prefix("multi-converter-ocr-job-")
             .tempdir()
             .map_err(|error| error.to_string())?;
         let output = temp.path().join("result.json");
         emit(app, OcrProgressV1::image(job_id, 25, "recognizing"));
-        self.execute_worker(&selected, &prepared.path, &output, job_id, canceled)?;
+        self.execute_worker(&selected, &prepared.path, &output, job_id, canceled.clone())?;
+        ensure_not_canceled(&canceled)?;
         emit(app, OcrProgressV1::image(job_id, 92, "normalizing"));
         let bytes = fs::read(&output).map_err(|error| format!("OCR_RESULT_MISSING:{error}"))?;
         let mut result: OcrDocumentResultV1 = serde_json::from_slice(&bytes)
@@ -168,6 +180,7 @@ impl OcrState {
         job_id: &str,
         canceled: Arc<AtomicBool>,
     ) -> Result<(), String> {
+        ensure_not_canceled(&canceled)?;
         let mut slot = self
             .worker
             .lock()
@@ -176,10 +189,16 @@ impl OcrState {
             .as_mut()
             .is_none_or(|worker| worker.child.try_wait().ok().flatten().is_some());
         if restart {
-            *slot = Some(start_worker(runtime)?);
+            *slot = Some(start_worker(runtime, &canceled, |pid| {
+                self.set_pid(job_id, pid);
+            })?);
         }
         let worker = slot.as_mut().expect("worker initialized");
         self.set_pid(job_id, worker.child.id());
+        if let Err(error) = ensure_not_canceled(&canceled) {
+            stop_worker(slot.take());
+            return Err(error);
+        }
         let request = json!({
             "schemaVersion": 1,
             "jobId": job_id,
@@ -222,22 +241,35 @@ impl OcrState {
                         .map_err(|error| error.to_string())?
                         .is_some()
                     {
-                        stop_worker(slot.take());
-                        return Err(
-                            "OCR_RUNTIME_CRASH:Le moteur OCR local s’est arrêté.".to_string()
+                        let error = worker_runtime_error(
+                            "OCR_RUNTIME_CRASH",
+                            "Le moteur OCR local s’est arrêté.",
+                            &worker.stderr_tail,
                         );
+                        stop_worker(slot.take());
+                        return Err(error);
                     }
                 }
                 Err(RecvTimeoutError::Disconnected) => {
+                    let error = worker_runtime_error(
+                        "OCR_RUNTIME_CRASH",
+                        "Le moteur OCR local ne répond plus.",
+                        &worker.stderr_tail,
+                    );
                     stop_worker(slot.take());
-                    return Err("OCR_RUNTIME_CRASH:Le moteur OCR local ne répond plus.".to_string());
+                    return Err(error);
                 }
             }
         }
     }
 }
 
-fn start_worker(runtime: &runtime::ResolvedRuntime) -> Result<WorkerProcess, String> {
+fn start_worker(
+    runtime: &runtime::ResolvedRuntime,
+    canceled: &AtomicBool,
+    mut on_spawn: impl FnMut(u32),
+) -> Result<WorkerProcess, String> {
+    ensure_not_canceled(canceled)?;
     let mut command = Command::new(&runtime.executable);
     command
         .arg("--serve")
@@ -250,7 +282,7 @@ fn start_worker(runtime: &runtime::ResolvedRuntime) -> Result<WorkerProcess, Str
         .env("NO_PROXY", "*")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::null());
+        .stderr(Stdio::piped());
     configure_runtime_library_path(&mut command, runtime)?;
     #[cfg(windows)]
     {
@@ -260,14 +292,29 @@ fn start_worker(runtime: &runtime::ResolvedRuntime) -> Result<WorkerProcess, Str
     let mut child = command
         .spawn()
         .map_err(|error| format!("OCR_RUNTIME_START:{error}"))?;
-    let stdin = child
-        .stdin
-        .take()
-        .ok_or_else(|| "OCR_RUNTIME_START:Entrée du moteur indisponible.".to_string())?;
-    let stdout = child
-        .stdout
-        .take()
-        .ok_or_else(|| "OCR_RUNTIME_START:Sortie du moteur indisponible.".to_string())?;
+    on_spawn(child.id());
+    let stdin = match child.stdin.take() {
+        Some(stdin) => stdin,
+        None => {
+            terminate_child(&mut child);
+            return Err("OCR_RUNTIME_START:Entrée du moteur indisponible.".to_string());
+        }
+    };
+    let stdout = match child.stdout.take() {
+        Some(stdout) => stdout,
+        None => {
+            terminate_child(&mut child);
+            return Err("OCR_RUNTIME_START:Sortie du moteur indisponible.".to_string());
+        }
+    };
+    let stderr = match child.stderr.take() {
+        Some(stderr) => stderr,
+        None => {
+            terminate_child(&mut child);
+            return Err("OCR_RUNTIME_START:Erreur du moteur indisponible.".to_string());
+        }
+    };
+    let stderr_tail = capture_stderr(stderr);
     let (sender, messages) = mpsc::channel();
     std::thread::spawn(move || {
         for line in BufReader::new(stdout).lines().map_while(Result::ok) {
@@ -280,13 +327,18 @@ fn start_worker(runtime: &runtime::ResolvedRuntime) -> Result<WorkerProcess, Str
     });
     let ready_started = Instant::now();
     loop {
+        if let Err(error) = ensure_not_canceled(canceled) {
+            terminate_child(&mut child);
+            return Err(error);
+        }
         if ready_started.elapsed() > STARTUP_TIMEOUT {
-            kill_process_tree(child.id());
-            let _ = child.kill();
-            return Err(
-                "OCR_RUNTIME_START_TIMEOUT:Le moteur OCR n’a pas démarré en 30 secondes."
-                    .to_string(),
+            let error = worker_runtime_error(
+                "OCR_RUNTIME_START_TIMEOUT",
+                "Le moteur OCR n’a pas démarré en 30 secondes.",
+                &stderr_tail,
             );
+            terminate_child(&mut child);
+            return Err(error);
         }
         match messages.recv_timeout(Duration::from_millis(50)) {
             Ok(message) if message.kind == "ready" => break,
@@ -296,13 +348,25 @@ fn start_worker(runtime: &runtime::ResolvedRuntime) -> Result<WorkerProcess, Str
                     .map_err(|error| error.to_string())?
                     .is_some()
                 {
-                    return Err(
-                        "OCR_RUNTIME_START:Le moteur OCR s’est arrêté au démarrage.".to_string()
+                    ensure_not_canceled(canceled)?;
+                    let error = worker_runtime_error(
+                        "OCR_RUNTIME_START",
+                        "Le moteur OCR s’est arrêté au démarrage.",
+                        &stderr_tail,
                     );
+                    terminate_child(&mut child);
+                    return Err(error);
                 }
             }
             Err(RecvTimeoutError::Disconnected) => {
-                return Err("OCR_RUNTIME_START:Le moteur OCR ne répond pas.".to_string());
+                ensure_not_canceled(canceled)?;
+                let error = worker_runtime_error(
+                    "OCR_RUNTIME_START",
+                    "Le moteur OCR ne répond pas.",
+                    &stderr_tail,
+                );
+                terminate_child(&mut child);
+                return Err(error);
             }
         }
     }
@@ -310,7 +374,74 @@ fn start_worker(runtime: &runtime::ResolvedRuntime) -> Result<WorkerProcess, Str
         child,
         stdin,
         messages,
+        stderr_tail,
     })
+}
+
+fn map_runtime_progress(phase: &str, value: u8) -> u8 {
+    let value = value.min(100);
+    match phase {
+        "extracting-runtime" => 2 + ((u16::from(value) * 3) / 100) as u8,
+        "verifying-runtime" => 5 + ((u16::from(value) * 3) / 100) as u8,
+        "verifying-models" => 8 + ((u16::from(value) * 2) / 100) as u8,
+        _ => 2,
+    }
+}
+
+pub(super) fn ensure_not_canceled(canceled: &AtomicBool) -> Result<(), String> {
+    if canceled.load(Ordering::SeqCst) {
+        Err("OCR_CANCELLED:L’OCR a été annulé.".to_string())
+    } else {
+        Ok(())
+    }
+}
+
+fn capture_stderr(mut stderr: ChildStderr) -> Arc<Mutex<Vec<u8>>> {
+    let tail = Arc::new(Mutex::new(Vec::new()));
+    let captured = tail.clone();
+    std::thread::spawn(move || {
+        let mut buffer = [0u8; 4096];
+        while let Ok(read) = stderr.read(&mut buffer) {
+            if read == 0 {
+                break;
+            }
+            append_stderr_tail(&captured, &buffer[..read]);
+        }
+    });
+    tail
+}
+
+fn append_stderr_tail(tail: &Arc<Mutex<Vec<u8>>>, bytes: &[u8]) {
+    let mut tail = tail.lock().unwrap_or_else(|error| error.into_inner());
+    if bytes.len() >= STDERR_TAIL_BYTES {
+        tail.clear();
+        tail.extend_from_slice(&bytes[bytes.len() - STDERR_TAIL_BYTES..]);
+        return;
+    }
+    let overflow = tail
+        .len()
+        .saturating_add(bytes.len())
+        .saturating_sub(STDERR_TAIL_BYTES);
+    if overflow > 0 {
+        tail.drain(..overflow);
+    }
+    tail.extend_from_slice(bytes);
+}
+
+fn worker_runtime_error(code: &str, message: &str, tail: &Arc<Mutex<Vec<u8>>>) -> String {
+    let tail = tail.lock().unwrap_or_else(|error| error.into_inner());
+    let detail = bounded_detail(&String::from_utf8_lossy(&tail));
+    if detail.trim().is_empty() {
+        format!("{code}:{message}")
+    } else {
+        format!("{code}:{message} Détail moteur : {detail}")
+    }
+}
+
+fn terminate_child(child: &mut Child) {
+    kill_process_tree(child.id());
+    let _ = child.kill();
+    let _ = child.wait();
 }
 
 #[cfg(target_os = "linux")]
@@ -342,9 +473,7 @@ fn configure_runtime_library_path(
 
 fn stop_worker(worker: Option<WorkerProcess>) {
     if let Some(mut worker) = worker {
-        kill_process_tree(worker.child.id());
-        let _ = worker.child.kill();
-        let _ = worker.child.wait();
+        terminate_child(&mut worker.child);
     }
 }
 
@@ -374,3 +503,7 @@ fn kill_process_tree(pid: u32) {
         .args(["-TERM", &pid.to_string()])
         .status();
 }
+
+#[cfg(test)]
+#[path = "supervisor_tests.rs"]
+mod tests;

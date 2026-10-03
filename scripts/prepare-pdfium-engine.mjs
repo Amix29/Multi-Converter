@@ -86,6 +86,18 @@ await fs.cp(path.join(extractDir, "licenses"), path.join(sourceDir, "licenses", 
   recursive: true,
   force: true,
 });
+await copyCargoPackageLicense(
+  "pdfium-render",
+  provenance.wrapper.pdfiumRenderCrateVersion,
+  "LICENSE.md",
+  "pdfium-render-LICENSE.md",
+);
+await copyCargoPackageLicense(
+  "lopdf",
+  provenance.wrapper.lopdfCrateVersion,
+  "LICENSE",
+  "lopdf-LICENSE.txt",
+);
 await fs.writeFile(
   path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"),
   [
@@ -98,8 +110,8 @@ await fs.writeFile(
     "PDFium is distributed by bblanchon/pdfium-binaries from Chromium PDFium sources.",
     "The extracted package includes third-party notices under licenses/pdfium-third-party/.",
     "",
-    "Wrapper: Multi-Converter pdfium-render, built with the Rust pdfium-render crate.",
-    "Wrapper license: AGPL-3.0-or-later for Multi-Converter code; pdfium-render crate keeps its own MIT OR Apache-2.0 license.",
+    "Wrapper: Multi-Converter pdfium-render, built with the Rust pdfium-render and lopdf crates.",
+    "Wrapper license: AGPL-3.0-or-later for Multi-Converter code; pdfium-render keeps its MIT OR Apache-2.0 license and lopdf keeps its MIT license.",
     "",
   ].join("\n"),
   "utf8",
@@ -197,6 +209,7 @@ async function assertWrapperManifest(wrapper) {
   if (!manifest.includes(`rust-version = "${wrapper.minimumRustVersion}"`)) throw new Error("Version Rust minimale du wrapper non conforme au verrou.");
   if (!manifest.includes(`license = "${wrapper.license}"`)) throw new Error("Licence du wrapper PDFium non conforme au verrou.");
   if (!manifest.includes(`pdfium-render = "=${wrapper.pdfiumRenderCrateVersion}"`)) throw new Error("Version de pdfium-render non conforme au verrou.");
+  if (!manifest.includes(`lopdf = "=${wrapper.lopdfCrateVersion}"`)) throw new Error("Version de lopdf non conforme au verrou.");
 }
 
 function listArchive(archivePath) {
@@ -269,4 +282,22 @@ function reproducibleCargoEnvironment(lock, linker) {
 async function copyIfExists(source, target) {
   await assertFile(source, `Fichier requis absent : ${source}`);
   await fs.copyFile(source, target);
+}
+
+async function copyCargoPackageLicense(packageName, packageVersion, licenseName, outputName) {
+  const metadata = spawnSync(
+    "cargo",
+    ["metadata", "--manifest-path", path.join(wrapperBuild, "Cargo.toml"), "--locked", "--format-version", "1"],
+    { cwd: root, encoding: "utf8", windowsHide: true },
+  );
+  if (metadata.status !== 0) {
+    throw new Error(`Metadonnees Cargo indisponibles pour ${packageName}: ${metadata.stderr || metadata.stdout}`);
+  }
+  const packages = JSON.parse(metadata.stdout).packages;
+  const selected = packages.find((entry) => entry.name === packageName && entry.version === packageVersion);
+  if (!selected) throw new Error(`Paquet Cargo verrouille absent: ${packageName} ${packageVersion}.`);
+  await copyIfExists(
+    path.join(path.dirname(selected.manifest_path), licenseName),
+    path.join(sourceDir, "licenses", outputName),
+  );
 }

@@ -203,9 +203,14 @@ Playwright builds the explicit browser-preview bundle, serves `dist` on
 `127.0.0.1:4173` and routes scenarios to the relevant Chromium project. The
 desktop project covers conversion cancellation, failure/retry/export, editor
 autosave and recents, refresh failure, menu/dialog stacking, hostile HTML,
-settings, feedback, keyboard focus and responsive widths. The mobile project
-performs a real touch on `Prepare conversion` at 390 x 844. Reports, traces and
-failure screenshots are written under `output/playwright/` and stay local.
+settings, feedback, keyboard focus and responsive widths. It also covers the
+2026-08-04 correction lot: complete file-card identities, onboarding-stripe
+removal, OCR cancellation/retry, focus mode, typography and colors, image
+movement/resizing/layers, table resizing, title-gated export, export progress,
+in-app overwrite confirmation and recent-document multi-selection. The mobile
+project performs a real touch on `Prepare conversion` at 390 x 844. Reports,
+traces and failure screenshots are written under `output/playwright/` and stay
+local.
 
 Production and preview builds intentionally have different API boundaries:
 
@@ -326,6 +331,8 @@ After an editor UI change, also run the Vite preview and verify:
 - the landing screen, mode switching, document creation, text entry and autosave state;
 - HTML drag and drop on the editor landing area, including the visible drag-active state, unsupported extensions and the one-document limit;
 - recent-document rename, duplicate and delete actions;
+- long-press and explicit-keyboard entry into recent-document multi-selection,
+  batch-delete confirmation, Escape exit and retention of any failed items;
 - returning from an edited document only after autosave and recent-document refresh, with the document kept open when either step fails;
 - deletion cancellation and the confirmation text explaining that the original source is not removed;
 - a recent-document menu opened on an upper grid row with enough cards to create a second row;
@@ -335,6 +342,19 @@ After an editor UI change, also run the Vite preview and verify:
 - hostile imported and pasted HTML is stripped in the document body and header/footer surfaces while supported content remains;
 - welcome, settings and feedback dialogs close with Escape, trap focus and return it to their trigger;
 - keyboard focus, reduced-motion behavior, console output and the target widths remain free of unintended horizontal overflow.
+- complete wrapped file names, structured type/metadata/action regions and OCR
+  actions contained within their converter cards;
+- focus mode covers the exact viewport, closes with Escape and restores focus;
+- the mobile toolbar can reveal every labelled control using 44 px previous and
+  next buttons without widening the page;
+- heading presets are absent while imported headings remain compatible; free
+  decimal point sizes, text color, highlight color/clear state and enumerated
+  system fonts behave as labelled;
+- selected images expose 44 px move, resize and four layer controls; table
+  columns expose resize handles and labelled row/column/merge/split controls;
+- new documents default to Markdown, untitled exports request a title, accepted
+  titles remain visible, slow export shows a progress dialog and overwrite uses
+  an in-app dialog rather than `window.confirm()`.
 
 `npm run test:ui-layout` contains regression contracts for editor drop routing, the active recent-card stacking layer, React portal dialogs and destructive-button styling.
 
@@ -349,12 +369,33 @@ npm run build:frontend:preview
 npm run preview:test
 ```
 
-Before starting the OCR work, run the Windows Tauri editor matrix for ODT, DOCX and RTF: import a rich multi-page document, edit body/header/footer/table/image/page settings, save as each office format, export PDF, reopen the office outputs, restart the app, and test overwrite confirmation plus an external-source conflict. Record the engine versions, output hashes, screenshots and every anomaly in `docs/V1_0_7_EDITOR_VALIDATION.md`. A Vite-only result is not valid evidence for this matrix.
+Before closing the Windows editor gate, run the Tauri matrix for ODT, DOCX and
+RTF: import a rich multi-page document, edit
+body/header/footer/table/image/page settings, save as each office format,
+export PDF, reopen the office outputs, restart the app, and test overwrite
+confirmation plus an external-source conflict. DOCX must be generated through
+the direct Tiptap-to-docx.js worker and pass bounded native OOXML validation;
+inline images must reopen with resolvable `word/media` relationships, and
+cancellation during validation or immediately before publication must leave the
+previous destination intact with no staged file;
+RTF and PDF must normalize the rich ODT intermediate through the strict local
+LibreOffice path. Reopen DOCX in both Word and LibreOffice. Record
+completion time, engine version, output hashes, screenshots and every anomaly
+in `docs/V1_0_7_EDITOR_VALIDATION.md`. The historical Windows probe proves the
+former LibreOffice ODT normalization/DOCX/PDF path only; it does not validate
+the new direct DOCX generator. It remains separate from the packaged Tauri interaction;
+an engine probe alone does not prove that the installed UI completed the same
+workflow.
 
 Persistent editor JSON must contain only `mc-asset://<uuid>` image references. Tests should reject Base64, Blob URLs, file paths and remote URLs; manual restart testing must confirm that the associated image bytes remain available after the WebView Blob URLs have been revoked and recreated.
 
-Editor PDF import is enabled through the implemented hybrid
-PP-OCRv6_medium path. Do not describe PDF import, export or office round trips
+PDF-to-document import remains available through the hybrid PP-OCRv6_medium
+path. Structural PDF editing instead uses `PdfEditorSessionV1` and must be
+tested independently for source hash, permissions, DocMDP and Save As. Include
+two consecutive Save As operations to prove session rebasing, an explicit
+unsigned-copy case that leaves the original intact, and hostile active-content
+fixtures that are detected without execution or payload exposure. Do not
+describe PDF import, export or office round trips
 as platform-complete until the real packaged conversion matrix has passed on
 that platform.
 
@@ -417,6 +458,9 @@ Minimum automated coverage:
 - OCR result to Tiptap JSON;
 - explicit image-text clipboard result;
 - progress and cancellation;
+- cancellation during runtime extraction, manifest walking/hashing, model
+  verification, PDF preparation and worker execution, followed by a clean
+  retry with no late result from the cancelled job;
 - corrupt/password-protected inputs;
 - source, pixel, page, time and memory limits;
 - temporary-file cleanup and original-file integrity.
@@ -435,10 +479,13 @@ Minimum real Tauri coverage on Windows:
 
 The current real Tauri development-runtime checks cover a clean French image,
 native/scanned/mixed PDFs, PDF editor import, cancellation, worker crash and
-retry. The local unsigned Windows NSIS build passes with compressed OCR and
-LibreOffice resources, but the installed offline behavior matrix is still
-required before the version bump. Equivalent real host tests remain required
-on macOS and Linux before publishing V1.0.7 packages for those platforms.
+retry. The 2026-08-04 corrected packaged Windows fixture matched its reviewed
+text exactly (100%), and the same checkpoint passed the 40-case corpus at 100%
+clean mean and 99.76% difficult mean. The local
+unsigned Windows NSIS build passes with compressed OCR and LibreOffice
+resources, but the installed behavior matrix is still required before release.
+Equivalent real host tests remain required on macOS and Linux before publishing
+V1.0.7 packages for those platforms.
 
 ## macOS Code Checks
 
@@ -710,6 +757,12 @@ The minimum manual DMG smoke test is:
 
 Use `npm run test:pdfium-wrapper:compile` only when the goal is compile-only validation. Do not present that compile-only check as proof that PDF rendering works on the platform.
 
+The current post-audit Windows development evidence is 40/40 wrapper tests with
+the real locked DLL, 10/10 focused Tauri PDF tests, 20/20 frontend PDF tests and
+eight structural-PDF Playwright scenarios. This includes active-content
+inspection, explicit unsigned-copy creation and consecutive Save As regression
+coverage. It is not installed NSIS, macOS, Linux or independent corpus evidence.
+
 ## Windows PDFium Engine Staging And Native Proof
 
 `tools/pdfium-windows-x64.lock.json` is the sole Windows x64 PDFium provenance
@@ -722,7 +775,8 @@ staging assets with:
 npm run validate:pdfium-engine-release -- --dir "<asset-folder>"
 ```
 
-After the authorized engine prerelease exists, validate a cache-empty public
+Only after the authorized engine prerelease exists and the lock has been moved
+from `unpublished` to a reviewed public URL, validate a cache-empty public
 download with:
 
 ```powershell
@@ -730,11 +784,15 @@ npm run validate:pdfium-engine-release -- --download
 ```
 
 The validator checks exact asset names, manifest metadata, hashes, x64 PE
-payloads, archive paths, wrapper `0.3.0`, `--check`, `--inspect-text` on a native
-PDF and `--render` on a scanned page with PNG decoding. The
-`Windows PDFium Engine Staging` workflow performs the same locked preparation
-twice on Windows and uploads an Actions artifact; it does not publish a GitHub
-release by itself.
+payloads, archive paths, wrapper `0.4.0`, `--check`, `--inspect-text` on a native
+PDF, `--inspect-objects` with a valid `contentKind`, and `--render` on a scanned
+page with PNG decoding. This rejects an older `0.4.0` binary whose structural
+response predates the digital/mixed/scanned editor contract. While the lock
+remains
+`unpublished`, `--download` is expected to fail closed instead of inventing a
+release URL. The `Windows PDFium Engine Staging` workflow performs the same
+locked preparation twice on Windows and uploads an Actions artifact; it does
+not publish a GitHub release by itself.
 
 For installed-resource evidence, first build the NSIS from the publicly
 validated manifest, then run:
@@ -763,10 +821,14 @@ npm run test:linux:native -- --package "<AppImage>" --run-id "<id>"
 Their `--self-test` modes validate only the harness contract and may run on
 Windows. Real evidence must come from the package extracted from the DMG or the
 exact AppImage on its native runner. `OCR Runtime Staging` builds the official
-CPU workers for Apple Silicon, Intel and Linux. `Phase 8 Engine Staging`
-reuses the exact approved V1.0.6 engine artifacts and replaces only PDFium with
-the locked 149.0.7825.0 wrapper 0.3.0 package. Downstream workflows verify the
-staging workflow name, success conclusion and exact head commit before use.
+CPU workers for Apple Silicon, Intel and Linux. The historical Phase 8 package
+used PDFium 149.0.7825.0 with wrapper 0.3.0. The post-audit staging workflow
+builds wrapper 0.4.0 with Rust 1.96.0 and the committed Cargo lock, runs the
+runtime tests and strict Clippy, and emits package evidence separately from the
+engine asset. Its macOS and Linux package measurements remain
+`pending-native-rebuild`; null native hashes must not be replaced by Windows
+values or estimates. Downstream workflows verify the staging workflow name,
+success conclusion and exact head commit before use.
 
 The macOS conversion and DMG workflows require both OCR architectures and one
 shared model copy. The Linux AppImage workflow requires only Linux x64. They

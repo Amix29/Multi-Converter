@@ -10,10 +10,15 @@ const root = process.cwd();
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "mc-bundled-platform-"));
 const validator = path.join(root, "scripts", "validate-bundled-engines.mjs");
 const preparerSource = fs.readFileSync(path.join(root, "scripts", "prepare-bundled-engines.mjs"), "utf8");
+const pdfiumPackageSource = fs.readFileSync(path.join(root, "scripts", "lib", "pdfium-package.mjs"), "utf8");
 
 try {
   assert.match(preparerSource, /validateLockedPdfiumTree\(rootDir, pdfiumLock, pdfiumFixtureRoot\)/,
     "bundled engine preparation must reject a stale PDFium tree before reusing it");
+  assert.match(pdfiumPackageSource, /\["--inspect-objects"\]/,
+    "PDFium health checks must exercise the structural editor contract");
+  assert.match(pdfiumPackageSource, /objectPayload\.contentKind/,
+    "PDFium health checks must reject wrappers that omit contentKind");
   testPlaceholderClassifiers();
   writeFixture();
   runValidator("windows-x64");

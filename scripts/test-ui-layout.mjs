@@ -6,6 +6,11 @@ const root = process.cwd();
 const app = fs.readFileSync(path.join(root, "src", "App.tsx"), "utf8");
 const appModel = fs.readFileSync(path.join(root, "src", "app", "conversion", "model.ts"), "utf8");
 const appTopbar = fs.readFileSync(path.join(root, "src", "app", "layout", "AppTopbar.tsx"), "utf8");
+const filesScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "FilesScreen.tsx"), "utf8");
+const formatScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "FormatScreen.tsx"), "utf8");
+const progressScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "ProgressScreen.tsx"), "utf8");
+const virtualizedJobList = fs.readFileSync(path.join(root, "src", "app", "screens", "VirtualizedJobList.tsx"), "utf8");
+const largeListModel = fs.readFileSync(path.join(root, "src", "app", "conversion", "largeListModel.ts"), "utf8");
 const feedbackOverlays = fs.readFileSync(path.join(root, "src", "app", "feedback", "FeedbackOverlays.tsx"), "utf8");
 const fileWorkflow = fs.readFileSync(path.join(root, "src", "app", "conversion", "useFileWorkflow.ts"), "utf8");
 const api = [
@@ -29,6 +34,7 @@ const editor = [
   fs.readFileSync(path.join(root, "src", "editor", "RecentDocumentDialogs.tsx"), "utf8"),
 ].join("\n");
 const editorCss = fs.readFileSync(path.join(root, "src", "editor", "editor.css"), "utf8");
+const fileCardsCss = fs.readFileSync(path.join(root, "src", "styles", "file-cards.css"), "utf8");
 
 assert.match(app, /<div className="floating-corner" data-testid="floating-corner">/, "floating-corner wrapper is missing");
 assert.match(app, /updateReminderActive\s*\?\s*"has-update-reminder"\s*:\s*""/, "app shell must expose update reminder state for layout collision avoidance");
@@ -40,18 +46,31 @@ assert.match(updaterHook, /mockUpdate"\)\s*!==\s*"1"/, "update reminder QA hook 
 assert.doesNotMatch(updaterHook, /import\.meta\.env\.DEV[\s\S]{0,240}mockUpdate/, "mock update UI must be available in built browser previews");
 assert.match(app, /feedbackVisible={feedbackLauncherActive}/, "app shell must pass the current feedback visibility rules to the topbar");
 assert.match(appTopbar, /<div className="topbar-actions">[\s\S]*?<FeedbackButton/, "feedback must render inside the topbar action group");
+assert.match(appTopbar, /<div className="brand-title-row">[\s\S]*?brand-mark[\s\S]*?<h1>Multi-Converter<\/h1>/, "the logo must sit immediately beside the product name");
+assert.match(css, /grid-template-areas:\s*[\r\n]+\s*"brand actions"[\r\n]+\s*"context context";/, "compact topbars must keep settings on the right and move context below");
 assert.doesNotMatch(app, /<FeedbackButton/, "feedback must not remain in the floating app-shell stack");
 assert.match(feedbackOverlays, /data-testid="feedback-launcher"/, "feedback launcher test id is missing");
 assert.match(updateFlow, /data-testid="update-reminder"/, "update reminder test id is missing");
 assert.match(fileWorkflow, /window\.addEventListener\("paste", onPaste\)/, "clipboard paste listener is missing");
 assert.match(fileWorkflow, /canImportDroppedFiles\s*=\s*options\.appMode === "converter" && \(step === 1 \|\| step === 2\)/, "paste and drop imports must be limited to converter Files and Formats");
 assert.match(fileWorkflow, /appModeRef\.current === "editor"[\s\S]*?setEditorDropRequest/, "native editor drops must be routed through the file workflow");
-assert.match(fileWorkflow, /if \(canImportDroppedFilesRef\.current\) await addFilePaths\(paths\);/, "native converter drops must remain limited to import steps");
+assert.match(fileWorkflow, /canImportDroppedFilesRef\.current\)\s*{\s*await addFilePaths\(paths\);/, "native converter drops must remain limited to import steps");
 assert.match(fileWorkflow, /if \(!canImportDroppedFiles\) return;/, "HTML file drops must be ignored outside import steps");
 assert.match(fileWorkflow, /api\.saveClipboardFiles/, "clipboard files must be saved locally before analysis");
 assert.doesNotMatch(app + appTopbar + fileWorkflow, /pasteFromClipboard|clipboard-button/, "clipboard import must remain implicit without a dedicated UI button");
 assert.match(api, /saveClipboardFiles\(files: ClipboardFileInput\[\]\)/, "clipboard API contract is missing");
 assert.match(appTopbar, /className="mode-toggle"/, "converter/editor mode toggle is missing");
+assert.match(app, /bootstrapDependencies\(\)[\s\S]*?\}, \[setInternetAvailable\]\);/, "engine bootstrap must not rerun when only the language changes");
+assert.match(fileWorkflow, /api\.onProgress[\s\S]*?\}, \[addFilePaths\]\);/, "native progress and drop listeners must not resubscribe on language changes");
+assert.match(filesScreen, /upload\.removeUnsupported/, "Files must expose a bulk action for unsupported imports");
+assert.match(fileWorkflow, /withoutUnsupportedFiles/, "bulk unsupported removal must use the shared pure helper");
+assert.match(formatScreen, /stablePartitionBySupport/, "Formats must keep compatible files before unsupported files");
+assert.match(largeListModel, /for \(const file of files\)[\s\S]*?supported[\s\S]*?unsupported/, "the supported-first partition must remain stable");
+assert.match(progressScreen, /progress\.filterAll[\s\S]*?progress\.filterErrors/, "output status filters are missing");
+assert.match(virtualizedJobList, /props\.files\.slice\(windowState\.startIndex, windowState\.endIndex\)/, "output jobs must mount only the visible virtual window");
+assert.match(virtualizedJobList, /data-total-count={props\.files\.length}/, "the virtual output list must expose its complete item count for QA");
+assert.match(fileCardsCss, /max-height:\s*calc\(3 \* 132px \+ 2 \* 12px\);/, "the file lane must show at most three card rows");
+assert.doesNotMatch(fileCardsCss, /animation\s*:/, "large file-card lists must not animate each card on entry");
 assert.match(app, /<EditorWorkspace/, "editor workspace is missing from the app shell");
 assert.match(editor, /nativeDropRequest/, "the editor must consume native drop requests");
 assert.match(editor, /recent-document-menu-popover/, "recent document actions menu is missing");

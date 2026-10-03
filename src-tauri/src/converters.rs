@@ -43,7 +43,7 @@ mod text;
 #[cfg(test)]
 mod tests;
 
-use cancellation::{check_cancelled, clear_cancelled, is_cancelled};
+use cancellation::{check_cancelled, is_cancelled};
 use describe::gif_is_animated;
 use external::{
     convert_with_libreoffice, convert_with_libvips, convert_with_pandoc, convert_with_pdfium,
@@ -57,12 +57,14 @@ use text::{
 };
 
 pub use cancellation::cancel_conversion;
+pub(crate) use cancellation::{ActiveConversion, begin_conversion};
 pub use contracts::{
-    ConversionJob, ConversionResult, ConvertError, FileDescription, FileWarning, ProgressPayload,
-    Result,
+    ConversionJob, ConversionResult, ConvertError, FileDescription, FileWarning, ImportOriginKind,
+    ImportOriginV1, ImportedFileDescription, ProgressPayload, Result,
 };
 pub use describe::describe_file_with_app;
 pub use orchestrator::convert;
+pub(crate) use orchestrator::convert_registered;
 
 pub(crate) use external::{
     ExternalCommandProgress, engine_command, engine_path, run_external_command_with_progress,

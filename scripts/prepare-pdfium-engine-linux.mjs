@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -45,7 +46,12 @@ await assertLockedLibrary(so, asset);
 
 await fs.rm(wrapperBuild, { recursive: true, force: true });
 await fs.cp(wrapperSource, wrapperBuild, { recursive: true, force: true });
-run("cargo", ["generate-lockfile", "--manifest-path", path.join(wrapperBuild, "Cargo.toml")]);
+await assertCanonicalTextHash(
+  path.join(wrapperBuild, "Cargo.lock"),
+  asset.wrapperCargoLockSha256,
+  "Linux wrapper Cargo.lock",
+);
+assertRustToolchain(asset.wrapperBuildRustVersion);
 run("cargo", ["build", "--manifest-path", path.join(wrapperBuild, "Cargo.toml"), "--release", "--locked"]);
 
 await fs.rm(sourceDir, { recursive: true, force: true });
@@ -57,6 +63,7 @@ await fs.chmod(path.join(sourceDir, "bin", "libpdfium.so"), 0o755);
 const wrapper = path.join(sourceDir, "bin", "pdfium-render-x86_64-unknown-linux-gnu");
 await fs.copyFile(path.join(wrapperBuild, "target", "release", "pdfium-render"), wrapper);
 await fs.chmod(wrapper, 0o755);
+assertWrapperVersion(wrapper, asset.wrapperVersion);
 
 await copyIfExists(path.join(extractDir, "LICENSE"), path.join(sourceDir, "licenses", "LICENSE.txt"));
 await fs.cp(path.join(extractDir, "licenses"), path.join(sourceDir, "licenses", "pdfium-third-party"), {
@@ -104,6 +111,26 @@ async function extractTgz(archivePath, destination) {
 async function assertFile(filePath, message) {
   const stat = await fs.stat(filePath).catch(() => null);
   if (!stat?.isFile()) throw new Error(message);
+}
+
+async function assertCanonicalTextHash(filePath, expected, label) {
+  const canonical = (await fs.readFile(filePath, "utf8")).replace(/\r\n?/gu, "\n");
+  const actual = createHash("sha256").update(canonical, "utf8").digest("hex");
+  if (actual !== expected) throw new Error(`${label}: SHA-256 ${actual}, expected ${expected}.`);
+}
+
+function assertRustToolchain(expected) {
+  const result = spawnSync("rustc", ["--version"], { encoding: "utf8" });
+  const actual = result.status === 0 ? result.stdout.trim().split(/\s+/u)[1] : null;
+  if (actual !== expected) throw new Error(`Linux PDFium rustc ${actual ?? "unavailable"}, expected ${expected}.`);
+}
+
+function assertWrapperVersion(executable, expected) {
+  const result = spawnSync(executable, ["--version"], { encoding: "utf8" });
+  const actual = result.status === 0 ? result.stdout.trim() : result.stderr.trim();
+  if (actual !== `pdfium-render-wrapper ${expected}`) {
+    throw new Error(`Linux PDFium wrapper version ${actual || "empty"}, expected ${expected}.`);
+  }
 }
 
 async function assertLockedLibrary(filePath, asset) {

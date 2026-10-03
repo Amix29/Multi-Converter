@@ -90,7 +90,11 @@ the whole workflow in one component:
 | `src/app/layout/`, `settings/`, `welcome/`, `feedback/` | Shell navigation and focused overlays or panels |
 | `src/editor/EditorWorkspace.tsx` | Editor mode lifecycle, document opening and recent-document refresh |
 | `src/editor/DocumentEditor.tsx` | Active Tiptap document, autosave, save/export coordination and editor composition |
-| Other `src/editor/` modules | Canvas, toolbar, document commands, dialogs, local assets, extensions, search, pagination and HTML sanitization |
+| `src/editor/EditorToolbar*.tsx`, `EditorTextControls.tsx`, `EditorTableControls.tsx` | Labelled formatting primitives, responsive toolbar navigation, free typography and table commands |
+| `src/editor/DocumentImageView.tsx`, `src-tauri/src/editor/image_layout.rs` | Interactive image movement/resizing/layers and the matching bounded persisted layout contract |
+| `src/editor/DocumentOperationDialog.tsx`, `documentNaming.ts` | In-app overwrite/export states and non-placeholder title normalization |
+| `src/editor/EditorLanding.tsx`, `RecentDocumentDialogs.tsx` | Recent-document actions, long-press multi-selection and confirmed batch deletion |
+| Other `src/editor/` modules | Canvas, document commands, local assets, extensions, search, pagination and HTML sanitization |
 
 The converter and editor consume the public API from `src/lib/api.ts`. They do
 not import the Tauri or preview implementations directly.
@@ -127,6 +131,16 @@ preview mode; production-output inspection remains part of frontend validation.
 Paper is the active application theme. Multi-Converter does not expose a
 Carbon preference, and it does not fetch fonts, stylesheets or visual assets at
 runtime.
+
+The editor embeds and installs no font. The native backend enumerates installed
+families with DirectWrite on Windows, CoreText on macOS and Fontconfig on
+Linux, and returns names only: physical font paths never cross IPC. The toolbar
+shows the system default, three locally remembered recent names, then a
+virtualized alphabetical catalogue. PDF export inspects the OpenType
+`OS/2.fsType` permission and glyph coverage locally; restricted, bitmap-only or
+indeterminate faces are substituted by an installed embeddable face with a
+visible warning. DOCX output keeps the selected family name without embedding
+or substituting it. No font is downloaded at runtime.
 
 `src/styles.css` is only the ordered stylesheet entry point. Shell, files,
 formats, progress, welcome, settings, notices, feedback, motion and responsive
@@ -182,9 +196,61 @@ This keeps archive limits and path checks independent from document semantics
 while preserving the existing import/export facade and serialized document
 schema.
 
-Office and PDF exports originate from the editor document model through the
-rich ODT generator. Deleting a draft removes only its local draft and assets,
-never the imported source.
+Editor exports keep one public facade but use format-specific local writers.
+ODT is published from the rich ODT generator. RTF and document-to-PDF pass that
+ODT through the strict local LibreOffice normalization/conversion bridge. DOCX
+instead maps Tiptap JSON directly to `docx.js` primitives in a dedicated Web
+Worker, then transfers the finished OOXML package through a 1 MiB chunked,
+128 MiB-bounded Rust session. Rust validates archive paths, duplicate entries,
+expanded sizes, compression ratios, CRC reads and XML well-formedness before
+the shared conflict check and atomic commit. Inline and block images both map
+to real OOXML media relationships. Cancelling terminates the worker and remains
+effective during native flush and validation until the atomic publication
+boundary; a canceled session drops its staging file. Word/LibreOffice visual
+fidelity remains a native corpus gate rather than an architectural assumption.
+
+PDF files opened for structural editing do not enter `EditorDocumentV1`.
+`PdfEditorSessionV1` is a separate PDFium-backed domain with source SHA-256
+identity, lazy page inspection/rendering, typed patches and Save As only.
+PDFium classifies the document from native alphanumeric text objects as
+`digital`, `mixed` or `scanned`. A scanned session is read-only in every
+frontend editing surface. The explicit **Modifier ce PDF** flow recognizes
+every page through the bundled local OCR, writes only OCR text-layer patches
+to a managed temporary copy, re-inspects it, then rebases the same session as
+`digitized`. Cancellation, an empty OCR result or an incomplete page set keeps
+the session locked; closing it removes the managed copy. The source PDF is
+never modified.
+For digital and successfully digitized PDFs, editable text objects are changed
+directly on the rendered page rather than through the inspector. A single click
+opens a positioned text control that inherits the inspected font, size and
+color. `Ctrl+Enter`/`Cmd+Enter` commits a typed `setText` patch, `Escape`
+restores the object, and focus returns to the page object. The inspector remains
+available for advanced object properties and non-text structures. Pending text
+is rendered in place before Save As, while the original PDF stays untouched.
+Permissions and DocMDP constrain each operation. When those constraints forbid
+an edit, an explicit unsigned-copy command atomically writes a distinct file,
+removes signature/DocMDP structures, verifies the new source identity and
+rebases the session without touching the original. A bounded structural scan
+reports JavaScript, Launch actions, XFA, 3D and media as non-editable inspector
+objects without executing them or returning their payload bodies. The existing
+PDF-to-text and PDF-to-Tiptap OCR paths remain explicit conversion/import paths,
+not the storage model for structural PDF edits.
+
+A new document defaults its export selector to Markdown. Export refuses an
+untitled placeholder until the user supplies a normalized title, then exposes
+the potentially long operation through an in-app Vellum dialog. Source
+overwrite confirmation uses the same application-owned dialog boundary instead
+of `window.confirm()`. Deleting a draft removes only its local draft and assets,
+never the imported source; batch deletion applies that rule independently to
+each selected draft.
+
+The Tiptap image node remains backed by `mc-asset://`. Its optional floating
+layout adds safety-bounded finite offsets/dimensions, wrap mode and a bounded
+layer index; Rust validates those attributes before persistence or generation.
+Eight visual handles have no former 30 cm UI cap. Toolbar
+heading presets are intentionally absent, while imported heading nodes remain
+accepted for compatibility. Table column widths continue through TableKit's
+bounded `colwidth` contract.
 
 Closing an active document is an ordered operation: finish the pending
 autosave, refresh the recent-document list and only then return to the editor
@@ -200,14 +266,23 @@ are documented in [`SECURITY.md`](SECURITY.md).
 
 The frontend OCR dialog consumes only the typed API facade. Rust owns path and
 real-type validation, resource integrity, temporary files, process supervision,
-progress and cancellation. A persistent JSON-lines sidecar loads the locked
-local `PP-OCRv6_medium` pipeline on demand; only one OCR job can be active.
+progress and cancellation. Runtime extraction and manifest/model verification
+emit determinate preparation progress; worker startup and recognition remain
+indeterminate because the official engine exposes no reliable fractional
+value. A persistent JSON-lines sidecar loads the locked local
+`PP-OCRv6_medium` pipeline on demand; only one OCR job can be active.
 
-PDFium 0.3 inspects every PDF page. Usable native text is retained, while only
-insufficient pages are rendered at 300 DPI for OCR. The normalized result then
-feeds the existing text serializers or `EditorDocumentV1` with explicit page
-breaks. Image OCR accepts the five bounded local raster formats and returns
-structured text for an explicit write-only clipboard action.
+The cancellation flag is shared across archive extraction, manifest traversal,
+hashing, PDF preparation and worker supervision. UI attempts are sequenced so
+a cancelled job cannot overwrite a retry with late progress or a late result.
+Cancelling resource verification is never cached as a permanent verification
+failure, and the next attempt starts from a valid clean state.
+
+PDFium wrapper 0.4 inspects every PDF page. Usable native text is retained,
+while only insufficient pages are rendered at 300 DPI for OCR. The normalized
+result then feeds the existing text serializers or `EditorDocumentV1` with
+explicit page breaks. Image OCR accepts the five bounded local raster formats
+and returns structured text for an explicit write-only clipboard action.
 
 On Windows, the official CPU runtime is stored as one verified compressed
 archive and extracted into application-local data on first use. Its complete
@@ -254,6 +329,13 @@ architecture, validates the archive hash and every extracted file, then checks
 the Mach-O, ELF or PE machine type before launch. Foreign runtimes, duplicate
 archive entries, links, traversal and missing executable permissions fail
 closed. CoreML, OpenVINO and the native ONNX candidate remain unselected.
+
+The post-audit wrapper is 0.4.0 while PDFium stays at 149.0.7825.0. Its Windows
+package has a reproducible local fingerprint but remains unpublished, so the
+committed historical 0.3.0 engine manifest is not a post-audit candidate.
+macOS universal and Linux x64 package records fail closed as
+`pending-native-rebuild` with unset measurements until native runners rebuild
+and validate them.
 
 ## Sources Of Truth
 

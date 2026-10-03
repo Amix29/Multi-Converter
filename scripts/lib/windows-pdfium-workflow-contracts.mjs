@@ -6,6 +6,7 @@ export function assertWindowsPdfiumWorkflowContracts({ workflow, job }) {
   assert.doesNotMatch(workflow, /lfs:\s*true/, "PDFium staging must not use Git LFS checkout");
   assert.match(job, /runs-on:\s+windows-2025/, "PDFium staging must run on Windows x64");
   assert.match(job, /dtolnay\/rust-toolchain@1\.96\.0/, "PDFium staging must use the exact locked build toolchain");
+  assert.match(job, /wrapper 0\.4\.0/, "PDFium staging must identify wrapper 0.4.0");
   assert.match(job, /npm run prepare:pdfium-engine/, "PDFium staging must prepare the locked upstream archive");
   assert.equal((job.match(/npm run package:pdfium-engine/g) ?? []).length, 2, "PDFium staging must package twice");
   assert.match(job, /Get-FileHash -Algorithm SHA256/, "PDFium staging must compare package hashes");

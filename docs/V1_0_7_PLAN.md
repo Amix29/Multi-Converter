@@ -60,30 +60,81 @@ release blockers.
 - Separate `Convertisseur | Éditeur` workspaces.
 - One active editor document at a time.
 - New document, open document and drag-and-drop entry points.
-- Local recent documents with rename, duplicate and confirmed draft deletion.
+- Local recent documents with rename, duplicate, confirmed draft deletion and
+  long-press multi-selection for bounded batch deletion.
 - Tiptap JSON document model with schema versioning.
 - Paginated editing canvas and DOM-independent pagination planner.
-- Text styles, headings, fonts, sizes, colors, highlighting, alignment, lists, links, tables and local images.
+- Text styles, local/open and system fonts, free point sizes, explicit text and
+  highlight colors, alignment, lists and links. Imported heading nodes remain
+  compatible, but the toolbar no longer exposes heading presets.
+- Resizable tables with explicit row, column, merge, split and delete controls.
+- Local images with eight-handle safety-bounded resizing, flow/floating
+  positioning, pointer and keyboard movement, explicit front/behind-text modes
+  and step/all layer operations.
 - Page formats, orientation, margins, headers, footers and numbering.
 - Local autosave and recent-document storage.
 - Validated local image assets referenced as `mc-asset://<uuid>`.
 - DOCX and RTF import through LibreOffice-to-ODT followed by the bounded ODT parser.
 - Direct ODT parsing without Office-to-HTML routing.
-- Office/PDF export through the rich ODT generator.
-- TXT, Markdown and HTML adapters.
+- ODT export through the rich ODT generator.
+- DOCX export through a direct, lazily loaded `Tiptap JSON → docx.js → OOXML`
+  mapper and a bounded atomic Rust writer. The selected font family is retained
+  without embedding it. LibreOffice is not a DOCX-export fallback.
+- RTF and document-to-PDF export still normalize the generated ODT through the
+  strict local LibreOffice path. PDF font embedding permission is checked
+  separately against the installed face before that bridge is used.
+- TXT, Markdown and HTML adapters. Markdown is the default export selection for
+  a newly opened editor document.
+- Export requires a non-placeholder title, keeps the accepted title in the
+  draft and presents an in-app Vellum progress dialog while native generation
+  is running. Overwrite confirmation also uses an in-app Vellum dialog rather
+  than a browser prompt.
+- A full-viewport focus mode with Escape exit and focus return, a responsive
+  horizontally navigable toolbar and labelled local SVG controls.
+- Structured converter file cards preserve complete filenames and keep their
+  OCR action within the card. The decorative onboarding centre stripe was
+  removed.
 - UI regression protection for recent-document menus and full-viewport dialogs.
 
 ### Still required
 
-- Complete the real Windows Tauri ODT/DOCX/RTF import → edit → export → reopen matrix.
+- Complete the real Windows Tauri ODT/DOCX/RTF import → edit → export → reopen matrix, including direct DOCX output in Word and LibreOffice.
 - Confirm rich images, headers, footers, page numbers, merged cells, landscape layout and manual page breaks in real output files.
 - Confirm native Tauri drag and drop.
 - Confirm draft and `mc-asset://` image persistence after closing and restarting the packaged application.
 - Confirm overwrite approval, external-source conflicts and original-file integrity after a forced failure.
+- Confirm the direct DOCX OOXML package, plus the generated-ODT and normalized
+  LibreOffice RTF/PDF bridge, in the real Tauri application. Source, ZIP and
+  preview evidence do not prove Word/LibreOffice visual fidelity in a packaged app.
 - Confirm unsupported embedded objects create a compatibility warning and block unsafe replacement.
 - Record fixtures, screenshots and SHA-256 values in `V1_0_7_EDITOR_VALIDATION.md`.
 
 The editor gate must close before OCR implementation is treated as the active release workstream.
+
+## Post-audit correction programme
+
+The checkpoint based on `80a0c3838e48e470d99e6a6e27f44c245509bc84`
+supersedes the pre-audit Phase 8 application candidates. It adds six bounded
+lots: scalable converter UI, hierarchical folder export, editor toolbar/media
+controls with system fonts, direct DOCX generation, a distinct structural PDF
+editor and final Vellum/security stabilization. The implementation ledger and
+its honest proof limits live in [`V1_0_7_POST_AUDIT.md`](V1_0_7_POST_AUDIT.md).
+
+The PDF editor is not a Tiptap import. It uses `PdfEditorSessionV1`, lazy page
+inspection and rendering, typed patches and source SHA-256 verification. It is
+Save-As-only, enforces PDF permissions and DocMDP and never executes active PDF
+content. PDFs without native text open in read-only mode and expose an explicit
+local digitization action; only a complete OCR pass over every page can rebase
+the session onto an editable temporary copy. Cancellation or empty recognition
+keeps the PDF locked and the original remains untouched. The original
+PDF-to-text/OCR serializers remain available as conversion paths and do not
+replace this structural editor.
+
+The document and PDF editors now share the same quiet Vellum Paper workspace:
+compact grouped actions, restrained canvas chrome, consistent focus treatment
+and responsive toolbars. The PDF inspector is an explicit contextual panel;
+it can be hidden on desktop and starts closed as an overlay drawer below
+900 px so that the page remains the primary editing surface.
 
 ## Workstream B — Local OCR
 

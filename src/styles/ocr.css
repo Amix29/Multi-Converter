@@ -17,6 +17,7 @@
   border-radius: var(--vlm-radius-lg);
   background: var(--vlm-surface-raised);
   box-shadow: var(--vlm-shadow-overlay);
+  animation: ocrDialogIn var(--vlm-motion-fast) var(--vlm-ease-standard) both;
 }
 
 .ocr-dialog-header,
@@ -43,7 +44,8 @@
 
 .ocr-progress,
 .ocr-result,
-.ocr-error {
+.ocr-error,
+.ocr-cancelled {
   margin-top: var(--vlm-space-6);
 }
 
@@ -52,11 +54,50 @@
   color: var(--vlm-text-muted);
 }
 
-.ocr-progress progress {
-  width: 100%;
-  height: 8px;
+.ocr-progress-heading {
+  min-height: 28px;
+}
+
+.ocr-progress-heading strong {
+  color: var(--vlm-text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.ocr-progress-phase {
+  color: var(--vlm-text-strong);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ocr-progress-track {
+  height: 12px;
   margin: var(--vlm-space-3) 0;
-  accent-color: var(--vlm-primary-bg);
+  overflow: hidden;
+  border: 1px solid var(--vlm-border-strong);
+  border-radius: var(--vlm-radius-pill);
+  background: var(--vlm-surface-sunken);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--vlm-text-strong) 10%, transparent);
+}
+
+.ocr-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--vlm-primary-bg);
+  transition: width var(--vlm-motion-base) var(--vlm-ease-standard);
+}
+
+.ocr-progress-track.is-indeterminate span {
+  width: 38%;
+  background: linear-gradient(90deg, var(--vlm-primary-bg), var(--vlm-accent), var(--vlm-primary-bg));
+  animation: ocrIndeterminate 1.15s var(--vlm-ease-standard) infinite;
+}
+
+.ocr-progress-hint {
+  margin: 0 0 var(--vlm-space-4);
+  color: var(--vlm-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .ocr-result label {
@@ -83,6 +124,34 @@
   border-left: 3px solid var(--vlm-danger-text);
   background: var(--vlm-danger-bg);
   color: var(--vlm-danger-text);
+}
+
+.ocr-error strong,
+.ocr-error p {
+  display: block;
+  margin: 0 0 var(--vlm-space-3);
+}
+
+.ocr-cancelled {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vlm-space-4);
+  padding: var(--vlm-space-4);
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-sm);
+  color: var(--vlm-text-soft);
+  background: var(--vlm-canvas-subtle);
+}
+
+@keyframes ocrDialogIn {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes ocrIndeterminate {
+  from { transform: translateX(-105%); }
+  to { transform: translateX(270%); }
 }
 
 .ocr-actions {

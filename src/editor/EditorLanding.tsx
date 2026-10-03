@@ -10,6 +10,7 @@ import {
   RecentDocumentDialogs,
   type RecentDocumentDialog,
 } from "./RecentDocumentDialogs";
+import "./editor-selection.css";
 
 interface EditorLandingProps {
   language: LanguageCode;
@@ -21,6 +22,7 @@ interface EditorLandingProps {
   onRenameRecent(id: string, title: string): void;
   onDuplicateRecent(item: EditorDocumentSummary): void;
   onDeleteRecent(id: string): void;
+  onDeleteRecents(ids: string[]): Promise<string[]>;
   onDrop(event: React.DragEvent<HTMLElement>): void;
 }
 
@@ -29,8 +31,28 @@ export function EditorLanding(props: EditorLandingProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<RecentDocumentDialog | null>(null);
   const [renameTitle, setRenameTitle] = useState("");
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const dragDepth = useRef(0);
   const dialogTrigger = useRef<HTMLElement | null>(null);
+  const longPress = useRef<{ id: string; x: number; y: number; timer: number } | null>(null);
+  const suppressOpenId = useRef<string | null>(null);
+
+  useEffect(() => {
+    setSelectedIds((current) => new Set(Array.from(current).filter((id) => props.recent.some((item) => item.id === id))));
+  }, [props.recent]);
+
+  useEffect(() => {
+    if (!selectionMode) return;
+    function leaveSelection(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setSelectionMode(false);
+      setSelectedIds(new Set());
+    }
+    document.addEventListener("keydown", leaveSelection);
+    return () => document.removeEventListener("keydown", leaveSelection);
+  }, [selectionMode]);
 
   useEffect(() => {
     if (!openMenuId) return;
@@ -70,9 +92,10 @@ export function EditorLanding(props: EditorLandingProps) {
   }, [openMenuId]);
 
   function openDialog(next: RecentDocumentDialog) {
+    const targetItem = next.type === "deleteMany" ? next.items[0] : next.item;
     const owner = Array.from(
       document.querySelectorAll<HTMLElement>("[data-recent-menu]"),
-    ).find((element) => element.dataset.recentMenu === next.item.id);
+    ).find((element) => element.dataset.recentMenu === targetItem?.id);
     dialogTrigger.current =
       owner?.querySelector<HTMLElement>(".recent-document-menu-trigger") ??
       (document.activeElement instanceof HTMLElement
@@ -97,6 +120,40 @@ export function EditorLanding(props: EditorLandingProps) {
     setDragging(false);
     props.onDrop(event);
   }
+
+  function toggleSelection(id: string) {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function startLongPress(event: React.PointerEvent, id: string) {
+    if (selectionMode || event.button !== 0) return;
+    clearLongPress();
+    const timer = window.setTimeout(() => {
+      suppressOpenId.current = id;
+      setSelectionMode(true);
+      setSelectedIds(new Set([id]));
+      longPress.current = null;
+    }, 520);
+    longPress.current = { id, x: event.clientX, y: event.clientY, timer };
+  }
+
+  function moveLongPress(event: React.PointerEvent) {
+    const pending = longPress.current;
+    if (!pending) return;
+    if (Math.hypot(event.clientX - pending.x, event.clientY - pending.y) > 8) clearLongPress();
+  }
+
+  function clearLongPress() {
+    if (longPress.current) window.clearTimeout(longPress.current.timer);
+    longPress.current = null;
+  }
+
+  const selectedItems = props.recent.filter((item) => selectedIds.has(item.id));
 
   return (
     <div
@@ -187,9 +244,25 @@ export function EditorLanding(props: EditorLandingProps) {
             </h2>
           </div>
           {!!props.recent.length && (
-            <span className="recent-document-count">{props.recent.length}</span>
+            <div className="recent-heading-actions">
+              <span className="recent-document-count">{props.recent.length}</span>
+              <button type="button" className="recent-select-button" aria-pressed={selectionMode} onClick={() => {
+                setSelectionMode((current) => !current);
+                setSelectedIds(new Set());
+              }}>
+                {selectionMode ? t(props.language, "common.cancel") : t(props.language, "editor.selectDocuments")}
+              </button>
+            </div>
           )}
         </div>
+        {selectionMode && (
+          <div className="recent-selection-bar" role="toolbar" aria-label={t(props.language, "editor.selectionTools")}>
+            <strong>{t(props.language, "editor.selectedDocuments", { count: selectedIds.size })}</strong>
+            <button type="button" onClick={() => setSelectedIds(new Set(props.recent.map((item) => item.id)))}>{t(props.language, "editor.selectAll")}</button>
+            <button type="button" onClick={() => setSelectedIds(new Set())}>{t(props.language, "editor.clearSelection")}</button>
+            <button className="is-danger" type="button" disabled={!selectedItems.length} onClick={() => openDialog({ type: "deleteMany", items: selectedItems })}>{t(props.language, "editor.deleteSelected")}</button>
+          </div>
+        )}
         {!props.recent.length ? (
           <div className="editor-empty-recent">
             {t(props.language, "editor.noRecentDocuments")}
@@ -198,14 +271,33 @@ export function EditorLanding(props: EditorLandingProps) {
           <div className="recent-document-grid">
             {props.recent.slice(0, 10).map((item) => (
               <article
-                className={`recent-document-card ${openMenuId === item.id ? "is-menu-open" : ""}`}
+                className={`recent-document-card ${openMenuId === item.id ? "is-menu-open" : ""} ${selectionMode ? "is-selecting" : ""} ${selectedIds.has(item.id) ? "is-selected" : ""}`}
                 key={item.id}
               >
                 <button
                   className="recent-document-open"
                   type="button"
-                  onClick={() => props.onOpenRecent(item.id)}
+                  aria-pressed={selectionMode ? selectedIds.has(item.id) : undefined}
+                  onPointerDown={(event) => startLongPress(event, item.id)}
+                  onPointerMove={moveLongPress}
+                  onPointerUp={clearLongPress}
+                  onPointerCancel={clearLongPress}
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+                    setSelectionMode(true);
+                    setSelectedIds((current) => new Set(current).add(item.id));
+                  }}
+                  onClick={(event) => {
+                    if (suppressOpenId.current === item.id) {
+                      event.preventDefault();
+                      suppressOpenId.current = null;
+                      return;
+                    }
+                    if (selectionMode) toggleSelection(item.id);
+                    else props.onOpenRecent(item.id);
+                  }}
                 >
+                  {selectionMode && <span className="recent-selection-check" aria-hidden="true">{selectedIds.has(item.id) ? "✓" : ""}</span>}
                   <MiniDocumentIcon format={item.format} />
                   <span className="recent-document-copy">
                     <strong>{item.title}</strong>
@@ -215,7 +307,7 @@ export function EditorLanding(props: EditorLandingProps) {
                     </small>
                   </span>
                 </button>
-                <div
+                {!selectionMode && <div
                   className="recent-document-menu"
                   data-recent-menu={item.id}
                 >
@@ -278,7 +370,7 @@ export function EditorLanding(props: EditorLandingProps) {
                       </button>
                     </div>
                   )}
-                </div>
+                </div>}
               </article>
             ))}
           </div>
@@ -297,6 +389,11 @@ export function EditorLanding(props: EditorLandingProps) {
         onRenameTitle={setRenameTitle}
         onRename={props.onRenameRecent}
         onDelete={props.onDeleteRecent}
+        onDeleteMany={props.onDeleteRecents}
+        onBatchDeleteComplete={(failedIds) => {
+          setSelectedIds(new Set(failedIds));
+          setSelectionMode(failedIds.length > 0);
+        }}
         onClose={closeDialog}
       />
     </div>

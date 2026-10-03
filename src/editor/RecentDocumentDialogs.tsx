@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useModalAccessibility } from "../hooks/useModalAccessibility";
 import type { EditorDocumentSummary } from "../lib/api";
@@ -7,6 +7,9 @@ import { t, type LanguageCode } from "../i18n";
 export type RecentDocumentDialog = {
   type: "rename" | "delete";
   item: EditorDocumentSummary;
+} | {
+  type: "deleteMany";
+  items: EditorDocumentSummary[];
 };
 
 interface RecentDocumentDialogsProps {
@@ -16,12 +19,17 @@ interface RecentDocumentDialogsProps {
   onRenameTitle(title: string): void;
   onRename(id: string, title: string): void;
   onDelete(id: string): void;
+  onDeleteMany(ids: string[]): Promise<string[]>;
+  onBatchDeleteComplete(failedIds: string[]): void;
   onClose(): void;
 }
 
 export function RecentDocumentDialogs(props: RecentDocumentDialogsProps) {
   const renameDialogRef = useRef<HTMLFormElement>(null);
   const deleteDialogRef = useRef<HTMLDivElement>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => setSubmitting(false), [props.dialog]);
 
   useModalAccessibility({
     isOpen: props.dialog?.type === "rename",
@@ -29,7 +37,7 @@ export function RecentDocumentDialogs(props: RecentDocumentDialogsProps) {
     onEscape: props.onClose,
   });
   useModalAccessibility({
-    isOpen: props.dialog?.type === "delete",
+    isOpen: props.dialog?.type === "delete" || props.dialog?.type === "deleteMany",
     surfaceRef: deleteDialogRef,
     onEscape: props.onClose,
   });
@@ -44,8 +52,14 @@ export function RecentDocumentDialogs(props: RecentDocumentDialogsProps) {
     props.onClose();
   }
 
+  const isRename = props.dialog.type === "rename";
+  const batchItems = props.dialog.type === "deleteMany" ? props.dialog.items : [];
+  const singleItem = props.dialog.type !== "deleteMany" ? props.dialog.item : null;
+  const isBatch = batchItems.length > 0;
+  const deleteCount = isBatch ? batchItems.length : 1;
+
   return createPortal(
-    props.dialog.type === "rename" ? (
+    isRename ? (
       <div
         className="editor-modal-backdrop"
         role="presentation"
@@ -110,26 +124,39 @@ export function RecentDocumentDialogs(props: RecentDocumentDialogsProps) {
             {t(props.language, "editor.irreversibleAction")}
           </span>
           <h2 id="delete-document-title">
-            {t(props.language, "editor.deleteDocument")}
+            {isBatch
+              ? t(props.language, "editor.deleteDocuments", { count: deleteCount })
+              : t(props.language, "editor.deleteDocument")}
           </h2>
           <p>
-            {t(props.language, "editor.deleteDocumentConfirm", {
-              name: props.dialog.item.title,
-            })}
+            {isBatch
+              ? t(props.language, "editor.deleteDocumentsConfirm", { count: deleteCount })
+              : t(props.language, "editor.deleteDocumentConfirm", {
+                  name: singleItem?.title ?? "",
+                })}
           </p>
           <div className="editor-modal-actions">
-            <button type="button" onClick={props.onClose}>
+            <button type="button" disabled={submitting} onClick={props.onClose}>
               {t(props.language, "common.cancel")}
             </button>
             <button
               className="editor-danger-button"
               type="button"
+              disabled={submitting}
               onClick={() => {
-                props.onDelete(props.dialog!.item.id);
-                props.onClose();
+                if (props.dialog?.type === "deleteMany") {
+                  setSubmitting(true);
+                  void props.onDeleteMany(props.dialog.items.map((item) => item.id)).then((failedIds) => {
+                    props.onBatchDeleteComplete(failedIds);
+                    props.onClose();
+                  }).finally(() => setSubmitting(false));
+                } else if (props.dialog?.type === "delete") {
+                  props.onDelete(props.dialog.item.id);
+                  props.onClose();
+                }
               }}
             >
-              {t(props.language, "editor.delete")}
+              {submitting ? t(props.language, "editor.deleting") : t(props.language, "editor.delete")}
             </button>
           </div>
         </div>

@@ -2,6 +2,20 @@ use super::output::{AtomicOutput, safe_path_component};
 use super::*;
 
 pub fn convert(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult> {
+    let registration = begin_conversion(&job.id)?;
+    convert_registered(app, job, registration)
+}
+
+pub(crate) fn convert_registered(
+    app: &AppHandle,
+    job: ConversionJob,
+    registration: ActiveConversion,
+) -> Result<ConversionResult> {
+    if !registration.matches(&job.id) {
+        return Err(ConvertError::Message(
+            "Identifiant de conversion incohérent.".to_string(),
+        ));
+    }
     let result = convert_impl(app, job.clone());
     if let Err(error) = &result {
         runtime_log::write(
@@ -15,7 +29,6 @@ pub fn convert(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult> 
             ),
         );
     }
-    clear_cancelled(&job.id);
     result
 }
 

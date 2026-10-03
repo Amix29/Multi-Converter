@@ -136,3 +136,52 @@ menus et modales au-dessus des contenus animés, le focus visible, la fermeture
 par Échap, le retour du focus et `prefers-reduced-motion`. Il s’agit d’une
 preuve Chromium preview ; la persistance Tauri, les conversions réelles et les
 hôtes macOS/Linux restent hors de sa portée.
+
+## 2026-08-04 — corrections issues de l’essai Windows
+
+Les captures fournies par le mainteneur ont révélé des défauts visibles que les
+contrôles précédents ne ciblaient pas : trait vertical Coral au centre de
+l’accueil guidé, noms de fichiers tronqués, cartes sans hiérarchie, progression
+OCR trompeuse, annulation bloquante et éditeur trop dense pour un travail long.
+
+La correction Vellum Paper conserve une seule ponctuation Coral discrète et
+apporte les changements suivants :
+
+- suppression complète du pseudo-élément qui dessinait le trait central sur la
+  prévisualisation d’accueil ;
+- cartes fichiers recomposées en trois zones stables — identité, métadonnées,
+  actions — avec nom complet multiligne et action OCR contenue dans la carte ;
+- progression OCR en pilule, déterminée uniquement pendant les phases réellement
+  mesurables et animée sans faux pourcentage pendant la reconnaissance ;
+- état d’annulation immédiat, action **Réessayer** et fermeture possible par
+  Échap ou par le bouton de fermeture pendant le traitement ;
+- mode concentration de l’éditeur couvrant exactement le viewport ;
+- barre d’outils à icônes SVG explicites, noms accessibles et navigation
+  horizontale par deux boutons de 44 px sur les petites largeurs ;
+- contrôles contextuels de l’image et du tableau ramenés à des cibles minimales
+  de 44 px, sans débordement horizontal de la page ;
+- dialogues Vellum cohérents pour nommer, remplacer et suivre l’export, en
+  remplacement de l’ancienne boîte de dialogue WebView ;
+- transitions plus courtes et fonctionnelles, toujours désactivables avec
+  `prefers-reduced-motion`.
+
+### Mesures rendues
+
+La vérification compilée a confirmé que :
+
+- `.document-editor-shell` occupe `(0, 0, largeur, hauteur)` en mode
+  concentration ;
+- Échap ferme ce mode et rend le focus au bouton qui l’a ouvert ;
+- les boutons de navigation mobile de la barre, les commandes de calque et les
+  poignées d’image/tableau atteignent 44 px ;
+- la barre reste navigable lorsque tous les outils ne tiennent pas, sans
+  imposer de défilement horizontal au document HTML ;
+- les longues identités de fichiers restent visibles et chaque action demeure
+  à l’intérieur de sa carte ;
+- les contrôles titre/couleurs/surlignage/tableau/image, la sélection multiple
+  par appui long et les dialogues d’export sont actionnables au clavier.
+
+Ces constats proviennent de Chromium compilé et de mesures DOM. Ils prouvent la
+géométrie et les interactions frontend, pas l’OCR natif, la persistance Tauri,
+la conversion LibreOffice ni le rendu final DOCX/PDF. La validation native de
+ces exports est encore ouverte.

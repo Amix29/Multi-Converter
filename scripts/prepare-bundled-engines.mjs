@@ -4,9 +4,16 @@ import process from "node:process";
 import { spawnSync } from "node:child_process";
 import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 import { createBundledEngineHelpers, hostEnginePlatform } from "./lib/bundled-engine-files.mjs";
-import { readPdfiumLock, validateLockedPdfiumTree } from "./lib/pdfium-package.mjs";
+import {
+  readPdfiumLock,
+  validateLockedPdfiumTree,
+  validatePdfiumZipEntries,
+} from "./lib/pdfium-package.mjs";
+import { loadStagedEngineAssets } from "./lib/staged-engine-assets.mjs";
+import { inspectZipEntries } from "./lib/zip-inspection.mjs";
 
 const root = process.cwd();
+const options = parseOptions(process.argv.slice(2));
 const platform = process.env.MULTI_CONVERTER_ENGINE_PLATFORM?.trim() || hostEnginePlatform();
 const ffmpegVersion = readRequiredFfmpegVersion(root);
 const {
@@ -51,6 +58,11 @@ await fs.mkdir(cacheDir, { recursive: true });
 const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
 const byId = new Map((manifest.engines ?? []).map((engine) => [engine.id, engine]));
 const advancedEngines = bundledAdvancedEngines(manifest);
+const stagedAssets = await loadStagedEngineAssets({
+  assetDir: options.assetDir,
+  platform,
+  embeddedEngines: advancedEngines,
+});
 
 for (const item of baseSidecars) {
   await prepareBaseSidecar(item);
@@ -151,19 +163,27 @@ async function createUniversalDarwinBinary(stem, arm64Source, x64Source, univers
 
 async function prepareBundledEngine(engine) {
   const targetRoot = path.join(bundledEnginesDir, engine.id, engine.version);
-  if (await bundledEngineLooksCurrent(targetRoot, engine)) {
+  const staged = stagedAssets.get(engine.id);
+  if (!staged && await bundledEngineLooksCurrent(targetRoot, engine)) {
     await stageCompressedBundledEngine(engine);
     return;
   }
 
-  if (!engine.downloadUrl || !engine.sha256 || isPlaceholderUrl(engine.downloadUrl) || isPlaceholderSha(engine.sha256)) {
+  if (!staged && (!engine.downloadUrl || !engine.sha256 || isPlaceholderUrl(engine.downloadUrl) || isPlaceholderSha(engine.sha256))) {
     throw new Error(`${engine.id}: archive publiee non configuree dans src-tauri/engines-manifest.json.`);
   }
 
   const archive = path.join(cacheDir, `${engine.id}-${engine.version}.zip`);
-  await downloadVerified(engine.downloadUrl, archive, engine.sha256, engine.id);
+  const source = staged?.entry ?? engine;
+  assertLockedArchiveSource(source, engine, Boolean(staged));
+  if (staged) {
+    await copyStagedArchive(staged.archivePath, archive, source.sha256);
+  } else {
+    await downloadVerified(source.downloadUrl, archive, source.sha256, engine.id);
+  }
+  validateLockedArchive(archive, engine);
   const extractDir = path.join(cacheDir, `${engine.id}-${engine.version}-extract`);
-  await extractArchive(archive, extractDir, engine.archiveType);
+  await extractArchive(archive, extractDir, source.archiveType);
   await pruneWindowsOnlyResourcesForNonWindowsEngine(extractDir, engine);
   await verifyPackageMetadata(extractDir, engine);
   await verifyExpectedFiles(extractDir, engine);
@@ -179,18 +199,34 @@ async function prepareBundledEngine(engine) {
   if (!(await bundledEngineLooksCurrent(targetRoot, engine))) {
     throw new Error(`${engine.id}: le moteur embarque prepare est incomplet.`);
   }
-  await stageCompressedBundledEngine(engine);
+  await stageCompressedBundledEngine(source);
+}
+
+async function copyStagedArchive(source, target, expectedSha256) {
+  const temporary = `${target}.staged-${process.pid}`;
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await fs.rm(temporary, { force: true });
+  try {
+    await fs.copyFile(source, temporary);
+    await verifySha256(temporary, expectedSha256);
+    await fs.rm(target, { force: true });
+    await fs.rename(temporary, target);
+  } finally {
+    await fs.rm(temporary, { force: true });
+  }
 }
 
 async function stageCompressedBundledEngine(engine) {
   if (platform !== "windows-x64" || engine.id !== "libreoffice") return;
-  const source = path.join(cacheDir, `${engine.id}-${engine.version}.zip`);
-  await verifySha256(source, engine.sha256);
   const platformDir = path.join(bundledEngineArchivesDir, platform);
   const target = path.join(platformDir, `${engine.id}.zip`);
   await fs.mkdir(platformDir, { recursive: true });
   const current = await sha256File(target).catch(() => null);
-  if (current !== engine.sha256.toLowerCase()) await fs.copyFile(source, target);
+  if (current === engine.sha256.toLowerCase()) return;
+
+  const source = path.join(cacheDir, `${engine.id}-${engine.version}.zip`);
+  await downloadVerified(engine.downloadUrl, source, engine.sha256, engine.id);
+  await fs.copyFile(source, target);
 }
 
 async function pruneBundledEngines(expectedEngines) {
@@ -236,6 +272,23 @@ function assertInsideDirectory(candidate, parent) {
 
 function bundledAdvancedEngines(value) {
   return (value.engines ?? []).filter((engine) => engine.platform === platform && engine.mode === "advanced");
+}
+
+function parseOptions(values) {
+  const parsed = {
+    assetDir: process.env.MULTI_CONVERTER_ENGINE_ASSET_DIR?.trim() || null,
+  };
+  for (let index = 0; index < values.length; index += 1) {
+    const value = values[index];
+    if (value === "--asset-dir") {
+      const next = values[++index];
+      if (!next) throw new Error("--asset-dir requires a directory.");
+      parsed.assetDir = path.resolve(next);
+    } else {
+      throw new Error(`Unknown bundled engine preparation argument: ${value}`);
+    }
+  }
+  return parsed;
 }
 
 function embeddedBaseEngine(id) {
@@ -313,6 +366,25 @@ async function bundledEngineLooksCurrent(rootDir, engine) {
 async function validateLockedAdvancedEngine(rootDir, engine) {
   if (engine.id === "pdfium" && engine.platform === "windows-x64") {
     await validateLockedPdfiumTree(rootDir, pdfiumLock, pdfiumFixtureRoot);
+  }
+}
+
+function assertLockedArchiveSource(source, engine, isStaged) {
+  if (engine.id !== "pdfium" || engine.platform !== "windows-x64") return;
+  const expectedSha256 = pdfiumLock.package.archiveSha256;
+  const expectedBytes = pdfiumLock.package.archiveSizeBytes;
+  if (source.sha256 !== expectedSha256 || source.compressedSizeBytes !== expectedBytes) {
+    const origin = isStaged ? "staged PDFium candidate" : "embedded PDFium manifest";
+    throw new Error(
+      `${origin} does not match the locked 0.4.0 package. `
+      + "Prepare it first, then pass --asset-dir dist-engines-advanced.",
+    );
+  }
+}
+
+function validateLockedArchive(archive, engine) {
+  if (engine.id === "pdfium" && engine.platform === "windows-x64") {
+    validatePdfiumZipEntries(inspectZipEntries(archive));
   }
 }
 

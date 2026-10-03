@@ -4,7 +4,7 @@ import path from "node:path";
 export async function readPlatformProvenance(root = process.cwd()) {
   const lockPath = path.join(root, "tools", "platform-runtime-provenance-lock.json");
   const lock = JSON.parse(await fs.readFile(lockPath, "utf8"));
-  if (lock.schemaVersion !== 1) throw new Error("Unsupported platform provenance lock schema.");
+  if (lock.schemaVersion !== 2) throw new Error("Unsupported platform provenance lock schema.");
   return lock;
 }
 
@@ -17,6 +17,8 @@ export async function lockedPdfiumPlatform(platform, root = process.cwd()) {
     version: lock.pdfium.version,
     tag: lock.pdfium.tag,
     wrapperVersion: lock.pdfium.wrapperVersion,
+    wrapperCargoLockSha256: lock.pdfium.wrapperCargoLockSha256,
+    wrapperBuildRustVersion: lock.pdfium.wrapperBuildRustVersion,
   };
 }
 

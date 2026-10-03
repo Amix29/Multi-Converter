@@ -58,7 +58,7 @@ pub(super) async fn write_document_with_picker(
     }
 }
 
-fn available_destination(folder: &Path, suggested: &str) -> CommandResult<PathBuf> {
+pub(super) fn available_destination(folder: &Path, suggested: &str) -> CommandResult<PathBuf> {
     if !folder.is_dir() {
         return Err(
             "EDITOR_DESTINATION_INVALID:Le dossier de destination est introuvable.".to_string(),
@@ -116,6 +116,24 @@ fn filesystem_picker_path(path: PathBuf) -> PathBuf {
     path
 }
 
+pub(super) fn associated_title(document: &EditorDocument, destination: &Path) -> String {
+    if document.source.as_ref().is_some_and(|source| {
+        let source = Path::new(&source.path);
+        source == destination
+            || fs::canonicalize(source)
+                .ok()
+                .zip(fs::canonicalize(destination).ok())
+                .is_some_and(|(source, destination)| source == destination)
+    }) {
+        return document.title.clone();
+    }
+    destination
+        .file_stem()
+        .and_then(|value| value.to_str())
+        .unwrap_or(&document.title)
+        .to_string()
+}
+
 pub(super) async fn write_document(
     app: AppHandle,
     request: EditorWriteRequest,
@@ -158,11 +176,7 @@ pub(super) async fn write_document(
     if associate_source {
         let metadata = fs::metadata(&destination)
             .map_err(|error| format!("EDITOR_DESTINATION_METADATA_FAILED:{error}"))?;
-        document.title = destination
-            .file_stem()
-            .and_then(|value| value.to_str())
-            .unwrap_or(&document.title)
-            .to_string();
+        document.title = associated_title(&document, &destination);
         document.source = Some(EditorSource {
             path: destination.to_string_lossy().to_string(),
             format: target,
@@ -183,6 +197,7 @@ fn generate_editor_output(
     document: &EditorDocument,
     target: &str,
 ) -> CommandResult<PathBuf> {
+    ensure_direct_docx(target)?;
     let temp = tempfile::Builder::new()
         .prefix("multi-converter-editor-export-")
         .tempdir()
@@ -195,7 +210,7 @@ fn generate_editor_output(
             let persisted = temp.keep();
             Ok(persisted.join(format!("{stem}.odt")))
         }
-        "docx" | "rtf" | "pdf" => {
+        "rtf" | "pdf" => {
             // Some portable LibreOffice builds mishandle non-ASCII temporary
             // input names even though the ODT payload is valid. Keep the
             // internal bridge deterministic and ASCII-only; the user-facing
@@ -254,6 +269,16 @@ fn generate_editor_output(
     }
 }
 
+fn ensure_direct_docx(target: &str) -> CommandResult<()> {
+    if target == "docx" {
+        return Err(
+            "EDITOR_DOCX_DIRECT_REQUIRED:L’export DOCX doit utiliser le générateur direct docx.js."
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 fn render_text_document(document: &EditorDocument, markdown: bool) -> String {
     let render = |value: &serde_json::Value| {
         if markdown {
@@ -301,6 +326,17 @@ mod tests {
     }
 
     #[test]
+    fn docx_cannot_fall_back_to_libreoffice() {
+        let result = ensure_direct_docx("docx");
+        assert!(matches!(
+            result,
+            Err(error) if error.starts_with("EDITOR_DOCX_DIRECT_REQUIRED:")
+        ));
+        assert!(ensure_direct_docx("rtf").is_ok());
+        assert!(ensure_direct_docx("pdf").is_ok());
+    }
+
+    #[test]
     fn save_as_uses_the_document_name_inside_the_selected_folder() {
         let folder = tempfile::tempdir().unwrap();
         let destination = available_destination(folder.path(), "Rapport.docx").unwrap();
@@ -320,5 +356,39 @@ mod tests {
             filesystem_picker_path(fs::canonicalize(folder.path()).unwrap())
                 .join("Rapport (2).docx")
         );
+    }
+
+    #[test]
+    fn saving_the_same_source_preserves_the_edited_document_title() {
+        let folder = tempfile::tempdir().unwrap();
+        let source = folder.path().join("source-name.odt");
+        fs::write(&source, b"source").unwrap();
+        let mut document = new_document("Titre édité");
+        document.source = Some(EditorSource {
+            path: source.to_string_lossy().to_string(),
+            format: "odt".to_string(),
+            size: 6,
+            modified_at: "0".to_string(),
+        });
+
+        assert_eq!(associated_title(&document, &source), "Titre édité");
+    }
+
+    #[test]
+    fn save_as_associates_the_new_destination_file_name() {
+        let folder = tempfile::tempdir().unwrap();
+        let source = folder.path().join("source-name.odt");
+        let destination = folder.path().join("Rapport final.odt");
+        fs::write(&source, b"source").unwrap();
+        fs::write(&destination, b"destination").unwrap();
+        let mut document = new_document("Titre édité");
+        document.source = Some(EditorSource {
+            path: source.to_string_lossy().to_string(),
+            format: "odt".to_string(),
+            size: 6,
+            modified_at: "0".to_string(),
+        });
+
+        assert_eq!(associated_title(&document, &destination), "Rapport final");
     }
 }

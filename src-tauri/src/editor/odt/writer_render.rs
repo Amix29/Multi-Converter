@@ -1,15 +1,28 @@
 use super::styles::style_key_from_marks;
 use super::types::WriterStyleCatalog;
-use super::writer::odt_asset_path;
+use super::writer_image::render_image;
 use super::xml::xml_escape;
-use crate::editor::document::{CommandResult, EditorAssetRef, EditorDocument, EditorPageSettings};
+use crate::editor::document::{CommandResult, EditorDocument, EditorPageSettings};
 use serde_json::Value;
+
+pub(super) struct RenderedOdtBlocks {
+    pub(super) body: String,
+    pub(super) automatic_styles: String,
+}
+
+struct RenderState {
+    scope: String,
+    next_table_index: usize,
+    next_image_index: usize,
+    automatic_styles: String,
+}
 
 pub(super) fn render_odt_blocks(
     value: &Value,
     document: &EditorDocument,
     styles: &WriterStyleCatalog,
-) -> CommandResult<String> {
+    scope: &str,
+) -> CommandResult<RenderedOdtBlocks> {
     let nodes = if value.get("type").and_then(Value::as_str) == Some("doc") {
         value
             .get("content")
@@ -20,16 +33,26 @@ pub(super) fn render_odt_blocks(
         std::slice::from_ref(value)
     };
     let mut output = String::new();
+    let mut state = RenderState {
+        scope: scope.to_string(),
+        next_table_index: 0,
+        next_image_index: 0,
+        automatic_styles: String::new(),
+    };
     for node in nodes {
-        render_odt_block(node, document, styles, &mut output)?;
+        render_odt_block(node, document, styles, &mut state, &mut output)?;
     }
-    Ok(output)
+    Ok(RenderedOdtBlocks {
+        body: output,
+        automatic_styles: state.automatic_styles,
+    })
 }
 
 fn render_odt_block(
     node: &Value,
     document: &EditorDocument,
     styles: &WriterStyleCatalog,
+    state: &mut RenderState,
     output: &mut String,
 ) -> CommandResult<()> {
     let node_type = node.get("type").and_then(Value::as_str).unwrap_or_default();
@@ -47,6 +70,7 @@ fn render_odt_block(
             let style = match align {
                 "center" => "Center",
                 "right" => "Right",
+                "justify" => "Justify",
                 _ => "Standard",
             };
             output.push_str(&format!("<{tag} text:style-name=\"{style}\""));
@@ -63,6 +87,7 @@ fn render_odt_block(
                 node.get("content").and_then(Value::as_array),
                 document,
                 styles,
+                state,
                 output,
             )?;
             output.push_str(&format!("</{tag}>"));
@@ -87,7 +112,7 @@ fn render_odt_block(
                     .into_iter()
                     .flatten()
                 {
-                    render_odt_block(block, document, styles, output)?;
+                    render_odt_block(block, document, styles, state, output)?;
                 }
                 output.push_str("</text:list-item>");
             }
@@ -100,81 +125,20 @@ fn render_odt_block(
                 .into_iter()
                 .flatten()
             {
-                render_odt_block(block, document, styles, output)?;
+                render_odt_block(block, document, styles, state, output)?;
             }
         }
-        "table" => {
-            output.push_str("<table:table table:name=\"Table1\">");
-            let rows = node
-                .get("content")
-                .and_then(Value::as_array)
-                .map(Vec::as_slice)
-                .unwrap_or_default();
-            let column_count = rows
-                .iter()
-                .map(|row| {
-                    row.get("content")
-                        .and_then(Value::as_array)
-                        .map(|cells| {
-                            cells
-                                .iter()
-                                .map(|cell| {
-                                    cell.pointer("/attrs/colspan")
-                                        .and_then(Value::as_u64)
-                                        .unwrap_or(1) as usize
-                                })
-                                .sum::<usize>()
-                        })
-                        .unwrap_or_default()
-                })
-                .max()
-                .unwrap_or(0);
-            if column_count > 0 {
-                output.push_str(&format!(
-                    "<table:table-column table:number-columns-repeated=\"{column_count}\"/>"
-                ));
-            }
-            for row in rows {
-                output.push_str("<table:table-row>");
-                for cell in row
-                    .get("content")
-                    .and_then(Value::as_array)
-                    .into_iter()
-                    .flatten()
-                {
-                    let colspan = cell
-                        .pointer("/attrs/colspan")
-                        .and_then(Value::as_u64)
-                        .unwrap_or(1);
-                    let rowspan = cell
-                        .pointer("/attrs/rowspan")
-                        .and_then(Value::as_u64)
-                        .unwrap_or(1);
-                    output.push_str("<table:table-cell");
-                    if colspan > 1 {
-                        output.push_str(&format!(" table:number-columns-spanned=\"{colspan}\""));
-                    }
-                    if rowspan > 1 {
-                        output.push_str(&format!(" table:number-rows-spanned=\"{rowspan}\""));
-                    }
-                    output.push('>');
-                    for block in cell
-                        .get("content")
-                        .and_then(Value::as_array)
-                        .into_iter()
-                        .flatten()
-                    {
-                        render_odt_block(block, document, styles, output)?;
-                    }
-                    output.push_str("</table:table-cell>");
-                }
-                output.push_str("</table:table-row>");
-            }
-            output.push_str("</table:table>");
-        }
+        "table" => render_odt_table(node, document, styles, state, output)?,
         "image" | "documentImage" => {
-            output.push_str("<text:p>");
-            render_odt_image(node, document, output)?;
+            state.next_image_index += 1;
+            let style_name = format!("{}Image{}", state.scope, state.next_image_index);
+            let image = render_image(node, document, &style_name)?;
+            state.automatic_styles.push_str(&image.automatic_style);
+            output.push_str(&format!(
+                "<text:p text:style-name=\"{}\">",
+                image.paragraph_style
+            ));
+            output.push_str(&image.frame);
             output.push_str("</text:p>");
         }
         "pageBreak" => output.push_str("<text:p text:style-name=\"PageBreak\"/>"),
@@ -187,17 +151,221 @@ fn render_odt_block(
                 .into_iter()
                 .flatten()
             {
-                render_odt_block(child, document, styles, output)?;
+                render_odt_block(child, document, styles, state, output)?;
             }
         }
     }
     Ok(())
 }
 
+fn render_odt_table(
+    node: &Value,
+    document: &EditorDocument,
+    styles: &WriterStyleCatalog,
+    state: &mut RenderState,
+    output: &mut String,
+) -> CommandResult<()> {
+    let rows = node
+        .get("content")
+        .and_then(Value::as_array)
+        .map(Vec::as_slice)
+        .unwrap_or_default();
+    let column_count = rows
+        .iter()
+        .map(|row| {
+            row.get("content")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .map(|cell| cell_span(cell, "colspan"))
+                .sum::<usize>()
+        })
+        .max()
+        .unwrap_or(0)
+        .clamp(1, 100);
+    state.next_table_index += 1;
+    let table_name = format!("{}Table{}", state.scope, state.next_table_index);
+    let column_widths = table_column_widths(rows, column_count, document);
+    state.automatic_styles.push_str(&table_styles(
+        &table_name,
+        &column_widths,
+        column_widths.iter().sum(),
+    ));
+    output.push_str(&format!(
+        "<table:table table:name=\"{table_name}\" table:style-name=\"{table_name}\">"
+    ));
+    for index in 0..column_count {
+        output.push_str(&format!(
+            "<table:table-column table:style-name=\"{table_name}.Column{}\"/>",
+            index + 1
+        ));
+    }
+
+    let mut row_spans = vec![0usize; column_count];
+    for (row_index, row) in rows.iter().enumerate() {
+        let current_spans = row_spans.clone();
+        let mut next_spans = current_spans
+            .iter()
+            .map(|remaining| remaining.saturating_sub(1))
+            .collect::<Vec<_>>();
+        let mut column = 0usize;
+        let row_style = row
+            .pointer("/attrs/height")
+            .and_then(Value::as_f64)
+            .filter(|height| height.is_finite() && (1.0..=4_096.0).contains(height))
+            .map(|height| {
+                let name = format!("{table_name}.Row{}", row_index + 1);
+                let millimeters = height.clamp(24.0, 4_096.0) * 25.4 / 96.0;
+                state.automatic_styles.push_str(&format!(
+                    "<style:style style:name=\"{name}\" style:family=\"table-row\"><style:table-row-properties style:row-height=\"{millimeters:.3}mm\" style:use-optimal-row-height=\"false\"/></style:style>"
+                ));
+                name
+            });
+        if let Some(row_style) = row_style {
+            output.push_str(&format!(
+                "<table:table-row table:style-name=\"{row_style}\">"
+            ));
+        } else {
+            output.push_str("<table:table-row>");
+        }
+        for cell in row
+            .get("content")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+        {
+            while column < column_count && current_spans[column] > 0 {
+                output.push_str("<table:covered-table-cell/>");
+                column += 1;
+            }
+            if column >= column_count {
+                break;
+            }
+            let colspan = cell_span(cell, "colspan").min(column_count - column);
+            let rowspan = cell_span(cell, "rowspan");
+            let style = if cell.get("type").and_then(Value::as_str) == Some("tableHeader") {
+                "TableHeaderCell"
+            } else {
+                "TableCell"
+            };
+            output.push_str(&format!(
+                "<table:table-cell table:style-name=\"{style}\" office:value-type=\"string\""
+            ));
+            if colspan > 1 {
+                output.push_str(&format!(" table:number-columns-spanned=\"{colspan}\""));
+            }
+            if rowspan > 1 {
+                output.push_str(&format!(" table:number-rows-spanned=\"{rowspan}\""));
+                for span in &mut next_spans[column..column + colspan] {
+                    *span = (*span).max(rowspan - 1);
+                }
+            }
+            output.push('>');
+            let mut rendered_content = false;
+            for block in cell
+                .get("content")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+            {
+                rendered_content = true;
+                render_odt_block(block, document, styles, state, output)?;
+            }
+            if !rendered_content {
+                output.push_str("<text:p/>");
+            }
+            output.push_str("</table:table-cell>");
+            for _ in 1..colspan {
+                output.push_str("<table:covered-table-cell/>");
+            }
+            column += colspan;
+        }
+        while column < column_count {
+            if current_spans[column] > 0 {
+                output.push_str("<table:covered-table-cell/>");
+            } else {
+                output.push_str(
+                    "<table:table-cell table:style-name=\"TableCell\" office:value-type=\"string\"><text:p/></table:table-cell>",
+                );
+            }
+            column += 1;
+        }
+        output.push_str("</table:table-row>");
+        row_spans = next_spans;
+    }
+    output.push_str("</table:table>");
+    Ok(())
+}
+
+fn cell_span(cell: &Value, name: &str) -> usize {
+    cell.pointer(&format!("/attrs/{name}"))
+        .and_then(Value::as_u64)
+        .unwrap_or(1)
+        .clamp(1, 100) as usize
+}
+
+fn table_column_widths(rows: &[Value], column_count: usize, document: &EditorDocument) -> Vec<f32> {
+    let mut weights = vec![None; column_count];
+    for row in rows {
+        let mut column = 0usize;
+        for cell in row
+            .get("content")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+        {
+            let colspan = cell_span(cell, "colspan").min(column_count.saturating_sub(column));
+            if colspan == 0 {
+                break;
+            }
+            if let Some(widths) = cell.pointer("/attrs/colwidth").and_then(Value::as_array)
+                && widths.len() == colspan
+            {
+                for (offset, width) in widths.iter().enumerate() {
+                    if let Some(width) = width.as_u64().filter(|width| (1..=4_096).contains(width))
+                    {
+                        weights[column + offset].get_or_insert(width as f32);
+                    }
+                }
+            }
+            column += colspan;
+        }
+        if weights.iter().all(Option::is_some) {
+            break;
+        }
+    }
+    let (page_width, _) = page_dimensions_mm(&document.page);
+    let available =
+        (page_width - document.page.margins_mm.left - document.page.margins_mm.right).max(10.0);
+    let weights = weights
+        .into_iter()
+        .map(|width| width.unwrap_or(100.0))
+        .collect::<Vec<_>>();
+    let total = weights.iter().sum::<f32>().max(1.0);
+    weights
+        .into_iter()
+        .map(|weight| available * weight / total)
+        .collect()
+}
+
+fn table_styles(name: &str, widths: &[f32], total_width: f32) -> String {
+    let mut output = format!(
+        "<style:style style:name=\"{name}\" style:family=\"table\"><style:table-properties style:width=\"{total_width:.3}mm\" table:align=\"margins\"/></style:style>"
+    );
+    for (index, width) in widths.iter().enumerate() {
+        output.push_str(&format!(
+            "<style:style style:name=\"{name}.Column{}\" style:family=\"table-column\"><style:table-column-properties style:column-width=\"{width:.3}mm\"/></style:style>",
+            index + 1
+        ));
+    }
+    output
+}
+
 fn render_odt_inline_nodes(
     nodes: Option<&Vec<Value>>,
     document: &EditorDocument,
     styles: &WriterStyleCatalog,
+    state: &mut RenderState,
     output: &mut String,
 ) -> CommandResult<()> {
     for node in nodes.into_iter().flatten() {
@@ -205,7 +373,13 @@ fn render_odt_inline_nodes(
         match node_type {
             "text" => render_odt_text(node, styles, output),
             "hardBreak" => output.push_str("<text:line-break/>"),
-            "image" | "documentImage" => render_odt_image(node, document, output)?,
+            "image" | "documentImage" => {
+                state.next_image_index += 1;
+                let style_name = format!("{}Image{}", state.scope, state.next_image_index);
+                let image = render_image(node, document, &style_name)?;
+                state.automatic_styles.push_str(&image.automatic_style);
+                output.push_str(&image.frame);
+            }
             "pageBreak" => output.push_str("<text:line-break/>"),
             "unsupportedObject" => output.push_str("[Objet incorporé non éditable]"),
             _ => {}
@@ -259,56 +433,6 @@ pub(super) fn render_text_with_page_fields(text: &str, output: &mut String) {
         }
     }
     output.push_str(&xml_escape(remaining));
-}
-
-fn render_odt_image(
-    node: &Value,
-    document: &EditorDocument,
-    output: &mut String,
-) -> CommandResult<()> {
-    let asset_id = node
-        .pointer("/attrs/assetId")
-        .and_then(Value::as_str)
-        .ok_or_else(|| {
-            "EDITOR_ASSET_INVALID:Identifiant d’image manquant pendant l’export.".to_string()
-        })?;
-    let asset = document
-        .assets
-        .iter()
-        .find(|asset| asset.id == asset_id)
-        .ok_or_else(|| "EDITOR_ASSET_MISSING:Image introuvable pendant l’export.".to_string())?;
-    let width = node
-        .pointer("/attrs/width")
-        .and_then(Value::as_str)
-        .filter(|value| value.ends_with("cm") || value.ends_with("mm") || value.ends_with("in"))
-        .unwrap_or("15cm");
-    let title = node
-        .pointer("/attrs/title")
-        .and_then(Value::as_str)
-        .unwrap_or(&asset.name);
-    let height = image_height_for_width(width, asset);
-    output.push_str(&format!(
-        "<draw:frame draw:name=\"{}\" text:anchor-type=\"as-char\" svg:width=\"{}\" svg:height=\"{}\"><draw:image xlink:href=\"{}\" xlink:type=\"simple\" xlink:show=\"embed\" xlink:actuate=\"onLoad\"/></draw:frame>",
-        xml_escape(title),
-        xml_escape(width),
-        xml_escape(&height),
-        xml_escape(&odt_asset_path(asset))
-    ));
-    Ok(())
-}
-
-fn image_height_for_width(width: &str, asset: &EditorAssetRef) -> String {
-    let Some(width_cm) = width
-        .strip_suffix("cm")
-        .and_then(|value| value.parse::<f32>().ok())
-    else {
-        return "10cm".to_string();
-    };
-    let ratio = match (asset.width, asset.height) {
-        (Some(width), Some(height)) if width > 0 && height > 0 => height as f32 / width as f32,
-        _ => 2.0 / 3.0,
-    };
-    format!("{:.3}cm", (width_cm * ratio).clamp(0.1, 100.0))
 }
 
 pub(super) fn page_dimensions_mm(page: &EditorPageSettings) -> (f32, f32) {

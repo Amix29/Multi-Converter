@@ -115,9 +115,9 @@ function run(command, commandArgs, timeout, label, extraEnv = {}) {
 
 async function selfTest() {
   const lock = await readPdfiumLock(root);
-  assert.equal(lock.wrapper.version, "0.3.0");
+  assert.equal(lock.wrapper.version, "0.4.0");
   assert.equal(lock.upstream.librarySha256.length, 64);
-  assert.equal(lock.package.releaseTag, "engines-v0.1.1-alpha.0");
+  assert.equal(lock.package.publicationStatus, "unpublished");
   assert.equal(args.includes("--offline"), false, "Le protocole Phase 7 ne doit pas couper le reseau.");
   console.log("Windows PDFium native protocol self-test passed (network stays active; Phase 5 ledger unchanged). ");
 }

@@ -8,6 +8,7 @@
 - Windows implementation: **development checkpoint, real Tauri and extracted-package runtime exercised**
 - Windows NSIS build: **passed locally with compressed runtime resources**
 - Windows packaged application smoke: **passed for PNG extraction, copy, cancellation and retry; complete installed matrix pending**
+- Current Windows correction fixture: **reviewed expected text matched exactly (100%)**
 - macOS universal and Linux x64 runtimes: **not built or host-tested**
 - Native ONNX candidate and accelerators: **not selected; official CPU runtime retained**
 - Privacy mode: **local only**
@@ -97,13 +98,55 @@ worker process tree; crash, timeout or protocol failure discards the worker so
 the next job starts a clean process. Job temporary directories are owned by
 RAII guards and are removed on success, error or cancellation.
 
+### 2026-08-04 progress and cancellation correction
+
+The first OCR run may spend material time extracting and hashing the locked
+runtime before model inference begins. That work now emits bounded preparation
+phases instead of leaving the interface at an unexplained `2%`:
+
+- runtime archive extraction;
+- runtime-manifest verification;
+- model-manifest verification;
+- image preparation or PDF page inspection;
+- recognition and result normalization.
+
+Extraction and verification report determinate progress. Worker startup,
+recognition and cancellation are intentionally indeterminate because the
+official runtime does not expose a reliable fractional inference value. The
+dialog therefore never fabricates a percentage for those phases.
+
+Cancellation is checked while reading the runtime archive, walking manifests,
+hashing files, preparing PDF pages and waiting for the worker. It invalidates
+the active UI sequence immediately, terminates the worker process tree when one
+exists and does not cache a cancelled verification as a permanent failure.
+Late progress or results for the cancelled job are ignored. The user receives
+an explicit cancelled state and a focused **Retry** action; closing with Escape
+or the close control also cancels an active job instead of trapping the dialog.
+
+The correction is covered by Rust tests and compiled-preview interaction tests.
+The packaged Windows runtime fixture matched its reviewed expected text exactly
+(100%) in 24,672 ms. The same checkpoint reran all 40 corpus cases: clean mean
+100%, difficult mean 99.76%, median measured recognition 13,330 ms and peak
+worker working set 714.8 MiB. The worker showed zero remote connections in 251
+process samples while the network remained active; this remains sampling, not
+continuous packet capture. Preview progress/cancel tests and Windows results are
+not proof of a packaged macOS or Linux worker.
+
+The final local Windows correction NSIS installed the exact prepared
+236,434,900-byte OCR runtime archive at SHA-256
+`5982fcfbc2b78ee3b4aa55d4f7fad3a6a01b0388f0f384bb86051f1d343fc936`
+alongside all five locked model directories. This byte identity ties the
+packaged-runtime and corpus results above to the archive present in the
+installed candidate; the maintainer's interactive OCR review remains separate.
+
 ## PDF Flow
 
-The PDFium wrapper `0.3.0` adds `--inspect-text`. Each page keeps native text
-when it contains at least 12 alphanumeric characters and less than 2 percent
-invalid characters. Only insufficient pages are rendered as PNG at 300 DPI
-and passed to OCR. Light page borders may be cropped locally without rescaling
-the text or changing the source.
+The current PDFium wrapper `0.4.0` retains the `--inspect-text` command first
+introduced by 0.3.0. Each page keeps native text when it contains at least 12
+alphanumeric characters and less than 2 percent invalid characters. Only
+insufficient pages are rendered as PNG at 300 DPI and passed to OCR. Light page
+borders may be cropped locally without rescaling the text or changing the
+source.
 
 If OCR returns no text but an exploitable native fragment exists, that fragment
 is retained with an `ocr-empty-native-fallback` warning. A required page
@@ -276,7 +319,8 @@ remain pending.
 - Record output hashes, screenshots and all remaining host evidence in
   `V1_0_7_VALIDATION.md`.
 
-Only after those gates pass may metadata move to `1.0.7` or an OCR release be
+Development metadata is already synchronized to `1.0.7` by maintainer
+decision. Only after those gates pass may an OCR-enabled V1.0.7 release be
 published.
 
 ## Phase 6 Quality And Supply-Chain Evidence
@@ -319,7 +363,7 @@ scanned and mixed PDFs all scored 100%, as did the five Rust input normalizers.
 PDF results used the current source-built wrapper; they must not be confused
 with the historical packaged artifact.
 
-## Phase 7 Packaged PDFium Contract
+## Historical Phase 7 Packaged PDFium Contract
 
 Windows x64 uses PDFium `149.0.7825.0` from tag `chromium/7825` and the
 Multi-Converter `pdfium-render` wrapper `0.3.0`. Their archive, DLL, Cargo lock,
@@ -365,6 +409,22 @@ package verifiers reject a missing, foreign or modified runtime. Native corpus,
 package launch and connection-observation results remain pending until the
 Phase 8 workflows run on the exact checkpoint; Windows self-tests are not
 macOS/Linux evidence.
+
+## Post-audit PDFium 0.4.0 state
+
+The structural PDF editor extends the wrapper to 0.4.0 without changing PDFium
+149.0.7825.0, the hybrid OCR thresholds, 300-DPI rendering or public OCR V1
+contracts. The local Windows wrapper and deterministic engine archive have been
+built and validated against their exact lock. The Cargo lock SHA-256 is
+`6462b7bf8f748280d276316c2634f0faf8eb8ecd5c0d794ca0c445edc4decc7f`;
+the 3,943,936-byte wrapper SHA-256 is
+`07b3e7e61483de6e7ceb1de3596d839fa0b421118c42605de8accf62835388ec`;
+the reproducible 5,127,516-byte ZIP SHA-256 is
+`6627a3ca4ff30c302838b51c3830847419a30000fc155deea07b638edc8f02ea`;
+and the extracted tree is 11,233,580 bytes. They remain unpublished and are not
+installed-package OCR evidence. Universal macOS and Linux x64 package records
+remain `pending-native-rebuild`; their sizes and SHA-256 fields stay null until
+native staging produces reviewed evidence.
 
 ## Official References
 

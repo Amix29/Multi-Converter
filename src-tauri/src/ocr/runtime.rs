@@ -5,7 +5,8 @@ use sha2::{Digest, Sha256};
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::{Component, Path, PathBuf};
-use std::sync::OnceLock;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Mutex, OnceLock};
 use tauri::{AppHandle, Manager};
 
 const RUNTIME_LOCK: &str = include_str!("../../ocr-runtime-lock.json");
@@ -63,7 +64,7 @@ struct ContentFile {
     sha256: String,
 }
 
-static VERIFIED_RESOURCES: OnceLock<Result<(), String>> = OnceLock::new();
+static VERIFIED_RESOURCES: OnceLock<Mutex<Option<Result<(), String>>>> = OnceLock::new();
 
 pub(super) struct ResolvedRuntime {
     pub executable: PathBuf,
@@ -93,19 +94,41 @@ pub(super) fn runtime_info(app: &AppHandle) -> Result<OcrRuntimeInfoV1, String> 
     })
 }
 
-pub(super) fn selected_runtime(app: &AppHandle) -> Result<ResolvedRuntime, String> {
+pub(super) fn selected_runtime(
+    app: &AppHandle,
+    canceled: &AtomicBool,
+    progress: &mut dyn FnMut(&'static str, u8),
+) -> Result<ResolvedRuntime, String> {
+    ensure_not_canceled(canceled)?;
     let lock = parse_lock()?;
     let selection = selection(&lock)?;
-    let resolved = resolve_runtime(app, &selection)?;
+    let resolved = resolve_runtime(app, &selection, canceled, progress)?;
     if !resolved.executable.is_file() || !resolved.models_dir.is_dir() {
         return Err(
             "OCR_RUNTIME_MISSING:Le moteur OCR local n’est pas installé dans cette application."
                 .to_string(),
         );
     }
-    VERIFIED_RESOURCES
-        .get_or_init(|| verify_resources(&resolved, &selection, &lock.model_artifact))
-        .clone()?;
+    ensure_not_canceled(canceled)?;
+    let mut verified = VERIFIED_RESOURCES
+        .get_or_init(|| Mutex::new(None))
+        .lock()
+        .unwrap_or_else(|error| error.into_inner());
+    if let Some(result) = verified.as_ref() {
+        progress("verifying-runtime", 100);
+        progress("verifying-models", 100);
+        result.clone()?;
+        return Ok(resolved);
+    }
+    let result = verify_resources(
+        &resolved,
+        &selection,
+        &lock.model_artifact,
+        canceled,
+        progress,
+    );
+    retain_verification_result(&mut verified, &result);
+    result?;
     Ok(resolved)
 }
 
@@ -125,10 +148,13 @@ fn selection(lock: &RuntimeLock) -> Result<PlatformSelection, String> {
 fn resolve_runtime(
     app: &AppHandle,
     selection: &PlatformSelection,
+    canceled: &AtomicBool,
+    progress: &mut dyn FnMut(&'static str, u8),
 ) -> Result<ResolvedRuntime, String> {
     #[cfg(debug_assertions)]
     {
         if let Some(executable) = std::env::var_os("MULTI_CONVERTER_OCR_WORKER") {
+            progress("extracting-runtime", 100);
             return Ok(ResolvedRuntime {
                 executable: PathBuf::from(executable),
                 models_dir: std::env::var_os("MULTI_CONVERTER_OCR_MODELS")
@@ -146,9 +172,13 @@ fn resolve_runtime(
         app,
         &root,
         &selection.platform,
-        &artifact.aggregate_sha256,
-        artifact.file_count,
-        artifact.total_bytes,
+        runtime_archive::ArchiveExpectation {
+            aggregate_sha256: &artifact.aggregate_sha256,
+            file_count: artifact.file_count,
+            total_bytes: artifact.total_bytes,
+        },
+        canceled,
+        &mut |value| progress("extracting-runtime", value),
     )?;
     let executable_name = Path::new(&selection.executable)
         .file_name()
@@ -207,7 +237,10 @@ fn verify_resources(
     runtime: &ResolvedRuntime,
     selection: &PlatformSelection,
     models_lock: &ArtifactLock,
+    canceled: &AtomicBool,
+    progress: &mut dyn FnMut(&'static str, u8),
 ) -> Result<(), String> {
+    ensure_not_canceled(canceled)?;
     let runtime_root = runtime
         .executable
         .parent()
@@ -219,17 +252,33 @@ fn verify_resources(
         runtime_root,
         &runtime_root.join("runtime-manifest.json"),
         expected_runtime,
+        canceled,
+        &mut |value| progress("verifying-runtime", value),
     )?;
     verify_content_manifest(
         &runtime.models_dir,
         &runtime.models_dir.join("models-lock.json"),
         models_lock,
+        canceled,
+        &mut |value| progress("verifying-models", value),
     )?;
-    verify_worker_architecture(&runtime.executable, &selection.platform)
+    ensure_not_canceled(canceled)?;
+    verify_worker_architecture(&runtime.executable, &selection.platform, canceled)
 }
 
-fn verify_worker_architecture(path: &Path, platform: &str) -> Result<(), String> {
-    let bytes = fs::read(path).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
+fn verify_worker_architecture(
+    path: &Path,
+    platform: &str,
+    canceled: &AtomicBool,
+) -> Result<(), String> {
+    ensure_not_canceled(canceled)?;
+    let mut file = File::open(path).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
+    let mut bytes = vec![0u8; 64 * 1024];
+    let read = file
+        .read(&mut bytes)
+        .map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
+    bytes.truncate(read);
+    ensure_not_canceled(canceled)?;
     let valid = match platform {
         "windows-x64" => pe_machine(&bytes) == Some(0x8664),
         "linux-x64" => {
@@ -272,9 +321,13 @@ fn verify_content_manifest(
     root: &Path,
     manifest_path: &Path,
     expected: &ArtifactLock,
+    canceled: &AtomicBool,
+    progress: &mut dyn FnMut(u8),
 ) -> Result<(), String> {
+    ensure_not_canceled(canceled)?;
     let bytes =
         fs::read(manifest_path).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
+    ensure_not_canceled(canceled)?;
     if bytes.len() > 16 * 1024 * 1024 {
         return Err("OCR_RUNTIME_UNVERIFIED:Manifeste OCR trop volumineux.".to_string());
     }
@@ -290,25 +343,31 @@ fn verify_content_manifest(
                 .to_string(),
         );
     }
-    let actual_count = count_regular_files(root, manifest_path)?;
+    let actual_count = count_regular_files(root, manifest_path, canceled)?;
     if actual_count != manifest.file_count {
         return Err(
             "OCR_RUNTIME_UNVERIFIED:Le paquet OCR contient des fichiers inattendus.".to_string(),
         );
     }
     let mut total = 0u64;
-    for entry in &manifest.files {
+    let file_count = manifest.files.len().max(1);
+    for (index, entry) in manifest.files.iter().enumerate() {
+        ensure_not_canceled(canceled)?;
         let relative = safe_relative_path(&entry.path)?;
         let path = root.join(relative);
         let metadata =
             fs::metadata(&path).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
-        if !metadata.is_file() || metadata.len() != entry.bytes || sha256(&path)? != entry.sha256 {
+        if !metadata.is_file()
+            || metadata.len() != entry.bytes
+            || sha256(&path, canceled)? != entry.sha256
+        {
             return Err(format!(
                 "OCR_RUNTIME_UNVERIFIED:Ressource OCR modifiée: {}",
                 entry.path
             ));
         }
         total = total.saturating_add(metadata.len());
+        progress((((index + 1) * 100) / file_count).min(100) as u8);
     }
     if total != manifest.total_bytes {
         return Err("OCR_RUNTIME_UNVERIFIED:Taille totale OCR incohérente.".to_string());
@@ -328,13 +387,19 @@ fn safe_relative_path(value: &str) -> Result<PathBuf, String> {
     Ok(path.to_path_buf())
 }
 
-fn count_regular_files(root: &Path, manifest_path: &Path) -> Result<usize, String> {
+fn count_regular_files(
+    root: &Path,
+    manifest_path: &Path,
+    canceled: &AtomicBool,
+) -> Result<usize, String> {
     let mut count = 0usize;
     let mut pending = vec![root.to_path_buf()];
     while let Some(directory) = pending.pop() {
+        ensure_not_canceled(canceled)?;
         for entry in
             fs::read_dir(directory).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?
         {
+            ensure_not_canceled(canceled)?;
             let entry = entry.map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
             let path = entry.path();
             let kind = entry
@@ -354,11 +419,12 @@ fn count_regular_files(root: &Path, manifest_path: &Path) -> Result<usize, Strin
     Ok(count)
 }
 
-fn sha256(path: &Path) -> Result<String, String> {
+fn sha256(path: &Path, canceled: &AtomicBool) -> Result<String, String> {
     let mut file = File::open(path).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
     let mut hash = Sha256::new();
     let mut buffer = [0u8; 64 * 1024];
     loop {
+        ensure_not_canceled(canceled)?;
         let read = file
             .read(&mut buffer)
             .map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
@@ -370,65 +436,20 @@ fn sha256(path: &Path) -> Result<String, String> {
     Ok(format!("{:x}", hash.finalize()))
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn content_verification_detects_a_modified_resource() {
-        let temp = tempfile::tempdir().unwrap();
-        let payload = temp.path().join("worker.bin");
-        fs::write(&payload, b"trusted").unwrap();
-        let digest = sha256(&payload).unwrap();
-        let manifest_path = temp.path().join("runtime-manifest.json");
-        fs::write(
-            &manifest_path,
-            serde_json::json!({
-                "fileCount": 1,
-                "totalBytes": 7,
-                "aggregateSha256": "locked",
-                "files": [{ "path": "worker.bin", "bytes": 7, "sha256": digest }]
-            })
-            .to_string(),
-        )
-        .unwrap();
-        let expected = ArtifactLock {
-            file_count: 1,
-            total_bytes: 7,
-            aggregate_sha256: "locked".to_string(),
-        };
-        verify_content_manifest(temp.path(), &manifest_path, &expected).unwrap();
-        fs::write(&payload, b"altered").unwrap();
-        assert!(verify_content_manifest(temp.path(), &manifest_path, &expected).is_err());
-    }
-
-    #[test]
-    fn manifest_paths_must_remain_relative() {
-        assert!(safe_relative_path("models/text/inference.json").is_ok());
-        assert!(safe_relative_path("../outside").is_err());
-        assert!(safe_relative_path("C:/outside").is_err());
-    }
-
-    #[test]
-    fn platform_selection_distinguishes_both_macos_architectures() {
-        assert_eq!(platform_key_for("macos", "aarch64"), "macos-aarch64");
-        assert_eq!(platform_key_for("macos", "x86_64"), "macos-x86_64");
-        assert_eq!(platform_key_for("linux", "x86_64"), "linux-x64");
-        assert_eq!(platform_key_for("linux", "aarch64"), "unsupported");
-    }
-
-    #[test]
-    fn worker_architecture_parsers_reject_foreign_binaries() {
-        let mut pe = vec![0u8; 0x48];
-        pe[0..2].copy_from_slice(b"MZ");
-        pe[0x3c..0x40].copy_from_slice(&(0x40u32).to_le_bytes());
-        pe[0x40..0x44].copy_from_slice(b"PE\0\0");
-        pe[0x44..0x46].copy_from_slice(&0x8664u16.to_le_bytes());
-        assert_eq!(pe_machine(&pe), Some(0x8664));
-        assert_eq!(mach_cpu(&pe), None);
-
-        let mut arm = vec![0xcf, 0xfa, 0xed, 0xfe];
-        arm.extend_from_slice(&0x0100_000cu32.to_le_bytes());
-        assert_eq!(mach_cpu(&arm), Some(0x0100_000c));
+fn ensure_not_canceled(canceled: &AtomicBool) -> Result<(), String> {
+    if canceled.load(Ordering::SeqCst) {
+        Err("OCR_CANCELLED:L’OCR a été annulé.".to_string())
+    } else {
+        Ok(())
     }
 }
+
+fn retain_verification_result(slot: &mut Option<Result<(), String>>, result: &Result<(), String>) {
+    if !matches!(result, Err(error) if error.starts_with("OCR_CANCELLED:")) {
+        *slot = Some(result.clone());
+    }
+}
+
+#[cfg(test)]
+#[path = "runtime_tests.rs"]
+mod tests;

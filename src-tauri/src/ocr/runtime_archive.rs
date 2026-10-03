@@ -1,10 +1,17 @@
 use std::collections::HashSet;
 use std::fs::{self, File};
-use std::io;
+use std::io::{Read, Write};
 use std::path::{Component, Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{AppHandle, Manager};
 
 const MANIFEST_NAME: &str = "runtime-manifest.json";
+
+pub(super) struct ArchiveExpectation<'a> {
+    pub aggregate_sha256: &'a str,
+    pub file_count: usize,
+    pub total_bytes: u64,
+}
 
 pub(super) fn archive_path(resource_root: &Path, platform: &str) -> PathBuf {
     resource_root
@@ -16,10 +23,11 @@ pub(super) fn ensure_extracted(
     app: &AppHandle,
     resource_root: &Path,
     platform: &str,
-    aggregate_sha256: &str,
-    expected_files: usize,
-    expected_bytes: u64,
+    expected: ArchiveExpectation<'_>,
+    canceled: &AtomicBool,
+    progress: &mut dyn FnMut(u8),
 ) -> Result<PathBuf, String> {
+    ensure_not_canceled(canceled)?;
     let archive = archive_path(resource_root, platform);
     if !archive.is_file() {
         return Err("OCR_RUNTIME_MISSING:Archive du moteur OCR absente.".to_string());
@@ -30,8 +38,9 @@ pub(super) fn ensure_extracted(
         .map_err(|error| format!("OCR_RUNTIME_CACHE:{error}"))?
         .join("ocr-runtime");
     fs::create_dir_all(&cache_root).map_err(|error| format!("OCR_RUNTIME_CACHE:{error}"))?;
-    let target = cache_root.join(format!("{platform}-{aggregate_sha256}"));
+    let target = cache_root.join(format!("{platform}-{}", expected.aggregate_sha256));
     if target.join(MANIFEST_NAME).is_file() {
+        progress(100);
         return Ok(target);
     }
 
@@ -39,7 +48,15 @@ pub(super) fn ensure_extracted(
         .prefix(".extracting-")
         .tempdir_in(&cache_root)
         .map_err(|error| format!("OCR_RUNTIME_CACHE:{error}"))?;
-    extract_archive(&archive, staging.path(), expected_files, expected_bytes)?;
+    extract_archive(
+        &archive,
+        staging.path(),
+        expected.file_count,
+        expected.total_bytes,
+        canceled,
+        progress,
+    )?;
+    ensure_not_canceled(canceled)?;
     let staging_path = staging.keep();
     match fs::rename(&staging_path, &target) {
         Ok(()) => Ok(target),
@@ -59,7 +76,10 @@ fn extract_archive(
     destination: &Path,
     expected_files: usize,
     expected_bytes: u64,
+    canceled: &AtomicBool,
+    progress: &mut dyn FnMut(u8),
 ) -> Result<(), String> {
+    ensure_not_canceled(canceled)?;
     let file = File::open(archive_path).map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
     let mut archive =
         zip::ZipArchive::new(file).map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
@@ -70,8 +90,10 @@ fn extract_archive(
     let mut extracted_files = 0usize;
     let mut extracted_bytes = 0u64;
     let mut seen_paths = HashSet::new();
+    let entry_count = archive.len().max(1);
 
     for index in 0..archive.len() {
+        ensure_not_canceled(canceled)?;
         let mut entry = archive
             .by_index(index)
             .map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
@@ -113,17 +135,47 @@ fn extract_archive(
         }
         let mut target_file =
             File::create(&output).map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
-        let written = io::copy(&mut entry, &mut target_file)
-            .map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
+        let written = copy_with_cancellation(&mut entry, &mut target_file, canceled)?;
         if written != entry.size() {
             return Err("OCR_RUNTIME_ARCHIVE:Taille extraite incohérente.".to_string());
         }
         apply_unix_mode(&output, entry.unix_mode())?;
+        progress((((index + 1) * 100) / entry_count).min(100) as u8);
     }
     if !destination.join(MANIFEST_NAME).is_file() {
         return Err("OCR_RUNTIME_ARCHIVE:Manifeste du runtime absent.".to_string());
     }
     Ok(())
+}
+
+fn copy_with_cancellation(
+    source: &mut impl Read,
+    destination: &mut impl Write,
+    canceled: &AtomicBool,
+) -> Result<u64, String> {
+    let mut total = 0u64;
+    let mut buffer = [0u8; 64 * 1024];
+    loop {
+        ensure_not_canceled(canceled)?;
+        let read = source
+            .read(&mut buffer)
+            .map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
+        if read == 0 {
+            return Ok(total);
+        }
+        destination
+            .write_all(&buffer[..read])
+            .map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
+        total = total.saturating_add(read as u64);
+    }
+}
+
+fn ensure_not_canceled(canceled: &AtomicBool) -> Result<(), String> {
+    if canceled.load(Ordering::SeqCst) {
+        Err("OCR_CANCELLED:L’OCR a été annulé.".to_string())
+    } else {
+        Ok(())
+    }
 }
 
 #[cfg(unix)]
@@ -157,7 +209,10 @@ mod tests {
             .unwrap();
         writer.write_all(b"unsafe").unwrap();
         writer.finish().unwrap();
-        assert!(extract_archive(&archive_path, temp.path(), 1, 16).is_err());
+        let canceled = AtomicBool::new(false);
+        assert!(
+            extract_archive(&archive_path, temp.path(), 1, 16, &canceled, &mut |_| {}).is_err()
+        );
         assert!(!temp.path().join("outside.exe").exists());
     }
 
@@ -175,6 +230,25 @@ mod tests {
             .unwrap();
         writer.write_all(b"two").unwrap();
         writer.finish().unwrap();
-        assert!(extract_archive(&archive_path, temp.path(), 2, 16).is_err());
+        let canceled = AtomicBool::new(false);
+        assert!(
+            extract_archive(&archive_path, temp.path(), 2, 16, &canceled, &mut |_| {}).is_err()
+        );
+    }
+
+    #[test]
+    fn archive_extraction_honors_cancellation_before_writing() {
+        let temp = tempfile::tempdir().unwrap();
+        let archive_path = temp.path().join("runtime.zip");
+        let mut writer = zip::ZipWriter::new(File::create(&archive_path).unwrap());
+        writer
+            .start_file(MANIFEST_NAME, SimpleFileOptions::default())
+            .unwrap();
+        writer.write_all(b"{}").unwrap();
+        writer.finish().unwrap();
+        let canceled = AtomicBool::new(true);
+        let error =
+            extract_archive(&archive_path, temp.path(), 1, 16, &canceled, &mut |_| {}).unwrap_err();
+        assert!(error.starts_with("OCR_CANCELLED:"));
     }
 }

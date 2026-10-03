@@ -23,13 +23,23 @@
 }
 
 .rail-scroll {
-  display: grid;
-  align-content: start;
-  gap: 9px;
+  display: block;
   min-height: 0;
   max-height: none;
   overflow: auto;
   padding: 2px 2px 20px;
+}
+
+.virtual-format-rail-content {
+  position: relative;
+  width: 100%;
+}
+
+.virtual-format-rail-row {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 70px;
+  will-change: transform;
 }
 
 .rail-button {

@@ -196,6 +196,24 @@ the local document asset directory. Blob URLs are created only for displaying
 bytes returned by `editorReadAsset` and are revoked when the image view is
 disposed.
 
+Interactive image placement does not broaden that asset authority. Persisted
+layout values are validated separately: widths/heights accept only bounded
+numeric measures, floating offsets are limited to ±500 mm, layer indices to
+`-100..100`, and alignment/layout/wrap values use closed enums. Imported or
+pasted HTML cannot set floating offsets or layer indices because those
+attributes are not in the HTML sanitizer allowlist. Pointer and keyboard
+controls update only the selected Tiptap image node; they never move or rewrite
+the original image file.
+
+The editor installs, embeds and downloads no font. Installed family names are
+enumerated through DirectWrite, CoreText or Fontconfig; resolved file paths are
+kept inside the native process and never returned to the WebView. Before PDF
+embedding, the backend reads OpenType `OS/2.fsType` and verifies that the face
+covers the requested text. Restricted, bitmap-only and indeterminate faces are
+not embedded and require an explicit, warned substitution. DOCX preserves only
+the requested family name so the recipient application remains responsible for
+font substitution.
+
 ## Content Security Policy
 
 The exact WebView CSP configured in `src-tauri/tauri.conf.json` is:
@@ -261,6 +279,16 @@ at 64 MiB. Recognition has a 180-second page timeout. Temporary normalized
 images, PDF renders and results are scoped to unpredictable temporary
 directories and originals are never modified.
 
+The structural PDF editor refuses all content, annotation, form and assembly
+mutations while PDFium classifies a session as scanned. The user must explicitly
+accept **Modifier ce PDF**, after which the existing local OCR boundary attempts
+every page. Rust accepts only `addOcrTextLayer` patches for this transition and
+rejects missing, duplicate or out-of-range page attempts. A successful result
+is written atomically to a managed temporary copy, re-inspected and rebound to
+the session; an empty result, cancellation, crash or validation failure leaves
+the PDF read-only and removes staging data. PDF permissions and DocMDP are
+checked before this path is offered and again at the native patch boundary.
+
 The runtime and model each carry a per-file manifest. The packaged Windows
 runtime archive is extracted only into application-local data through a reader
 that rejects absolute paths, parent traversal, symlinks, excessive entries and
@@ -270,11 +298,34 @@ Unexpected files, non-regular filesystem entries and tampering are rejected.
 Cancellation and crash terminate the Windows process tree and force a clean
 worker on the next job.
 
+The cancellation token is also consulted during archive extraction, file-tree
+enumeration, manifest verification, SHA-256 reads and PDF page preparation.
+Partial extraction remains confined to the temporary staging directory. A
+cancelled verification is deliberately not retained in the process-wide
+verification cache, so cancellation cannot poison later OCR attempts. The
+frontend invalidates the cancelled job sequence and ignores its late events or
+result before enabling **Retry**.
+
 Windows LibreOffice packaging uses its already hash-locked engine archive to
 stay below the NSIS raw-resource limit. Rust verifies the embedded archive hash
 against `engines-manifest.json`, applies the same traversal and expansion
 guards, and extracts it on the first conversion that needs LibreOffice. The
 source engine remains unchanged; only its package representation differs.
+
+Editor DOCX output is generated directly from Tiptap JSON by the local
+`docx.js` Web Worker. Assets and the final package are bounded; cancellation
+terminates the worker and marks the 1 MiB-chunked Rust session canceled. The
+same token is checked through flush and bounded ZIP/XML validation, then an
+atomic compare-and-publish boundary prevents cancellation from racing a partial
+replacement. Before commit, Rust reads every ZIP entry to verify integrity,
+rejects ambiguous paths, duplicates, size/ratio limits and malformed OOXML.
+RTF and document-to-PDF use
+the bounded ODT intermediate and strict local LibreOffice path. These paths add
+no network fallback. The source-conflict check is repeated
+after the potentially slow conversion and immediately before atomic
+replacement. The title dialog is a usability gate only: the native boundary
+still sanitizes the filename stem, reserves a non-conflicting destination and
+validates the document before generation.
 
 Clipboard access is restricted to `clipboard-manager:allow-write-text`.
 Multi-Converter cannot read, monitor, clear or write image/HTML clipboard data
@@ -289,6 +340,17 @@ Base64 images pasted into both the document body and a header/footer surface.
 The checks preserve supported text and safe links while confirming that active
 content does not execute. Static editor contracts also pin DOMPurify, keep the
 sanitizer on every rich-HTML entry point and preserve the CSP boundary.
+
+The 2026-08-04 correction checks additionally cover bounded persisted image
+layout, local system-font permissions, explicit application-owned overwrite/export
+dialogs and cancellation during OCR resource preparation. Targeted preview
+tests show that cancelled jobs cannot publish stale results, but preview mocks
+do not prove native process termination. Real Windows OCR exercised the
+corrected path and matched the reviewed fixture exactly. The historical Windows
+LibreOffice probe completed ODT normalization, DOCX and PDF generation. The
+direct DOCX path supersedes that DOCX export proof and
+does not by itself prove packaged-app behavior, reopened document structure or
+visual fidelity.
 
 The final 15-step Windows gate passed on 2026-07-31 after the last CSS and test
 corrections. It included both npm audits, static application and CSP contracts,
@@ -358,3 +420,27 @@ exact candidate commit. The app still performs no model or engine download at
 startup or during conversion. Native CI observes OCR and PDFium process
 connections while the host network remains active; this is process sampling,
 not a disconnection test or continuous packet capture.
+
+The post-audit PDFium 0.4.0 package keeps the same fail-closed boundary. Windows
+has an exact locally reproducible wrapper and engine ZIP, but its lock remains
+`unpublished` and cannot be used by the public-download validator. The embedded
+0.3.0 manifest is intentionally left unchanged until a reviewed public 0.4.0
+artifact exists. macOS and Linux records remain `pending-native-rebuild` with
+null package hashes, so neither platform can accidentally inherit Windows
+measurements or unverified URLs.
+
+The structural PDF editor keeps signature handling explicit. Every patch is
+checked against the source SHA-256, document permissions and DocMDP before the
+wrapper writes a separate destination. A forbidden operation does not silently
+invalidate a signature. The user may instead request a distinct unsigned
+editable copy; its atomic writer removes signature and DocMDP structures,
+verifies the copy and leaves the signed original unchanged. Automated tests
+cover that transition, but the complete signed/encrypted native corpus remains
+a release gate.
+
+Active PDF content is never executed. A bounded parser records the presence and
+kind of JavaScript, Launch actions, XFA, 3D and media for the inspector without
+returning payload bodies. The automated hostile fixtures prove detection and
+non-execution at this boundary. They do not yet prove byte-preservation of every
+active object after a PDFium edit/save/reopen cycle; that claim requires the
+independent native corpus.
