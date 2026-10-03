@@ -46,6 +46,7 @@ function testPlaceholderClassifiers() {
   assert.equal(helpers.isPlaceholderUrl("https://example.invalid/engine.zip"), false);
   assert.equal(helpers.isPlaceholderSha("REPLACE_WITH_SHA256"), true);
   assert.equal(helpers.isPlaceholderSha("a".repeat(64)), false);
+  assert.equal(typeof helpers.ensureExecutable, "function", "sidecar preparation must receive the platform executable helper");
 }
 
 function writeFixture() {

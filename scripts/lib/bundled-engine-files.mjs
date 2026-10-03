@@ -399,6 +399,7 @@ export function createBundledEngineHelpers({ root, platform, ffmpegVersion }) {
     baseSidecarsForPlatform,
     configureLinuxEngineRpaths,
     downloadVerified,
+    ensureExecutable,
     ensureEngineExecutables,
     extractArchive,
     findFile,

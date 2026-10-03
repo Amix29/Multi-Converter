@@ -23,6 +23,7 @@ const {
   baseSidecarsForPlatform,
   configureLinuxEngineRpaths,
   downloadVerified,
+  ensureExecutable,
   ensureEngineExecutables,
   extractArchive,
   findFile,
