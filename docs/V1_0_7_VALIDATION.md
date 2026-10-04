@@ -4,14 +4,14 @@
 
 - Target version: **V1.0.7**
 - Published baseline: **V1.0.6**
-- Last documentation review: **2026-08-06**
+- Last documentation review: **2026-10-04**
 - Overall gate: **blocked**
 - Version metadata: **1.0.7**
 - Phase 1 checkpoint: local commit **`9f89a8d2`** on `codex/phase-1-guardrails`, not pushed
 - Phase 2 state: isolated worktree on `codex/phase-2-frontend-vellum`, based on the Phase 1 checkpoint, not merged or pushed
 - Phase 3 state: isolated worktree on `codex/phase-3-ocr-local`, based on the Phase 2 checkpoint, not merged or pushed
 - Phase 4 state: isolated worktree on `codex/phase-4-rust-backend`, based on Phase 3 commit `9ec3b9ca`, not merged or pushed
-- Phase 8 state: V1.0.7 checkpoint `ca36d2a1` on `codex/test`; replacement native staging and package evidence pending
+- Current local integration: `a1be93f4` on `codex/test`; not pushed or published
 
 This is the combined release-validation ledger for V1.0.7. It does not replace the detailed editor or OCR documents:
 
@@ -20,6 +20,37 @@ This is the combined release-validation ledger for V1.0.7. It does not replace t
 - [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md) defines the complete scope and sequencing.
 
 V1.0.6 results prove the existing release baseline only. They do not validate V1.0.7.
+
+## 2026-10-03 Local integration update
+
+Status: **local correction checkpoint passed; release gate remains blocked**.
+
+The current `codex/test` integration restored the locked Windows PDFium 0.4.0
+candidate, fixed the bundled-engine preparation helper and made its platform
+fixture copy deterministic. The local PDFium wrapper was rebuilt from the
+locked source and packaged as the unpublished candidate described below.
+
+Current local evidence:
+
+- `npm run check` passed before the final Rust lock refresh, including 136
+  Vitest tests, the PDFium wrapper/editor suites, TypeScript, engine validation,
+  OCR lock checks and static packaging contracts;
+- `npm audit` and `npm audit --omit=dev` report zero vulnerabilities after
+  moving the pinned Tiptap family to 3.31.4, DOMPurify to 3.4.16 and Vitest to
+  4.1.11;
+- `npm run test:editor`, `npm run typecheck`, `npm run test:unit`,
+  `npm run clippy:rust` and `npm run audit:rust` pass after the final lock
+  refresh; `rustls` is now 0.23.45, closing RUSTSEC-2026-0285 in the updater
+  request path;
+- the 18-step Windows gate was rerun through step 8. Steps 1–7 passed (both
+  audits, real engine preparation, `npm run check`, preview UI, formatting and
+  Clippy). Step 8 initially identified RUSTSEC-2026-0285; that exact issue was
+  fixed afterwards, so the entire 18-step gate must be rerun from the start.
+
+This checkpoint does **not** prove a signed installer, an installed Windows
+application matrix, a macOS universal DMG, a Linux AppImage or their real host
+conversion/editor/OCR behavior. It therefore does not change the overall gate
+from **blocked**.
 
 ## 2026-07-31 Workspace Consolidation Evidence
 

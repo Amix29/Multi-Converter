@@ -4,7 +4,7 @@
 
 - Development version: **V1.0.7**
 - Current published version: **V1.0.6**
-- Last documentation review: **2026-08-04**
+- Last documentation review: **2026-10-04**
 - Release status: **not ready**
 
 V1.0.7 is built around two official product objectives:
@@ -24,6 +24,11 @@ adds source-size and bundle budgets, a reproducible OCR dependency lock, a
 not make V1.0.7 release-ready: native macOS/Linux validation, the assumed but
 unexecuted installed-Windows matrix and maintainer license approval remain
 open. The reviewed Windows PDFium archive replacement was closed in Phase 7.
+
+The current local integration branch is `codex/test` at `a1be93f4`. Its
+October security and packaging corrections are validated locally, but this is
+not a publication candidate: the complete post-correction Windows gate still
+needs a fresh 18/18 run, and real macOS/Linux host validation remains required.
 
 Phase 7 replaces only the Windows x64 PDFium engine package. PDFium
 `149.0.7825.0`, wrapper `0.3.0`, the build graph/toolchain and the deterministic
