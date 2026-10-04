@@ -6,8 +6,8 @@ import { t, type LanguageCode } from "../i18n";
 import { orderedFontCatalog, rememberRecentFont } from "./editorFormatting";
 
 const RECENT_FONTS_KEY = "multi-converter.editor.recent-fonts.v1";
-const ROW_HEIGHT = 38;
-const VIEWPORT_HEIGHT = 304;
+const ROW_HEIGHT = 28;
+const VIEWPORT_HEIGHT = 224;
 
 interface FontRow {
   id: string;
@@ -93,14 +93,24 @@ export function EditorFontFamilyControl(props: EditorFontFamilyControlProps) {
   function positionPanel() {
     const rect = triggerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const width = Math.min(340, window.innerWidth - 24);
-    const estimatedHeight = 380;
+    const width = Math.min(240, window.innerWidth - 24);
+    const estimatedHeight = 284;
     const below = rect.bottom + 8;
+    const top = below + estimatedHeight <= window.innerHeight - 12 ? below : Math.max(12, rect.top - estimatedHeight - 8);
+    let left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+    const { selection } = props.editor.state;
+    if (!selection.empty) {
+      const start = props.editor.view.coordsAtPos(selection.from);
+      const end = props.editor.view.coordsAtPos(selection.to);
+      const selectedLeft = Math.min(start.left, end.left);
+      const selectedRight = Math.max(start.right, end.right);
+      const overlapsSelection = top < end.bottom && top + estimatedHeight > start.top && left < selectedRight && left + width > selectedLeft;
+      if (overlapsSelection && selectedLeft - width - 8 >= 12) left = selectedLeft - width - 8;
+      else if (overlapsSelection && selectedRight + width + 20 <= window.innerWidth) left = selectedRight + 8;
+    }
     setPosition({
-      top: below + estimatedHeight <= window.innerHeight - 12
-        ? below
-        : Math.max(12, rect.top - estimatedHeight - 8),
-      left: Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)),
+      top,
+      left,
     });
   }
 
@@ -118,11 +128,12 @@ export function EditorFontFamilyControl(props: EditorFontFamilyControlProps) {
   }
 
   function choose(family: string) {
-    props.editor.chain().focus().setFontFamily(family).run();
+    props.editor.view.focus();
+    props.editor.chain().setFontFamily(family).run();
     const next = rememberRecentFont(family, recentFonts, ordered.defaultFont);
     setRecentFonts(next);
     writeRecentFonts(next);
-    close(true);
+    close(false);
   }
 
   function moveActive(delta: number) {
@@ -145,8 +156,10 @@ export function EditorFontFamilyControl(props: EditorFontFamilyControlProps) {
         aria-label={t(props.language, "editor.fontFamily")}
         aria-haspopup="listbox"
         aria-expanded={open}
-        title={props.activeFont}
+        data-editor-tip={t(props.language, "editor.fontFamily")}
+        data-editor-tip-description={t(props.language, "editor.tip.fontFamily")}
         style={{ fontFamily: props.activeFont }}
+        onMouseDown={(event) => event.preventDefault()}
         onClick={() => open ? close(false) : show()}
       >
         <span>{props.activeFont}</span>
@@ -182,6 +195,7 @@ export function EditorFontFamilyControl(props: EditorFontFamilyControlProps) {
                   choose(rows[activeIndex].family as string);
                 } else if (event.key === "Escape") {
                   event.preventDefault();
+                  event.stopPropagation();
                   close(true);
                 }
               }}
@@ -227,6 +241,7 @@ export function EditorFontFamilyControl(props: EditorFontFamilyControlProps) {
                     className={activeIndex === index ? "is-active" : ""}
                     style={{ transform: `translateY(${index * ROW_HEIGHT}px)`, fontFamily: row.family }}
                     onPointerEnter={() => setActiveIndex(index)}
+                    onMouseDown={(event) => event.preventDefault()}
                     onClick={() => choose(row.family as string)}
                   >
                     {row.label}

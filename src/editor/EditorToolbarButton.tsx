@@ -23,7 +23,8 @@ export function EditorToolbarButton(props: EditorToolbarButtonProps) {
     <button
       className={classes}
       type="button"
-      title={props.shortcut ? `${props.label} (${props.shortcut})` : props.label}
+      data-editor-tip={props.label}
+      data-editor-shortcut={props.shortcut}
       aria-label={props.label}
       aria-pressed={props.active}
       disabled={props.disabled}

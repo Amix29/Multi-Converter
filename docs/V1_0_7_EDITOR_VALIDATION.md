@@ -1,11 +1,27 @@
 # V1.0.7 Editor Validation
 
+## 2026-10-04 — Writing aids evidence
+
+The writing-aids suite exercises a partial four-character selection through
+font search and numeric size changes, checks that only those characters are
+formatted, verifies compact list geometry, default/custom line spacing and
+keyboard/pointer help, and compares document JSON before/after ¶ toggles.
+It also verifies unchanged page count and that Undo reverses document editing
+instead of toggling display marks. The complete relevant preview matrix passed
+44 tests with 28 intentional platform skips; 141 unit tests passed. A final
+targeted confirmation after menu/glyph positioning passed 14 tests with two
+intentional skips.
+The native WebView and Word/LibreOffice round-trip matrices below remain open;
+browser/model evidence does not prove file-system persistence or print/export
+fidelity. The Word/Writer review identifies required next work without claiming
+a universal minimum certification or feature parity.
+
 This document tracks the editor gate that had to pass before work started on PP-OCRv6_medium. The complete release scope lives in [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md), and the OCR workstream is specified in [`V1_0_7_OCR.md`](V1_0_7_OCR.md). Application metadata is now 1.0.7 for the Phase 8 native candidate; this does not mark the release ready.
 
 ## Validation Environment
 
 - Initial validation date: 2026-07-13
-- Latest editor UI regression validation: 2026-08-04
+- Latest editor UI regression validation: 2026-10-04
 - Documentation review: 2026-08-04
 - Host: Windows x64
 - Application: Tauri development app and Windows release bundle

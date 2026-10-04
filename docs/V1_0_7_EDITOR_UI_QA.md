@@ -1,5 +1,29 @@
 # V1.0.7 Editor UI Design QA
 
+## 2026-10-04 — Selection, compact lists and writing aids
+
+The follow-up screenshots showed invisible selection in font controls, an
+oversized font list, clipped Auto, inconsistent help and unclear icons. The
+updated controls retain a Vellum selection highlight during input focus,
+use a 240 px font panel with 28 px rows and a 224 px virtualized list, and show
+numeric line spacing with a dedicated icon and the existing 1.45 default.
+Lucide SVGs are locally bundled, and delayed hover/focus tooltips cover labelled
+controls. The ¶ toggle shows spaces, nonbreaking spaces, tabs, hard breaks and
+paragraph endings without changing the document model.
+
+Desktop (1280 × 720) and narrow (390 × 844) captures were inspected together.
+The font panel repositions horizontally where possible to avoid covering the
+selected text. Formatting glyphs align to the text baseline with zero layout
+width. Rich tooltips remain within the viewport. The mechanical detector
+reported one intentional Arial-font warning for nonprinting glyphs; Arial is
+the existing document default, not a new interface typography choice.
+Synthetic captures are kept under ignored output/editor-writing-aids.
+
+The relevant browser matrix passed 44 tests with 28 intentional platform skips,
+including the desktop-only hover scenario. Unit coverage passed 141 tests.
+The final targeted menu/glyph confirmation passed 14 tests with two intentional
+skips. Native Windows WebView input behavior and Office output remain separate gates.
+
 ## 2026-10-04 — Compact ribbon, shortcuts, zoom and image workflow
 
 The maintainer supplied a 1920 × 1080 application screenshot and a cropped Word

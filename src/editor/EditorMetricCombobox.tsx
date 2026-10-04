@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import type { ReactNode } from "react";
 
 interface MetricOption {
   value: string;
@@ -11,6 +12,8 @@ interface EditorMetricComboboxProps {
   label: string;
   value: string;
   unit?: string;
+  icon?: ReactNode;
+  tooltip?: string;
   description: string;
   options: readonly MetricOption[];
   normalize(value: string): string | null;
@@ -23,6 +26,8 @@ export function EditorMetricCombobox(props: EditorMetricComboboxProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const committingRef = useRef(false);
+  const keyboardChoiceRef = useRef(false);
   const [draft, setDraft] = useState(props.displayValue(props.value));
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -39,7 +44,7 @@ export function EditorMetricCombobox(props: EditorMetricComboboxProps) {
     const update = () => {
       const rect = rootRef.current?.getBoundingClientRect();
       if (!rect) return;
-      const height = Math.min(280, props.options.length * 34 + 8);
+      const height = Math.min(280, props.options.length * 28 + 8);
       const top = rect.bottom + 6 + height <= window.innerHeight - 12
         ? rect.bottom + 6
         : Math.max(12, rect.top - height - 6);
@@ -73,13 +78,15 @@ export function EditorMetricCombobox(props: EditorMetricComboboxProps) {
       return false;
     }
     setDraft(props.displayValue(normalized));
-    props.onCommit(normalized);
+    committingRef.current = true;
+    try { props.onCommit(normalized); }
+    finally { committingRef.current = false; }
     return true;
   }
 
   function choose(option: MetricOption) {
     commit(option.value);
-    close(true);
+    close(false);
   }
 
   function close(returnFocus: boolean) {
@@ -89,6 +96,7 @@ export function EditorMetricCombobox(props: EditorMetricComboboxProps) {
   }
 
   function moveActive(delta: number) {
+    keyboardChoiceRef.current = true;
     setOpen(true);
     setActiveIndex((current) => {
       const start = current < 0 ? (delta > 0 ? -1 : 0) : current;
@@ -97,8 +105,9 @@ export function EditorMetricCombobox(props: EditorMetricComboboxProps) {
   }
 
   return (
-    <div ref={rootRef} className={`editor-metric-combobox ${props.className}`}>
+    <div ref={rootRef} className={`editor-metric-combobox ${props.className}`} data-editor-tip-description={props.tooltip}>
       <div className="editor-metric-field">
+        {props.icon && <span className="editor-metric-icon" aria-hidden="true">{props.icon}</span>}
         <input
           ref={inputRef}
           type="text"
@@ -113,6 +122,8 @@ export function EditorMetricCombobox(props: EditorMetricComboboxProps) {
           value={draft}
           onFocus={() => setOpen(true)}
           onChange={(event) => {
+            keyboardChoiceRef.current = false;
+            setActiveIndex(-1);
             setDraft(event.target.value);
             setOpen(true);
           }}
@@ -122,7 +133,7 @@ export function EditorMetricCombobox(props: EditorMetricComboboxProps) {
               moveActive(event.key === "ArrowDown" ? 1 : -1);
             } else if (event.key === "Enter") {
               event.preventDefault();
-              if (activeIndex >= 0) choose(props.options[activeIndex]);
+              if (keyboardChoiceRef.current && activeIndex >= 0) choose(props.options[activeIndex]);
               else if (commit()) close(false);
             } else if (event.key === "Escape") {
               event.preventDefault();
@@ -134,7 +145,7 @@ export function EditorMetricCombobox(props: EditorMetricComboboxProps) {
           onBlur={(event) => {
             const target = event.relatedTarget as Node | null;
             if (!rootRef.current?.contains(target) && !menuRef.current?.contains(target)) {
-              commit();
+              if (!committingRef.current && draft !== props.displayValue(props.value)) commit();
               close(false);
             }
           }}

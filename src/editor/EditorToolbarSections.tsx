@@ -4,6 +4,7 @@ import type { EditorDocumentV1 } from "../lib/api";
 import { t, type LanguageCode } from "../i18n";
 import { EditorToolbarButton } from "./EditorToolbarButton";
 import { EditorToolbarIcon, type EditorToolbarIconName } from "./EditorToolbarIcons";
+import { formattingMarksKey } from "./editorViewDecorations";
 
 const pageFormats: EditorDocumentV1["page"]["format"][] = [
   "a3",
@@ -82,6 +83,12 @@ export function EditorParagraphControls(props: {
       >
         <EditorToolbarIcon name="numberedList" />
       </EditorToolbarButton>
+      <EditorToolbarButton
+        active={formattingMarksKey.getState(props.editor.state)?.enabled ?? false}
+        label={t(props.language, "editor.formattingMarks")}
+        shortcut="Ctrl+Shift+8"
+        onClick={() => props.editor.chain().focus().toggleFormattingMarks().run()}
+      ><EditorToolbarIcon name="pilcrow" /></EditorToolbarButton>
     </div>
   );
 }

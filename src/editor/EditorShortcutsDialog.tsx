@@ -11,6 +11,7 @@ const shortcuts: [string, TranslationKey][] = [
   ["Ctrl+R", "editor.align.right"], ["Ctrl+J", "editor.align.justify"],
   ["Ctrl+F / Ctrl+H", "editor.findReplace"], ["Ctrl+K", "editor.link"],
   ["Ctrl+Enter", "editor.pageBreak"], ["Ctrl+Space", "editor.clearFormatting"],
+  ["Ctrl+Shift+8", "editor.formattingMarks"],
   ["Ctrl++ / Ctrl+−", "editor.zoom"], ["Ctrl+0", "editor.resetZoom"],
   ["F11 / Esc", "editor.enterFocusMode"], ["Ctrl+/", "editor.keyboardShortcuts"],
 ];

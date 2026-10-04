@@ -1,8 +1,8 @@
 # Document editor ergonomics and Word comparison
 
 Reviewed on 2026-10-04 for the local V1.0.7 development editor.
-This review uses the two maintainer screenshots, the current Multi-Converter
-source and Microsoft documentation. It is a functional comparison, not a
+This review uses the maintainer screenshots, the current Multi-Converter
+source and Microsoft/LibreOffice documentation. It is a functional comparison, not a
 complete hands-on audit of every Word edition or a claim of Word compatibility.
 Word desktop, web and mobile have different capabilities.
 
@@ -18,7 +18,23 @@ wrapping groups and a bounded vertically scrollable ribbon.
 Active buttons previously retained a light foreground when a hover rule made
 their background light. Stable Ink foregrounds and explicit active/hover states
 remove that disappearance. Formatting controls keep the current selection on
-pointer activation. Local SVGs use consistent strokes and distinct layer arrows.
+pointer activation. Bundled Lucide SVGs use consistent strokes; the page-break
+icon is a local adaptation. ISC and Feather MIT notices ship with the frontend.
+
+Text selection remains painted with a Vellum highlight while font-search or
+numeric inputs have focus. Native selection resumes on returning to the page.
+The font list uses a 240 px panel, 28 px rows and a 224 px virtualized viewport.
+Line spacing has its own icon, numeric suggestions and the existing 1.45 default;
+legacy Auto/normal values remain readable without migrating documents. Typed
+values take priority over hovered suggestions. A delayed tooltip surface covers
+labelled editor buttons, inputs and selects, with explanations for common tools,
+shortcut hints when applicable and keyboard-focus support.
+
+The ¶ command displays spaces (·), nonbreaking spaces (°), tabs (→), hard breaks
+(↵) and paragraph endings (¶). Decorations have zero layout width, do not change
+document JSON or undo history, and are excluded from exports. This follows the
+editing purpose described in [Word display options](https://support.microsoft.com/en-au/word/word-options-display)
+and [Writer formatting marks](https://help.libreoffice.org/latest/en-US/text/swriter/01/03100000.html).
 
 The document opens at 100%. The zoom slider maps 10–100% onto its left half
 and 100–500% onto its right half, with a 1 px marker at the midpoint. A percentage
@@ -62,6 +78,7 @@ The custom mapping that puts 100% at the center follows the maintainer request.
 | Link | Ctrl+K | Existing link command |
 | Page break | Ctrl+Enter | Insert break and continue in a following paragraph |
 | Clear character formatting | Ctrl+Space | Unset marks; paragraph layout is retained |
+| Formatting marks | Ctrl+Shift+8 | View-only toggle; no document changes |
 | Document zoom | Ctrl+wheel, Ctrl+plus/minus | 10–500%, 10-point increments |
 | Default zoom | Ctrl+0 | 100% |
 | Full screen / exit | F11 / Escape | Editor viewport, modal-aware |
@@ -81,7 +98,7 @@ Priorities describe proposed follow-up work, not implemented features.
 
 | Area | Current Multi-Converter state | Next work toward practical Word-like editing |
 | --- | --- | --- |
-| Writing and selection | Common marks, local fonts, sizes, line height, alignment, lists, colors, undo | P1: indentation, paragraph spacing, format painter, visible nonprinting characters |
+| Writing and selection | Common marks, local fonts, sizes, numeric line height, retained selection, ¶ marks, alignment, lists, colors, undo | P1: indentation, paragraph spacing, format painter |
 | Ribbon and discovery | Compact groups, tooltips, shortcut help, contextual image/table tools | P1: selection-specific help; retain stable command locations |
 | Styles and structure | Imported heading nodes retained; no heading preset UI by existing decision | P1: design reusable named styles with an explicit product decision; do not silently reintroduce presets |
 | Navigation | Local search/replace and page/word totals | P1: results list, current page from scrolling, heading navigation, replace all and search options |
@@ -115,9 +132,41 @@ The proofing and merge references are
 and [mail merge](https://support.microsoft.com/en-US/Support/known-issues/how-to-use-the-mail-merge-feature-in-word-to-create-and-to-print-form-letters-that-use-the-data-from).
 Online Word services are reference material only; they are not integrations.
 
+## Is there a minimum word-processor standard?
+
+No universal mandatory feature checklist was identified in the primary sources
+reviewed. [OASIS OpenDocument conformance](https://docs.oasis-open.org/office/OpenDocument/v1.3/os/part1-introduction/OpenDocument-v1.3-os-part1-introduction.html)
+concerns document formats and their producers/consumers.
+[ECMA-376 / ISO/IEC 29500](https://ecma-international.org/publications-and-standards/standards/ecma-376/)
+defines OOXML representation and packaging. Supporting a format does not certify
+Word-equivalent editing, complete fidelity or a particular set of UI commands.
+
+The following is an engineering acceptance baseline for this product, inferred
+from common Word workflows and the [official Writer guides](https://documentation.libreoffice.org/en/english-documentation/writer).
+It is not an ISO certification or a claim that these applications use the same
+minimum requirements. Named styles and paragraph spacing are supported workflows
+in [Writer's styles guide](https://books.libreoffice.org/en/WG252/WG2509-WorkingWithStyles.html)
+and the [26.2 introductory guide](https://books.libreoffice.org/en/GS262/GS26204-StylesTemplatesHyperlinks.html).
+
+| Practical acceptance area | Current status | Missing acceptance work |
+| --- | --- | --- |
+| Reliable writing, selection, clipboard and undo | Implemented; selection remains visible in typography menus | Native WebView clipboard/caret acceptance |
+| Discoverable controls, shortcuts, zoom and ¶ marks | Implemented in this development UI | Screen-reader and native keyboard pass |
+| Character and paragraph formatting | Fonts, sizes, colors, alignment, lists and line spacing | Indentation, tabs/stops, spacing before/after and format painter |
+| Reusable structure and navigation | Heading nodes retained on import; local find/replace | Style UI, heading navigation and advanced search |
+| Page layout and visual objects | Pages, orientation, headers/footers, images and table editing | Explicit margins, real wrapping, crop and stronger table layout |
+| Save/reopen and interoperable output | Local drafts and export paths implemented | Native Office round trips and visual corpus remain release gates |
+| Proofing, accessibility and printing | Some accessibility foundations and PDF export | Local proofing, diagnostic tools and a dedicated print workflow |
+| Advanced publishing/review | Links and basic document structure | Contents, references, comments, tracked changes and templates |
+
+The first seven areas form a useful everyday baseline, with the documented
+gaps still open. Advanced publishing/review is a later capability tier.
+Multi-Converter remains an editor under development, not a Word/Writer peer.
+
 ## Acceptance and limits
 
-Automated UI coverage lives in tests/e2e/editor-ergonomics.spec.ts and the
+Automated UI coverage lives in tests/e2e/editor-writing-aids.spec.ts,
+tests/e2e/editor-ergonomics.spec.ts and the
 existing desktop/editor/PDF suites. It covers compact multirow controls, icon
 contrast, selected text formatting, zoom bounds and stable pagination,
 keyboard editing, modal-aware full screen, image dimensions/proportions,

@@ -1,5 +1,12 @@
 # Multi-Converter Desktop Security Architecture
 
+Editor writing aids use only local ProseMirror decorations. Selection painting
+and formatting symbols do not enter saved document JSON or generated exports.
+Tooltip content is rendered as React text, with no HTML injection or network
+request. Lucide icons are bundled from a pinned npm artifact and ship their
+ISC/Feather MIT notices at third-party/lucide/LICENSE.txt. These changes add
+no IPC commands, native file privileges or remote document processing.
+
 ## Status And Purpose
 
 This document describes the security boundaries implemented in the desktop

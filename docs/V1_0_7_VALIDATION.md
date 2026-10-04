@@ -1,5 +1,25 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-10-04 — Writing aids checkpoint
+
+Development UI now retains selection painting in font/size menus, compacts
+native-font lists, displays numeric line spacing (default 1.45), bundles
+Lucide vector icons and provides delegated hover/focus explanations. The ¶
+button and Ctrl+Shift+8 show nonprinting marks as view-only decorations.
+Typed numeric values take precedence over pointer-hovered suggestions;
+typographic commits return focus without a delayed input-stealing callback.
+Ctrl+Home/End and their Shift selection variants use explicit editor commands.
+
+Evidence: 141 unit tests; 675 translation keys across six languages; app/test
+typechecks; editor/layout/source contracts; production/preview frontend builds;
+the combined relevant browser matrix (44 passed, 28 intentional skips); and
+desktop/narrow rendered inspection. Production dependency audit reported zero
+vulnerabilities. See V1_0_7_EDITOR_WORD_REVIEW.md for the researched practical
+baseline and its open gaps. This checkpoint does not close native Office,
+OCR, provenance, platform packaging or public-release gates.
+The final menu/glyph confirmation passed 14 targeted tests with two intentional
+skips after the complete matrix above.
+
 ## Current Status
 
 - Target version: **V1.0.7**

@@ -59,12 +59,14 @@ describe("editor formatting values", () => {
   });
 
   it("supports automatic, preset and custom paragraph line height", () => {
-    expect(lineHeightSuggestions).toEqual(["auto", "1", "1.15", "1.5", "2", "2.5", "3"]);
+    expect(lineHeightSuggestions).toEqual(["1", "1.15", "1.45", "1.5", "2", "2.5", "3"]);
     expect(normalizeLineHeightInput("auto")).toBe("auto");
     expect(normalizeLineHeightInput("1,37")).toBe("1.37");
     expect(normalizeLineHeightInput("0.1")).toBe(String(minimumLineHeight));
     expect(normalizeLineHeightInput("9")).toBe(String(maximumLineHeight));
-    expect(lineHeightValue("normal")).toBe("auto");
+    expect(lineHeightValue("normal")).toBe("1.45");
+    expect(lineHeightValue("auto")).toBe("1.45");
+    expect(lineHeightValue(undefined)).toBe("1.45");
   });
 
   it("orders the native font catalogue as default, recent, then alphabetic", () => {

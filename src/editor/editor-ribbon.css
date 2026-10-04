@@ -70,7 +70,7 @@
   box-shadow: none;
   transition: background-color var(--vlm-motion-fast) var(--vlm-ease-standard);
 }
-.document-editor-shell .toolbar-button svg { width: 17px; height: 17px; flex-shrink: 0; }
+.document-editor-shell .toolbar-button svg { width: 18px; height: 18px; flex-shrink: 0; }
 .document-editor-shell .toolbar-button:hover:not(:disabled) { color: var(--vlm-text-strong); background: var(--vlm-canvas-subtle); border-color: var(--vlm-border); }
 .document-editor-shell .toolbar-button.is-active,
 .document-editor-shell .toolbar-button.is-active:hover:not(:disabled) {
@@ -84,7 +84,7 @@
 .document-editor-shell .toolbar-button:focus-visible { outline: 2px solid var(--vlm-focus); outline-offset: 1px; }
 .document-editor-shell .toolbar-font-family { height: 28px; width: 136px; font-weight: var(--vlm-weight-medium); }
 .document-editor-shell .editor-metric-field { height: 28px; width: 72px; font-size: 11px; font-weight: var(--vlm-weight-medium); }
-.document-editor-shell .toolbar-line-height .editor-metric-field { width: 80px; }
+.document-editor-shell .toolbar-line-height .editor-metric-field { width: 94px; }
 .document-editor-shell .editor-toolbar select { height: 28px; font-size: 11px; font-weight: var(--vlm-weight-medium); }
 .document-editor-shell .toolbar-color-glyph { min-width: 18px; min-height: 18px; padding: 0; font-size: 13px; }
 .document-editor-shell .toolbar-color-swatch { right: 4px; left: 4px; bottom: 1px; }

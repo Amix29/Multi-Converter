@@ -50,7 +50,7 @@ export function DocumentCommandRow(props: DocumentCommandRowProps) {
         </div>
       </div>
       <div className="document-command-actions">
-        <button type="button" className="editor-shortcuts-button" aria-label={t(props.language, "editor.keyboardShortcuts")} title={`${t(props.language, "editor.keyboardShortcuts")} (Ctrl+/)`} onClick={props.onShortcuts}><EditorToolbarIcon name="keyboard" /></button>
+        <button type="button" className="editor-shortcuts-button" aria-label={t(props.language, "editor.keyboardShortcuts")} data-editor-shortcut="Ctrl+/" onClick={props.onShortcuts}><EditorToolbarIcon name="keyboard" /></button>
         <button
           ref={props.focusButtonRef}
           className="editor-focus-button"
@@ -60,10 +60,7 @@ export function DocumentCommandRow(props: DocumentCommandRowProps) {
             props.language,
             props.focusMode ? "editor.exitFocusMode" : "editor.enterFocusMode",
           )}
-          title={t(
-            props.language,
-            props.focusMode ? "editor.exitFocusMode" : "editor.enterFocusMode",
-          )}
+          data-editor-shortcut="F11 / Esc"
           onClick={props.onFocusMode}
         >
           <EditorToolbarIcon name={props.focusMode ? "fullscreenExit" : "fullscreen"} />

@@ -1,5 +1,17 @@
 # Testing Matrix
 
+### Writing aids regression suite (2026-10-04)
+
+`tests/e2e/editor-writing-aids.spec.ts` verifies partial-selection preservation
+through font/size menus, compact list geometry, numeric/default/custom line
+spacing, ¶ decorations with unchanged document JSON/history/page count, and
+hover/focus explanations. Run it with the existing editor ergonomics,
+regressions, desktop and PDF suites after `npm run build:frontend:preview`.
+Hover checks intentionally target the desktop pointer. Unit coverage includes
+formatting-mark positions and legacy automatic line-height values. These tests
+prove browser UI and model behavior; they do not prove native file output or
+Office round-trip fidelity. Real Windows WebView acceptance remains required.
+
 This document describes the current desktop release test split by platform. The published baseline is V1.0.6 on Windows x64, universal macOS and Linux x64. V1.0.7 is in development with the Tiptap editor and local `PP-OCRv6_medium` OCR; see `V1_0_7_PLAN.md` for scope and `V1_0_7_VALIDATION.md` for the combined gate. Use this document to avoid false confidence from checks that ran on only one operating system.
 
 Historical V1.0.5 and V1.0.6 status commands remain documented where release workflows still use their recorded evidence. They are not the current V1.0.7 completion gate.

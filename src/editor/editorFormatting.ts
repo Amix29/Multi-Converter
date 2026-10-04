@@ -4,7 +4,8 @@ export const minimumLineHeight = 0.8;
 export const maximumLineHeight = 5;
 
 export const fontSizeSuggestions = [8, 9, 10, 11, 12, 14, 16, 18, 24, 32, 48, 72] as const;
-export const lineHeightSuggestions = ["auto", "1", "1.15", "1.5", "2", "2.5", "3"] as const;
+export const defaultLineHeight = "1.45";
+export const lineHeightSuggestions = ["1", "1.15", defaultLineHeight, "1.5", "2", "2.5", "3"] as const;
 
 export const editorThemeColorColumns = [
   ["#ffffff", "#f2f1ed", "#deddd6", "#aaa99f", "#6f706a", "#1d241f"],
@@ -52,8 +53,8 @@ export function pointSizeValue(source: unknown, fallback = 11): string {
   return Number.isFinite(parsed) ? String(parsed) : String(fallback);
 }
 
-export function lineHeightValue(source: unknown, fallback = "auto"): string {
-  if (source === null || source === undefined || source === "normal") return fallback;
+export function lineHeightValue(source: unknown, fallback = defaultLineHeight): string {
+  if (source === null || source === undefined || source === "normal" || source === "auto") return fallback;
   const value = String(source).trim();
   return normalizeLineHeightInput(value) ?? fallback;
 }

@@ -149,7 +149,7 @@ export function EditorColorPopover(props: EditorColorPopoverProps) {
         aria-label={label}
         aria-haspopup="dialog"
         aria-expanded={open}
-        title={label}
+        data-editor-tip={label}
         onClick={show}
       >
         <span

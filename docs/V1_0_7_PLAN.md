@@ -98,6 +98,9 @@ release blockers.
   a compact multirow grouped ribbon and labelled local SVG controls.
 - Document zoom from 10% to 500%, default 100% at the slider midpoint,
   Ctrl+wheel/plus/minus/reset shortcuts and an editable percentage.
+- Retained selection painting in typography controls, compact font lists,
+  numeric line spacing (default 1.45), contextual hover/focus tooltips and a
+  view-only ¶ formatting-mark toggle (Ctrl+Shift+8).
 - Familiar save, find/replace, link, alignment, page-break and formatting
   shortcuts with in-app help. Image dimensions, aspect ratio, placement, layers,
   reset and deletion use a contextual ribbon; floating images drag directly.

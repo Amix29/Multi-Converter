@@ -28,6 +28,11 @@ See docs/THIRD_PARTY_ENGINES.md for the V1 engine notice checklist and
 redistribution warnings.
 
 The document editor includes Tiptap and ProseMirror open-source packages.
+Editor toolbar icons use lucide-react 1.52.0 under ISC, with Feather-derived
+icons under MIT. The full upstream notice is distributed with the frontend
+at third-party/lucide/LICENSE.txt; the exact npm artifact is pinned in
+package-lock.json. These vector icons are bundled locally.
+
 Tiptap is distributed under the MIT License. Multi-Converter does not include
 Tiptap Pro packages or depend on Tiptap Cloud. The applicable package license
 texts are retained in the installed dependency distribution and source tree.

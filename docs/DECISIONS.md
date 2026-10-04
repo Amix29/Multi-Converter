@@ -1,5 +1,25 @@
 # Multi-Converter Decisions
 
+## 2026-10-04 — Visible selection and writing aids
+
+**Decision:** retain a view-only highlight while font/size inputs have focus;
+use 240 px font menus with 28 px rows and 224 px virtualized viewports. Display
+numeric paragraph line height, including the existing 1.45 default, and a
+recognizable spacing icon. Keep legacy automatic values readable without
+migrating documents. Use bundled Lucide icons (ISC with Feather MIT notices),
+consistent delayed tooltips, and a ¶ toggle for nonprinting marks.
+
+**Reason:** selection became invisible during typography changes, oversized
+menus obscured the page, an empty grid column clipped Auto, and some symbols
+and controls lacked a discoverable explanation. Numeric commits now distinguish
+keyboard suggestions from pointer hover and avoid recursive blur commits.
+
+**Consequences:** no new document attributes, cloud dependency or runtime icon
+fetch. Formatting marks and retained highlights are decorations, excluded from
+JSON/export/history. Styles, navigation, proofing and export fidelity remain
+separate gaps in the practical baseline documented in the Word/Writer review;
+no universal word-processor feature certification is claimed.
+
 ## 2026-10-04 — Compact document ribbon and direct image editing
 
 **Decision:** preserve Vellum Paper while arranging commands in compact,

@@ -174,6 +174,11 @@ move by dragging the image directly. See the
 [Word comparison and editor roadmap](docs/V1_0_7_EDITOR_WORD_REVIEW.md) for the
 implemented changes and proposed advanced capabilities.
 
+Font and size menus retain a visible text selection. The installed-font list
+is compact and searchable; line spacing uses numeric values (default 1.45).
+Hover/focus explanations and bundled Lucide vector icons identify editor
+commands. The ¶ button or Ctrl+Shift+8 toggles nonprinting formatting marks.
+
 Rich DOCX and RTF imports are converted locally to ODT by LibreOffice, then read by the bounded ODT parser. Direct ODT imports use the same parser. DOCX exports use the direct local docx.js mapper; ODT exports use the rich ODT generator, and RTF/PDF exports use the local LibreOffice bridge.
 
 The implemented export choices are DOCX, ODT, RTF, HTML, Markdown, TXT and PDF.

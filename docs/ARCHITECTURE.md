@@ -153,6 +153,20 @@ indeterminate faces are substituted by an installed embeddable face with a
 visible warning. DOCX output keeps the selected family name without embedding
 or substituting it. No font is downloaded at runtime.
 
+`editorViewDecorations.ts` adds view-only ProseMirror decorations for blurred
+text selections and optional spaces, nonbreaking spaces, tabs, hard breaks
+and paragraph endings. Formatting-mark state belongs to the editor plugin,
+not EditorDocumentV1. Zero-width widgets do not change layout, history or
+serialization; print CSS hides them. Typographic commands focus the current
+view synchronously so an older delayed focus cannot steal the next input.
+Metric inputs commit typed values independently of pointer-hover suggestions.
+`EditorTooltips.tsx` supplies one delegated, viewport-bounded tooltip surface
+for labelled editor controls and portals, including keyboard focus and disabled
+commands. It preserves existing aria-describedby references and closes on
+interaction, scrolling or modal opening. Icons are locally bundled from
+lucide-react 1.52.0 (ISC/Feather MIT), with a dedicated page-break SVG and the
+upstream license at public/third-party/lucide/LICENSE.txt.
+
 `src/styles.css` is only the ordered stylesheet entry point. Shell, files,
 formats, progress, welcome, settings, notices, feedback, motion and responsive
 rules live in focused files under `src/styles/`; editor-specific presentation

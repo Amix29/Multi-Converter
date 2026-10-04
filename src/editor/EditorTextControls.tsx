@@ -48,25 +48,32 @@ export function EditorTextControls(props: EditorTextControlsProps) {
           value={`${activeSize}pt`}
           unit="pt"
           description={`${minimumFontSizePt}–${maximumFontSizePt} pt`}
+          tooltip={t(language, "editor.tip.fontSize")}
           options={fontSizeSuggestions.map((size) => ({ value: String(size) }))}
           normalize={normalizeFontSizeInput}
           displayValue={pointSizeValue}
-          onCommit={(value) => editor.chain().focus().setFontSize(value).run()}
+          onCommit={(value) => {
+            editor.view.focus();
+            editor.chain().setFontSize(value).run();
+          }}
         />
         <EditorMetricCombobox
           className="toolbar-line-height"
           label={t(language, "editor.lineHeight")}
           value={activeLineHeight}
+          icon={<EditorToolbarIcon name="lineHeight" />}
           description={`${minimumLineHeight}–${maximumLineHeight}`}
+          tooltip={t(language, "editor.tip.lineHeight")}
           options={lineHeightSuggestions.map((value) => ({
             value,
-            label: value === "auto" ? t(language, "editor.lineHeightAuto") : value,
+            label: value,
           }))}
           normalize={normalizeLineHeightInput}
-          displayValue={(value) => value === "auto" ? t(language, "editor.lineHeightAuto") : value}
+          displayValue={(value) => lineHeightValue(value)}
           onCommit={(value) => {
-            if (value === "auto") editor.chain().focus().unsetParagraphLineHeight().run();
-            else editor.chain().focus().setParagraphLineHeight(value).run();
+            editor.view.focus();
+            if (value === "auto") editor.chain().unsetParagraphLineHeight().run();
+            else editor.chain().setParagraphLineHeight(value).run();
           }}
         />
       </div>

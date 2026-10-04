@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent } from "react";
 import type { Editor } from "@tiptap/react";
+import { Selection } from "@tiptap/pm/state";
 
 interface EditorShortcutOptions {
   editor: Editor | null;
@@ -30,7 +31,15 @@ export function useEditorShortcuts(options: EditorShortcutOptions) {
       return;
     }
     if (target.closest("input, select, textarea, [role=dialog]")) return;
-    if (key === "/") {
+    if ((key === "home" || key === "end") && target.closest(".ProseMirror")) {
+      event.preventDefault();
+      const boundary = key === "home" ? Selection.atStart(editor.state.doc) : Selection.atEnd(editor.state.doc);
+      editor.commands.setTextSelection({ from: event.shiftKey ? editor.state.selection.anchor : boundary.head, to: boundary.head });
+      editor.commands.scrollIntoView();
+    } else if (event.shiftKey && (event.code === "Digit8" || key === "*")) {
+      event.preventDefault();
+      editor.commands.toggleFormattingMarks();
+    } else if (key === "/") {
       event.preventDefault();
       options.onHelp();
     } else if (key === "k") {

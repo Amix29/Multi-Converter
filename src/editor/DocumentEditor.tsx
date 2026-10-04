@@ -20,6 +20,9 @@ import { isUntitledDocument, normalizedDocumentTitle } from "./documentNaming";
 import { writeGeneratedDocx } from "./docx/generatedDocxWriter";
 import { insertImageFiles } from "./editorAssets";
 import { EditorColorPreview } from "./editorColorState";
+import { FormattingMarks, PersistentSelection, formattingMarksKey } from "./editorViewDecorations";
+import { EditorTooltips } from "./EditorTooltips";
+import "./editor-view-aids.css";
 import { DocumentImage, DocumentLayout, PageBreak, UnsupportedObject } from "./extensions";
 import { sanitizeImportedHtml } from "./htmlSanitizer";
 import { Pagination } from "./pagination";
@@ -92,6 +95,8 @@ export function DocumentEditor(props: DocumentEditorProps) {
       Placeholder.configure({ placeholder: t(props.language, "editor.placeholder") }),
       Typography,
       EditorColorPreview,
+      FormattingMarks,
+      PersistentSelection,
       PageBreak,
       DocumentLayout,
       UnsupportedObject,
@@ -114,6 +119,9 @@ export function DocumentEditor(props: DocumentEditorProps) {
       setToolbarRevision((value) => value + 1);
     },
     onSelectionUpdate: () => setToolbarRevision((value) => value + 1),
+    onTransaction: ({ transaction }) => {
+      if (transaction.getMeta(formattingMarksKey) !== undefined) setToolbarRevision((value) => value + 1);
+    },
   });
   void toolbarRevision;
 
@@ -419,6 +427,7 @@ export function DocumentEditor(props: DocumentEditorProps) {
         onConfirmTitle={confirmExportTitle}
       />
       <EditorShortcutsDialog language={props.language} open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      <EditorTooltips language={props.language} />
     </div>
   );
 }
