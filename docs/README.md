@@ -6,7 +6,7 @@
 - Platforms: Windows x64, universal macOS and Linux x64
 - Repository surfaces: desktop application, static marketing site and branding kit
 - Development release: **V1.0.7**
-- Current post-audit base: **`80a0c383`** on `codex/v1-0-7-post-audit`, not merged or published
+- Current local work: **`codex/test`**; V1.0.7 remains unpublished and its release gate is open
 - V1.0.7 objectives:
   - local Tiptap document editor;
   - local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images.
@@ -20,6 +20,7 @@
 | [`V1_0_7_VALIDATION.md`](V1_0_7_VALIDATION.md) | Active, overall gate blocked | Combined editor, OCR and platform release ledger |
 | [`V1_0_7_EDITOR_VALIDATION.md`](V1_0_7_EDITOR_VALIDATION.md) | Active, gate open | Editor implementation and real Tauri validation |
 | [`V1_0_7_EDITOR_UI_QA.md`](V1_0_7_EDITOR_UI_QA.md) | Active, Phase 2 preview scope | Historical editor regressions and Vellum Paper responsive evidence |
+| [`V1_0_7_EDITOR_WORD_REVIEW.md`](V1_0_7_EDITOR_WORD_REVIEW.md) | Active development review | Word comparison, compact ribbon, keyboard/zoom and contextual image editing; proposed follow-up priorities |
 | [`V1_0_7_OCR.md`](V1_0_7_OCR.md) | Active, broader gate open | OCR behavior, architecture, security and test contract |
 | [`REFACTOR_BASELINE.md`](REFACTOR_BASELINE.md) | Active | Phase 1 measurements and Phase 2 refactor budgets |
 | [`TESTING.md`](TESTING.md) | Active | Commands and platform validation procedures |

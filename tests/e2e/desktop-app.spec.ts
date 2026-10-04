@@ -174,7 +174,7 @@ test("offers explicit formatting controls and an escapable editor focus mode", a
   await expect(toolbar.getByRole("group", { name: "Tableau" })).toBeVisible();
   await expect(toolbar.getByRole("button", { name: "Ajouter une colonne à droite" })).toBeVisible();
 
-  const focusMode = page.getByRole("button", { name: "Mode concentration" });
+  const focusMode = page.getByRole("button", { name: "Mode plein écran" });
   await focusMode.click();
   const editorShell = page.locator(".document-editor-shell");
   await expect(editorShell).toHaveAttribute("data-focus-mode", "true");

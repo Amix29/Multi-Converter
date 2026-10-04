@@ -344,14 +344,22 @@ After an editor UI change, also run the Vite preview and verify:
 - keyboard focus, reduced-motion behavior, console output and the target widths remain free of unintended horizontal overflow.
 - complete wrapped file names, structured type/metadata/action regions and OCR
   actions contained within their converter cards;
-- focus mode covers the exact viewport, closes with Escape and restores focus;
-- the mobile toolbar can reveal every labelled control using 44 px previous and
-  next buttons without widening the page;
+- full screen mode covers the exact editor viewport, toggles with F11, closes
+  with Escape after dialogs/popovers and restores focus;
+- compact desktop formatting controls use 28 px heights and multiple rows;
+  mobile formatting controls use 40 px targets in wrapping groups, with bounded
+  vertical scrolling when needed and no horizontal page overflow;
 - heading presets are absent while imported headings remain compatible; free
   decimal point sizes, text color, highlight color/clear state and enumerated
   system fonts behave as labelled;
-- selected images expose 44 px move, resize and four layer controls; table
-  columns expose resize handles and labelled row/column/merge/split controls;
+- selected images expose eight handles and a contextual ribbon for dimensions,
+  aspect ratio, placement, layers, reset and delete; floating images drag
+  directly and support keyboard movement; deletion remains undoable after
+  autosave; table columns expose resize handles and labelled commands;
+- zoom starts at 100% at the midpoint marker, reaches 10% and 500%, supports
+  exact entry/Ctrl+wheel/Ctrl+plus/minus/Ctrl+0 and leaves pagination unchanged;
+- save/find/link/alignment/page-break/clear-formatting shortcuts and the help
+  dialog coexist with native Tiptap editing and modal focus;
 - new documents default to Markdown, untitled exports request a title, accepted
   titles remain visible, slow export shows a progress dialog and overwrite uses
   an in-app dialog rather than `window.confirm()`.

@@ -4,6 +4,7 @@ import { EditorColorPopover } from "./EditorColorPopover";
 import { EditorFontFamilyControl } from "./EditorFontFamilyControl";
 import { EditorMetricCombobox } from "./EditorMetricCombobox";
 import { EditorToolbarButton } from "./EditorToolbarButton";
+import { EditorToolbarIcon } from "./EditorToolbarIcons";
 import { inheritedEditorTextColor, selectionColorState } from "./editorColorState";
 import {
   fontSizeSuggestions,
@@ -70,20 +71,21 @@ export function EditorTextControls(props: EditorTextControlsProps) {
         />
       </div>
       <div className="toolbar-group toolbar-mark-controls">
-        <EditorToolbarButton active={editor.isActive("bold")} label={t(language, "editor.bold")} onClick={() => editor.chain().focus().toggleBold().run()}>
-          <strong aria-hidden="true">B</strong>
+        <EditorToolbarButton active={editor.isActive("bold")} label={t(language, "editor.bold")} shortcut="Ctrl+B" onClick={() => editor.chain().focus().toggleBold().run()}>
+          <EditorToolbarIcon name="bold" />
         </EditorToolbarButton>
-        <EditorToolbarButton active={editor.isActive("italic")} label={t(language, "editor.italic")} onClick={() => editor.chain().focus().toggleItalic().run()}>
-          <em aria-hidden="true">I</em>
+        <EditorToolbarButton active={editor.isActive("italic")} label={t(language, "editor.italic")} shortcut="Ctrl+I" onClick={() => editor.chain().focus().toggleItalic().run()}>
+          <EditorToolbarIcon name="italic" />
         </EditorToolbarButton>
-        <EditorToolbarButton active={editor.isActive("underline")} label={t(language, "editor.underline")} onClick={() => editor.chain().focus().toggleUnderline().run()}>
-          <u aria-hidden="true">U</u>
+        <EditorToolbarButton active={editor.isActive("underline")} label={t(language, "editor.underline")} shortcut="Ctrl+U" onClick={() => editor.chain().focus().toggleUnderline().run()}>
+          <EditorToolbarIcon name="underline" />
         </EditorToolbarButton>
         <EditorToolbarButton active={editor.isActive("strike")} label={t(language, "editor.strike")} onClick={() => editor.chain().focus().toggleStrike().run()}>
-          <s aria-hidden="true">S</s>
+          <EditorToolbarIcon name="strike" />
         </EditorToolbarButton>
         <EditorColorPopover editor={editor} language={language} kind="text" state={textColor} fallback={inheritedTextColor} />
         <EditorColorPopover editor={editor} language={language} kind="highlight" state={highlightColor} fallback="#fff3a3" />
+        <EditorToolbarButton label={t(language, "editor.clearFormatting")} shortcut="Ctrl+Space" onClick={() => editor.chain().focus().unsetAllMarks().run()}><EditorToolbarIcon name="clear" /></EditorToolbarButton>
       </div>
     </>
   );

@@ -96,7 +96,8 @@ export const Pagination = Extension.create({
               try {
                 blocks.push({
                   pos: view.posAtDOM(child, 0),
-                  height: child.getBoundingClientRect().height,
+                  // Pagination uses document geometry, independently of visual zoom.
+                  height: child.offsetHeight,
                   forceBefore: child.dataset.pageBreak === "true",
                 });
               } catch {

@@ -38,7 +38,7 @@ test("opens PDFs outside Tiptap, virtualizes pages and keeps edits through focus
   await expect(page.locator('[data-object-kind="text"].is-text-modified').first()).toContainText("Texte structurel corrigé");
   await expect(page.getByLabel("1 modification(s) en attente", { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: "Mode concentration" }).click();
+  await page.getByRole("button", { name: "Mode plein écran" }).click();
   await expect(page.locator(".pdf-editor-shell")).toHaveClass(/is-focus-mode/);
   await page.keyboard.press("Escape");
   await expect(page.locator(".pdf-editor-shell")).not.toHaveClass(/is-focus-mode/);
@@ -257,7 +257,7 @@ test("contains the structural editor at every reference width and 200% zoom", as
     await page.getByRole("slider", { name: "Zoom" }).fill("2");
     await expect(page.locator(".pdf-editor-shell")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
-    await expect(page.getByRole("button", { name: "Mode concentration" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Mode plein écran" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Enregistrer sous" })).toBeVisible();
   }
 });

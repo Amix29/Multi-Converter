@@ -22,8 +22,8 @@ export const PageBreak = Node.create({
     return {
       setPageBreak:
         () =>
-        ({ commands }) =>
-          commands.insertContent({ type: this.name }),
+        ({ chain }) =>
+          chain().insertContent({ type: this.name }).createParagraphNear().run(),
     };
   },
 });

@@ -94,8 +94,18 @@ release blockers.
   draft and presents an in-app Vellum progress dialog while native generation
   is running. Overwrite confirmation also uses an in-app Vellum dialog rather
   than a browser prompt.
-- A full-viewport focus mode with Escape exit and focus return, a responsive
-  horizontally navigable toolbar and labelled local SVG controls.
+- A full-viewport full screen mode with F11 toggle, Escape exit and focus return,
+  a compact multirow grouped ribbon and labelled local SVG controls.
+- Document zoom from 10% to 500%, default 100% at the slider midpoint,
+  Ctrl+wheel/plus/minus/reset shortcuts and an editable percentage.
+- Familiar save, find/replace, link, alignment, page-break and formatting
+  shortcuts with in-app help. Image dimensions, aspect ratio, placement, layers,
+  reset and deletion use a contextual ribbon; floating images drag directly.
+- Image deletion remains undoable after autosave. Unused assets are pruned
+  on successful document closure rather than during an active undo history.
+- The Word comparison and proposed follow-up priorities are recorded in
+  [V1_0_7_EDITOR_WORD_REVIEW.md](V1_0_7_EDITOR_WORD_REVIEW.md); advanced Word
+  capabilities listed there remain proposals.
 - Structured converter file cards preserve complete filenames and keep their
   OCR action within the card. The decorative onboarding centre stripe was
   removed.
@@ -191,7 +201,9 @@ it can be hidden on desktop and starts closed as an overlay drawer below
 
 - Convert PDFs containing scanned or image-only pages into usable text formats.
 - Copy text detected in a local image.
-- Open a PDF in the document editor by converting recognized content into the existing Tiptap JSON model.
+- Open PDFs in the separate structural PDF workspace. Scanned PDFs remain
+  read-only until complete local digitization creates an editable PDF copy;
+  this supersedes the original PDF-to-Tiptap editing proposal.
 - Preserve readable page order and paragraph separation when the source makes them recoverable.
 - Show progress, allow cancellation and report partial-page failures without hiding them.
 

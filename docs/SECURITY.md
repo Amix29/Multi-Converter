@@ -198,12 +198,21 @@ disposed.
 
 Interactive image placement does not broaden that asset authority. Persisted
 layout values are validated separately: widths/heights accept only bounded
-numeric measures, floating offsets are limited to ±500 mm, layer indices to
+numeric measures, floating offsets are limited to ±100,000 mm, layer indices to
 `-100..100`, and alignment/layout/wrap values use closed enums. Imported or
 pasted HTML cannot set floating offsets or layer indices because those
 attributes are not in the HTML sanitizer allowlist. Pointer and keyboard
 controls update only the selected Tiptap image node; they never move or rewrite
 the original image file.
+
+The contextual image ribbon uses these same attributes and asset commands.
+Deleted-image assets remain in the bounded local draft asset store while the
+document is open so undo remains possible after autosave. They are pruned on
+successful return to recent documents. An interrupted session can therefore
+retain unused local assets until a later successful close or draft deletion.
+No asset is uploaded or assigned a new filesystem authority by this change.
+Keyboard commands are scoped to the document editor and paused for modal work;
+save shortcuts retain the existing naming, overwrite and source-conflict flow.
 
 The editor installs, embeds and downloads no font. Installed family names are
 enumerated through DirectWrite, CoreText or Fontconfig; resolved file paths are

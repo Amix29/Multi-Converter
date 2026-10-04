@@ -44,7 +44,7 @@
 - [Overview](#overview)
 - [V1.0.7 In Development](#v107-in-development)
 - [Document Editor (V1.0.7 development)](#document-editor-v107-development)
-- [Local OCR (V1.0.7 planned)](#local-ocr-v107-planned)
+- [Local OCR (V1.0.7 development)](#local-ocr-v107-development)
 - [Supported Formats](#supported-formats)
 - [Privacy](#privacy)
 - [Bundled Conversion Engines](#bundled-conversion-engines)
@@ -165,9 +165,22 @@ Deleting a recent document removes only the local draft and its local editor ass
 
 The editor provides a paginated canvas, common text formatting, tables, local images, page settings, headers, footers, numbering, autosave and export controls. Draft content is stored as versioned Tiptap JSON. Persisted images use local `mc-asset://<uuid>` references instead of Base64 data, remote URLs or exposed file-system paths.
 
-Rich DOCX and RTF imports are converted locally to ODT by LibreOffice, then read by the bounded ODT parser. Direct ODT imports use the same parser. Office exports are generated from the editor document model through ODT before DOCX, RTF or PDF conversion.
+The V1.0.7 document workspace now uses a compact ribbon with grouped controls on
+multiple rows, familiar keyboard shortcuts and full screen mode (F11/Escape).
+Document zoom runs from 10% to 500%, starts at 100% and supports Ctrl+wheel,
+Ctrl+plus/minus, Ctrl+0 and exact percentage entry. Selecting an image opens
+contextual size, aspect-ratio, placement and layer controls; floating images
+move by dragging the image directly. See the
+[Word comparison and editor roadmap](docs/V1_0_7_EDITOR_WORD_REVIEW.md) for the
+implemented changes and proposed advanced capabilities.
 
-The implemented export choices are DOCX, ODT, RTF, HTML, Markdown, TXT and PDF. **PDF import remains disabled** until PP-OCRv6_medium is integrated. Failed rich Office imports must display an error and must never silently fall back to plain text.
+Rich DOCX and RTF imports are converted locally to ODT by LibreOffice, then read by the bounded ODT parser. Direct ODT imports use the same parser. DOCX exports use the direct local docx.js mapper; ODT exports use the rich ODT generator, and RTF/PDF exports use the local LibreOffice bridge.
+
+The implemented export choices are DOCX, ODT, RTF, HTML, Markdown, TXT and PDF.
+PDF files open in a separate structural PDF workspace rather than being
+imported into Tiptap. Scanned PDFs remain read-only until a complete local
+digitization succeeds. Failed rich Office imports must display an error and
+must never silently fall back to plain text.
 
 The latest editor status and the still-pending Windows Tauri scenarios are tracked in [`docs/V1_0_7_EDITOR_VALIDATION.md`](docs/V1_0_7_EDITOR_VALIDATION.md).
 
@@ -178,18 +191,22 @@ The latest editor status and the still-pending Windows Tauri scenarios are track
 
 ---
 
-## Local OCR (V1.0.7 planned)
+## Local OCR (V1.0.7 development)
 
-V1.0.7 will integrate the local `PP-OCRv6_medium` model to:
+The V1.0.7 development tree integrates the local `PP-OCRv6_medium` model to:
 
 - convert scanned or image-only PDFs to TXT, Markdown and HTML;
-- open a PDF as editable Tiptap content;
+- digitize scanned PDFs for the separate structural PDF workspace;
 - extract text from PNG, JPEG, WebP, TIFF and BMP images;
 - let the user copy recognized image text to the clipboard.
 
 OCR processing must remain offline. Source images, PDF pages and recognized text must not be uploaded. The model and inference runtime will be pinned, checksum-verified and packaged locally.
 
-OCR is **not implemented yet**, so PDF import remains disabled in the editor. Existing PDF conversions with an extractable text layer continue to use the current local text path.
+This implemented development path does not close the native packaged-app and
+cross-platform release gates. Existing PDF conversions with an extractable
+text layer continue to use the local text path. The current local PDFium 0.4.0
+candidate is a maintainer-only development exception, not published release
+evidence.
 
 See [`docs/V1_0_7_OCR.md`](docs/V1_0_7_OCR.md) for the product behavior, local architecture, security rules and validation matrix.
 

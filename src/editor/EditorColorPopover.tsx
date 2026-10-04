@@ -46,7 +46,7 @@ export function EditorColorPopover(props: EditorColorPopoverProps) {
     const update = () => {
       const rect = triggerRef.current?.getBoundingClientRect();
       if (!rect) return;
-      const width = Math.min(330, window.innerWidth - 24);
+      const width = Math.min(260, window.innerWidth - 24);
       const panelHeight = Math.min(
         panelRef.current?.scrollHeight ?? 520,
         window.innerHeight - 24,

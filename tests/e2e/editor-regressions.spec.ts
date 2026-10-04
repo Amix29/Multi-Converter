@@ -107,10 +107,9 @@ test("exposes free typography, explicit colors, resizable tables and complete im
   await expect(image).toBeVisible();
   await image.click();
   await image.evaluate((element) => element.scrollIntoView({ block: "center" }));
-  const mediaTools = image.getByRole("toolbar", { name: "Outils de l’image" });
+  const mediaTools = toolbar.getByRole("toolbar", { name: "Outils de l’image" });
   await expect(mediaTools).toBeVisible();
   for (const action of [
-    "Déplacer l’image",
     "Placer tout derrière",
     "Reculer d’un niveau",
     "Avancer d’un niveau",
@@ -122,7 +121,7 @@ test("exposes free typography, explicit colors, resizable tables and complete im
   await mediaTools.getByRole("button", { name: "Placer tout devant" }).click();
   await expect(image).toHaveAttribute("data-layout-mode", "floating");
   await expect(image).toHaveAttribute("style", /z-index:\s*100/);
-  const moveImage = mediaTools.getByRole("button", { name: "Déplacer l’image" });
+  const moveImage = image.locator(".document-image-frame");
   await moveImage.focus();
   await moveImage.press("ArrowRight");
   await expect(image).toHaveCSS("transform", /matrix\(.+/);
@@ -133,9 +132,9 @@ test("exposes free typography, explicit colors, resizable tables and complete im
   const widthBefore = (await frame.boundingBox())?.width ?? 0;
   await dragBy(page, resize, 70, 0);
   await expect.poll(async () => (await frame.boundingBox())?.width ?? 0).toBeGreaterThan(widthBefore);
-  const returnToFlow = mediaTools.getByRole("button", { name: "Remettre dans le texte" });
+  const returnToFlow = mediaTools.getByRole("combobox", { name: "Position de l’image" });
   await expect(returnToFlow).toBeVisible();
-  await returnToFlow.click();
+  await returnToFlow.selectOption("flow");
 
   await editor.focus();
   await editor.press("Control+End");
@@ -295,6 +294,7 @@ async function openNewDocument(page: Page) {
 
 async function createRecentDocument(page: Page, title: string) {
   await page.getByRole("button", { name: "Nouveau document" }).click();
+  await expect(page.locator(".ProseMirror")).toBeFocused();
   const titleInput = page.getByRole("textbox", { name: "Nom du document" });
   await titleInput.fill(title);
   await expect(titleInput).toHaveValue(title);

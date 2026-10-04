@@ -1,16 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Editor } from "@tiptap/react";
 import type { EditorDocumentV1 } from "../lib/api";
 import { t, type LanguageCode } from "../i18n";
-import {
-  EditorHistoryControls,
-  EditorInsertControls,
-  EditorPageControls,
-  EditorParagraphControls,
-} from "./EditorToolbarSections";
+import { EditorHistoryControls, EditorInsertControls, EditorPageControls, EditorParagraphControls } from "./EditorToolbarSections";
 import { EditorTableControls } from "./EditorTableControls";
 import { EditorTextControls } from "./EditorTextControls";
-import { EditorToolbarIcon } from "./EditorToolbarIcons";
+import { EditorImageControls } from "./EditorImageControls";
+import "./editor-ribbon.css";
 
 interface EditorToolbarProps {
   editor: Editor;
@@ -24,81 +19,32 @@ interface EditorToolbarProps {
 }
 
 export function EditorToolbar(props: EditorToolbarProps) {
-  const toolbarRef = useRef<HTMLDivElement>(null);
-  const [scrollState, setScrollState] = useState({ overflow: false, left: false, right: false });
-
-  function updateScrollState() {
-    const toolbar = toolbarRef.current;
-    if (!toolbar) return;
-    const overflow = toolbar.scrollWidth - toolbar.clientWidth > 2;
-    const next = {
-      overflow,
-      left: overflow && toolbar.scrollLeft > 2,
-      right: overflow && toolbar.scrollLeft + toolbar.clientWidth < toolbar.scrollWidth - 2,
-    };
-    setScrollState((current) => current.overflow === next.overflow
-      && current.left === next.left
-      && current.right === next.right
-      ? current
-      : next);
-  }
-
-  useLayoutEffect(updateScrollState);
-  useEffect(() => {
-    const toolbar = toolbarRef.current;
-    if (!toolbar) return;
-    const observer = new ResizeObserver(updateScrollState);
-    observer.observe(toolbar);
-    toolbar.addEventListener("scroll", updateScrollState, { passive: true });
-    return () => {
-      observer.disconnect();
-      toolbar.removeEventListener("scroll", updateScrollState);
-    };
-  }, []);
-
-  function scrollToolbar(direction: -1 | 1) {
-    const toolbar = toolbarRef.current;
-    if (!toolbar) return;
-    toolbar.scrollBy({ left: direction * Math.max(220, toolbar.clientWidth * 0.72), behavior: "smooth" });
-  }
-
   return (
-    <div className={`editor-toolbar-shell ${scrollState.overflow ? "has-overflow" : ""}`}>
-      {scrollState.overflow && (
-        <button className="editor-toolbar-scroll" type="button" disabled={!scrollState.left} aria-label={t(props.language, "editor.scrollToolsLeft")} onClick={() => scrollToolbar(-1)}>
-          <EditorToolbarIcon name="arrowLeft" />
-        </button>
-      )}
-      <div
-        ref={toolbarRef}
-        className="editor-toolbar"
-        data-density="compact"
-        role="toolbar"
-        aria-label={t(props.language, "editor.formattingTools")}
-      >
-        <EditorHistoryControls editor={props.editor} language={props.language} />
-        <EditorTextControls editor={props.editor} language={props.language} />
-        <EditorParagraphControls editor={props.editor} language={props.language} />
-        <EditorInsertControls
-          editor={props.editor}
-          language={props.language}
-          searchOpen={props.searchOpen}
-          onSearch={props.onSearch}
-          onInsertImages={props.onInsertImages}
-        />
+    <div className="editor-toolbar-shell">
+      <div className="editor-toolbar" data-density="compact" role="toolbar" aria-label={t(props.language, "editor.formattingTools")}>
+        <section className="editor-ribbon-group editor-ribbon-history">
+          <EditorHistoryControls editor={props.editor} language={props.language} />
+          <span className="editor-ribbon-label">{t(props.language, "editor.historyGroup")}</span>
+        </section>
+        <section className="editor-ribbon-group editor-ribbon-font">
+          <EditorTextControls editor={props.editor} language={props.language} />
+          <span className="editor-ribbon-label">{t(props.language, "editor.fontFamily")}</span>
+        </section>
+        <section className="editor-ribbon-group editor-ribbon-paragraph">
+          <EditorParagraphControls editor={props.editor} language={props.language} />
+          <span className="editor-ribbon-label">{t(props.language, "editor.paragraphGroup")}</span>
+        </section>
+        <section className="editor-ribbon-group editor-ribbon-insert">
+          <EditorInsertControls editor={props.editor} language={props.language} searchOpen={props.searchOpen} onSearch={props.onSearch} onInsertImages={props.onInsertImages} />
+          <span className="editor-ribbon-label">{t(props.language, "editor.insertGroup")}</span>
+        </section>
+        <section className="editor-ribbon-group editor-ribbon-page">
+          <EditorPageControls document={props.document} language={props.language} onHeaderFooter={props.onHeaderFooter} onPage={props.onPage} />
+          <span className="editor-ribbon-label">{t(props.language, "editor.layoutGroup")}</span>
+        </section>
         <EditorTableControls editor={props.editor} language={props.language} />
-        <EditorPageControls
-          document={props.document}
-          language={props.language}
-          onHeaderFooter={props.onHeaderFooter}
-          onPage={props.onPage}
-        />
+        <EditorImageControls editor={props.editor} language={props.language} />
       </div>
-      {scrollState.overflow && (
-        <button className="editor-toolbar-scroll" type="button" disabled={!scrollState.right} aria-label={t(props.language, "editor.scrollToolsRight")} onClick={() => scrollToolbar(1)}>
-          <EditorToolbarIcon name="arrowLeft" style={{ transform: "rotate(180deg)" }} />
-        </button>
-      )}
     </div>
   );
 }

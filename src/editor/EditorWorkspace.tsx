@@ -235,9 +235,11 @@ export function EditorWorkspace(props: EditorWorkspaceProps) {
 
   const closeDocument = useCallback(async () => {
     await refreshRecent();
+    // Only prune once closing can succeed; an open editor may undo image deletion.
+    if (document) await api.editorPruneAssets(document.id);
     setDocument(null);
     setImported(null);
-  }, [refreshRecent]);
+  }, [document?.id, refreshRecent]);
 
   const closePdf = useCallback(async () => {
     const session = pdfSession;

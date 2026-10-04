@@ -3,6 +3,8 @@ import { EditorContent, type Editor } from "@tiptap/react";
 import type { EditorDocumentV1 } from "../lib/api";
 import { t, type LanguageCode } from "../i18n";
 import { findNext, replaceSelection } from "./editorSearch";
+import { EditorZoomControl } from "./EditorZoomControl";
+import { useEditorZoom } from "./useEditorZoom";
 
 const pageSizes: Record<EditorDocumentV1["page"]["format"], { width: number; height: number }> = {
   a3: { width: 1123, height: 1587 },
@@ -23,10 +25,14 @@ interface EditorCanvasProps {
 
 export function EditorCanvas(props: EditorCanvasProps) {
   const [pageCount, setPageCount] = useState(1);
-  const [zoom, setZoom] = useState(0.85);
+  const { zoomPercent, setZoom, canvasScrollRef } = useEditorZoom();
   const [search, setSearch] = useState("");
   const [replacement, setReplacement] = useState("");
-  const canvasScrollRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (props.searchOpen) searchRef.current?.focus();
+  }, [props.searchOpen]);
 
   useEffect(() => {
     const target = canvasScrollRef.current;
@@ -39,7 +45,19 @@ export function EditorCanvas(props: EditorCanvasProps) {
     return () => target.removeEventListener("editor-pagination", onPagination);
   }, [props.editor]);
 
-  const canvasStyle = createCanvasStyle(props.document, zoom);
+  useEffect(() => {
+    const container = canvasScrollRef.current;
+    const paper = container?.querySelector<HTMLElement>(".editor-page-paper");
+    const scale = container?.querySelector<HTMLElement>(".editor-page-scale");
+    if (!paper || !scale) return;
+    const measure = () => scale.style.setProperty("--editor-rendered-height", `${paper.offsetHeight}px`);
+    const observer = new ResizeObserver(measure);
+    observer.observe(paper);
+    measure();
+    return () => observer.disconnect();
+  }, [props.editor]);
+
+  const canvasStyle = createCanvasStyle(props.document, zoomPercent / 100);
 
   return (
     <>
@@ -51,8 +69,8 @@ export function EditorCanvas(props: EditorCanvasProps) {
 
       {props.searchOpen && (
         <div className="editor-searchbar" data-density="compact">
-          <input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t(props.language, "editor.find")} />
-          <input value={replacement} onChange={(event) => setReplacement(event.target.value)} placeholder={t(props.language, "editor.replaceWith")} />
+          <input ref={searchRef} autoFocus value={search} aria-label={t(props.language, "editor.find")} onChange={(event) => setSearch(event.target.value)} placeholder={t(props.language, "editor.find")} onKeyDown={(event) => { if (event.key === "Enter") findNext(props.editor, search); if (event.key === "Escape") { event.stopPropagation(); props.onCloseSearch(); props.editor.commands.focus(); } }} />
+          <input value={replacement} aria-label={t(props.language, "editor.replaceWith")} onChange={(event) => setReplacement(event.target.value)} placeholder={t(props.language, "editor.replaceWith")} />
           <button type="button" onClick={() => findNext(props.editor, search)}>{t(props.language, "editor.next")}</button>
           <button type="button" onClick={() => replaceSelection(props.editor, search, replacement)}>{t(props.language, "editor.replace")}</button>
           <button type="button" onClick={props.onCloseSearch} aria-label={t(props.language, "common.close")}>×</button>
@@ -80,12 +98,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
       <div className="editor-statusbar" data-density="compact">
         <span>{t(props.language, "editor.pageCount", { current: 1, total: pageCount })}</span>
         <span>{t(props.language, "editor.wordCount", { count: props.editor.storage.characterCount.words() })}</span>
-        <div className="editor-zoom-control">
-          <button type="button" onClick={() => setZoom((value) => Math.max(0.25, value - 0.1))}>−</button>
-          <input type="range" min="25" max="200" step="5" value={Math.round(zoom * 100)} onChange={(event) => setZoom(Number(event.target.value) / 100)} aria-label={t(props.language, "editor.zoom")} />
-          <button type="button" onClick={() => setZoom((value) => Math.min(2, value + 0.1))}>＋</button>
-          <span>{Math.round(zoom * 100)}%</span>
-        </div>
+        <EditorZoomControl language={props.language} value={zoomPercent} onChange={setZoom} />
       </div>
     </>
   );

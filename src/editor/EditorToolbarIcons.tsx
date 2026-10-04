@@ -1,6 +1,18 @@
 import type { CSSProperties } from "react";
 
 export type EditorToolbarIconName =
+  | "bold"
+  | "italic"
+  | "underline"
+  | "strike"
+  | "zoomIn"
+  | "zoomOut"
+  | "keyboard"
+  | "reset"
+  | "layerBack"
+  | "layerFront"
+  | "layerDown"
+  | "layerUp"
   | "alignCenter"
   | "alignJustify"
   | "alignLeft"
@@ -41,6 +53,8 @@ export function EditorToolbarIcon(props: EditorToolbarIconProps) {
   return (
     <svg
       aria-hidden="true"
+      width="20"
+      height="20"
       className={props.className}
       style={props.style}
       viewBox="0 0 24 24"
@@ -57,6 +71,30 @@ export function EditorToolbarIcon(props: EditorToolbarIconProps) {
 
 function iconContent(name: EditorToolbarIconName) {
   switch (name) {
+    case "bold":
+      return <path d="M7 4h6a4 4 0 0 1 0 8H7zM7 12h7a4 4 0 0 1 0 8H7z" strokeWidth="2.5" />;
+    case "italic":
+      return <path d="M10 4h8M6 20h8M15 4 9 20" />;
+    case "underline":
+      return <path d="M6 4v7a6 6 0 0 0 12 0V4M4 21h16" />;
+    case "strike":
+      return <path d="M17 6c-1-3-9-3-10 1-.4 1.5.5 3 3 4M7 18c2 3 10 3 10-1 0-2-2-3-4-4M3 12h18" />;
+    case "zoomIn":
+      return <path d="M5 12h14M12 5v14" />;
+    case "zoomOut":
+      return <path d="M5 12h14" />;
+    case "keyboard":
+      return <><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M8 16h8" /></>;
+    case "reset":
+      return <path d="M4 10a8 8 0 1 1 1 8M4 4v6h6" />;
+    case "layerBack":
+      return <><rect x="3" y="3" width="10" height="10" /><path d="M15 7h6v14H7v-6M17 3v12m-3-3 3 3 3-3M14 18h6" /></>;
+    case "layerFront":
+      return <><rect x="3" y="3" width="10" height="10" /><path d="M15 7h6v14H7v-6M17 15V3m-3 3 3-3 3 3M14 1h6" /></>;
+    case "layerDown":
+      return <><rect x="3" y="3" width="10" height="10" /><path d="M15 7h6v14H7v-6M17 4v12m-3-3 3 3 3-3" /></>;
+    case "layerUp":
+      return <><rect x="3" y="3" width="10" height="10" /><path d="M15 7h6v14H7v-6M17 16V4m-3 3 3-3 3 3" /></>;
     case "undo":
       return <><path d="M9 7 5 11l4 4" /><path d="M5 11h8a5 5 0 0 1 5 5" /></>;
     case "redo":

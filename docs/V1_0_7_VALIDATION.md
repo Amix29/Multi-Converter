@@ -742,7 +742,34 @@ Fresh screenshots were generated at 375, 768, 1024 and 1440 px from the rebuilt
 preview and inspected locally. These are browser-interface proofs only; they do
 not replace native Tauri file-system, PDFium or package evidence.
 
-## Release Closure
+## 2026-10-04 — Document editor ergonomics checkpoint
+
+The development editor now has a compact grouped multirow ribbon, stable active
+SVG states, 10–500% document zoom with a centered 100% marker, scoped editing
+shortcuts/help and full screen wording/F11. Images use contextual dimensions,
+proportions, placement/layers, reset/delete and direct floating movement.
+Autosave retains undo assets until successful document closure. The page-break
+command continues typing in a following paragraph instead of replacing the
+selected break.
+
+Current evidence for this UI lot:
+
+- TypeScript application/test checks and i18n passed (653 keys, six languages).
+- All 139 unit tests passed, including zoom endpoints, midpoint and reachability.
+- Editor, layout and source-structure contracts passed.
+- Production and explicit preview frontend builds passed.
+- Combined desktop/editor/PDF Chromium matrix: 37 passed, 27 deliberately
+  skipped according to platform routing; no failures.
+- The Impeccable detector returned no findings for the targeted UI source.
+- Desktop/mobile ribbon and selected-image screenshots were inspected locally.
+
+This is UI/compile evidence. It does not replace native Windows WebView
+acceptance, asset persistence after restart, Word/LibreOffice round trips,
+OCR/sidecar inference, platform packaging or the existing release gates.
+The comparison and proposed advanced capabilities are in
+[V1_0_7_EDITOR_WORD_REVIEW.md](V1_0_7_EDITOR_WORD_REVIEW.md).
+
+## Release Closure Requirements
 
 V1.0.7 may be marked ready only when:
 

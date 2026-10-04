@@ -27,6 +27,9 @@ import { ParagraphLineHeight } from "./paragraphLineHeight";
 import { prepareDocumentForPdf } from "./pdfFontPolicy";
 import { ResizableTableRow, TableResizeHandles } from "./tableResize";
 import { useEditorFocusMode } from "./useEditorFocusMode";
+import { useEditorShortcuts } from "./useEditorShortcuts";
+import { EditorShortcutsDialog } from "./EditorShortcutsDialog";
+import { setEditorLink } from "./EditorToolbarSections";
 import "./editor-table-resize.css";
 
 interface DocumentEditorProps {
@@ -48,6 +51,7 @@ export function DocumentEditor(props: DocumentEditorProps) {
   const [saving, setSaving] = useState(false);
   const [exportFormat, setExportFormat] = useState<EditorFormat>("md");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [headerFooter, setHeaderFooter] = useState<"header" | "footer" | null>(null);
   const [toolbarRevision, setToolbarRevision] = useState(0);
   const [operation, setOperation] = useState<DocumentOperation>(null);
@@ -136,8 +140,8 @@ export function DocumentEditor(props: DocumentEditorProps) {
       const revision = revisionRef.current;
       const snapshot = currentDocument();
       const task = (async () => {
-        let saved = await api.editorSaveDraft(snapshot);
-        saved = await api.editorPruneAssets(saved.id);
+        // Keep assets referenced by undo history available while this editor is open.
+        const saved = await api.editorSaveDraft(snapshot);
         if (revision === revisionRef.current) {
           documentRef.current = saved;
           dirtyRef.current = false;
@@ -175,6 +179,15 @@ export function DocumentEditor(props: DocumentEditorProps) {
       flush();
     };
   }, [autosave]);
+
+  useEditorShortcuts({
+    editor,
+    blocked: saving || operation !== null || headerFooter !== null || shortcutsOpen,
+    onSave: (mode) => void save(mode),
+    onSearch: () => setSearchOpen(true),
+    onLink: () => { if (editor) setEditorLink(editor, props.language); },
+    onHelp: () => setShortcutsOpen(true),
+  });
 
   if (!editor) return <div className="editor-loading">{t(props.language, "editor.loading")}</div>;
 
@@ -358,6 +371,7 @@ export function DocumentEditor(props: DocumentEditorProps) {
         onSave={(mode) => void save(mode)}
         onExport={requestExport}
         onExportFormat={setExportFormat}
+        onShortcuts={() => setShortcutsOpen(true)}
       />
       <EditorToolbar
         editor={editor}
@@ -404,6 +418,7 @@ export function DocumentEditor(props: DocumentEditorProps) {
         onConfirmOverwrite={() => void confirmOverwrite()}
         onConfirmTitle={confirmExportTitle}
       />
+      <EditorShortcutsDialog language={props.language} open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
   );
 }

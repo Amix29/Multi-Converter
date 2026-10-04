@@ -1,5 +1,26 @@
 # Multi-Converter Decisions
 
+## 2026-10-04 — Compact document ribbon and direct image editing
+
+**Decision:** preserve Vellum Paper while arranging commands in compact,
+labelled, multiple-row groups. Replace the image overlay with a contextual
+ribbon and direct dragging for floating images. Keep document zoom view-local,
+with 10–500% bounds and 100% at the slider midpoint. Rename focus mode to full
+screen mode and provide scoped keyboard commands and help.
+
+**Reason:** the maintainer's Word comparison showed oversized chrome, hidden
+commands and confusing image movement. Active-button hover styling also caused
+an apparent icon disappearance. A local toolbar change addresses these issues
+without changing the document schema or native asset authority.
+
+**Consequences:** 28 px desktop formatting controls become 40 px on narrow
+layouts. Image actions form distinct undo groups; autosave retains local image
+assets until successful document closure so deletion can be undone. Modal
+keyboard handling takes priority over editor shortcuts. Advanced Word
+capabilities remain explicitly proposed in
+[V1_0_7_EDITOR_WORD_REVIEW.md](V1_0_7_EDITOR_WORD_REVIEW.md), subject to native
+format fidelity and the existing V1.0.7 release gates.
+
 ## 2026-07-30 — Owned Atelier IA project
 
 **Decision:** move the complete Multi-Converter repository to

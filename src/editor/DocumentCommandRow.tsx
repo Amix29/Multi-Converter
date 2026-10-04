@@ -19,6 +19,7 @@ interface DocumentCommandRowProps {
   onSave(mode: "save" | "saveAs"): void;
   onExport(): void;
   onExportFormat(format: EditorFormat): void;
+  onShortcuts(): void;
 }
 
 export function DocumentCommandRow(props: DocumentCommandRowProps) {
@@ -49,6 +50,7 @@ export function DocumentCommandRow(props: DocumentCommandRowProps) {
         </div>
       </div>
       <div className="document-command-actions">
+        <button type="button" className="editor-shortcuts-button" aria-label={t(props.language, "editor.keyboardShortcuts")} title={`${t(props.language, "editor.keyboardShortcuts")} (Ctrl+/)`} onClick={props.onShortcuts}><EditorToolbarIcon name="keyboard" /></button>
         <button
           ref={props.focusButtonRef}
           className="editor-focus-button"

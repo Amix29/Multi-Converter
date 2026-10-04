@@ -21,6 +21,7 @@ export function EditorHistoryControls(props: {
     <div className="toolbar-group">
       <EditorToolbarButton
         label={t(props.language, "editor.undo")}
+        shortcut="Ctrl+Z"
         onClick={() => props.editor.chain().focus().undo().run()}
         disabled={!props.editor.can().undo()}
       >
@@ -28,6 +29,7 @@ export function EditorHistoryControls(props: {
       </EditorToolbarButton>
       <EditorToolbarButton
         label={t(props.language, "editor.redo")}
+        shortcut="Ctrl+Y / Ctrl+Shift+Z"
         onClick={() => props.editor.chain().focus().redo().run()}
         disabled={!props.editor.can().redo()}
       >
@@ -58,6 +60,7 @@ export function EditorParagraphControls(props: {
           key={alignment.value}
           active={props.editor.isActive({ textAlign: alignment.value })}
           label={t(props.language, `editor.align.${alignment.value}`)}
+          shortcut={{ left: "Ctrl+L", center: "Ctrl+E", right: "Ctrl+R", justify: "Ctrl+J" }[alignment.value]}
           onClick={() =>
             props.editor.chain().focus().setTextAlign(alignment.value).run()
           }
@@ -96,7 +99,8 @@ export function EditorInsertControls(props: {
     <div className="toolbar-group">
       <EditorToolbarButton
         label={t(props.language, "editor.link")}
-        onClick={() => setLink(props.editor, props.language)}
+        shortcut="Ctrl+K"
+        onClick={() => setEditorLink(props.editor, props.language)}
       >
         <EditorToolbarIcon name="link" />
       </EditorToolbarButton>
@@ -130,6 +134,7 @@ export function EditorInsertControls(props: {
       </EditorToolbarButton>
       <EditorToolbarButton
         label={t(props.language, "editor.pageBreak")}
+        shortcut="Ctrl+Enter"
         onClick={() => props.editor.chain().focus().setPageBreak().run()}
       >
         <EditorToolbarIcon name="pageBreak" />
@@ -137,6 +142,7 @@ export function EditorInsertControls(props: {
       <EditorToolbarButton
         active={props.searchOpen}
         label={t(props.language, "editor.findReplace")}
+        shortcut="Ctrl+F / Ctrl+H"
         onClick={props.onSearch}
       >
         <EditorToolbarIcon name="search" />
@@ -198,7 +204,7 @@ export function EditorPageControls(props: {
   );
 }
 
-function setLink(editor: Editor, language: LanguageCode) {
+export function setEditorLink(editor: Editor, language: LanguageCode) {
   const href = window.prompt(
     t(language, "editor.linkPrompt"),
     editor.getAttributes("link").href || "https://",

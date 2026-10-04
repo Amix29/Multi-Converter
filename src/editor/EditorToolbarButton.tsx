@@ -7,6 +7,7 @@ interface EditorToolbarButtonProps {
   active?: boolean;
   disabled?: boolean;
   danger?: boolean;
+  shortcut?: string;
 }
 
 export function EditorToolbarButton(props: EditorToolbarButtonProps) {
@@ -22,10 +23,11 @@ export function EditorToolbarButton(props: EditorToolbarButtonProps) {
     <button
       className={classes}
       type="button"
-      title={props.label}
+      title={props.shortcut ? `${props.label} (${props.shortcut})` : props.label}
       aria-label={props.label}
-      aria-pressed={props.active || undefined}
+      aria-pressed={props.active}
       disabled={props.disabled}
+      onMouseDown={(event) => event.preventDefault()}
       onClick={props.onClick}
     >
       {props.children}

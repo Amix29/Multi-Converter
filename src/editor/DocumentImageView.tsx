@@ -1,12 +1,11 @@
 import { useEffect, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
+import { closeHistory } from "@tiptap/pm/history";
 import { api } from "../lib/api";
 import { t, type LanguageCode, type TranslationKey } from "../i18n";
 import {
   finiteDocumentCoordinate,
   keyboardResizeDelta,
-  MAXIMUM_IMAGE_Z_INDEX,
-  MINIMUM_IMAGE_Z_INDEX,
   resizeImage,
   resizeOffsetForLayout,
   safeImageZIndex,
@@ -68,11 +67,12 @@ export function DocumentImageView(props: NodeViewProps) {
     });
   }
 
-  function beginResize(handle: ImageResizeHandle, event: ReactPointerEvent<HTMLButtonElement>) {
+  function beginResize(handle: ImageResizeHandle, event: ReactPointerEvent<HTMLElement>) {
     event.preventDefault();
     event.stopPropagation();
     const frame = event.currentTarget.closest<HTMLElement>(".document-image-frame");
     if (!frame) return;
+    props.editor.view.dispatch(closeHistory(props.editor.state.tr));
     const zoom = editorZoom(frame);
     const rect = frame.getBoundingClientRect();
     const start = { width: rect.width / zoom, height: rect.height / zoom };
@@ -86,7 +86,7 @@ export function DocumentImageView(props: NodeViewProps) {
     });
   }
 
-  function resizeWithKeyboard(handle: ImageResizeHandle, event: React.KeyboardEvent<HTMLButtonElement>) {
+  function resizeWithKeyboard(handle: ImageResizeHandle, event: React.KeyboardEvent<HTMLElement>) {
     const frame = event.currentTarget.closest<HTMLElement>(".document-image-frame");
     if (!frame) return;
     const delta = keyboardResizeDelta(handle, event.key, event.ctrlKey ? 10 : 2);
@@ -104,7 +104,9 @@ export function DocumentImageView(props: NodeViewProps) {
     ));
   }
 
-  function beginMove(event: ReactPointerEvent<HTMLButtonElement>) {
+  function beginMove(event: ReactPointerEvent<HTMLElement>) {
+    if (event.button !== 0) return;
+    props.editor.view.dispatch(closeHistory(props.editor.state.tr));
     event.preventDefault();
     event.stopPropagation();
     const origin = { x: event.clientX, y: event.clientY };
@@ -116,9 +118,10 @@ export function DocumentImageView(props: NodeViewProps) {
     }));
   }
 
-  function moveWithKeyboard(event: React.KeyboardEvent<HTMLButtonElement>) {
+  function moveWithKeyboard(event: React.KeyboardEvent<HTMLElement>) {
     if (!event.key.startsWith("Arrow")) return;
     event.preventDefault();
+    event.stopPropagation();
     const step = event.shiftKey ? 10 : 2;
     props.updateAttributes({
       layoutMode: "floating",
@@ -143,24 +146,15 @@ export function DocumentImageView(props: NodeViewProps) {
       role="figure"
       aria-label={String(props.node.attrs.alt || props.node.attrs.title || label(language, "editor.media.image"))}
     >
-      {props.selected && (
-        <div className="document-image-controls" contentEditable={false} role="toolbar" aria-label={label(language, "editor.media.tools")}>
-          <button type="button" className="document-image-move" onPointerDown={beginMove} onKeyDown={moveWithKeyboard} title={label(language, "editor.media.move")} aria-label={label(language, "editor.media.move")}>
-            <MediaIcon kind="move" />
-          </button>
-          <span className="document-image-control-divider" />
-          <LayerButton showLabel label={label(language, "editor.media.returnToFlow")} icon="flow" onClick={() => props.updateAttributes({ layoutMode: "flow", offsetXmm: 0, offsetYmm: 0, zIndex: 0 })} />
-          <LayerButton showLabel label={label(language, "editor.media.behindText")} icon="back" onClick={() => props.updateAttributes({ layoutMode: "floating", zIndex: -1 })} />
-          <LayerButton showLabel label={label(language, "editor.media.inFrontOfText")} icon="front" onClick={() => props.updateAttributes({ layoutMode: "floating", zIndex: 1 })} />
-          <span className="document-image-control-divider" />
-          <LayerButton label={label(language, "editor.media.sendBack")} icon="allBack" onClick={() => props.updateAttributes({ layoutMode: "floating", zIndex: MINIMUM_IMAGE_Z_INDEX })} />
-          <LayerButton label={label(language, "editor.media.stepBack")} icon="stepBack" onClick={() => props.updateAttributes({ layoutMode: "floating", zIndex: safeImageZIndex(zIndex - 1) })} />
-          <LayerButton label={label(language, "editor.media.stepForward")} icon="stepForward" onClick={() => props.updateAttributes({ layoutMode: "floating", zIndex: safeImageZIndex(zIndex + 1) })} />
-          <LayerButton label={label(language, "editor.media.bringFront")} icon="allFront" onClick={() => props.updateAttributes({ layoutMode: "floating", zIndex: MAXIMUM_IMAGE_Z_INDEX })} />
-        </div>
-      )}
       {source ? (
-        <div className="document-image-frame" style={{ width, height: height === "auto" ? undefined : height }}>
+        <div className="document-image-frame" style={{ width, height: height === "auto" ? undefined : height }}
+          role="group"
+          tabIndex={props.selected ? 0 : -1}
+          aria-label={label(language, layoutMode === "floating" ? "editor.media.move" : "editor.media.image")}
+          onClick={() => { const position = props.getPos(); if (typeof position === "number") props.editor.commands.setNodeSelection(position); }}
+          onPointerDown={(event) => { if (layoutMode === "floating") { const position = props.getPos(); if (typeof position === "number") props.editor.commands.setNodeSelection(position); beginMove(event); } }}
+          onKeyDown={(event) => { if (layoutMode === "floating") moveWithKeyboard(event); }}
+        >
           <img src={source} alt={String(props.node.attrs.alt || "")} title={String(props.node.attrs.title || "")} draggable={false} />
           {props.selected && HANDLES.map((handle) => (
             <button
@@ -185,21 +179,7 @@ export function DocumentImageView(props: NodeViewProps) {
   );
 }
 
-type LayerIcon = "move" | "flow" | "back" | "front" | "allBack" | "stepBack" | "stepForward" | "allFront";
-
-function LayerButton(props: { label: string; icon: LayerIcon; showLabel?: boolean; onClick(): void }) {
-  return <button type="button" className={props.showLabel ? "has-label" : ""} title={props.label} aria-label={props.label} onClick={props.onClick}><MediaIcon kind={props.icon} />{props.showLabel && <span>{props.label}</span>}</button>;
-}
-
-function MediaIcon({ kind }: { kind: LayerIcon }) {
-  if (kind === "move") return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M8 7l4-4 4 4M8 17l4 4 4-4M7 8l-4 4 4 4M17 8l4 4-4 4" /></svg>;
-  if (kind === "flow") return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 18h16M4 10h5v4H4M15 10h5v4h-5" /><rect x="9" y="8" width="6" height="8" rx="1" /></svg>;
-  const front = kind === "front" || kind === "allFront" || kind === "stepForward";
-  const edge = kind === "allFront" || kind === "allBack";
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><rect x={front ? 5 : 9} y={front ? 5 : 9} width="10" height="10" rx="1" /><rect x={front ? 9 : 5} y={front ? 9 : 5} width="10" height="10" rx="1" /><path d={edge ? (front ? "M4 3h16" : "M4 21h16") : (front ? "m17 4 3 3-3 3M20 7h-5" : "m7 20-3-3 3-3M4 17h5")} /></svg>;
-}
-
-function trackPointer(event: ReactPointerEvent<HTMLButtonElement>, onMove: (event: PointerEvent) => void) {
+function trackPointer(event: ReactPointerEvent<HTMLElement>, onMove: (event: PointerEvent) => void) {
   event.currentTarget.setPointerCapture?.(event.pointerId);
   const pointerId = event.pointerId;
   const move = (next: PointerEvent) => {

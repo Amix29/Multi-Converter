@@ -238,7 +238,22 @@ Run each row in the packaged or development Tauri application, never only in Vit
 
 For every completed row, record the source fixture, output SHA-256, LibreOffice version, a screenshot of the repeated header/footer and any compatibility warning. Add fixtures containing accents, an image header, a numbered footer, a multipage table, a manual page break, landscape layout and one unsupported embedded object.
 
-## Gate Status
+## 2026-10-04 Ergonomics Evidence
+
+The current document-editor UI adds the compact multirow ribbon, familiar
+shortcuts/help, full screen wording/F11, 10–500% zoom with centered 100%, and
+contextual/direct image editing described in
+[V1_0_7_EDITOR_WORD_REVIEW.md](V1_0_7_EDITOR_WORD_REVIEW.md).
+Image deletion remains undoable after autosave because unused assets are pruned
+only when the document closes successfully.
+
+Application/test types, 653 i18n keys in six languages, 139 unit tests,
+editor/layout/source contracts and both frontend build modes passed.
+The combined browser editor/PDF/desktop matrix passed 37 tests with 27
+intentional platform skips. Screenshots were inspected locally.
+These checks do not close the native Office and restart-persistence matrix.
+
+## Current Gate Status
 
 Status: **not yet closed**.
 

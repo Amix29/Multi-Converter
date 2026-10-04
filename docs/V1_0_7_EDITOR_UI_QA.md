@@ -1,5 +1,33 @@
 # V1.0.7 Editor UI Design QA
 
+## 2026-10-04 — Compact ribbon, shortcuts, zoom and image workflow
+
+The maintainer supplied a 1920 × 1080 application screenshot and a cropped Word
+ribbon. The review and capability comparison are in
+[V1_0_7_EDITOR_WORD_REVIEW.md](V1_0_7_EDITOR_WORD_REVIEW.md).
+The implementation keeps Vellum Paper, reduces desktop formatting controls to
+28 px, arranges commands in two rows within labelled groups and preserves
+40 px formatting targets in the narrow layout.
+
+The 1280 × 720 desktop and 390 × 844 narrow ribbon captures show the grouped
+controls, a readable active Bold icon and the writing area. Image controls now
+sit in a contextual ribbon rather than on top of the asset. Local screenshots
+are generated under the ignored output/playwright/results directory by
+editor-ergonomics.spec.ts; they contain synthetic preview content.
+
+Behavior checks cover 100% at the midpoint, 10%/500% bounds and exact entry,
+Ctrl+wheel/plus/minus/reset, unchanged pagination, bold/clear/alignment/find,
+page-break continuation, full screen and modal Escape priority. The selected
+image case verifies dimensions/proportions, direct dragging, handles, reset and
+deletion undone after autosave. Existing table, color, font, recent-menu,
+full-viewport-dialog and PDF scenarios remain green.
+
+The combined browser matrix passed 37 tests with 27 intentional platform skips.
+TypeScript, six-language i18n, 139 unit tests, editor/layout/source contracts and
+the production/preview frontend builds passed. The mechanical UI detector
+reported no findings. Browser previews use simulated assets and storage;
+native image lifetime, restart persistence and export layout need Tauri checks.
+
 This is focused UI evidence for the editor workstream defined in [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md). It does not validate OCR or close the complete V1.0.7 release gate.
 
 Les sections de correction du menu et de la modale ci-dessous constituent

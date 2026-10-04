@@ -90,7 +90,9 @@ the whole workflow in one component:
 | `src/app/layout/`, `settings/`, `welcome/`, `feedback/` | Shell navigation and focused overlays or panels |
 | `src/editor/EditorWorkspace.tsx` | Editor mode lifecycle, document opening and recent-document refresh |
 | `src/editor/DocumentEditor.tsx` | Active Tiptap document, autosave, save/export coordination and editor composition |
-| `src/editor/EditorToolbar*.tsx`, `EditorTextControls.tsx`, `EditorTableControls.tsx` | Labelled formatting primitives, responsive toolbar navigation, free typography and table commands |
+| `src/editor/EditorToolbar*.tsx`, `EditorTextControls.tsx`, `EditorTableControls.tsx`, `EditorImageControls.tsx` | Compact grouped ribbon, labelled local SVGs, free typography and contextual table/image commands |
+| `src/editor/useEditorShortcuts.ts`, `EditorShortcutsDialog.tsx` | Editor-scoped commands and accessible shortcut help |
+| `src/editor/useEditorZoom.ts`, `editorZoom.ts`, `EditorZoomControl.tsx` | View-local 10–500% zoom, centered 100% mapping, pointer anchoring and exact percentage entry |
 | `src/editor/DocumentImageView.tsx`, `src-tauri/src/editor/image_layout.rs` | Interactive image movement/resizing/layers and the matching bounded persisted layout contract |
 | `src/editor/DocumentOperationDialog.tsx`, `documentNaming.ts` | In-app overwrite/export states and non-placeholder title normalization |
 | `src/editor/EditorLanding.tsx`, `RecentDocumentDialogs.tsx` | Recent-document actions, long-press multi-selection and confirmed batch deletion |
@@ -98,6 +100,15 @@ the whole workflow in one component:
 
 The converter and editor consume the public API from `src/lib/api.ts`. They do
 not import the Tauri or preview implementations directly.
+
+Document pagination measures unscaled DOM block heights, so changing zoom does
+not change the document's page count. The canvas measures its paper height to
+give the scaled scroll envelope the right size. Image fields observe asynchronous
+React node views and local asset loads before reporting actual dimensions.
+Image operations establish distinct undo groups. Autosave retains known image
+assets for undo; EditorWorkspace prunes unused assets only after the recent-list
+refresh has succeeded and before the document closes. A failed refresh leaves
+the editor and its undo assets available.
 
 ## Frontend API Boundary
 

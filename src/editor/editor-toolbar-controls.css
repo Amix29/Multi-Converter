@@ -196,9 +196,10 @@ body.has-open-modal .document-image-toolbar {
 
 .editor-color-popover {
   display: grid;
-  gap: 9px;
+  width: min(260px, calc(100vw - 24px));
+  gap: 7px;
   max-height: calc(100vh - 24px);
-  padding: 14px;
+  padding: 10px;
   overflow: auto;
 }
 
@@ -252,6 +253,8 @@ body.has-open-modal .document-image-toolbar {
   grid-template-columns: repeat(10, 1fr);
   gap: 4px;
 }
+
+.editor-color-standard-grid button { min-width: 0; }
 
 .editor-color-none,
 .editor-color-custom-toggle {
