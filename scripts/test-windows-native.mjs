@@ -135,7 +135,8 @@ async function validate() {
 async function selfTest() {
   assert.equal(SCENARIOS.length, new Set(SCENARIOS.map(({ id }) => id)).size);
   assert.ok(SCENARIO_BY_ID.has("installer.first-launch"));
-  assert.ok(SCENARIO_BY_ID.has("editor.docx.assets-restart"));
+  assert.ok(SCENARIO_BY_ID.has("ocr.image.png.recognize-copy"));
+  assert.ok(SCENARIOS.every(({ id }) => !id.includes("editor")));
   assert.ok(SCENARIO_BY_ID.has("ocr.pdf.mixed.rtf"));
   assert.ok(SCENARIO_BY_ID.has("ocr.image.tiff.recognize-copy"));
   const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "mc-native-self-test-"));

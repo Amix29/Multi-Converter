@@ -69,7 +69,7 @@ async function openPreview(page: Page, url: string) {
   await page.emulateMedia({ reducedMotion: "reduce" });
   const response = await page.goto(url);
   expect(response?.ok()).toBe(true);
-  await expect(page.getByRole("tab", { name: "Convertisseur" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("heading", { name: "Multi-Converter", exact: true })).toBeVisible();
 }
 
 function skipUnlessDesktop(testInfo: TestInfo) {

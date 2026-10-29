@@ -4,7 +4,7 @@ Guidance for AI agents working on Multi-Converter inside the Atelier IA workspac
 
 ## Project Context
 
-Multi-Converter contains a local-first Tauri desktop app, its static Next.js marketing site in `site/` and its reusable brand sources in `branding-kit/`. The current public desktop release is V1.0.6 for Windows x64, one universal macOS build for Apple Silicon and Intel Macs, and one Linux x64 AppImage. V1.0.7 is in development with two official objectives: the local Tiptap document editor and local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images. Real conversions, file-system access, bundled sidecars, OCR inference and updater behavior must be tested through the Tauri app or Rust tests, not only through the Vite preview.
+Multi-Converter contains a local-first Tauri desktop app, its static Next.js marketing site in `site/` and its reusable brand sources in `branding-kit/`. The current public desktop release is V1.0.6 for Windows x64, one universal macOS build for Apple Silicon and Intel Macs, and one Linux x64 AppImage. V1.0.7 is in development focused on conversion and local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images. Real conversions, file-system access, bundled sidecars, OCR inference and updater behavior must be tested through the Tauri app or Rust tests, not only through the Vite preview.
 
 ## Rule Hierarchy
 
@@ -15,7 +15,7 @@ Multi-Converter contains a local-first Tauri desktop app, its static Next.js mar
 
 Read the relevant focused rule before acting:
 
-- **Product constraints** - [.agents/rules/product-constraints.md](.agents/rules/product-constraints.md) - Local privacy, V1.0.7 editor and OCR invariants.
+- **Product constraints** - [.agents/rules/product-constraints.md](.agents/rules/product-constraints.md) - Local privacy, conversion and OCR invariants.
 - **Testing** - [.agents/rules/testing.md](.agents/rules/testing.md) - Real-runtime evidence and platform-specific validation.
 - **Release engineering** - [.agents/rules/release-engineering.md](.agents/rules/release-engineering.md) - Publication, signing, assets and release-note safeguards.
 
@@ -236,11 +236,7 @@ Do not upload `.deb`, `.rpm`, tarballs, portable folders or extra Linux aliases 
 
 ## Frontend QA
 
-For editor UI changes, verify the project-specific interactions:
-
-- editor recent-document menus remain above later animated cards, including when the grid has multiple rows;
-- editor dialogs rendered from animated workspaces cover the full viewport, and destructive actions remain visually distinct;
-- editor HTML drops and native Tauri file drops both reach the editor only while editor mode is active;
+For converter/OCR UI changes, verify file import, format selection, cancellation/retry, export and the OCR dialog, including keyboard focus and responsive layouts. There is no editor workspace.
 
 Use `npm run dev -- --host 127.0.0.1` for UI preview. Use `npm start` or `npm run tauri:dev` when testing real conversions, sidecars, updater runtime or file-system behavior.
 

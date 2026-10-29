@@ -1,5 +1,22 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 
+test("opens the converter even when an older version saved editor mode", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("multi-converter-app-mode", "editor"));
+  await openPreview(page, "/?mockWelcomeSeen=1&mockOcrImage=1");
+  await expect(page.getByRole("tab", { name: "Éditeur" })).toHaveCount(0);
+  await expect(page.locator(".document-editor-shell, .pdf-editor-shell")).toHaveCount(0);
+  await page.getByRole("button", { name: "Parcourir" }).click();
+  await page.getByRole("button", { name: "Extraire le texte" }).click();
+  const dialog = page.getByRole("dialog", { name: "Texte de l’image" });
+  await expect(dialog.getByRole("textbox", { name: "Texte reconnu" })).toHaveValue(
+    "Texte reconnu localement dans l’image de démonstration.",
+  );
+  await page.keyboard.press("Escape");
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Parcourir" })).toBeVisible();
+  await page.screenshot({ path: "output/playwright/converter-only.png", fullPage: true });
+});
+
 test("the mobile prepare action receives a real touch at 390 x 844", async ({ page }, testInfo) => {
   skipUnlessProject(testInfo, "mobile-chromium");
   const consoleErrors = captureConsoleErrors(page);
@@ -119,166 +136,6 @@ test("keeps the OCR dialog responsive at the four reference widths", async ({ pa
   }
 });
 
-test("autosaves an edited document before returning it to recent documents", async ({ page }, testInfo) => {
-  skipUnlessProject(testInfo, "desktop-chromium");
-  const consoleErrors = captureConsoleErrors(page);
-  await openPreview(page);
-
-  const editorTab = page.getByRole("tab", { name: "Éditeur" });
-  await editorTab.focus();
-  await page.keyboard.press("Enter");
-  await expect(editorTab).toHaveAttribute("aria-selected", "true");
-  await page.getByRole("button", { name: "Nouveau document" }).click();
-
-  await page.getByRole("textbox", { name: "Nom du document" }).fill("Référence Phase 2");
-  const editor = page.locator(".ProseMirror");
-  await expect(editor).toBeVisible();
-  await editor.fill("Texte local avec accents : été, cœur, français.");
-  await expect(editor).toContainText("Texte local avec accents");
-  await expect(page.getByText("Modifications non enregistrées", { exact: true })).toBeVisible();
-
-  await page.getByRole("button", { name: "Revenir aux documents" }).click();
-  const recentDocument = page.getByText("Référence Phase 2", { exact: true });
-  await expect(recentDocument).toBeVisible();
-  await recentDocument.click();
-  await expect(page.getByRole("textbox", { name: "Nom du document" })).toHaveValue("Référence Phase 2");
-  await expect(page.locator(".ProseMirror")).toContainText("Texte local avec accents");
-
-  await expectNoHorizontalOverflow(page);
-  expect(consoleErrors).toEqual([]);
-});
-
-test("offers explicit formatting controls and an escapable editor focus mode", async ({ page }, testInfo) => {
-  skipUnlessProject(testInfo, "desktop-chromium");
-  const consoleErrors = captureConsoleErrors(page);
-  await openPreview(page);
-
-  await page.getByRole("tab", { name: "Éditeur" }).click();
-  await page.getByRole("button", { name: "Nouveau document" }).click();
-
-  const toolbar = page.getByRole("toolbar", { name: "Outils de mise en forme" });
-  await expect(toolbar.getByRole("combobox", { name: "Style de paragraphe" })).toHaveCount(0);
-  await expect(toolbar.getByRole("button", { name: "Aligner à gauche" })).toBeVisible();
-  await expect(toolbar.getByRole("button", { name: "Centrer" })).toBeVisible();
-  await expect(toolbar.getByRole("button", { name: "Insérer une image" })).toBeVisible();
-  await toolbar.getByRole("button", { name: "Surlignage", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Aucun surlignage", exact: true })).toBeVisible();
-  await page.keyboard.press("Escape"); await expect(page.getByRole("dialog", { name: "Surlignage", exact: true })).toBeHidden();
-
-  const fontSize = toolbar.getByRole("combobox", { name: "Taille de police" });
-  await fontSize.fill("13,5");
-  await fontSize.press("Enter");
-  await expect(page.locator(".ProseMirror")).toBeFocused();
-
-  await toolbar.getByRole("button", { name: "Insérer un tableau" }).click();
-  await expect(toolbar.getByRole("group", { name: "Tableau" })).toBeVisible();
-  await expect(toolbar.getByRole("button", { name: "Ajouter une colonne à droite" })).toBeVisible();
-
-  const focusMode = page.getByRole("button", { name: "Mode plein écran" });
-  await focusMode.click();
-  const editorShell = page.locator(".document-editor-shell");
-  await expect(editorShell).toHaveAttribute("data-focus-mode", "true");
-  const viewport = page.viewportSize(); expect(viewport).not.toBeNull();
-  await expect.poll(async () => {
-    const box = await editorShell.boundingBox();
-    return box ? [Math.round(box.x), Math.round(box.y), Math.round(box.width), Math.round(box.height)] : null;
-  }).toEqual([0, 0, viewport!.width, viewport!.height]);
-  await page.keyboard.press("Escape");
-  await expect(page.locator(".document-editor-shell")).toHaveAttribute("data-focus-mode", "false");
-  await expect(focusMode).toBeFocused();
-  expect(consoleErrors).toEqual([]);
-});
-
-test("keeps the document open when refreshing recent documents fails", async ({ page }, testInfo) => {
-  skipUnlessProject(testInfo, "desktop-chromium");
-  await openPreview(page, "/?mockWelcomeSeen=1&mockRecentRefreshFailure=once");
-  await page.getByRole("tab", { name: "Éditeur" }).click();
-  await page.getByRole("button", { name: "Nouveau document" }).click();
-
-  const editor = page.locator(".ProseMirror");
-  await editor.fill("Ce contenu doit rester ouvert si la liste des récents échoue.");
-  await expect(page.getByText("Enregistré", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Revenir aux documents" }).click();
-
-  await expect(editor).toBeVisible();
-  await expect(page.getByText("Rafraîchissement des documents récents simulé en échec.")).toBeVisible();
-});
-
-test("keeps editor menus and dialogs above animated content and restores focus", async ({ page }, testInfo) => {
-  skipUnlessProject(testInfo, "desktop-chromium");
-  const consoleErrors = captureConsoleErrors(page);
-  await openPreview(page, "/?mockWelcomeSeen=1&mockRecentDocuments=1");
-  await page.getByRole("tab", { name: "Éditeur" }).click();
-
-  const trigger = page.getByRole("button", { name: "Actions pour Brouillon de test" });
-  await trigger.click();
-  const popover = page.getByRole("menu");
-  await expect(popover).toBeVisible();
-  await expectCenterToBeHitTarget(popover);
-  await page.getByRole("menuitem", { name: "Renommer" }).click();
-
-  const dialog = page.getByRole("dialog", { name: "Renommer le document" });
-  await expect(dialog).toBeVisible();
-  await expectViewportOverlay(page.locator(".editor-modal-backdrop"), page);
-  await expectCenterToBeHitTarget(dialog);
-  await expect(page.getByRole("textbox", { name: "Nom du document" })).toBeFocused();
-  await page.keyboard.press("Escape");
-  await expect(dialog).toBeHidden();
-  await expect(trigger).toBeFocused();
-
-  await expectNoHorizontalOverflow(page);
-  expect(consoleErrors).toEqual([]);
-});
-
-test("sanitizes hostile imported and pasted HTML before it reaches Tiptap", async ({ page }, testInfo) => {
-  skipUnlessProject(testInfo, "desktop-chromium");
-  const consoleErrors = captureConsoleErrors(page);
-  await openPreview(page, "/?mockWelcomeSeen=1&mockMaliciousHtml=1&mockSingleFile=1");
-  await page.getByRole("tab", { name: "Éditeur" }).click();
-  await page.getByRole("button", { name: "Ouvrir un document" }).click();
-
-  const editor = page.locator(".ProseMirror");
-  await expect(editor).toContainText("Contenu sûr conservé");
-  await expect(editor).toContainText("Image distante ou inaccessible supprimée");
-  await expect(editor.locator(".unsupported-document-object")).toHaveCount(1);
-  await expect(editor.locator('a[href="https://example.com/reference"]')).toHaveAttribute("rel", /noopener/);
-  await expectSafeEditorHtml(editor);
-
-  await editor.focus();
-  await editor.evaluate((element) => {
-    const clipboard = new DataTransfer();
-    clipboard.setData(
-      "text/html",
-      '<p onpointerenter="window.__MC_ACTIVE_HTML__ = true">Collage sûr</p><script>window.__MC_ACTIVE_HTML__ = true</script><img src="https://example.com/remote.png"><img src="data:image/png;base64,iVBORw0KGgo="><a href="javascript:alert(1)">Lien collé</a>',
-    );
-    element.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: clipboard }));
-  });
-  await expect(editor).toContainText("Collage sûr");
-  await expect(editor.locator('img[src^="data:"]')).toHaveCount(0);
-  await expectSafeEditorHtml(editor);
-  expect(await page.evaluate(() => (window as Window & { __MC_ACTIVE_HTML__?: boolean }).__MC_ACTIVE_HTML__)).toBeUndefined();
-
-  await page.locator(".editor-toolbar").getByRole("button", { name: "En-tête" }).click();
-  const headerDialog = page.getByRole("dialog", { name: "Modifier l’en-tête" });
-  const headerEditor = headerDialog.locator(".ProseMirror");
-  await headerEditor.focus();
-  await headerEditor.evaluate((element) => {
-    const clipboard = new DataTransfer();
-    clipboard.setData(
-      "text/html",
-      '<p onload="window.__MC_ACTIVE_HTML__ = true">En-tête sûr</p><iframe src="https://example.com"></iframe><img src="data:image/png;base64,iVBORw0KGgo=">',
-    );
-    element.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: clipboard }));
-  });
-  await expect(headerEditor).toContainText("En-tête sûr");
-  await expect(headerEditor.locator('img[src^="data:"]')).toHaveCount(0);
-  await expectSafeEditorHtml(headerEditor);
-  await page.keyboard.press("Escape");
-  await expect(headerDialog).toBeHidden();
-
-  expect(consoleErrors).toEqual([]);
-});
-
 test("supports welcome, settings and feedback with keyboard focus and Escape", async ({ page }, testInfo) => {
   skipUnlessProject(testInfo, "desktop-chromium");
   const consoleErrors = captureConsoleErrors(page);
@@ -372,7 +229,7 @@ async function runResponsiveJourney(
   },
 ) {
   await page.setViewportSize({ width: options.width, height: options.height });
-  await openPreview(page, "/?mockSingleFile=1&mockRecentDocuments=1");
+  await openPreview(page, "/?mockSingleFile=1");
 
   await test.step(`${options.label} - welcome`, async () => {
     const welcome = page.getByRole("dialog", {
@@ -427,42 +284,14 @@ async function runResponsiveJourney(
     await expectResponsiveState(page, `${options.label} conversion result`);
   });
 
-  await test.step(`${options.label} - editor landing, document and dialogs`, async () => {
-    await page.getByRole("tab", { name: "Éditeur" }).click();
-    const recentTrigger = page.getByRole("button", {
-      name: "Actions pour Brouillon de test",
-    });
-    await expect(recentTrigger).toBeVisible();
-    await expectResponsiveState(page, `${options.label} editor landing`);
 
-    await recentTrigger.click();
-    await page.getByRole("menuitem", { name: "Renommer" }).click();
-    const renameDialog = page.getByRole("dialog", {
-      name: "Renommer le document",
-    });
-    await expect(renameDialog).toBeVisible();
-    await expectResponsiveState(page, `${options.label} recent document dialog`);
-    await page.keyboard.press("Escape");
-    await expect(renameDialog).toBeHidden();
-
-    await page.getByRole("button", { name: "Nouveau document" }).click();
-    await expect(page.getByRole("textbox", { name: "Nom du document" })).toBeVisible();
-    await expectResponsiveState(page, `${options.label} editor document`);
-
-    await page.locator(".editor-toolbar").getByRole("button", { name: "En-tête" }).click();
-    const headerDialog = page.getByRole("dialog", { name: "Modifier l’en-tête" });
-    await expect(headerDialog).toBeVisible();
-    await expectResponsiveState(page, `${options.label} editor header dialog`);
-    await page.keyboard.press("Escape");
-    await expect(headerDialog).toBeHidden();
-  });
 }
 
 async function openPreview(page: Page, url = "/?mockWelcomeSeen=1") {
   await page.emulateMedia({ reducedMotion: "reduce" });
   const response = await page.goto(url);
   expect(response?.ok()).toBe(true);
-  await expect(page.getByRole("tab", { name: "Convertisseur" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("heading", { name: "Multi-Converter", exact: true })).toBeVisible();
 }
 
 function skipUnlessProject(testInfo: TestInfo, projectName: string) {
@@ -536,30 +365,4 @@ async function expectViewportOverlay(locator: import("@playwright/test").Locator
   expect(bounds!.width).toBeLessThanOrEqual((viewport?.width ?? 0) + 2);
   expect(bounds!.height).toBeGreaterThanOrEqual((viewport?.height ?? 0) - 2);
   expect(bounds!.height).toBeLessThanOrEqual((viewport?.height ?? 0) + 2);
-}
-
-async function expectSafeEditorHtml(editor: import("@playwright/test").Locator) {
-  const state = await editor.evaluate((element) => {
-    const html = element.innerHTML;
-    return {
-      hasActiveElement: Boolean(element.querySelector("script, iframe, object, embed, form, input, button, style, link, meta, svg, math")),
-      hasEventHandler: Array.from(element.querySelectorAll("*")).some((node) =>
-        Array.from(node.attributes).some((attribute) => attribute.name.toLowerCase().startsWith("on")),
-      ),
-      hasDangerousProtocol: /javascript:|vbscript:|data:text\/html/i.test(html),
-      hasRemoteImage: Boolean(element.querySelector('img[src^="http://"], img[src^="https://"], img[src^="//"]')),
-      hasActiveStyle: /(?:url\s*\(|expression\s*\(|@import|-moz-binding|behavior\s*:)/i.test(html),
-      hasUnboundedTableSpan: Array.from(element.querySelectorAll("td, th")).some((cell) =>
-        ["colspan", "rowspan"].some((attribute) => Number(cell.getAttribute(attribute) ?? 1) > 100),
-      ),
-    };
-  });
-  expect(state).toEqual({
-    hasActiveElement: false,
-    hasEventHandler: false,
-    hasDangerousProtocol: false,
-    hasRemoteImage: false,
-    hasActiveStyle: false,
-    hasUnboundedTableSpan: false,
-  });
 }

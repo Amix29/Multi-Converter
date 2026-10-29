@@ -1,5 +1,21 @@
 # Multi-Converter Decisions
 
+## 2026-10-29 — Conversion And OCR Only
+
+**Decision:** remove the document and structural PDF editors at the maintainer's
+request. Keep all conversion formats and local `PP-OCRv6_medium` OCR.
+
+**Consequences:** remove editor workspaces, drafts UI, editor IPC/types, native
+editor/font modules, rich-text dependencies, translations and editor-only tests.
+Old user drafts/assets are left untouched. Update CI and installed acceptance
+to the retained converter/OCR scope. Source wrapper editing modes are removed;
+its published-engine dependency graph stays pinned until a reviewed engine
+rebuild. No release, engine-fingerprint rewrite or remote push is authorized.
+
+**History:** older editor/Word decisions below are superseded for the active
+product; their evidence describes previous development checkpoints only.
+
+
 ## 2026-10-04 — Visible selection and writing aids
 
 **Decision:** retain a view-only highlight while font/size inputs have focus;

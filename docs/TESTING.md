@@ -1,20 +1,17 @@
 # Testing Matrix
 
-### Writing aids regression suite (2026-10-04)
-
-`tests/e2e/editor-writing-aids.spec.ts` verifies partial-selection preservation
-through font/size menus, compact list geometry, numeric/default/custom line
-spacing, ¶ decorations with unchanged document JSON/history/page count, and
-hover/focus explanations. Run it with the existing editor ergonomics,
-regressions, desktop and PDF suites after `npm run build:frontend:preview`.
-Hover checks intentionally target the desktop pointer. Unit coverage includes
-formatting-mark positions and legacy automatic line-height values. These tests
-prove browser UI and model behavior; they do not prove native file output or
-Office round-trip fidelity. Real Windows WebView acceptance remains required.
-
-This document describes the current desktop release test split by platform. The published baseline is V1.0.6 on Windows x64, universal macOS and Linux x64. V1.0.7 is in development with the Tiptap editor and local `PP-OCRv6_medium` OCR; see `V1_0_7_PLAN.md` for scope and `V1_0_7_VALIDATION.md` for the combined gate. Use this document to avoid false confidence from checks that ran on only one operating system.
+This document describes the current desktop release test split by platform. The published baseline is V1.0.6 on Windows x64, universal macOS and Linux x64. V1.0.7 is in development with conversion and local `PP-OCRv6_medium` OCR; see `V1_0_7_PLAN.md` for scope and `V1_0_7_VALIDATION.md` for the combined gate. Use this document to avoid false confidence from checks that ran on only one operating system.
 
 Historical V1.0.5 and V1.0.6 status commands remain documented where release workflows still use their recorded evidence. They are not the current V1.0.7 completion gate.
+
+## Editor Removal (2026-10-29)
+
+Document/PDF editing is cancelled. The frontend suite retains conversion,
+large-list, settings, update and OCR interactions, plus a regression for the
+legacy saved editor preference. `test:editor` and editor-only suites are removed.
+The Windows installed acceptance protocol now requires 66 converter/OCR/installer
+scenarios. Old 101-scenario receipts do not prove the new candidate.
+The PDFium wrapper retains native-text inspection and page-rendering tests.
 
 ## Windows x64
 
@@ -72,7 +69,7 @@ npm run test:windows:native -- --init `
 ```
 
 Initialization records the exact installer, installed executable, source
-commit and engine-resource fingerprints. It creates 101 pending scenarios in
+commit and engine-resource fingerprints. It creates 66 pending scenarios in
 the ignored directory `test-results/phase-5-windows-native/<run-id>/`.
 
 For a scenario that consumes a source file, capture the before hash first:
@@ -192,19 +189,15 @@ npm run typecheck:tests
 npm run test:unit
 ```
 
+Vitest covers format selection, conversion workflow state, export hierarchy,
+large batches and deterministic conversion fixtures.
+
 The dedicated TypeScript project covers `tests/**/*.ts`,
 `playwright.config.ts` and `vitest.config.ts`; the application `tsconfig.json`
 continues to cover `src` only.
 
-Vitest exercises the DOM-independent editor pagination planner and the pure
-conversion workflow. Coverage includes empty input, overflow, forced page
-breaks, oversized blocks, invalid measurements, format selection and grouping,
-intent priority, concurrency limits, conversion-state transitions and isolated
-preview fixtures. Add pure logic here rather than extending a source-text
-contract with behavior that can be executed directly.
-
 Use the compiled-preview behavior suite after changing application flows,
-responsive layout or editor dialogs:
+responsive layout or OCR dialogs:
 
 ```bash
 npx playwright install chromium
@@ -213,14 +206,10 @@ npm run test:ui:preview
 
 Playwright builds the explicit browser-preview bundle, serves `dist` on
 `127.0.0.1:4173` and routes scenarios to the relevant Chromium project. The
-desktop project covers conversion cancellation, failure/retry/export, editor
-autosave and recents, refresh failure, menu/dialog stacking, hostile HTML,
-settings, feedback, keyboard focus and responsive widths. It also covers the
-2026-08-04 correction lot: complete file-card identities, onboarding-stripe
-removal, OCR cancellation/retry, focus mode, typography and colors, image
-movement/resizing/layers, table resizing, title-gated export, export progress,
-in-app overwrite confirmation and recent-document multi-selection. The mobile
-project performs a real touch on `Prepare conversion` at 390 x 844. Reports,
+desktop project covers conversion cancellation, failure/retry/export, settings,
+feedback, keyboard focus, large lists and responsive widths. OCR covers copy,
+empty results, cancellation/retry and legacy saved-mode startup. The mobile
+project performs a real touch on Prepare conversion at 390 x 844. Reports,
 traces and failure screenshots are written under `output/playwright/` and stay
 local.
 
@@ -248,7 +237,7 @@ npm run test:ui:preview
 ```
 
 The preview API is an in-memory browser simulation. These tests do not prove
-native Tauri file access, real conversion output, durable editor persistence,
+native Tauri file access, real conversion output,
 sidecars, updater behavior, OCR or packaging. Keep Rust, conversion, host and
 packaging gates for those responsibilities.
 
@@ -276,7 +265,7 @@ engines, resources and build outputs are outside the scan.
 
 `test:rust-contracts` locks the Tauri composition root, the exact registered
 command names and signatures, and the emitted conversion/OCR event sites. Rust
-unit tests separately characterize serialized conversion, editor and OCR contracts,
+unit tests separately characterize serialized conversion, conversion and OCR contracts,
 complete format/engine routing, fallbacks, process behavior and representative
 outputs. They also exercise concurrent no-replace conversion publication,
 concurrent export-name reservation, process-tree timeouts, bounded folder
@@ -310,114 +299,12 @@ npm run measure:windows-runtime -- -ExecutablePath "<exact-exe-path>" -Runs 5
 
 The first sample is labelled `first` and later samples `repeat`; this is not a
 controlled cold-start benchmark. A responsive window handle is only a startup
-proxy, not proof that conversion, editor or interaction work is ready. Memory
+proxy, not proof that conversion, OCR or interaction work is ready. Memory
 figures cover the launched root process and do not include WebView2 or engine
 child processes. The script itself does not read user content or send
 telemetry, but it launches Multi-Converter with its normal local profile and
 does not isolate the app from configured updater checks. See
 `REFACTOR_BASELINE.md` for the fixed phase boundaries and interpretation rules.
-
-## Document Editor
-
-Run the editor contract tests after changing the Tiptap setup, document model, pagination, autosave commands or editor navigation:
-
-```bash
-npm run test:editor
-npm run test:unit
-npm run test:ui-layout
-npm run typecheck
-```
-
-`npm run test:editor` verifies that all Tiptap packages stay on one exact
-open-source version, rejects `@tiptap-pro/*`, checks the shared
-frontend/backend command contract, pins DOMPurify, requires sanitization on
-every rich-HTML entry point and forbids Office-to-HTML routing. `npm run
-test:unit` executes the DOM-independent pagination planner plus format,
-grouping, concurrency, workflow-transition and preview-state cases. The Rust
-suite covers local draft paths, atomic writes, the bounded ODT parser, hostile
-XML/archive inputs, `mc-asset://` validation, rich ODT round trips, page layout,
-headers, footers and numbering.
-
-After an editor UI change, also run the Vite preview and verify:
-
-- the landing screen, mode switching, document creation, text entry and autosave state;
-- HTML drag and drop on the editor landing area, including the visible drag-active state, unsupported extensions and the one-document limit;
-- recent-document rename, duplicate and delete actions;
-- long-press and explicit-keyboard entry into recent-document multi-selection,
-  batch-delete confirmation, Escape exit and retention of any failed items;
-- returning from an edited document only after autosave and recent-document refresh, with the document kept open when either step fails;
-- deletion cancellation and the confirmation text explaining that the original source is not removed;
-- a recent-document menu opened on an upper grid row with enough cards to create a second row;
-- the open menu remains above later cards and its destructive item remains visible and clickable;
-- rename, delete, header and footer dialogs cover the full viewport rather than being constrained by the animated editor workspace;
-- destructive buttons keep a readable danger background and text contrast;
-- hostile imported and pasted HTML is stripped in the document body and header/footer surfaces while supported content remains;
-- welcome, settings and feedback dialogs close with Escape, trap focus and return it to their trigger;
-- keyboard focus, reduced-motion behavior, console output and the target widths remain free of unintended horizontal overflow.
-- complete wrapped file names, structured type/metadata/action regions and OCR
-  actions contained within their converter cards;
-- full screen mode covers the exact editor viewport, toggles with F11, closes
-  with Escape after dialogs/popovers and restores focus;
-- compact desktop formatting controls use 28 px heights and multiple rows;
-  mobile formatting controls use 40 px targets in wrapping groups, with bounded
-  vertical scrolling when needed and no horizontal page overflow;
-- heading presets are absent while imported headings remain compatible; free
-  decimal point sizes, text color, highlight color/clear state and enumerated
-  system fonts behave as labelled;
-- selected images expose eight handles and a contextual ribbon for dimensions,
-  aspect ratio, placement, layers, reset and delete; floating images drag
-  directly and support keyboard movement; deletion remains undoable after
-  autosave; table columns expose resize handles and labelled commands;
-- zoom starts at 100% at the midpoint marker, reaches 10% and 500%, supports
-  exact entry/Ctrl+wheel/Ctrl+plus/minus/Ctrl+0 and leaves pagination unchanged;
-- save/find/link/alignment/page-break/clear-formatting shortcuts and the help
-  dialog coexist with native Tiptap editing and modal focus;
-- new documents default to Markdown, untitled exports request a title, accepted
-  titles remain visible, slow export shows a progress dialog and overwrite uses
-  an in-app dialog rather than `window.confirm()`.
-
-`npm run test:ui-layout` contains regression contracts for editor drop routing, the active recent-card stacking layer, React portal dialogs and destructive-button styling.
-
-Vite uses a simulated local API. Opening, saving, importing, native Tauri file drops and exporting real files must be checked through `npm start` or `npm run tauri:dev`.
-
-To inspect the compiled frontend rather than the development module graph, run
-the automated preview suite or build and serve `dist` manually:
-
-```bash
-npm run test:ui:preview
-npm run build:frontend:preview
-npm run preview:test
-```
-
-Before closing the Windows editor gate, run the Tauri matrix for ODT, DOCX and
-RTF: import a rich multi-page document, edit
-body/header/footer/table/image/page settings, save as each office format,
-export PDF, reopen the office outputs, restart the app, and test overwrite
-confirmation plus an external-source conflict. DOCX must be generated through
-the direct Tiptap-to-docx.js worker and pass bounded native OOXML validation;
-inline images must reopen with resolvable `word/media` relationships, and
-cancellation during validation or immediately before publication must leave the
-previous destination intact with no staged file;
-RTF and PDF must normalize the rich ODT intermediate through the strict local
-LibreOffice path. Reopen DOCX in both Word and LibreOffice. Record
-completion time, engine version, output hashes, screenshots and every anomaly
-in `docs/V1_0_7_EDITOR_VALIDATION.md`. The historical Windows probe proves the
-former LibreOffice ODT normalization/DOCX/PDF path only; it does not validate
-the new direct DOCX generator. It remains separate from the packaged Tauri interaction;
-an engine probe alone does not prove that the installed UI completed the same
-workflow.
-
-Persistent editor JSON must contain only `mc-asset://<uuid>` image references. Tests should reject Base64, Blob URLs, file paths and remote URLs; manual restart testing must confirm that the associated image bytes remain available after the WebView Blob URLs have been revoked and recreated.
-
-PDF-to-document import remains available through the hybrid PP-OCRv6_medium
-path. Structural PDF editing instead uses `PdfEditorSessionV1` and must be
-tested independently for source hash, permissions, DocMDP and Save As. Include
-two consecutive Save As operations to prove session rebasing, an explicit
-unsigned-copy case that leaves the original intact, and hostile active-content
-fixtures that are detected without execution or payload exposure. Do not
-describe PDF import, export or office round trips
-as platform-complete until the real packaged conversion matrix has passed on
-that platform.
 
 ## V1.0.7 OCR Gate
 
@@ -475,7 +362,6 @@ Minimum automated coverage:
 - PNG, JPEG, WebP, TIFF and BMP;
 - French accents and reviewed multilingual fixtures;
 - TXT, Markdown and HTML serialization;
-- OCR result to Tiptap JSON;
 - explicit image-text clipboard result;
 - progress and cancellation;
 - cancellation during runtime extraction, manifest walking/hashing, model
@@ -491,14 +377,14 @@ Minimum real Tauri coverage on Windows:
 2. observe the application and OCR worker processes for remote connections;
 3. convert native, scanned and mixed PDFs to each advertised text target;
 4. copy recognized text from each advertised image format;
-5. open a scanned PDF in the editor and export the edited document;
+5. verify scanned PDF conversion output and original-file integrity;
 6. cancel a multipage OCR job;
 7. restart and repeat without any model or engine download;
 8. record output hashes, screenshots, timings, peak memory, warnings and the
    exact limitation of the network observation method.
 
 The current real Tauri development-runtime checks cover a clean French image,
-native/scanned/mixed PDFs, PDF editor import, cancellation, worker crash and
+native/scanned/mixed PDFs, cancellation, worker crash and
 retry. The 2026-08-04 corrected packaged Windows fixture matched its reviewed
 text exactly (100%), and the same checkpoint passed the 40-case corpus at 100%
 clean mean and 99.76% difficult mean. The local
@@ -583,7 +469,7 @@ npm run test:pdfium-wrapper
 npm run test:conversions
 ```
 
-Historical v1.0.5 two-architecture `macOS Conversion Matrix` evidence is recorded in `docs/V1_0_5_VALIDATION.md`. V1.0.6 superseded that evidence and is the current public baseline. Rerun the two-architecture matrix after any conversion, sidecar, engine, manifest, editor, OCR or packaging change before making a new macOS conversion claim. If the real macOS stack is missing or incomplete, this gate must fail instead of allowing release notes or status updates to say that all macOS conversions were tested.
+Historical v1.0.5 two-architecture `macOS Conversion Matrix` evidence is recorded in `docs/V1_0_5_VALIDATION.md`. V1.0.6 superseded that evidence and is the current public baseline. Rerun the two-architecture matrix after any conversion, sidecar, engine, manifest, OCR or packaging change before making a new macOS conversion claim. If the real macOS stack is missing or incomplete, this gate must fail instead of allowing release notes or status updates to say that all macOS conversions were tested.
 
 Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Silicon and Intel archives plus SHA-256 checksums. A source may be one combined archive containing both `ffmpeg` and `ffprobe`, or separate `FFMPEG_MACOS_*` and `FFPROBE_MACOS_*` archives with separate SHA-256 values. `npm run prepare:macos-upstream-engines` also requires pinned checksums for PDFium, LibreOffice and Pandoc through `PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256`, `LIBREOFFICE_MACOS_AARCH64_DMG_SHA256`, `LIBREOFFICE_MACOS_X86_64_DMG_SHA256`, `PANDOC_MACOS_AARCH64_ARCHIVE_SHA256` and `PANDOC_MACOS_X86_64_ARCHIVE_SHA256`. Use `npm run prepare:libvips-engine:macos` only with two already-portable libvips runtime trees. These scripts are strict packaging gates; they are not CI placeholders and should fail when the inputs are missing, unpinned or still linked to machine-local package manager paths.
 
@@ -638,7 +524,7 @@ The command writes `tmp/v1.0.6-status.json`. The committed V1.0.6 evidence is co
 
 The V1.0.5 status command and `docs/V1_0_5_VALIDATION.md` are retained only for historical reproducibility. In its then-current preparation state, `releaseReady` remained false until the old clean-Mac and Linux AppImage receipts were recorded; that statement is not the current product status.
 
-For V1.0.7, create a version-specific status command and validation document only after the editor and OCR implementations expose real, testable gates. That future gate must require the editor Office matrix, packaged `PP-OCRv6_medium` fixtures, platform packaging, manual host tests and final security evidence. Do not reuse the V1.0.6 success as V1.0.7 proof.
+For V1.0.7, create a version-specific status command and validation document only after the conversion and OCR implementations expose real, testable gates. That future gate must require the conversion matrix, packaged `PP-OCRv6_medium` fixtures, platform packaging, manual host tests and final security evidence. Do not reuse the V1.0.6 success as V1.0.7 proof.
 
 ## Linux x64
 
@@ -758,7 +644,7 @@ npm run status:v1.0.6 -- --require-ready
 
 That gate requires the recorded V1.0.6 two-architecture macOS matrix and DMG verification, clean-Mac receipt, Linux AppImage build/conversion/verification/smoke evidence and final security evidence. The README macOS and Linux rows must point to the final public installers. The README must also include a `## macOS Installation` section that names the universal DMG, Apple Silicon, Intel, the Apple signing/notarization status, the `Open Anyway` path when the build is not Apple-signed or notarized, and updater behavior. The shared release-note validator checks the corresponding platform wording before publication.
 
-Final V1.0.6 security evidence is structured in `docs/V1_0_6_VALIDATION.md`. A future V1.0.7 status gate must point to V1.0.7 evidence and must include the editor and OCR security scope; previous-version evidence is not sufficient.
+Final V1.0.6 security evidence is structured in `docs/V1_0_6_VALIDATION.md`. A future V1.0.7 status gate must point to V1.0.7 evidence and must include the conversion and OCR security scope; previous-version evidence is not sufficient.
 
 The minimum manual DMG smoke test is:
 
@@ -805,10 +691,7 @@ npm run validate:pdfium-engine-release -- --download
 
 The validator checks exact asset names, manifest metadata, hashes, x64 PE
 payloads, archive paths, wrapper `0.4.0`, `--check`, `--inspect-text` on a native
-PDF, `--inspect-objects` with a valid `contentKind`, and `--render` on a scanned
-page with PNG decoding. This rejects an older `0.4.0` binary whose structural
-response predates the digital/mixed/scanned editor contract. While the lock
-remains
+PDF, and `--render` on a scanned page with PNG decoding. While the lock remains
 `unpublished`, `--download` is expected to fail closed instead of inventing a
 release URL. The `Windows PDFium Engine Staging` workflow performs the same
 locked preparation twice on Windows and uploads an Actions artifact; it does
@@ -888,5 +771,3 @@ http://127.0.0.1:1420/?mockUpdate=1&mockWelcomeSeen=1
 This shows the update reminder and the topbar feedback action together without
 the welcome dialog. Feedback must remain in normal navigation flow; only the
 update reminder and transient notices use floating presentation.
-
-For the editor recent-document regression state, create at least five mock drafts, return to the editor home, open the action menu on the second card, then open and cancel the delete confirmation. Do not press the final destructive action unless the document is a disposable test draft.

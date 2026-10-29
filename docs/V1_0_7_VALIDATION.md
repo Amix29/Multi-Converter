@@ -1,5 +1,70 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-10-29 — Conversion-Only Cleanup
+
+**Current scope:** document and PDF editing cancelled by the maintainer. Keep
+conversion and local `PP-OCRv6_medium` OCR. Implementation branch:
+`codex/remove-file-editor`, based on the local integration branch `codex/test`.
+Development metadata stays `1.0.7`; published baseline remains `1.0.6`.
+**Overall gate: blocked**; no release, publication or remote push is implied.
+
+Removed both editor frontends, styles, drafts UI, models, preview fixtures,
+Tauri editor/font commands, native editor domains, editor-only Office bridge,
+Tiptap/ProseMirror/docx.js/DOMPurify/Lucide dependencies and bundled frontend
+notices. The PDFium source wrapper no longer exposes editor modes. Its locked
+dependency graph and existing staged engine artifacts remain unchanged pending
+a reviewed engine rebuild. Former editor-only reports and checks are historical.
+
+The converter is the only workspace; old saved editor-mode preferences cannot
+hide it. Image OCR, clipboard copy and native/scanned/mixed PDF text conversion
+retain their existing domains. Old local drafts/assets and source files are
+not deleted. Removed source files were moved to the Windows Recycle Bin.
+Installed Windows acceptance now has 66 converter/OCR/installer scenarios.
+
+### Checks On This Change
+
+- Application/test typechecks and i18n validation: passed, 356 keys / 6 languages.
+- Unit tests: 47 passed.
+- Browser preview: 12 passed, 10 intentional project exclusions. Includes the
+  saved-editor-preference regression with image OCR, OCR copy/cancel/retry/empty
+  results, conversion retry/export, large lists, settings and responsive checks.
+- Rendered converter inspected; no editor navigation remains.
+- Rust suite: 148 passed, 7 intentionally ignored heavy scenarios.
+- Conversion matrix: all 6 opt-in matrix tests passed, including integrated
+  image targets, French document output and FFmpeg audio/video targets.
+- Native PDFium source-wrapper runtime suite: 7 passed, including native-text
+  extraction, page count, image rendering, invalid input and version.
+- Rust format check and Clippy with warnings denied: passed.
+- Production build, bundled engines and embedded manifest: passed.
+- Source/Rust structure, 19 native command contracts, release-note, platform
+  provenance/restaging and staged-engine tests: passed.
+- Remaining `check` steps run explicitly after its pre-existing stop: passed
+  (OCR packaging; native evidence protocol self-tests; platform/release/engine
+  packaging; workflows; metadata; production config; secret scan; version sync;
+  Tauri launcher; typechecks and engine validation). These are contract tests,
+  not real macOS/Linux or installed-package acceptance.
+- `npm audit --omit=dev`: zero vulnerabilities. Complete `npm audit` reports
+  four existing development findings (2 moderate, 2 high) in Vitest/mocker,
+  source-map-js and Vite. No unrelated dependency upgrade was made.
+
+### Existing Blockers And Limits
+
+`npm run check` stops at `test:ocr:platform-locks`: the PaddlePaddle macOS Intel
+build dependency lock is no longer reproducible. The identical failure was
+reproduced on the untouched `codex/test` source; its committed OCR lock is
+unchanged. No lock hashes or assertions were relaxed to hide this failure.
+
+`npm run test:ocr:runtime` cannot run: the existing checkout has only OCR licenses,
+without `src-tauri/ocr-resources/runtime/windows-x64.zip` or model resources.
+Source OCR contracts and mocked UI checks pass, but no new real inference,
+installed-app, packaged OCR, macOS/Linux host or release-readiness claim is made.
+The full canonical 18-step Windows release gate and NSIS packaging are not
+claimed complete.
+
+Earlier entries below describe historical checkpoints. Editor implementation,
+Office fidelity and editor acceptance requirements are superseded by the
+2026-10-29 scope decision in `V1_0_7_PLAN.md`.
+
 ## 2026-10-04 — Writing aids checkpoint
 
 Development UI now retains selection painting in font/size menus, compacts

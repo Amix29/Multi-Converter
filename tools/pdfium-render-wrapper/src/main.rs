@@ -1,5 +1,3 @@
-mod editor_commands;
-mod editor_contracts;
 
 use image::codecs::jpeg::JpegEncoder;
 use image::{DynamicImage, ImageFormat};
@@ -39,15 +37,6 @@ fn run() -> Result<(), String> {
             println!("pdfium-render-wrapper 0.4.0");
             Ok(())
         }
-        Some("--inspect-objects") if args.len() == 1 => editor_commands::inspect_objects(),
-        Some("--apply-patches") if args.len() == 1 => editor_commands::apply_patches(),
-        Some("--apply-layer-moves-internal") if args.len() == 1 => {
-            editor_commands::apply_layer_moves_internal()
-        }
-        Some("--create-editable-copy") if args.len() == 1 => {
-            editor_commands::create_editable_copy()
-        }
-        Some("--render-editor-page") if args.len() == 1 => editor_commands::render_page(),
         Some("--page-count") => {
             let input = args.get(1).ok_or_else(usage)?;
             let pdfium = load_pdfium()?;
@@ -85,10 +74,6 @@ fn usage() -> String {
         "  pdfium-render --version",
         "  pdfium-render --page-count <input.pdf>",
         "  pdfium-render --inspect-text <input.pdf> [output.json]",
-        "  pdfium-render --inspect-objects < request.json",
-        "  pdfium-render --apply-patches < request.json",
-        "  pdfium-render --create-editable-copy < request.json",
-        "  pdfium-render --render-editor-page < request.json",
         "  pdfium-render --render <input.pdf> <output.png|jpg|jpeg> --page 1 --format png --dpi 200",
         "  pdfium-render --render-all <input.pdf> <output-dir> --format png --dpi 200",
         "  pdfium-render --render-all <input.pdf> <output-dir> --format jpg --dpi 200 --quality 90",

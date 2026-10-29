@@ -19,7 +19,7 @@ No additional runtime, localhost server or source-code bridge is required.
 
 | Area | Responsibility |
 | --- | --- |
-| Desktop root (`src/`, `src-tauri/`) | Local application, converters, editor, OCR and packaging |
+| Desktop root (`src/`, `src-tauri/`) | Local application, converters, OCR and packaging |
 | `site/` | Static marketing, download, format, guide and documentation pages |
 | `branding-kit/` | Source logos, design tokens, brand guides, templates and mockups |
 
@@ -31,12 +31,11 @@ application does not load the marketing site at runtime.
 
 | Layer | Responsibility |
 | --- | --- |
-| React + TypeScript | Converter, editor and user-facing state |
-| Tiptap + ProseMirror | Local rich-document editing |
+| React + TypeScript | Converter, OCR and user-facing state |
 | Tauri 2 IPC | Typed boundary between the WebView and native operations |
-| Rust | File access, conversion orchestration, editor persistence and bounded parsers |
+| Rust | File access, conversion orchestration, OCR and bounded parsers |
 | Bundled engines | FFmpeg, PDFium, LibreOffice, Pandoc and libvips conversion paths |
-| Local application data | Draft JSON, validated editor assets and application state |
+| Local application data | Application preferences and verified OCR runtime caches |
 
 The existing application does not need a new framework, database or local web
 server for its Atelier integration.
@@ -49,14 +48,14 @@ in three explicit layers:
 ```text
 Tauri invoke handlers
   -> commands/*
-  -> converters/* | editor/* | ocr/* | engines/* | registry/*
+  -> converters/* | ocr/* | engines/* | registry/*
   -> process_support.rs | engine_archive/* | engine_distribution/*
   -> local filesystem and bundled resources
 ```
 
 `src-tauri/src/lib.rs` is the composition root: it registers application state,
 plugins and the existing 35 commands, but does not implement conversion or
-editor behavior. The command modules translate Tauri inputs into domain calls;
+OCR behavior. The command modules translate Tauri inputs into domain calls;
 domain modules remain directly unit-testable without a WebView. Existing facade
 files retain their module paths and public contracts while delegating to focused
 implementations.
@@ -74,8 +73,7 @@ export names with exclusive file creation because export naming and authority
 belong to the command boundary. Integrated ZIP text input is split again:
 `converters/text/archive.rs` performs entry-count preflight and bounded archive
 metadata validation, while `converters/text/read.rs` extracts only the
-supported DOCX, EPUB or ODT text parts. The editor's richer ODT domain retains
-its separate package, XML, style, Tiptap and writer rules.
+supported DOCX, EPUB or ODT text parts.
 
 ## Frontend Boundaries
 
@@ -84,36 +82,17 @@ the whole workflow in one component:
 
 | Area | Responsibility |
 | --- | --- |
-| `src/App.tsx` | Application lifecycle, active mode and composition of the converter, editor and global overlays |
+| `src/App.tsx` | Application lifecycle, composition of the converter, OCR and global overlays |
 | `src/app/conversion/` | Pure conversion-selection rules and stateful file/conversion workflows |
 | `src/app/screens/` | Files, format selection and conversion progress screens |
 | `src/app/layout/`, `settings/`, `welcome/`, `feedback/` | Shell navigation and focused overlays or panels |
-| `src/editor/EditorWorkspace.tsx` | Editor mode lifecycle, document opening and recent-document refresh |
-| `src/editor/DocumentEditor.tsx` | Active Tiptap document, autosave, save/export coordination and editor composition |
-| `src/editor/EditorToolbar*.tsx`, `EditorTextControls.tsx`, `EditorTableControls.tsx`, `EditorImageControls.tsx` | Compact grouped ribbon, labelled local SVGs, free typography and contextual table/image commands |
-| `src/editor/useEditorShortcuts.ts`, `EditorShortcutsDialog.tsx` | Editor-scoped commands and accessible shortcut help |
-| `src/editor/useEditorZoom.ts`, `editorZoom.ts`, `EditorZoomControl.tsx` | View-local 10–500% zoom, centered 100% mapping, pointer anchoring and exact percentage entry |
-| `src/editor/DocumentImageView.tsx`, `src-tauri/src/editor/image_layout.rs` | Interactive image movement/resizing/layers and the matching bounded persisted layout contract |
-| `src/editor/DocumentOperationDialog.tsx`, `documentNaming.ts` | In-app overwrite/export states and non-placeholder title normalization |
-| `src/editor/EditorLanding.tsx`, `RecentDocumentDialogs.tsx` | Recent-document actions, long-press multi-selection and confirmed batch deletion |
-| Other `src/editor/` modules | Canvas, document commands, local assets, extensions, search, pagination and HTML sanitization |
 
-The converter and editor consume the public API from `src/lib/api.ts`. They do
-not import the Tauri or preview implementations directly.
-
-Document pagination measures unscaled DOM block heights, so changing zoom does
-not change the document's page count. The canvas measures its paper height to
-give the scaled scroll envelope the right size. Image fields observe asynchronous
-React node views and local asset loads before reporting actual dimensions.
-Image operations establish distinct undo groups. Autosave retains known image
-assets for undo; EditorWorkspace prunes unused assets only after the recent-list
-refresh has succeeded and before the document closes. A failed refresh leaves
-the editor and its undo assets available.
+The converter and OCR dialog consume the public API from `src/lib/api.ts`.
 
 ## Frontend API Boundary
 
 `src/lib/api.ts` remains the stable frontend facade. It re-exports the existing
-contracts, including `MultiConverterApi` and `EditorDocumentV1`, then selects
+contracts, including `MultiConverterApi` and the conversion/OCR contracts, then selects
 one implementation without changing the command signatures:
 
 ```text
@@ -137,42 +116,9 @@ preview mode; production-output inspection remains part of frontend validation.
 
 ## Vellum Styling Boundary
 
-`src/main.tsx` loads the vendored Vellum 1.0 tokens from
-`src/styles/vendor/vellum-tokens.css`, followed by the application styles.
-Paper is the active application theme. Multi-Converter does not expose a
-Carbon preference, and it does not fetch fonts, stylesheets or visual assets at
-runtime.
-
-The editor embeds and installs no font. The native backend enumerates installed
-families with DirectWrite on Windows, CoreText on macOS and Fontconfig on
-Linux, and returns names only: physical font paths never cross IPC. The toolbar
-shows the system default, three locally remembered recent names, then a
-virtualized alphabetical catalogue. PDF export inspects the OpenType
-`OS/2.fsType` permission and glyph coverage locally; restricted, bitmap-only or
-indeterminate faces are substituted by an installed embeddable face with a
-visible warning. DOCX output keeps the selected family name without embedding
-or substituting it. No font is downloaded at runtime.
-
-`editorViewDecorations.ts` adds view-only ProseMirror decorations for blurred
-text selections and optional spaces, nonbreaking spaces, tabs, hard breaks
-and paragraph endings. Formatting-mark state belongs to the editor plugin,
-not EditorDocumentV1. Zero-width widgets do not change layout, history or
-serialization; print CSS hides them. Typographic commands focus the current
-view synchronously so an older delayed focus cannot steal the next input.
-Metric inputs commit typed values independently of pointer-hover suggestions.
-`EditorTooltips.tsx` supplies one delegated, viewport-bounded tooltip surface
-for labelled editor controls and portals, including keyboard focus and disabled
-commands. It preserves existing aria-describedby references and closes on
-interaction, scrolling or modal opening. Icons are locally bundled from
-lucide-react 1.52.0 (ISC/Feather MIT), with a dedicated page-break SVG and the
-upstream license at public/third-party/lucide/LICENSE.txt.
-
-`src/styles.css` is only the ordered stylesheet entry point. Shell, files,
-formats, progress, welcome, settings, notices, feedback, motion and responsive
-rules live in focused files under `src/styles/`; editor-specific presentation
-remains in `src/editor/editor.css`. Components consume semantic `--vlm-*`
-tokens as the shared application theme contract; focused styles may derive
-local presentation values without defining another selectable theme.
+Vellum Paper remains the desktop foundation. `src/styles.css` imports the focused
+styles under `src/styles/`; components consume shared semantic `--vlm-*` tokens.
+Editor styles, bundled editor icons and font controls have been removed.
 
 ## Marketing Site Boundary
 
@@ -208,84 +154,18 @@ terminated before temporary output is cleaned.
 Real conversion behavior belongs to Tauri/Rust. The Vite preview uses mocks and
 is limited to frontend development.
 
-## Editor Boundary
+## Conversion-Only Scope (2026-10-29)
 
-Editor drafts use `EditorDocumentV1` Tiptap JSON. Rich DOCX and RTF imports
-pass through LibreOffice to ODT and then through the bounded ODT parser.
-Validated local images are stored under the document directory and referenced
-with `mc-asset://<uuid>`.
+The application exposes 19 native commands for conversion, OCR, export, onboarding
+and external links, with `convert-progress` and `ocr-progress` events. Neither
+frontend adapters nor the Tauri invoke handler expose document/PDF editing.
+The former editor-only Office bridge and font-enumeration modules are removed;
+the generic document conversion path retains LibreOffice and Pandoc.
+Old local drafts remain untouched. Legacy saved mode preferences are ignored.
 
-The ODT boundary is split into package validation, XML reading, style and
-namespace interpretation, Tiptap conversion, HTML rendering and ODT writing.
-This keeps archive limits and path checks independent from document semantics
-while preserving the existing import/export facade and serialized document
-schema.
-
-Editor exports keep one public facade but use format-specific local writers.
-ODT is published from the rich ODT generator. RTF and document-to-PDF pass that
-ODT through the strict local LibreOffice normalization/conversion bridge. DOCX
-instead maps Tiptap JSON directly to `docx.js` primitives in a dedicated Web
-Worker, then transfers the finished OOXML package through a 1 MiB chunked,
-128 MiB-bounded Rust session. Rust validates archive paths, duplicate entries,
-expanded sizes, compression ratios, CRC reads and XML well-formedness before
-the shared conflict check and atomic commit. Inline and block images both map
-to real OOXML media relationships. Cancelling terminates the worker and remains
-effective during native flush and validation until the atomic publication
-boundary; a canceled session drops its staging file. Word/LibreOffice visual
-fidelity remains a native corpus gate rather than an architectural assumption.
-
-PDF files opened for structural editing do not enter `EditorDocumentV1`.
-`PdfEditorSessionV1` is a separate PDFium-backed domain with source SHA-256
-identity, lazy page inspection/rendering, typed patches and Save As only.
-PDFium classifies the document from native alphanumeric text objects as
-`digital`, `mixed` or `scanned`. A scanned session is read-only in every
-frontend editing surface. The explicit **Modifier ce PDF** flow recognizes
-every page through the bundled local OCR, writes only OCR text-layer patches
-to a managed temporary copy, re-inspects it, then rebases the same session as
-`digitized`. Cancellation, an empty OCR result or an incomplete page set keeps
-the session locked; closing it removes the managed copy. The source PDF is
-never modified.
-For digital and successfully digitized PDFs, editable text objects are changed
-directly on the rendered page rather than through the inspector. A single click
-opens a positioned text control that inherits the inspected font, size and
-color. `Ctrl+Enter`/`Cmd+Enter` commits a typed `setText` patch, `Escape`
-restores the object, and focus returns to the page object. The inspector remains
-available for advanced object properties and non-text structures. Pending text
-is rendered in place before Save As, while the original PDF stays untouched.
-Permissions and DocMDP constrain each operation. When those constraints forbid
-an edit, an explicit unsigned-copy command atomically writes a distinct file,
-removes signature/DocMDP structures, verifies the new source identity and
-rebases the session without touching the original. A bounded structural scan
-reports JavaScript, Launch actions, XFA, 3D and media as non-editable inspector
-objects without executing them or returning their payload bodies. The existing
-PDF-to-text and PDF-to-Tiptap OCR paths remain explicit conversion/import paths,
-not the storage model for structural PDF edits.
-
-A new document defaults its export selector to Markdown. Export refuses an
-untitled placeholder until the user supplies a normalized title, then exposes
-the potentially long operation through an in-app Vellum dialog. Source
-overwrite confirmation uses the same application-owned dialog boundary instead
-of `window.confirm()`. Deleting a draft removes only its local draft and assets,
-never the imported source; batch deletion applies that rule independently to
-each selected draft.
-
-The Tiptap image node remains backed by `mc-asset://`. Its optional floating
-layout adds safety-bounded finite offsets/dimensions, wrap mode and a bounded
-layer index; Rust validates those attributes before persistence or generation.
-Eight visual handles have no former 30 cm UI cap. Toolbar
-heading presets are intentionally absent, while imported heading nodes remain
-accepted for compatibility. Table column widths continue through TableKit's
-bounded `colwidth` contract.
-
-Closing an active document is an ordered operation: finish the pending
-autosave, refresh the recent-document list and only then return to the editor
-landing screen. If saving or refreshing fails, the active document remains
-open and the error stays visible instead of presenting a stale landing state.
-
-Untrusted HTML is sanitized before it is handed to Tiptap. Embedded accepted
-images are persisted through the editor asset API and rewritten to validated
-`mc-asset://<uuid>` references. The detailed allowlist, CSP and proof limits
-are documented in [`SECURITY.md`](SECURITY.md).
+The PDFium source wrapper accepts conversion/OCR commands only. Existing packaged
+binaries and provenance fingerprints are not rewritten by this cleanup; the
+wrapper dependency graph remains pinned until a reviewed engine rebuild.
 
 ## OCR Boundary
 
@@ -305,8 +185,7 @@ failure, and the next attempt starts from a valid clean state.
 
 PDFium wrapper 0.4 inspects every PDF page. Usable native text is retained,
 while only insufficient pages are rendered at 300 DPI for OCR. The normalized
-result then feeds the existing text serializers or `EditorDocumentV1` with
-explicit page breaks. Image OCR accepts the five bounded local raster formats
+result then feeds the existing text serializers with explicit page separation. Image OCR accepts the five bounded local raster formats
 and returns structured text for an explicit write-only clipboard action.
 
 On Windows, the official CPU runtime is stored as one verified compressed
@@ -369,7 +248,6 @@ and validate them.
 2. Project [`AGENTS.md`](../AGENTS.md) and `.agents/rules/`
 3. `docs/V1_0_7_PLAN.md`
 4. `docs/V1_0_7_VALIDATION.md`
-5. `docs/V1_0_7_EDITOR_VALIDATION.md`
 6. `docs/V1_0_7_OCR.md`
 7. `docs/TESTING.md` and the platform release checklists
 8. `docs/SECURITY.md` and the repository `SECURITY.md`

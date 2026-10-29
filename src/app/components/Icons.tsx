@@ -7,15 +7,6 @@ export function SettingsIcon() {
   );
 }
 
-export function DocumentModeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M6 2.75h8.5L19 7.25v14H6z" />
-      <path d="M14.5 2.75v4.5H19M9 11h7M9 14.5h7M9 18h5" />
-    </svg>
-  );
-}
-
 export function CloseIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">

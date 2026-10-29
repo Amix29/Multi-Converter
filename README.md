@@ -43,7 +43,6 @@
 - [Linux Installation](#linux-installation)
 - [Overview](#overview)
 - [V1.0.7 In Development](#v107-in-development)
-- [Document Editor (V1.0.7 development)](#document-editor-v107-development)
 - [Local OCR (V1.0.7 development)](#local-ocr-v107-development)
 - [Supported Formats](#supported-formats)
 - [Privacy](#privacy)
@@ -66,7 +65,6 @@
 | 🆓 **Free and open source** | Use **Multi-Converter** freely and browse its source code. |
 | 🔒 **Local and private** | Your files stay on your computer throughout the conversion. |
 | 🔄 **Multi-format** | Documents, images, audio and video — all handled in a single app. |
-| ✍️ **Local document editor** | The V1.0.7 branch adds local document creation and editing with Tiptap. |
 | 🔎 **Local OCR** | V1.0.7 will extract text from PDFs and images with PP-OCRv6_medium. |
 | ⚡ **Ready after install** | Conversions run locally with the engines bundled for each release platform. |
 
@@ -125,74 +123,21 @@ Linux automatic updates are enabled for builds that include the Tauri updater-si
   <img src="docs/screenshots/03-output.png" alt="Conversion complete" width="32%">
 </p>
 
-The current public release is **V1.0.6** for Windows x64, universal macOS and Linux x64. **V1.0.7 is in development** and adds two major local features: a Tiptap document editor and PP-OCRv6_medium OCR.
+The current public release is **V1.0.6** for Windows x64, universal macOS and Linux x64. **V1.0.7 is in development** and focuses on local PP-OCRv6_medium OCR for conversion and image-text extraction.
 
 ---
 
 ## V1.0.7 In Development
 
-V1.0.7 has two official objectives:
+V1.0.7 focuses on conversion and local OCR. Document and PDF editors were removed on 2026-10-29.
 
 | Workstream | Goal | Current status |
 | --- | --- | --- |
-| ✍️ Document editor | Create, import, edit, save and export documents locally with Tiptap | Implemented in the development tree; final Windows Office round-trip validation is still pending |
-| 🔎 OCR | Convert scanned/image PDFs to text formats and copy text from images with `PP-OCRv6_medium` | Specified and planned; runtime/model integration has not started |
+| 🔎 OCR | Convert scanned/image PDFs to text formats and copy text from images with `PP-OCRv6_medium` | Implemented in development; packaged and multiplatform validation remains open |
 
-The repository and application metadata intentionally remain at `1.0.6`. They will move to `1.0.7` only after the editor and OCR gates pass.
+Repository and application metadata target `1.0.7`; this is an unpublished development version.
 
 The complete scope and release gates are defined in [`docs/V1_0_7_PLAN.md`](docs/V1_0_7_PLAN.md). The full documentation map is available in [`docs/README.md`](docs/README.md).
-
----
-
-## Document Editor (V1.0.7 development)
-
-> **Development status**
-> The editor is not part of the current stable V1.0.6 release. Its Windows office round-trip matrix is still open, so the supported-format list below describes the implemented V1.0.7 code path rather than a completed public compatibility claim.
-
-The application now has two separate workspaces:
-
-- **Converter** keeps the existing three-step file conversion flow.
-- **Editor** opens a local document workspace with one active document at a time.
-
-From the editor home screen, users can:
-
-- create a new document;
-- open or drag and drop one DOCX, ODT, RTF, TXT, Markdown or HTML document;
-- reopen a recent local draft;
-- rename, duplicate or delete a draft from its recent-document menu.
-
-Deleting a recent document removes only the local draft and its local editor assets. It does not delete the original imported file. A confirmation dialog is required before deletion.
-
-The editor provides a paginated canvas, common text formatting, tables, local images, page settings, headers, footers, numbering, autosave and export controls. Draft content is stored as versioned Tiptap JSON. Persisted images use local `mc-asset://<uuid>` references instead of Base64 data, remote URLs or exposed file-system paths.
-
-The V1.0.7 document workspace now uses a compact ribbon with grouped controls on
-multiple rows, familiar keyboard shortcuts and full screen mode (F11/Escape).
-Document zoom runs from 10% to 500%, starts at 100% and supports Ctrl+wheel,
-Ctrl+plus/minus, Ctrl+0 and exact percentage entry. Selecting an image opens
-contextual size, aspect-ratio, placement and layer controls; floating images
-move by dragging the image directly. See the
-[Word comparison and editor roadmap](docs/V1_0_7_EDITOR_WORD_REVIEW.md) for the
-implemented changes and proposed advanced capabilities.
-
-Font and size menus retain a visible text selection. The installed-font list
-is compact and searchable; line spacing uses numeric values (default 1.45).
-Hover/focus explanations and bundled Lucide vector icons identify editor
-commands. The ¶ button or Ctrl+Shift+8 toggles nonprinting formatting marks.
-
-Rich DOCX and RTF imports are converted locally to ODT by LibreOffice, then read by the bounded ODT parser. Direct ODT imports use the same parser. DOCX exports use the direct local docx.js mapper; ODT exports use the rich ODT generator, and RTF/PDF exports use the local LibreOffice bridge.
-
-The implemented export choices are DOCX, ODT, RTF, HTML, Markdown, TXT and PDF.
-PDF files open in a separate structural PDF workspace rather than being
-imported into Tiptap. Scanned PDFs remain read-only until a complete local
-digitization succeeds. Failed rich Office imports must display an error and
-must never silently fall back to plain text.
-
-The latest editor status and the still-pending Windows Tauri scenarios are tracked in [`docs/V1_0_7_EDITOR_VALIDATION.md`](docs/V1_0_7_EDITOR_VALIDATION.md).
-
-<p align="center">
-  <img src="docs/screenshots/v1.0.7-editor-recents-menu.png" alt="V1.0.7 document editor home with recent-document actions" width="49%">
-  <img src="docs/screenshots/v1.0.7-editor-delete-dialog.png" alt="V1.0.7 local draft deletion confirmation" width="49%">
-</p>
 
 ---
 
@@ -201,7 +146,6 @@ The latest editor status and the still-pending Windows Tauri scenarios are track
 The V1.0.7 development tree integrates the local `PP-OCRv6_medium` model to:
 
 - convert scanned or image-only PDFs to TXT, Markdown and HTML;
-- digitize scanned PDFs for the separate structural PDF workspace;
 - extract text from PNG, JPEG, WebP, TIFF and BMP images;
 - let the user copy recognized image text to the clipboard.
 
@@ -264,7 +208,6 @@ The Windows x64 installer and macOS universal DMG bundle third-party engines for
 Key points:
 
 - **Multi-Converter** itself is licensed under **AGPL-3.0-or-later**.
-- The document editor uses the open-source **Tiptap** packages under the **MIT** license. It does not use Tiptap Pro packages or Tiptap Cloud.
 - The selected PaddleOCR project is licensed under **Apache-2.0**. Exact runtime, model and dependency notices will be added when the OCR engine is actually packaged.
 - Third-party engines remain separate software with their own licenses.
 - The **Windows x64 V1** release bundles **FFmpeg** and **ffprobe** `8.1.1-essentials_build-www.gyan.dev`, built with `--enable-gpl`: the bundled executables are treated as third-party software covered by the GPL in this distribution.
@@ -290,7 +233,6 @@ This section is for anyone who wants to run the project locally, fix a bug, sugg
 | --- | --- |
 | Desktop application | Tauri 2 |
 | UI | React + TypeScript |
-| Document editor | Tiptap 3 + ProseMirror |
 | Planned OCR | PP-OCRv6_medium through a local Tauri-managed runtime |
 | Backend | Rust + Cargo |
 | Frontend build | Vite |
@@ -345,7 +287,6 @@ Recommended checks before a pull request:
 ```bash
 npm run check
 npm run test:rust
-npm run test:editor
 npm run test:pdfium-wrapper
 npm run test:pdfium-wrapper:compile
 npm run site:check

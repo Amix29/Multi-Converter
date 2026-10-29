@@ -1,18 +1,3 @@
-pub fn pdf_with_doc_mdp(level: u8) -> Vec<u8> {
-    let objects = vec![
-        "<< /Type /Catalog /Pages 2 0 R /AcroForm 5 0 R /Perms << /DocMDP 6 0 R >> >>".to_string(),
-        "<< /Type /Pages /Kids [3 0 R] /Count 1 >>".to_string(),
-        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R /Annots [7 0 R] >>".to_string(),
-        "<< /Length 0 >>\nstream\n\nendstream".to_string(),
-        "<< /Fields [7 0 R] /SigFlags 3 >>".to_string(),
-        format!(
-            "<< /Type /Sig /Filter /Adobe.PPKLite /SubFilter /adbe.pkcs7.detached /ByteRange [0 0 0 0] /Contents <00> /Reference [<< /Type /SigRef /TransformMethod /DocMDP /TransformParams << /Type /TransformParams /P {level} /V /1.2 >> >>] >>"
-        ),
-        "<< /Type /Annot /Subtype /Widget /FT /Sig /T (Signature1) /Rect [10 10 50 30] /V 6 0 R /P 3 0 R >>".to_string(),
-    ];
-    build_pdf(&objects)
-}
-
 fn build_pdf(objects: &[String]) -> Vec<u8> {
     let mut output = b"%PDF-1.7\n".to_vec();
     let mut offsets = Vec::with_capacity(objects.len());

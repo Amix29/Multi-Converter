@@ -1,5 +1,12 @@
 # V1.0.7 Local OCR Contract And Evidence
 
+## Scope Update — 2026-10-29
+
+OCR remains part of conversion and image-text extraction. Document/PDF editing,
+including editor-only OCR layers, was cancelled. Earlier editor references in
+this record are historical; the retained PDF flow extracts text for conversion.
+Runtime locks, packaged models and original-file protection are unchanged.
+
 ## Status
 
 - Target release: **V1.0.7**
@@ -76,13 +83,13 @@ Windows behavior.
 ## Implemented Architecture
 
 ```text
-React image action / converter / editor
+React image action / converter
   -> typed Tauri OCR command
   -> one bounded OCR job
   -> validated temporary PNG or PDFium page render
   -> supervised local PP-OCRv6 sidecar
   -> normalized OcrDocumentResultV1
-  -> text output, clipboard preview or EditorDocumentV1
+  -> text output or clipboard preview
 ```
 
 The stable API facade exposes `getOcrRuntimeInfo()`,
@@ -155,9 +162,7 @@ failure aborts the conversion, so no partial output replaces the destination.
 Hybrid extraction is wired into existing PDF text targets including TXT,
 Markdown, HTML, CSV, JSON, XML, DOCX, ODT and RTF. TXT separates pages with a
 form feed; Markdown uses `---`; HTML creates escaped semantic page sections
-without scripts or remote content. Opening a PDF in the editor produces
-paragraphs and `pageBreak` nodes, shows the fidelity warning and requires Save
-As.
+without scripts or remote content.
 
 ## Image Flow And Clipboard
 

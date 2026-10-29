@@ -1,11 +1,6 @@
 use super::output::{AtomicOutput, safe_path_component};
 use super::*;
 
-pub fn convert(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult> {
-    let registration = begin_conversion(&job.id)?;
-    convert_registered(app, job, registration)
-}
-
 pub(crate) fn convert_registered(
     app: &AppHandle,
     job: ConversionJob,
@@ -30,33 +25,6 @@ pub(crate) fn convert_registered(
         );
     }
     result
-}
-
-/// Runs the rich Office bridge without consulting the generic engine planner and
-/// without its text fallback. The document editor uses this path so an ODT,
-/// DOCX, RTF or PDF export can never silently lose layout, assets, headers or
-/// footers when LibreOffice fails.
-pub(crate) fn convert_office_document_strict(
-    app: &AppHandle,
-    job_id: &str,
-    input_path: &Path,
-    output_path: &Path,
-    target_format: &str,
-) -> Result<()> {
-    let target = target_format.trim_start_matches('.').to_ascii_lowercase();
-    if !matches!(target.as_str(), "odt" | "docx" | "rtf" | "pdf") {
-        return Err(ConvertError::Message(format!(
-            "Le pont Office strict ne prend pas en charge le format {target}."
-        )));
-    }
-    ensure_source_file_available(input_path)?;
-    check_cancelled(job_id)?;
-    let staged_output = AtomicOutput::new(output_path)?;
-    convert_with_libreoffice(app, job_id, input_path, staged_output.path(), &target)?;
-    validate_conversion_output(app, staged_output.path(), &target, "documents")?;
-    check_cancelled(job_id)?;
-    staged_output.commit()?;
-    Ok(())
 }
 
 fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult> {

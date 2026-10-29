@@ -15,10 +15,7 @@ const pdfiumPackageSource = fs.readFileSync(path.join(root, "scripts", "lib", "p
 try {
   assert.match(preparerSource, /validateLockedPdfiumTree\(rootDir, pdfiumLock, pdfiumFixtureRoot\)/,
     "bundled engine preparation must reject a stale PDFium tree before reusing it");
-  assert.match(pdfiumPackageSource, /\["--inspect-objects"\]/,
-    "PDFium health checks must exercise the structural editor contract");
-  assert.match(pdfiumPackageSource, /objectPayload\.contentKind/,
-    "PDFium health checks must reject wrappers that omit contentKind");
+  assert.match(pdfiumPackageSource, /--inspect-text/, "PDFium health checks must exercise text extraction for conversion and OCR");
   testPlaceholderClassifiers();
   writeFixture();
   runValidator("windows-x64");

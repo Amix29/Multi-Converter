@@ -1,5 +1,9 @@
 # Document editor ergonomics and Word comparison
 
+> Scope superseded on 2026-10-29: document/PDF editing is cancelled.
+> Editor code, tests and release requirements below are historical.
+> Use `V1_0_7_PLAN.md` and `V1_0_7_VALIDATION.md` for current scope and evidence.
+
 Reviewed on 2026-10-04 for the local V1.0.7 development editor.
 This review uses the maintainer screenshots, the current Multi-Converter
 source and Microsoft/LibreOffice documentation. It is a functional comparison, not a

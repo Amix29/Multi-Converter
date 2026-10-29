@@ -1,462 +1,85 @@
 # Multi-Converter Desktop Security Architecture
 
-Editor writing aids use only local ProseMirror decorations. Selection painting
-and formatting symbols do not enter saved document JSON or generated exports.
-Tooltip content is rendered as React text, with no HTML injection or network
-request. Lucide icons are bundled from a pinned npm artifact and ship their
-ISC/Feather MIT notices at third-party/lucide/LICENSE.txt. These changes add
-no IPC commands, native file privileges or remote document processing.
-
-## Status And Purpose
-
-This document describes the security boundaries implemented in the desktop
-source tree. Package metadata now targets V1.0.7 while native packaging and
-release validation remain in progress. This document is not a release-readiness
-statement; packaged and multiplatform OCR gates remain open.
-
-Use the repository [`SECURITY.md`](../SECURITY.md) for supported versions and
-private vulnerability reporting. Do not attach crafted documents, personal
-files, secrets or sensitive logs to a public issue.
+Reviewed for the conversion-only scope on **2026-10-29**. Development metadata
+is `1.0.7`; this document does not certify release or multiplatform readiness.
+See repository `SECURITY.md` for vulnerability reporting.
 
 ## Local Threat Model
 
-Multi-Converter treats these inputs as untrusted:
+Untrusted inputs include selected/dropped/pasted files, folders, archives, XML,
+engine output and fetched release metadata. Protected assets are original files,
+conversion outputs, recognized text, application data and bundled runtimes.
+The application does not protect against an already compromised OS or upstream
+engine vulnerabilities outside its enforced packaging and invocation boundaries.
 
-- selected, dropped or pasted files and folders;
-- document HTML produced by an importer or pasted into Tiptap;
-- document JSON and asset metadata loaded from local application data;
-- archives, XML and outputs handled by native converters or bundled engines;
-- release metadata and release-note text fetched from allowed endpoints.
+## Native And Filesystem Boundaries
 
-The protected assets are the user's source files and paths, conversion outputs,
-editor drafts and images, application data, and the integrity of the local
-application and bundled engines.
+The typed frontend facade exposes only conversion, OCR, export, onboarding and
+external-link operations. The Tauri handler registers 19 commands. Document/PDF
+editing, asset/draft management and system font-enumeration commands are removed.
+Old drafts are left untouched; removal does not authorize deleting user data.
 
-The main trust boundaries are:
+Native conversion engines run with bounded output capture, timeouts and process
+tree termination. Windows children start without console windows; Unix children
+use process groups. The persistent OCR worker has its own supervisor/protocol.
 
-| Boundary | Security responsibility |
-| --- | --- |
-| React WebView | Render only constrained application or document content and call the typed API facade |
-| HTML to Tiptap | Remove active or unsupported markup before ProseMirror parses it |
-| Tauri IPC | Expose the explicit `MultiConverterApi` command set rather than unrestricted native access |
-| Rust filesystem and editor code | Validate paths, document assets, bounded formats and atomic writes |
-| Bundled engines | Operate on local files through the native orchestration layer and validate resulting artifacts |
-| Network | Limit WebView connections to the configured update/release-note and translation destinations |
+Export accepts canonical regular files inside managed temporary output roots.
+Links/reparse points and escaping paths are rejected. Outputs are staged,
+validated and atomically published without overwriting source files. Clipboard
+imports use private temporary files with bounded sizes and validated formats.
+DOCX/EPUB/ODT text readers, engine archives and OCR archives enforce their own
+entry, path, type, compression and expanded-size limits before parsing/extraction.
 
-The model does not attempt to defend against an already-compromised operating
-system or administrator account. An upstream engine vulnerability remains an
-upstream issue unless Multi-Converter's packaging, arguments or validation
-exposes additional impact.
+## Local OCR Boundary
 
-## Native Process Boundary
-
-One-shot FFmpeg, ffprobe and advanced-engine invocations use a shared native
-process primitive. It launches without a console window on Windows, disables
-stdin, drains stdout and stderr concurrently, retains at most 128 KiB from each
-stream, preserves the exit status and applies a caller-selected timeout. A
-timeout or I/O failure stops the child process tree and waits for termination
-before control returns to output cleanup.
-
-On Unix, supervised children start in their own process group so termination
-also reaches descendants that inherited an engine's output pipes. Output-drain
-joins are themselves bounded to prevent a descendant from keeping the caller
-blocked indefinitely. Windows uses the existing process-tree termination path.
-
-The primitive is covered for large output, non-zero exit status, launch failure,
-timeouts and paths containing spaces or non-ASCII characters. Callers still own
-engine-specific validation and error wording; sharing process mechanics does
-not broaden filesystem authority. The persistent OCR worker deliberately keeps
-its separate supervisor, locked JSON-lines protocol, resource verification and
-job lifecycle.
-
-## Filesystem, Export And Archive Boundary
-
-Conversion exports accept only canonical regular files inside a managed
-temporary output root. A source path is rejected when any existing component
-is a symbolic link or, on Windows, a reparse point. This prevents an export
-request from using a link or junction to copy an unrelated file. Conversion
-outputs are written to same-directory staging files, validated and published
-with a no-replace atomic link so concurrent jobs cannot overwrite an existing
-result. Uncommitted staging files are removed automatically. Export commands
-reserve collision-free destination names with `create_new`, write through the
-reserved handle and remove a partial destination on failure; terminal symbolic
-links are never followed. Source files are never modified.
-
-ODT, OCR-runtime and engine archives keep responsibility-specific entry-count,
-path, type and expanded-size limits. Integrated DOCX, EPUB and ODT text readers
-preflight the ZIP central-directory entry count before constructing the archive
-index, including ZIP64 metadata, then bound cumulative expanded size,
-compression ratios, duplicate names and entry-name length. Archives reject
-absolute paths, parent traversal and links before extraction or parsing. The
-shared checks are used only where their security limits are identical; the
-bounded editor ODT reader keeps its own XML, asset and package rules.
-
-Memory-backed clipboard imports are created through a private temporary
-directory. Unix directories use mode `0700` and imported files use mode `0600`;
-Windows relies on the current account's temporary-directory access controls.
-The command accepts at most 24 files, 128 MiB per file and 512 MiB for the
-batch. The aggregate limit is checked after Tauri has deserialized the public
-`Vec<ClipboardFile>` contract; this command-level check does not prove a bound
-on memory already used by a hostile IPC payload during framework
-deserialization.
-
-## HTML Sanitization Boundary
-
-All rich HTML entering an editor surface uses `sanitizeImportedHtml()` before
-Tiptap parses it:
-
-- document-import HTML passes through the sanitizer and local image
-  normalization before `setContent()`;
-- rich clipboard HTML and dropped HTML in the document body pass through
-  Tiptap's `transformPastedHTML` hook (ProseMirror routes both through its
-  clipboard parser);
-- rich clipboard or dropped HTML in header and footer dialogs uses the same
-  hook.
-
-The sanitizer is based on the pinned `dompurify` 3.4.16 package. DOMPurify
-applies an explicit allowlist, then a second DOM pass enforces link, image,
-attribute and inline-style rules. The sanitized string is the only HTML passed
-on to the editor.
-
-### Allowed Elements
-
-The allowlist contains only structures represented by the editor:
-
-- paragraphs and blocks: `p`, `br`, `hr`, `blockquote`, `pre`, `code`;
-- headings: `h1` through `h6`;
-- inline text: `strong`, `em`, `i`, `u`, `s`, `strike`, `del`, `mark` and
-  `span`;
-- lists: `ul`, `ol`, `li`;
-- links: `a`;
-- tables: `table`, `thead`, `tbody`, `tfoot`, `tr`, `th` and `td`; `colgroup`
-  and `col` are retained only as TableKit column-width helpers and do not
-  become document nodes;
-- constrained editor nodes: `div` for page breaks and `aside` for unsupported
-  imported objects;
-- localizable images: `img`.
-
-Allowed attributes are limited to `alt`, `colspan`, `colwidth`, `data-align`,
-`data-asset-id`, `data-page-break`,
-`data-unsupported-object`, `height`, `href`, `rel`, `rowspan`, `src`, `start`,
-`style`, `target`, `title` and `width`. Arbitrary ARIA and other `data-*`
-attributes are disabled.
-
-A `div` survives only as an attribute-free page-break node normalized to
-`data-page-break="true"`; other `div` wrappers are unwrapped. An `aside`
-survives only as an attribute-free unsupported-object node normalized to
-`data-unsupported-object="true"`; other `aside` wrappers are unwrapped.
-
-Links may use only `http:`, `https:`, `mailto:` or a same-document `#`
-fragment. A target may be `_self` or `_blank`; `_blank` is always normalized to
-`rel="noopener noreferrer"`.
-
-### Forbidden Content
-
-The boundary removes scripts, style blocks, embedded browsing or plugin
-content, forms and active vector markup. In particular, `script`, `style`,
-`iframe`, `object`, `embed`, `link`, `meta`, `form`, `input`, `button`, `svg`
-and `math` are forbidden. Content belonging to scripts, styles, frames,
-objects, embeds and forms is discarded rather than retained as editor text.
-
-Event-handler attributes and `srcdoc`, `formaction` and `xlink:href` are
-removed independently of DOMPurify's allowlist. Unknown protocols are not
-allowed.
-
-Inline styles are retained only for the editor features that need them. The
-allowed properties are `background-color`, `color`, `font-family`,
-`font-size`, `font-style`, `font-weight`, `text-align`, `text-decoration` and
-image `width`. Values are limited to 160 conservative characters and are
-rejected if they contain `expression`, `url`, `var`, `behavior`,
-`-moz-binding` or `@import`.
-
-Table cell `colspan` and `rowspan` values are positive integers capped at 100.
-TableKit column widths are positive integers capped at 4096 pixels; a cell's
-`colwidth` list is retained only when it has exactly one width per spanned
-column. Invalid or excessive values are removed so TableKit falls back to its
-safe defaults instead of iterating over attacker-controlled dimensions.
-
-## Editor Image Boundary
-
-Persistent editor content must reference images as
-`mc-asset://<uuid>` together with the matching asset identifier. It must not
-persist remote URLs, filesystem paths, Blob URLs or Base64 image data.
-
-The frontend applies these controls:
-
-- direct image insertion accepts PNG, JPEG, WebP or GIF files only;
-- at most eight files are processed per insertion and each file is limited to
-  24 MiB before it is sent to the editor asset command;
-- Base64 PNG, JPEG, WebP or GIF data from a document import is temporarily
-  accepted for migration, bounded to 32 MiB of encoded text and 24 MiB after
-  decoding, then stored through `editorStoreAsset` and rewritten to
-  `mc-asset://`;
-- Base64 images in pasted HTML are removed because the synchronous Tiptap
-  transform cannot persist them first; pasted image files use `FileHandler`,
-  `editorStoreAsset` and `mc-asset://` instead;
-- an existing `mc-asset://` image is retained only when its UUID, declared
-  asset ID and current document asset list agree;
-- remote or inaccessible images are replaced by explicit text instead of being
-  fetched by the editor.
-
-The Rust editor boundary validates persisted asset references again and owns
-the local document asset directory. Blob URLs are created only for displaying
-bytes returned by `editorReadAsset` and are revoked when the image view is
-disposed.
-
-Interactive image placement does not broaden that asset authority. Persisted
-layout values are validated separately: widths/heights accept only bounded
-numeric measures, floating offsets are limited to ±100,000 mm, layer indices to
-`-100..100`, and alignment/layout/wrap values use closed enums. Imported or
-pasted HTML cannot set floating offsets or layer indices because those
-attributes are not in the HTML sanitizer allowlist. Pointer and keyboard
-controls update only the selected Tiptap image node; they never move or rewrite
-the original image file.
-
-The contextual image ribbon uses these same attributes and asset commands.
-Deleted-image assets remain in the bounded local draft asset store while the
-document is open so undo remains possible after autosave. They are pruned on
-successful return to recent documents. An interrupted session can therefore
-retain unused local assets until a later successful close or draft deletion.
-No asset is uploaded or assigned a new filesystem authority by this change.
-Keyboard commands are scoped to the document editor and paused for modal work;
-save shortcuts retain the existing naming, overwrite and source-conflict flow.
-
-The editor installs, embeds and downloads no font. Installed family names are
-enumerated through DirectWrite, CoreText or Fontconfig; resolved file paths are
-kept inside the native process and never returned to the WebView. Before PDF
-embedding, the backend reads OpenType `OS/2.fsType` and verifies that the face
-covers the requested text. Restricted, bitmap-only and indeterminate faces are
-not embedded and require an explicit, warned substitution. DOCX preserves only
-the requested family name so the recipient application remains responsible for
-font substitution.
-
-## Content Security Policy
-
-The exact WebView CSP configured in `src-tauri/tauri.conf.json` is:
-
-```text
-default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob:; font-src 'self'; connect-src ipc: http://ipc.localhost http://localhost:1420 ws://localhost:1420 https://api.github.com https://translate.googleapis.com; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; frame-ancestors 'none'
-```
-
-Its intended controls are:
-
-- scripts are restricted to application resources; neither inline scripts nor
-  `unsafe-eval` are enabled;
-- objects/plugins are disabled and the document base URL stays self-hosted;
-- images are limited to application resources, Tauri's asset protocol and the
-  transient `data:`/`blob:` forms used by controlled editor flows;
-- WebView connections are limited to Tauri IPC/development origins, GitHub
-  release metadata and the optional Google release-note translation endpoint;
-- conversions and editor documents remain local and must never be sent to
-  those endpoints.
-
-### Controlled `style-src 'unsafe-inline'` Exception
-
-The application currently requires dynamic style attributes for bounded UI
-values such as progress widths, editor page scale, image width and release-note
-table alignment. Sanitized document HTML may also retain the small inline-style
-allowlist documented above. These runtime values cannot be represented by a
-fixed CSP hash.
-
-For that reason, `style-src 'unsafe-inline'` is a documented exception rather
-than a general content permission. Its compensating controls are:
-
-- `script-src` remains strict and does not inherit the style exception;
-- imported and pasted HTML is sanitized before parsing;
-- active CSS constructs and unlisted properties are removed;
-- remote stylesheets, `style` elements, `@import` and CSS `url()` values are
-  rejected at the editor boundary;
-- `object-src 'none'`, `base-uri 'self'`, `form-action 'none'`,
-  `frame-src 'none'` and `frame-ancestors 'none'` remain enforced.
-
-Removing this exception later requires replacing every dynamic style attribute
-and editor inline-style feature; it must not be removed without equivalent UI
-and document validation.
-
-## Network And Privacy Boundary
-
-File conversion, draft persistence, editor assets and bundled-engine execution
-are local operations. The WebView allowlist includes GitHub's API for release
-metadata and Google's translation endpoint for optional release-note
-translation. If translation is unavailable, the application displays the
-original English notes. User files, file contents, editor text and recognized
-OCR text must not be included in those requests.
-
-Phase 3 OCR uses only bundled, hash-verified local resources. The worker starts
-with offline environment flags and has no cloud fallback. Sources and text are
-not sent to the existing release-metadata or optional release-note translation
-endpoints. The frontend receives structured results and never receives general
-filesystem authority.
+`PP-OCRv6_medium` runs from packaged, hash-verified resources with CPU selection,
+offline environment flags and no cloud or model-download fallback. Image-text
+copy is explicit and the clipboard plugin grants only `allow-write-text`.
+PDF conversion retains usable native text and OCRs pages that need recognition;
+there is no PDF mutation or editor-only text-layer command.
 
 The OCR boundary rejects remote paths, false file types, corrupt inputs and
-password-protected PDFs. It caps sources at 128 MiB, decoded images at 120
-megapixels and 32,768 pixels per side, PDFs at 2,000 pages and normalized text
-at 64 MiB. Recognition has a 180-second page timeout. Temporary normalized
-images, PDF renders and results are scoped to unpredictable temporary
-directories and originals are never modified.
+password-protected PDFs. Sources are capped at 128 MiB, images at 120 megapixels
+and 32,768 pixels per side, PDFs at 2,000 pages and normalized text at 64 MiB.
+Recognition has a 180-second page timeout. Temporary renders/results remain
+scoped to unpredictable temporary directories; originals are never modified.
 
-The structural PDF editor refuses all content, annotation, form and assembly
-mutations while PDFium classifies a session as scanned. The user must explicitly
-accept **Modifier ce PDF**, after which the existing local OCR boundary attempts
-every page. Rust accepts only `addOcrTextLayer` patches for this transition and
-rejects missing, duplicate or out-of-range page attempts. A successful result
-is written atomically to a managed temporary copy, re-inspected and rebound to
-the session; an empty result, cancellation, crash or validation failure leaves
-the PDF read-only and removes staging data. PDF permissions and DocMDP are
-checked before this path is offered and again at the native patch boundary.
+Runtime extraction rejects traversal, links and expansion overruns. File counts,
+sizes, relative paths and every SHA-256 are verified against packaged manifests.
+Cancellation is checked during extraction, hashing, verification and inference;
+failed/cancelled verification is not cached. Cancelled UI jobs ignore late
+results and progress, permitting a clean retry. See `V1_0_7_OCR.md` for locks,
+fixtures, license inventory and native proof limits.
 
-The runtime and model each carry a per-file manifest. The packaged Windows
-runtime archive is extracted only into application-local data through a reader
-that rejects absolute paths, parent traversal, symlinks, excessive entries and
-expanded-size overruns. Rust then compares file count, total size, aggregate
-lock value, every relative path and every SHA-256 before the first job.
-Unexpected files, non-regular filesystem entries and tampering are rejected.
-Cancellation and crash terminate the Windows process tree and force a clean
-worker on the next job.
+## Content And Network Boundaries
 
-The cancellation token is also consulted during archive extraction, file-tree
-enumeration, manifest verification, SHA-256 reads and PDF page preparation.
-Partial extraction remains confined to the temporary staging directory. A
-cancelled verification is deliberately not retained in the process-wide
-verification cache, so cancellation cannot poison later OCR attempts. The
-frontend invalidates the cancelled job sequence and ignores its late events or
-result before enabling **Retry**.
+The WebView renders release-note Markdown with React elements and constrained
+links; application content is not inserted as arbitrary HTML. Editor HTML
+imports, DOMPurify, Tiptap/ProseMirror, docx.js workers and editor asset URLs no
+longer exist in the application frontend.
 
-Windows LibreOffice packaging uses its already hash-locked engine archive to
-stay below the NSIS raw-resource limit. Rust verifies the embedded archive hash
-against `engines-manifest.json`, applies the same traversal and expansion
-guards, and extracts it on the first conversion that needs LibreOffice. The
-source engine remains unchanged; only its package representation differs.
+The CSP in `src-tauri/tauri.conf.json` restricts scripts to `self`, blocks eval,
+objects, forms and frames, and limits connections to IPC/development origins,
+GitHub release metadata and optional Google release-note translation. Files and
+recognized text must never be sent to these endpoints. Unavailable translation
+falls back to the original English release notes.
 
-Editor DOCX output is generated directly from Tiptap JSON by the local
-`docx.js` Web Worker. Assets and the final package are bounded; cancellation
-terminates the worker and marks the 1 MiB-chunked Rust session canceled. The
-same token is checked through flush and bounded ZIP/XML validation, then an
-atomic compare-and-publish boundary prevents cancellation from racing a partial
-replacement. Before commit, Rust reads every ZIP entry to verify integrity,
-rejects ambiguous paths, duplicates, size/ratio limits and malformed OOXML.
-RTF and document-to-PDF use
-the bounded ODT intermediate and strict local LibreOffice path. These paths add
-no network fallback. The source-conflict check is repeated
-after the potentially slow conversion and immediately before atomic
-replacement. The title dialog is a usability gate only: the native boundary
-still sanitizes the filename stem, reserves a non-conflicting destination and
-validates the document before generation.
+The existing `style-src 'unsafe-inline'` exception remains needed for bounded
+progress/virtualization and release-note table styles. Script restrictions
+remain strict. The existing image-source allowlist is unchanged by this removal.
 
-Clipboard access is restricted to `clipboard-manager:allow-write-text`.
-Multi-Converter cannot read, monitor, clear or write image/HTML clipboard data
-through this capability.
+## Engine Provenance And Dependency Scope
+
+Conversion engines and OCR resources retain their existing hashes and provenance
+locks. The PDFium source wrapper no longer exposes editor commands; packaged
+engine archives are not rewritten here. Its Cargo manifest/lock stay pinned to
+the reviewed graph until a separate engine rebuild updates fingerprints/notices.
+Application/frontend editor-only dependencies are removed without upgrading
+unrelated locked packages.
 
 ## Verification And Proof Limits
 
-Phase 2 adds compiled-preview coverage for hostile imported and pasted HTML.
-The exercised fixtures include scripts and embedded content, event attributes,
-dangerous link protocols, active CSS, remote images, excessive table spans and
-Base64 images pasted into both the document body and a header/footer surface.
-The checks preserve supported text and safe links while confirming that active
-content does not execute. Static editor contracts also pin DOMPurify, keep the
-sanitizer on every rich-HTML entry point and preserve the CSP boundary.
-
-The 2026-08-04 correction checks additionally cover bounded persisted image
-layout, local system-font permissions, explicit application-owned overwrite/export
-dialogs and cancellation during OCR resource preparation. Targeted preview
-tests show that cancelled jobs cannot publish stale results, but preview mocks
-do not prove native process termination. Real Windows OCR exercised the
-corrected path and matched the reviewed fixture exactly. The historical Windows
-LibreOffice probe completed ODT normalization, DOCX and PDF generation. The
-direct DOCX path supersedes that DOCX export proof and
-does not by itself prove packaged-app behavior, reopened document structure or
-visual fidelity.
-
-The final 15-step Windows gate passed on 2026-07-31 after the last CSS and test
-corrections. It included both npm audits, static application and CSP contracts,
-the compiled hostile-HTML scenarios, Rust and PDFium checks, the complete
-conversion matrix, the production build and local Tauri/NSIS packaging. This
-gate strengthens the Windows checkpoint but does not broaden the proof limits
-below.
-
-Phase 3 real Tauri development-runtime checks exercised local inference,
-resource verification, cancellation, forced worker crash, restart, native,
-scanned and mixed PDFs, editor import and semantic HTML. Unit tests cover the
-five image normalizers, limits, invalid sources, manifest tampering and unsafe
-archive paths. The local unsigned NSIS build succeeds with compressed OCR and
-LibreOffice resources. Its exact extracted executable also passed native PNG
-paste, OCR, explicit copy, cancellation, worker termination and retry. Sampled
-process inspection found zero TCP connections and the worker used the locked
-CPU provider. This is not a continuous packet capture and does not prove the
-installed-NSIS lifecycle, every packaged path, complete dependency notices,
-macOS or Linux.
-
-The exact Windows runtime inventory records 71 Python distributions and 105
-embedded license files. The absence of an embedded `bce-python-sdk` license is
-explicitly locked and blocks public redistribution. Runtime process counters
-recorded 1,069.8 MiB peak working set and 1,939.1 MiB peak paged memory on the
-reviewed fixture; these are measured baselines, not security limits or
-cross-platform guarantees.
-
-The Phase 4 backend refactor passed the 18-step Windows gate, including both npm
-audits, the allowed-warning Rust audit, Rust formatting and Clippy, 138 unit
-tests, the 6/6 conversion matrix, the real LibreOffice archive extraction,
-PDFium, the OCR runtime and corpus, and the local Tauri/NSIS build. Tests also
-exercise process timeout and termination, bounded output, archive traversal,
-symlink/reparse-point export rejection and serialized command contracts.
-
-The Phase 7 Windows PDFium supply chain is fail-closed. It pins the official
-archive and DLL independently, requires the declared x64 PE wrapper and DLL,
-builds the wrapper with a locked Cargo graph and exact Rust toolchain, and
-accepts only the reproducible final ZIP fingerprint. ZIP inspection rejects
-absolute paths, parent traversal, duplicate or ambiguous names, symlinks,
-reparse points, excessive entry/expanded sizes and suspicious compression
-ratios before extraction. Runtime health requires the exact wrapper version,
-native-text inspection and decoded 300-DPI rendering; a successful `--check`
-alone is insufficient. PDFium is prepared before application packaging and is
-never downloaded by application startup or conversion code.
-
-A Phase 4 release executable built before the final adversarial hardening was
-launched and its process path was verified. Native clipboard-file import, PNG
-OCR, explicit text copy, PNG to WebP conversion, export, editor autosave,
-recent-document refresh and reopen passed. The final rebuilt executable passed
-the automated gate but was not re-exercised interactively. This does not prove
-the installed NSIS lifecycle, native UI ODT import, manual conversion
-cancellation, macOS or Linux behavior; those gates remain open.
-
-Passing TypeScript, unit, preview or static CSP tests does not prove that native
-filesystem behavior, engine isolation, packaging or real conversions are safe.
-Vite preview uses mocks and cannot validate Tauri IPC or local asset storage.
-Windows validation does not prove macOS or Linux behavior; those platforms
-require their documented native gates. Dependency audits report known
-advisories in the inspected graph, not the absence of exploitable defects.
-
-Phase 8 adds immutable macOS/Linux provenance and architecture checks before
-OCR or PDFium execution. Runtime archives are regular-file-only, have bounded
-and unambiguous paths, restore only declared Unix executable bits and are
-verified against aggregate and per-file manifests. GitHub package jobs accept
-staging artifacts only from the expected workflow, successful conclusion and
-exact candidate commit. The app still performs no model or engine download at
-startup or during conversion. Native CI observes OCR and PDFium process
-connections while the host network remains active; this is process sampling,
-not a disconnection test or continuous packet capture.
-
-The post-audit PDFium 0.4.0 package keeps the same fail-closed boundary. Windows
-has an exact locally reproducible wrapper and engine ZIP, but its lock remains
-`unpublished` and cannot be used by the public-download validator. The embedded
-0.3.0 manifest is intentionally left unchanged until a reviewed public 0.4.0
-artifact exists. macOS and Linux records remain `pending-native-rebuild` with
-null package hashes, so neither platform can accidentally inherit Windows
-measurements or unverified URLs.
-
-The structural PDF editor keeps signature handling explicit. Every patch is
-checked against the source SHA-256, document permissions and DocMDP before the
-wrapper writes a separate destination. A forbidden operation does not silently
-invalidate a signature. The user may instead request a distinct unsigned
-editable copy; its atomic writer removes signature and DocMDP structures,
-verifies the copy and leaves the signed original unchanged. Automated tests
-cover that transition, but the complete signed/encrypted native corpus remains
-a release gate.
-
-Active PDF content is never executed. A bounded parser records the presence and
-kind of JavaScript, Launch actions, XFA, 3D and media for the inspector without
-returning payload bodies. The automated hostile fixtures prove detection and
-non-execution at this boundary. They do not yet prove byte-preservation of every
-active object after a PDFium edit/save/reopen cycle; that claim requires the
-independent native corpus.
+See `V1_0_7_VALIDATION.md` for checks performed on this change. Browser mocks prove
+UI behavior only. Rust and wrapper runtime tests prove their named contracts;
+installed packages, real inference, platform packaging and final publication
+require their own evidence. Earlier editor security reviews are historical.

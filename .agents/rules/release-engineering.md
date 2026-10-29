@@ -17,7 +17,7 @@ Keep public artifacts, updater metadata and platform claims aligned with verifie
 - Do not publish generated engine archives, checksums or model/runtime inputs without maintainer approval and verified licenses.
 - Public release notes and updater notes are English-only and describe only behavior verified for the exact version.
 - A small number of emojis is encouraged in release notes when it improves scanning.
-- Do not describe planned V1.0.7 OCR or an open editor matrix as released.
+- Do not describe unvalidated V1.0.7 OCR or conversion behavior as released.
 
 ## Sources
 

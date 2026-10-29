@@ -1,5 +1,9 @@
 # V1.0.7 Security Review
 
+> Scope superseded on 2026-10-29: document/PDF editing is cancelled.
+> Editor code, tests and release requirements below are historical.
+> Use `V1_0_7_PLAN.md` and `V1_0_7_VALIDATION.md` for current scope and evidence.
+
 Date: 2026-08-02
 Scope: Phase 6 review plus Phase 7 Windows PDFium closure at `0224d4d0`
 Status: engineering review complete; release and redistribution remain blocked

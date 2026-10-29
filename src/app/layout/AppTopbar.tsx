@@ -1,46 +1,19 @@
-import { memo, useRef } from "react";
-import type { AppMode } from "../../lib/api";
+import { memo } from "react";
 import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
 import { t, type LanguageCode } from "../../i18n";
 import { FeedbackButton } from "../feedback/FeedbackOverlays";
 import type { Step } from "../types";
-import { DocumentModeIcon, SettingsIcon } from "../components/Icons";
+import { SettingsIcon } from "../components/Icons";
 
 export const AppTopbar = memo(function AppTopbar(props: {
-  appMode: AppMode;
   step: Step;
   language: LanguageCode;
   isConverting: boolean;
   feedbackVisible: boolean;
-  onAppMode(mode: AppMode): void;
   onFeedback(): void;
   onSettings(): void;
   onStep(step: Step): void;
 }) {
-  const converterTabRef = useRef<HTMLButtonElement>(null);
-  const editorTabRef = useRef<HTMLButtonElement>(null);
-
-  function selectModeWithKeyboard(
-    event: React.KeyboardEvent<HTMLButtonElement>,
-    mode: AppMode,
-  ) {
-    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    const nextMode =
-      event.key === "ArrowLeft" || event.key === "Home"
-        ? "converter"
-        : event.key === "ArrowRight" || event.key === "End"
-          ? "editor"
-          : mode;
-    props.onAppMode(nextMode);
-    window.requestAnimationFrame(() => {
-      (nextMode === "converter"
-        ? converterTabRef
-        : editorTabRef
-      ).current?.focus();
-    });
-  }
-
   return (
     <header className="topbar">
       <div className="brand">
@@ -50,62 +23,25 @@ export const AppTopbar = memo(function AppTopbar(props: {
           </div>
           <h1>Multi-Converter</h1>
         </div>
-        <div
-          className="mode-toggle"
-          role="tablist"
-          aria-label={t(props.language, "mode.label")}
-        >
-          <button
-            ref={converterTabRef}
-            type="button"
-            role="tab"
-            aria-selected={props.appMode === "converter"}
-            tabIndex={props.appMode === "converter" ? 0 : -1}
-            className={props.appMode === "converter" ? "is-converter" : ""}
-            onClick={() => props.onAppMode("converter")}
-            onKeyDown={(event) => selectModeWithKeyboard(event, "converter")}
-          >
-            {t(props.language, "mode.converter")}
-          </button>
-          <button
-            ref={editorTabRef}
-            type="button"
-            role="tab"
-            aria-selected={props.appMode === "editor"}
-            tabIndex={props.appMode === "editor" ? 0 : -1}
-            className={props.appMode === "editor" ? "is-editor" : ""}
-            onClick={() => props.onAppMode("editor")}
-            onKeyDown={(event) => selectModeWithKeyboard(event, "editor")}
-          >
-            {t(props.language, "mode.editor")}
-          </button>
-        </div>
       </div>
 
-      {props.appMode === "converter" ? (
-        <nav
-          className="process-strip"
-          aria-label={t(props.language, "app.progress")}
-        >
-          {stepLabels(props.language).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`process-step ${props.step === item.id ? "is-active" : ""} ${props.step > item.id ? "is-done" : ""}`}
-              disabled={item.id > props.step || props.isConverting}
-              onClick={() => props.onStep(item.id)}
-            >
-              <span>{item.label}</span>
-              <strong>{item.title}</strong>
-            </button>
-          ))}
-        </nav>
-      ) : (
-        <div className="editor-context-pill">
-          <DocumentModeIcon />
-          {t(props.language, "editor.contextTitle")}
-        </div>
-      )}
+      <nav
+        className="process-strip"
+        aria-label={t(props.language, "app.progress")}
+      >
+        {stepLabels(props.language).map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={`process-step ${props.step === item.id ? "is-active" : ""} ${props.step > item.id ? "is-done" : ""}`}
+            disabled={item.id > props.step || props.isConverting}
+            onClick={() => props.onStep(item.id)}
+          >
+            <span>{item.label}</span>
+            <strong>{item.title}</strong>
+          </button>
+        ))}
+      </nav>
 
       <div className="topbar-actions">
         <FeedbackButton

@@ -6,7 +6,6 @@ import type { ConversionIntent, ExportKind, FileItem } from "../types";
 export const welcomeStorageKey = "multi-converter-welcome-seen";
 export const notificationsStorageKey = "multi-converter-notifications-enabled";
 export const feedbackPrivacyStorageKey = "multi-converter-feedback-public-warning-seen";
-export const appModeStorageKey = "multi-converter-app-mode";
 
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
 const maxClipboardMemoryFileBytes = 128 * 1024 * 1024;

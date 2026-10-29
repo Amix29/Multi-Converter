@@ -236,7 +236,6 @@ jobs:
         run: |
           npx playwright install chromium
           npm run test:unit
-          npm run test:editor
           npm run test:macos:conversions
           npm run test:ocr:runtime
           npm run test:ocr:corpus

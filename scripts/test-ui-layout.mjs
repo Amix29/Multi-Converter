@@ -28,12 +28,6 @@ const css = [
     .filter((name) => name.endsWith(".css"))
     .map((name) => fs.readFileSync(path.join(stylesRoot, name), "utf8")),
 ].join("\n");
-const editor = [
-  fs.readFileSync(path.join(root, "src", "editor", "EditorWorkspace.tsx"), "utf8"),
-  fs.readFileSync(path.join(root, "src", "editor", "EditorLanding.tsx"), "utf8"),
-  fs.readFileSync(path.join(root, "src", "editor", "RecentDocumentDialogs.tsx"), "utf8"),
-].join("\n");
-const editorCss = fs.readFileSync(path.join(root, "src", "editor", "editor.css"), "utf8");
 const fileCardsCss = fs.readFileSync(path.join(root, "src", "styles", "file-cards.css"), "utf8");
 
 assert.match(app, /<div className="floating-corner" data-testid="floating-corner">/, "floating-corner wrapper is missing");
@@ -52,14 +46,12 @@ assert.doesNotMatch(app, /<FeedbackButton/, "feedback must not remain in the flo
 assert.match(feedbackOverlays, /data-testid="feedback-launcher"/, "feedback launcher test id is missing");
 assert.match(updateFlow, /data-testid="update-reminder"/, "update reminder test id is missing");
 assert.match(fileWorkflow, /window\.addEventListener\("paste", onPaste\)/, "clipboard paste listener is missing");
-assert.match(fileWorkflow, /canImportDroppedFiles\s*=\s*options\.appMode === "converter" && \(step === 1 \|\| step === 2\)/, "paste and drop imports must be limited to converter Files and Formats");
-assert.match(fileWorkflow, /appModeRef\.current === "editor"[\s\S]*?setEditorDropRequest/, "native editor drops must be routed through the file workflow");
+assert.match(fileWorkflow, /canImportDroppedFiles\s*=\s*step === 1 \|\| step === 2/, "paste and drop imports must be limited to converter Files and Formats");
 assert.match(fileWorkflow, /canImportDroppedFilesRef\.current\)\s*{\s*await addFilePaths\(paths\);/, "native converter drops must remain limited to import steps");
 assert.match(fileWorkflow, /if \(!canImportDroppedFiles\) return;/, "HTML file drops must be ignored outside import steps");
 assert.match(fileWorkflow, /api\.saveClipboardFiles/, "clipboard files must be saved locally before analysis");
 assert.doesNotMatch(app + appTopbar + fileWorkflow, /pasteFromClipboard|clipboard-button/, "clipboard import must remain implicit without a dedicated UI button");
 assert.match(api, /saveClipboardFiles\(files: ClipboardFileInput\[\]\)/, "clipboard API contract is missing");
-assert.match(appTopbar, /className="mode-toggle"/, "converter/editor mode toggle is missing");
 assert.match(app, /bootstrapDependencies\(\)[\s\S]*?\}, \[setInternetAvailable\]\);/, "engine bootstrap must not rerun when only the language changes");
 assert.match(fileWorkflow, /api\.onProgress[\s\S]*?\}, \[addFilePaths\]\);/, "native progress and drop listeners must not resubscribe on language changes");
 assert.match(filesScreen, /upload\.removeUnsupported/, "Files must expose a bulk action for unsupported imports");
@@ -71,17 +63,11 @@ assert.match(virtualizedJobList, /props\.files\.slice\(windowState\.startIndex, 
 assert.match(virtualizedJobList, /data-total-count={props\.files\.length}/, "the virtual output list must expose its complete item count for QA");
 assert.match(fileCardsCss, /max-height:\s*calc\(3 \* 132px \+ 2 \* 12px\);/, "the file lane must show at most three card rows");
 assert.doesNotMatch(fileCardsCss, /animation\s*:/, "large file-card lists must not animate each card on entry");
-assert.match(app, /<EditorWorkspace/, "editor workspace is missing from the app shell");
-assert.match(editor, /nativeDropRequest/, "the editor must consume native drop requests");
-assert.match(editor, /recent-document-menu-popover/, "recent document actions menu is missing");
-assert.match(editor, /createPortal/, "editor dialogs must render outside animated workspace containers");
-assert.match(editor, /is-menu-open/, "the active recent-document menu must own the highest card stacking layer");
-assert.match(editor, /role="alertdialog"/, "deleting a recent document must require an accessible confirmation");
-assert.match(editor, /event\.dataTransfer\.files\.length !== 1/, "editor drops must enforce the single-document contract");
-assert.match(editorCss, /\.editor-landing\.is-dragging/, "the editor drop state must be visible");
-assert.match(editorCss, /\.recent-document-card\.is-menu-open\s*{\s*z-index:\s*40;/, "open recent-document menus must render above later cards");
-assert.match(editorCss, /button:not\(\.editor-primary-button\):not\(\.editor-danger-button\)/, "neutral modal button styling must not override destructive actions");
-assert.match(css + editorCss, /prefers-reduced-motion:\s*reduce/, "editor motion must honor reduced-motion preferences");
+
+assert.doesNotMatch(app + appTopbar + fileWorkflow, /EditorWorkspace|onAppMode|editorDropRequest/, "removed editor navigation must not return");
+assert.match(app, /<ImageOcrDialog/, "image OCR must remain available from the converter");
+assert.match(api, /recognizeImage|recognize_image/, "the OCR API must remain available");
+assert.doesNotMatch(api, /editorCreateDocument|pdfEditorOpen|editor_create_document|pdf_editor_open/, "editor APIs must not be exposed");
 
 const floatingCorner = cssRule(".floating-corner");
 assert.match(floatingCorner, /position:\s*fixed;/, "floating-corner must own fixed positioning");

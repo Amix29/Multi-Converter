@@ -4,20 +4,6 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-const OFFICE_FORMATS = ["odt", "docx", "rtf"];
-const OFFICE_CHECKS = [
-  "import-rich",
-  "styles-tables",
-  "assets-restart",
-  "header-footer",
-  "page-number",
-  "page-layout",
-  "save-as-reopen",
-  "overwrite-confirmation",
-  "external-conflict",
-  "failure-preserves-original",
-  "pdf-export",
-];
 const OCR_PDF_KINDS = ["native", "scanned", "mixed"];
 const OCR_TARGETS = ["txt", "markdown", "html", "csv", "json", "xml", "docx", "odt", "rtf"];
 
@@ -61,15 +47,6 @@ export const SCENARIOS = Object.freeze([
         ? 1
         : 0,
   })),
-  { id: "editor.native-drop", artifactKinds: ["screenshot", "log"], sourceIntegrityRequired: true },
-  ...OFFICE_FORMATS.flatMap((format) =>
-    OFFICE_CHECKS.map((check) => ({
-      id: `editor.${format}.${check}`,
-      artifactKinds: check === "pdf-export" ? ["output", "screenshot"] : ["screenshot", "output", "log"],
-      cleanupRequired: check === "failure-preserves-original",
-      sourceIntegrityRequired: true,
-    })),
-  ),
   ...["png", "jpeg", "webp", "tiff", "bmp"].map((format) => ({
     id: `ocr.image.${format}.recognize-copy`,
     artifactKinds: ["screenshot", "log"],
@@ -86,7 +63,6 @@ export const SCENARIOS = Object.freeze([
   ...scenarioGroup(
     "ocr",
     [
-      "pdf-editor",
       "blank",
       "rotation",
       "multipage",

@@ -147,9 +147,9 @@ assert.match(testingDocs, /npm run verify:linux-appimage/, "testing docs must do
 assert.match(testingDocs, /Linux AppImage Build/, "testing docs must document the Linux AppImage workflow");
 assert.match(testingDocs, /linux-x86_64/, "testing docs must document the Linux updater platform key");
 assert.match(testingDocs, /committed V1\.0\.6 evidence is complete[\s\S]*`releaseReady: true`/, "testing docs must describe the published V1.0.6 status accurately");
-assert.match(testingDocs, /future V1\.0\.7 status gate[\s\S]*editor and OCR/, "testing docs must require a new version-specific gate for V1.0.7");
+assert.match(testingDocs, /V1\.0\.7[\s\S]*conversion and OCR/, "testing docs must require a new version-specific gate for V1.0.7");
 assert.match(testingDocs, /two-architecture `macOS Conversion Matrix`[\s\S]*Apple Silicon[\s\S]*Intel/, "testing docs must require macOS conversion evidence on both architectures");
-assert.match(v107Plan, /document editor powered by the open-source Tiptap\/ProseMirror stack[\s\S]*PP-OCRv6_medium/, "V1.0.7 plan must preserve both official objectives");
+assert.match(v107Plan, /file converter[\s\S]*PP-OCRv6_medium/, "V1.0.7 plan must preserve the conversion and local OCR scope");
 assert.match(v107Plan, /repository metadata is synchronized to `1\.0\.7`[\s\S]*version change is not a release-readiness claim/, "V1.0.7 plan must distinguish development metadata from release readiness");
 assert.match(v107Validation, /Overall gate:\s*\*\*blocked\*\*/, "V1.0.7 validation must not claim release readiness");
 assert.match(v107Ocr, /Windows implementation:\s*\*\*development checkpoint, real Tauri and extracted-package runtime exercised\*\*/, "OCR documentation must record the implemented Windows development boundary");

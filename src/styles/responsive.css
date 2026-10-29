@@ -22,19 +22,13 @@
   }
 
   .brand { grid-area: brand; }
-  .process-strip,
-  .editor-context-pill { grid-area: context; }
+  .process-strip { grid-area: context; }
   .topbar-actions { grid-area: actions; }
 
   .process-strip {
     width: 100%;
     overflow: auto;
     justify-content: flex-start;
-  }
-
-  .editor-context-pill {
-    width: 100%;
-    justify-self: stretch;
   }
 
   .format-screen {

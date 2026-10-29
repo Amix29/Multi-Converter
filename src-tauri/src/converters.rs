@@ -63,13 +63,11 @@ pub use contracts::{
     ImportOriginV1, ImportedFileDescription, ProgressPayload, Result,
 };
 pub use describe::describe_file_with_app;
-pub use orchestrator::convert;
 pub(crate) use orchestrator::convert_registered;
 
 pub(crate) use external::{
     ExternalCommandProgress, engine_command, engine_path, run_external_command_with_progress,
 };
-pub(crate) use orchestrator::convert_office_document_strict;
 
 pub(crate) fn available_output_path(
     input_path: &Path,

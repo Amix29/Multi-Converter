@@ -205,7 +205,7 @@ Cette commande prépare FFmpeg/ffprobe depuis gyan.dev et génère `dist-engines
 
 Packaging macOS is not considered release-ready until the final DMG has been produced and tested on macOS. Do not modify the generated `.app` after the Tauri bundle step; change source files, config or staged engines, then rebuild.
 
-The embedded manifest used for a release must contain only the reviewed engines for its target platform. V1.0.6 established the current Windows, macOS and Linux baseline; V1.0.7 must restage that baseline together with the editor and OCR resources before advertising the new capabilities.
+The embedded manifest used for a release must contain only the reviewed engines for its target platform. V1.0.6 established the current Windows, macOS and Linux baseline; V1.0.7 must restage that baseline together with the OCR resources before advertising the new capabilities.
 
 `prepare:bundled-engines` prunes stale entries in `src-tauri/bundled-engines` that do not match the current platform before packaging. `validate:bundled-engines` must fail if a platform build would carry engine resources from another platform.
 

@@ -1,5 +1,9 @@
 # Multi-Converter V1.0.7 Post-audit Correction Ledger
 
+> Scope superseded on 2026-10-29: document/PDF editing is cancelled.
+> Editor code, tests and release requirements below are historical.
+> Use `V1_0_7_PLAN.md` and `V1_0_7_VALIDATION.md` for current scope and evidence.
+
 ## Scope and candidate identity
 
 - Base checkpoint: `80a0c3838e48e470d99e6a6e27f44c245509bc84`.

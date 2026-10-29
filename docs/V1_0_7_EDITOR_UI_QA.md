@@ -1,5 +1,9 @@
 # V1.0.7 Editor UI Design QA
 
+> Scope superseded on 2026-10-29: document/PDF editing is cancelled.
+> Editor code, tests and release requirements below are historical.
+> Use `V1_0_7_PLAN.md` and `V1_0_7_VALIDATION.md` for current scope and evidence.
+
 ## 2026-10-04 — Selection, compact lists and writing aids
 
 The follow-up screenshots showed invisible selection in font controls, an

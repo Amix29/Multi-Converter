@@ -1,7 +1,6 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ImportToast, PageNotice } from "./app/components/AppNotices";
 import {
-  appModeStorageKey,
   feedbackPrivacyStorageKey,
   notificationsStorageKey,
   readStoredFeedbackPrivacyAccepted,
@@ -23,14 +22,11 @@ import { WelcomePanel } from "./app/welcome/WelcomePanel";
 import { UpdateDialog, UpdateInstallDialog, UpdateReminder } from "./components/UpdateFlow";
 import { useAppUpdater } from "./hooks/useAppUpdater";
 import { t, useI18n } from "./i18n";
-import { api, type AppMode } from "./lib/api";
+import { api } from "./lib/api";
 import { repositoryUrl } from "./lib/updateService";
 import { ImageOcrDialog } from "./ocr/ImageOcrDialog";
 import type { FileItem } from "./app/types";
-import "./editor/editor.css";
-import "./editor/editor-workspace-polish.css";
 
-const EditorWorkspace = lazy(() => import("./editor/EditorWorkspace").then((module) => ({ default: module.EditorWorkspace })));
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
 
 export default function App() {
@@ -43,15 +39,13 @@ export default function App() {
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFeedbackPrivacyOpen, setIsFeedbackPrivacyOpen] = useState(false);
   const [feedbackPrivacyAccepted, setFeedbackPrivacyAccepted] = useState(readStoredFeedbackPrivacyAccepted);
-  const [appMode, setAppMode] = useState<AppMode>(() => localStorage.getItem(appModeStorageKey) === "editor" ? "editor" : "converter");
-  const [editorWasOpened, setEditorWasOpened] = useState(appMode === "editor");
   const [notice, setNotice] = useState<Notice | null>(null);
   const [ocrFile, setOcrFile] = useState<FileItem | null>(null);
   const showNotice = useCallback((tone: NoticeTone, message: string) => {
     setNotice({ id: Date.now(), tone, message });
   }, []);
 
-  const fileWorkflow = useFileWorkflow({ appMode, language, showNotice });
+  const fileWorkflow = useFileWorkflow({ language, showNotice });
   const conversionWorkflow = useConversionWorkflow({
     files: fileWorkflow.files,
     language,
@@ -86,8 +80,7 @@ export default function App() {
     && !isSettingsOpen
     && !isWelcomeOpen
     && !updater.isUpdateDialogOpen;
-  const feedbackLauncherActive = appMode === "converter"
-    && fileWorkflow.step === 1
+  const feedbackLauncherActive = fileWorkflow.step === 1
     && !isSettingsOpen
     && !isWelcomeOpen
     && !updater.isUpdateDialogOpen
@@ -99,11 +92,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(notificationsStorageKey, notificationsEnabled ? "true" : "false");
   }, [notificationsEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem(appModeStorageKey, appMode);
-    if (appMode === "editor") setEditorWasOpened(true);
-  }, [appMode]);
 
   useEffect(() => {
     if (!notice) return;
@@ -143,14 +131,12 @@ export default function App() {
   }
 
   return (
-    <main className={`app-shell ${appMode === "editor" ? "is-editor-mode" : ""} ${updateReminderActive ? "has-update-reminder" : ""} ${importToastActive ? "has-import-toast" : ""}`}>
+    <main className={`app-shell ${updateReminderActive ? "has-update-reminder" : ""} ${importToastActive ? "has-import-toast" : ""}`}>
       <AppTopbar
-        appMode={appMode}
         step={fileWorkflow.step}
         language={language}
         isConverting={conversionWorkflow.isConverting}
         feedbackVisible={feedbackLauncherActive}
-        onAppMode={setAppMode}
         onFeedback={openFeedback}
         onSettings={openSettings}
         onStep={fileWorkflow.setStep}
@@ -227,66 +213,52 @@ export default function App() {
         onNotice={showNotice}
       />
 
-      {appMode === "converter" && (
-        <>
-          <FilesScreen
-            isActive={fileWorkflow.step === 1}
-            language={language}
-            files={fileWorkflow.files}
-            isConverting={conversionWorkflow.isConverting}
-            isDragOver={fileWorkflow.isDragOver}
-            onAddFiles={fileWorkflow.addPickedFiles}
-            onClear={fileWorkflow.resetFiles}
-            onClearUnsupported={fileWorkflow.removeUnsupported}
-            onDragOver={fileWorkflow.setIsDragOver}
-            onDrop={fileWorkflow.handleHtmlDrop}
-            onFormats={showFormats}
-            onExtractText={setOcrFile}
-            onRemove={fileWorkflow.removeFile}
-          />
-          <ImportToast language={language} feedback={fileWorkflow.importFeedback} />
-          <FormatScreen
-            isActive={fileWorkflow.step === 2}
-            language={language}
-            files={fileWorkflow.files}
-            isConverting={conversionWorkflow.isConverting}
-            onBack={showFiles}
-            onChooseFileFormat={fileWorkflow.applyFileFormat}
-            onApplyCompatibleFormat={fileWorkflow.applyCompatibleFormat}
-            onStart={startConversion}
-          />
-          <ProgressScreen
-            isActive={fileWorkflow.step === 3}
-            language={language}
-            files={fileWorkflow.files}
-            exportResult={conversionWorkflow.exportResult}
-            isConverting={conversionWorkflow.isConverting}
-            isCancelling={conversionWorkflow.isCancelling}
-            isExporting={conversionWorkflow.isExporting}
-            isTempOutputCleaned={conversionWorkflow.isTempOutputCleaned}
-            onNew={resetConversion}
-            onCancel={cancelConversions}
-            onContinue={continueConversions}
-            onBackToSettings={showOutputSettings}
-            onExportDownloads={exportDownloads}
-            onExportFolder={exportFolder}
-            onRevealFolder={revealFolder}
-            onRetryFile={retryFile}
-            onRetryFailed={retryFailed}
-          />
-        </>
-      )}
+      <FilesScreen
+        isActive={fileWorkflow.step === 1}
+        language={language}
+        files={fileWorkflow.files}
+        isConverting={conversionWorkflow.isConverting}
+        isDragOver={fileWorkflow.isDragOver}
+        onAddFiles={fileWorkflow.addPickedFiles}
+        onClear={fileWorkflow.resetFiles}
+        onClearUnsupported={fileWorkflow.removeUnsupported}
+        onDragOver={fileWorkflow.setIsDragOver}
+        onDrop={fileWorkflow.handleHtmlDrop}
+        onFormats={showFormats}
+        onExtractText={setOcrFile}
+        onRemove={fileWorkflow.removeFile}
+      />
+      <ImportToast language={language} feedback={fileWorkflow.importFeedback} />
+      <FormatScreen
+        isActive={fileWorkflow.step === 2}
+        language={language}
+        files={fileWorkflow.files}
+        isConverting={conversionWorkflow.isConverting}
+        onBack={showFiles}
+        onChooseFileFormat={fileWorkflow.applyFileFormat}
+        onApplyCompatibleFormat={fileWorkflow.applyCompatibleFormat}
+        onStart={startConversion}
+      />
+      <ProgressScreen
+        isActive={fileWorkflow.step === 3}
+        language={language}
+        files={fileWorkflow.files}
+        exportResult={conversionWorkflow.exportResult}
+        isConverting={conversionWorkflow.isConverting}
+        isCancelling={conversionWorkflow.isCancelling}
+        isExporting={conversionWorkflow.isExporting}
+        isTempOutputCleaned={conversionWorkflow.isTempOutputCleaned}
+        onNew={resetConversion}
+        onCancel={cancelConversions}
+        onContinue={continueConversions}
+        onBackToSettings={showOutputSettings}
+        onExportDownloads={exportDownloads}
+        onExportFolder={exportFolder}
+        onRevealFolder={revealFolder}
+        onRetryFile={retryFile}
+        onRetryFailed={retryFailed}
+      />
 
-      {editorWasOpened && (
-        <Suspense fallback={appMode === "editor" ? <div className="editor-loading">{t(language, "editor.loading")}</div> : null}>
-          <EditorWorkspace
-            isActive={appMode === "editor"}
-            language={language}
-            nativeDropRequest={fileWorkflow.editorDropRequest}
-            onNotice={showNotice}
-          />
-        </Suspense>
-      )}
     </main>
   );
 }

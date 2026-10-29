@@ -4,11 +4,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { TargetFormat } from "../../src/lib/api";
 import {
-  createPreviewEditorState,
-  makePreviewEditorDocument,
   makePreviewFile,
-  removePreviewDocument,
-  upsertPreviewDocument,
 } from "../../src/lib/api/previewFixtures";
 import type { ConversionIntent, FileItem } from "../../src/app/types";
 
@@ -280,22 +276,6 @@ describe("large conversion collections", () => {
 });
 
 describe("preview state fixtures", () => {
-  it("creates isolated editor state and immutably upserts then removes drafts", () => {
-    const empty = createPreviewEditorState();
-    const seeded = createPreviewEditorState(true);
-    const document = makePreviewEditorDocument("Plan Phase 2");
-    const withDocument = upsertPreviewDocument(empty.documents, document);
-    document.title = "Mutation extérieure";
-
-    expect(empty.documents).toEqual([]);
-    expect(empty.assets.size).toBe(0);
-    expect(seeded.documents).toHaveLength(1);
-    expect(seeded.documents[0].title).toBe("Brouillon de test");
-    expect(withDocument).toHaveLength(1);
-    expect(withDocument[0].title).toBe("Plan Phase 2");
-    expect(removePreviewDocument(withDocument, withDocument[0].id)).toEqual([]);
-  });
-
   it("builds the deterministic file capabilities used by preview workflows", () => {
     const file = makePreviewFile("note.md", ".md", 42);
 

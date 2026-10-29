@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
-import { api, type AppMode, type FileDescription } from "../../lib/api";
+import { api, type FileDescription } from "../../lib/api";
 import { translateBackendMessage, type LanguageCode } from "../../i18n";
 import type { FileItem, ImportFeedback, NoticeTone, Step } from "../types";
 import {
@@ -21,7 +21,6 @@ import {
 } from "./model";
 
 export function useFileWorkflow(options: {
-  appMode: AppMode;
   language: LanguageCode;
   showNotice(tone: NoticeTone, message: string): void;
 }) {
@@ -29,18 +28,12 @@ export function useFileWorkflow(options: {
   const [files, setFiles] = useState<FileItem[]>([]);
   const [importFeedback, setImportFeedback] = useState<ImportFeedback>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [editorDropRequest, setEditorDropRequest] = useState<{ id: number; paths: string[] } | null>(null);
-  const canImportDroppedFiles = options.appMode === "converter" && (step === 1 || step === 2);
+  const canImportDroppedFiles = step === 1 || step === 2;
   const canImportDroppedFilesRef = useRef(canImportDroppedFiles);
-  const appModeRef = useRef(options.appMode);
   const languageRef = useRef(options.language);
   const showNoticeRef = useRef(options.showNotice);
   const progressQueueRef = useRef(new Map<string, { jobId: string; progress: number; phase: string }>());
   const progressFrameRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    appModeRef.current = options.appMode;
-  }, [options.appMode]);
 
   useEffect(() => {
     languageRef.current = options.language;
@@ -187,9 +180,7 @@ export function useFileWorkflow(options: {
 
     void api.onFileDrop(async (paths) => {
       if (!paths.length) return;
-      if (appModeRef.current === "editor") {
-        setEditorDropRequest({ id: Date.now(), paths });
-      } else if (canImportDroppedFilesRef.current) {
+      if (canImportDroppedFilesRef.current) {
         await addFilePaths(paths);
       }
     }).then((unlisten) => {
@@ -258,7 +249,6 @@ export function useFileWorkflow(options: {
     addPickedFiles,
     applyCompatibleFormat,
     applyFileFormat,
-    editorDropRequest,
     files,
     handleHtmlDrop,
     importFeedback,

@@ -1,45 +1,7 @@
-import type { EditorAssetData, EditorDocumentSummary, EditorDocumentV1, Engine, FileDescription, TargetFormat } from "./contracts";
+import type { Engine, FileDescription, TargetFormat } from "./contracts";
 
 export const PREVIEW_ROOT = "C:\\Users\\Public";
 export const PREVIEW_TEMP = `${PREVIEW_ROOT}\\AppData\\Local\\Temp\\multi-converter-preview`;
-
-export interface PreviewEditorState {
-  documents: EditorDocumentV1[];
-  assets: Map<string, EditorAssetData>;
-}
-
-export function createPreviewEditorState(includeRecentDocument = false): PreviewEditorState {
-  return {
-    documents: includeRecentDocument ? [makePreviewEditorDocument("Brouillon de test")] : [],
-    assets: new Map(),
-  };
-}
-
-export function upsertPreviewDocument(documents: EditorDocumentV1[], document: EditorDocumentV1) {
-  const saved = structuredClone(document);
-  return [saved, ...documents.filter((item) => item.id !== saved.id)];
-}
-
-export function removePreviewDocument(documents: EditorDocumentV1[], id: string) {
-  return documents.filter((item) => item.id !== id);
-}
-
-export function previewRecentDocuments(documents: EditorDocumentV1[]): EditorDocumentSummary[] {
-  return documents.slice(0, 10).map((document) => ({
-    id: document.id,
-    title: document.title,
-    format: document.source?.format ?? "draft",
-    sourcePath: document.source?.path ?? null,
-    updatedAt: document.updatedAt,
-    recoverable: true,
-  }));
-}
-
-export async function delayStaleRecentPreview(enabled: boolean, snapshot: EditorDocumentSummary[]) {
-  if (enabled && snapshot[0]?.title === "Sans titre") {
-    await new Promise((resolve) => setTimeout(resolve, 1_350));
-  }
-}
 
 const audioTargets = [
   previewTarget("mp3", "MP3", "Audio", "Audio compressé universel", 1),
@@ -70,29 +32,6 @@ const textTargets = [
   previewTarget("html", "HTML", "Texte & Documents", "Pages web", 4, "text"),
   previewTarget("json", "JSON", "Texte & Documents", "Données structurées web/API", 6, "text"),
 ];
-
-export function makePreviewEditorDocument(title: string): EditorDocumentV1 {
-  const now = new Date().toISOString();
-  return {
-    schemaVersion: 1,
-    id: crypto.randomUUID(),
-    title,
-    source: null,
-    content: { type: "doc", content: [{ type: "paragraph" }] },
-    header: null,
-    footer: null,
-    page: {
-      format: "a4",
-      orientation: "portrait",
-      marginsMm: { top: 25, right: 20, bottom: 25, left: 20 },
-      numbering: "bottom-center",
-    },
-    assets: [],
-    warnings: [],
-    createdAt: now,
-    updatedAt: now,
-  };
-}
 
 export function makePreviewFile(name: string, extension: string, size: number): FileDescription {
   const categoryId = extension === ".mp4" ? "video" : extension === ".png" ? "images" : "documents";
