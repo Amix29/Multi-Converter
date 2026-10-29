@@ -1,0 +1,165 @@
+{
+  "started": "2026-10-29T22:12:41.970Z",
+  "runtime": "Chromium preview with mock API; no native conversion or OCR inference",
+  "steps": [
+    {
+      "number": 13,
+      "name": "grand-lot",
+      "file": "13-grand-lot.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0001.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0002.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0003.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0004.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0005.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0006.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0007.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0008.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0009.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0010.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "JPEGjpg",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "PNGpng",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "WebPwebp",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "BMPbmp",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "TIFFtiff",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "ICOico",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Choisissez les formats"
+        ]
+      }
+    }
+  ],
+  "checks": {
+    "exportButtonHitTest": {
+      "rect": {
+        "x": 983.4375,
+        "y": 692,
+        "width": 161.171875,
+        "height": 44,
+        "top": 692,
+        "right": 1144.609375,
+        "bottom": 736,
+        "left": 983.4375
+      },
+      "hit": "<aside class=\"page-notice is-success\" role=\"status\" aria-live=\"polite\"><span></span><p>Export terminé dans le dossier Conversions.</p><button type=\"button\" aria-label=\"Fermer\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5Z\"></path></svg></button></aside>",
+      "clickable": false
+    },
+    "consoleErrors": []
+  },
+  "errors": []
+}

@@ -1,5 +1,39 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-10-29 — Comprehensive Audit After Integration
+
+Current local integration: `codex/test`, `98726742`. The
+[comprehensive audit](AUDIT_COMPLET_2026_10_29.md) records current evidence,
+priorities and acceptance criteria; it does not implement the proposed fixes.
+**Overall release gate remains blocked.**
+
+Fresh checks: application/test typechecks, preview build, source structure,
+19 typed native commands / 2 events, production configuration, secret scan,
+repository metadata, 47 frontend unit tests, 148 Rust tests (7 intentionally
+ignored), and all 6 synthetic conversion-matrix tests passed.
+The OCR supply-chain check passed for 71 hashed distributions with complete
+license coverage according to the checker. OCR platform-lock reproducibility
+still fails for the macOS Intel Paddle build.
+
+Fresh dependency audits: desktop production npm 0; complete desktop npm
+4 package findings; site npm 5; Cargo 12 advisory/package occurrences with
+9 distinct advisory IDs. Each of the four Python runtime locks reports
+66 audit entries across 7 packages; the Intel Paddle build lock reports
+42 entries across 3 packages. Counts overlap across platforms and do not
+represent independently demonstrated exploits. See the audit for reachability
+and static-site qualifications.
+
+Twenty-five Chromium screenshots and local mock journeys expose clipped
+format actions, hidden error reasons, and an export notification intercepting
+the next action. A real local Pandoc fixture confirmed an implicit HTTP image
+request during document conversion. Old editor chunks remain in the local
+dist directory but are not referenced by the current interface. These findings
+remain open; raw receipts are retained with the report.
+
+No fresh full Windows release gate, installed Tauri/OCR acceptance, macOS
+universal validation, Linux host validation, publication or remote push was
+performed by this audit. Browser OCR/export/update evidence is simulated.
+
 ## 2026-10-29 — Conversion-Only Cleanup
 
 **Current scope:** document and PDF editing cancelled by the maintainer. Keep

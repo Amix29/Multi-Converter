@@ -10,6 +10,15 @@
 - V1.0.7 objectives:
   - local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images.
 
+## Comprehensive Audit — 2026-10-29
+
+[Full audit and prioritized roadmap](AUDIT_COMPLET_2026_10_29.md) (French):
+conversion/OCR scope, 25 reviewed screenshots, engine fidelity, security,
+dependencies, performance, distribution and acceptance criteria.
+Audited integration: `codex/test` at `98726742`. Verdict: **Block** for release;
+no product fixes were applied by this audit. Raw evidence is in
+[`audits/2026-10-29/`](audits/2026-10-29/).
+
 ## V1.0.7 Source Documents
 
 | Document | Status | Purpose |

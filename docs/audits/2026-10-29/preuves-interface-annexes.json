@@ -1,0 +1,596 @@
+{
+  "started": "2026-10-29T22:07:12.423Z",
+  "runtime": "Chromium preview with mock API; no native conversion or OCR inference",
+  "steps": [
+    {
+      "number": 20,
+      "name": "accueil-parametres",
+      "file": "20-accueil-parametres.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Aller à l'étape 1",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Aller à l'étape 2",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Aller à l'étape 3",
+            "w": 44,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Fermer",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "",
+            "w": 23,
+            "h": 23,
+            "disabled": true
+          },
+          {
+            "name": "Français",
+            "w": 112,
+            "h": 22,
+            "disabled": true
+          },
+          {
+            "name": "Anglais",
+            "w": 112,
+            "h": 22,
+            "disabled": true
+          },
+          {
+            "name": "Espagnol",
+            "w": 112,
+            "h": 22,
+            "disabled": true
+          },
+          {
+            "name": "Allemand",
+            "w": 112,
+            "h": 22,
+            "disabled": true
+          },
+          {
+            "name": "Portugais",
+            "w": 112,
+            "h": 22,
+            "disabled": true
+          },
+          {
+            "name": "Italien",
+            "w": 112,
+            "h": 22,
+            "disabled": true
+          },
+          {
+            "name": "Recherche...",
+            "w": 46,
+            "h": 18,
+            "disabled": true
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Suivant",
+            "w": 92,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Langue",
+          "Paramètres",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 21,
+      "name": "accueil-fin",
+      "file": "21-accueil-fin.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Aller à l'étape 1",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Aller à l'étape 2",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Aller à l'étape 3",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Fermer",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "01Fichiers",
+            "w": 55,
+            "h": 21,
+            "disabled": true
+          },
+          {
+            "name": "02Formats",
+            "w": 55,
+            "h": 21,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 55,
+            "h": 21,
+            "disabled": true
+          },
+          {
+            "name": "",
+            "w": 29,
+            "h": 24,
+            "disabled": true
+          },
+          {
+            "name": "Parcourir",
+            "w": 54,
+            "h": 25,
+            "disabled": true
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Commencer",
+            "w": 126,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Commencez à convertir.",
+          "Multi-Converter",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 22,
+      "name": "confidentialite-signalement",
+      "file": "22-confidentialite-signalement.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Fermer",
+            "w": 44,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Multi-Converter",
+            "w": 110,
+            "h": 20,
+            "disabled": false
+          },
+          {
+            "name": "Disponible dans 5 s",
+            "w": 186,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Disponible dans 5 s",
+            "w": 184,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Avant de publier",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 23,
+      "name": "signalement",
+      "file": "23-signalement.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Fermer",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "BugProblème, régression ou comportement inattendu.",
+            "w": 203,
+            "h": 116,
+            "disabled": false
+          },
+          {
+            "name": "FonctionnalitéNouvelle fonctionnalité, amélioration ou idée produit.",
+            "w": 203,
+            "h": 116,
+            "disabled": false
+          },
+          {
+            "name": "AutreSujet qui ne rentre pas dans bug ou fonctionnalité.",
+            "w": 203,
+            "h": 116,
+            "disabled": false
+          },
+          {
+            "name": "Annuler",
+            "w": 96,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Signaler ou proposer",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 24,
+      "name": "parametres-mise-a-jour",
+      "file": "24-parametres-mise-a-jour.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Fermer",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Français",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Anglais",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Espagnol",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Allemand",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Portugais",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Italien",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Mettre à jour",
+            "w": 86,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Paramètres",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 25,
+      "name": "formats-min-apres-defilement",
+      "file": "25-formats-min-apres-defilement.png",
+      "metrics": {
+        "width": 940,
+        "scrollWidth": 940,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "test.md · 41 MoPDF",
+            "w": 900,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "PDFpdf",
+            "w": 141,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "HTMLhtml",
+            "w": 141,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "JSONjson",
+            "w": 141,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Lancer la conversion",
+            "w": 194,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Choisissez les formats"
+        ]
+      }
+    }
+  ],
+  "checks": {
+    "feedbackPrivacyText": "ISSUE GITHUB PUBLIQUE\nAvant de publier\n\nVotre report ouvrira une issue publique sur le dépôt Multi-Converter. Tout le monde pourra lire ce que vous envoyez.\n\nNe mettez pas de fichiers personnels, d'adresse e-mail privée, de chemin local, de clé, de capture sensible ou d'information que vous ne voulez pas rendre publique.\n\nDisponible dans 5 s\nDisponible dans 5 s",
+    "updateButtons": [
+      "",
+      "Français",
+      "Anglais",
+      "Espagnol",
+      "Allemand",
+      "Portugais",
+      "Italien",
+      "Mettre à jour"
+    ],
+    "footerAfterWheel940": {
+      "rect": {
+        "x": 727.9375,
+        "y": 578.3125,
+        "width": 194.0625,
+        "height": 44,
+        "top": 578.3125,
+        "right": 922,
+        "bottom": 622.3125,
+        "left": 727.9375
+      },
+      "rootScroll": 640,
+      "bodyScroll": 640,
+      "scrollY": 0,
+      "rootOffset": 114
+    },
+    "consoleErrors": []
+  },
+  "errors": []
+}

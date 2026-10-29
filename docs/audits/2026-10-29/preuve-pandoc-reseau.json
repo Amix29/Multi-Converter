@@ -1,0 +1,17 @@
+{
+  "engine": "C:/Users/ryadb/Développement/LATELIER_IA/projets/multi-converter/src-tauri/bundled-engines/pandoc/compatible/bin/pandoc.exe",
+  "args": [
+    "C:\\Users\\ryadb\\.codex\\visualizations\\2026\\10\\29\\01a18989-8184-7e40-a442-fdcad3fead68\\audit-complet\\fixture-image-distante.md",
+    "-o",
+    "C:\\Users\\ryadb\\.codex\\visualizations\\2026\\10\\29\\01a18989-8184-7e40-a442-fdcad3fead68\\audit-complet\\fixture-image-distante.docx"
+  ],
+  "exitCode": 0,
+  "requests": [
+    {
+      "url": "/pixel.png",
+      "time": "2026-10-29T21:58:41.737Z"
+    }
+  ],
+  "stderr": "",
+  "outputExists": true
+}

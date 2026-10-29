@@ -1,0 +1,1371 @@
+{
+  "started": "2026-10-29T21:54:29.021Z",
+  "runtime": "Chromium preview with mock API; no native conversion or OCR inference",
+  "steps": [
+    {
+      "number": 1,
+      "name": "accueil",
+      "file": "01-accueil.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Aller à l'étape 1",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Aller à l'étape 2",
+            "w": 44,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Aller à l'étape 3",
+            "w": 44,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Fermer",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "01Fichiers",
+            "w": 55,
+            "h": 21,
+            "disabled": true
+          },
+          {
+            "name": "02Formats",
+            "w": 55,
+            "h": 21,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 55,
+            "h": 21,
+            "disabled": true
+          },
+          {
+            "name": "",
+            "w": 29,
+            "h": 24,
+            "disabled": true
+          },
+          {
+            "name": "Parcourir",
+            "w": 54,
+            "h": 25,
+            "disabled": true
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Suivant",
+            "w": 92,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Bonjour, bienvenue sur Multi-Converter.",
+          "Multi-Converter",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 2,
+      "name": "fichiers-vides",
+      "file": "02-fichiers-vides.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Signaler un bug ou proposer une fonctionnalité",
+            "w": 210,
+            "h": 46,
+            "disabled": false
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 3,
+      "name": "parametres",
+      "file": "03-parametres.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Fermer",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Français",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Anglais",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Espagnol",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Allemand",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Portugais",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Italien",
+            "w": 231,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Rechercher une mise à jour",
+            "w": 166,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Paramètres",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 4,
+      "name": "lot-importe",
+      "file": "04-lot-importe.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Signaler un bug ou proposer une fonctionnalité",
+            "w": 210,
+            "h": 46,
+            "disabled": false
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer test.md",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer Grand Theft Auto V Screenshot 2026.01.05 - 18.43.12.84.png",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Extraire le texte",
+            "w": 331,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer Red Dead Redemption 2 Screenshot 2026.01.07 - 21.18.44.02.png",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Extraire le texte",
+            "w": 331,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer Enregistrement de l'écran 2025-10-13 184512.mp4",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer Enregistrement de l'écran 2025-11-19 190508.mov",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer Enregistrement de l'écran 2025-11-19 190508 version très longue pour vérifier le découpage.mp4",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer Capture audio réunion client avec un nom beaucoup trop long.wav",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Vider",
+            "w": 76,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Préparer la conversion",
+            "w": 207,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 5,
+      "name": "formats",
+      "file": "05-formats.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "test.md · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "Grand Theft Auto V Screenshot 2026.01.05 - 18.43.12.84.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "Red Dead Redemption 2 Screenshot 2026.01.07 - 21.18.44.02.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "Enregistrement de l'écran 2025-10-13 184512.mp4 · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "Enregistrement de l'écran 2025-11-19 190508.mov · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "Enregistrement de l'écran 2025-11-19 190508 version très longue pour vérifier le découpage.mp4 · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "Capture audio réunion client avec un nom beaucoup trop long.wav · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "PDFpdf",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "HTMLhtml",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "JSONjson",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Choisissez les formats"
+        ]
+      }
+    },
+    {
+      "number": 6,
+      "name": "format-selectionne",
+      "file": "06-format-selectionne.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "test.md · 41 MoPDF",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "PDFpdf",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "HTMLhtml",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "JSONjson",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Lancer la conversion",
+            "w": 194,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Choisissez les formats"
+        ]
+      }
+    },
+    {
+      "number": 7,
+      "name": "conversion-en-cours",
+      "file": "07-conversion-en-cours.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Tous1",
+            "w": 85,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "En cours1",
+            "w": 115,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Terminés0",
+            "w": 117,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Erreurs0",
+            "w": 104,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Annuler",
+            "w": 94,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Conversion en cours"
+        ]
+      }
+    },
+    {
+      "number": 8,
+      "name": "erreur-conversion",
+      "file": "08-erreur-conversion.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Tous1",
+            "w": 85,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "En cours0",
+            "w": 115,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Terminés0",
+            "w": 117,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Erreurs1",
+            "w": 104,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Réessayer",
+            "w": 116,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Nouvelle conversion",
+            "w": 193,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Réessayer les échecs",
+            "w": 201,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Conversion terminée avec erreur"
+        ]
+      }
+    },
+    {
+      "number": 9,
+      "name": "conversion-terminee",
+      "file": "09-conversion-terminee.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Tous1",
+            "w": 85,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "En cours0",
+            "w": 115,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Terminés1",
+            "w": 117,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Erreurs0",
+            "w": 104,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Nouvelle conversion",
+            "w": 193,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Exporter vers Téléchargements",
+            "w": 273,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Choisir un dossier",
+            "w": 176,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Conversion terminée"
+        ]
+      }
+    },
+    {
+      "number": 10,
+      "name": "ocr-resultat",
+      "file": "10-ocr-resultat.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Signaler un bug ou proposer une fonctionnalité",
+            "w": 210,
+            "h": 46,
+            "disabled": false
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Fermer",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Fermer",
+            "w": 90,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Copier",
+            "w": 85,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer Grand Theft Auto V Screenshot 2026.01.05 - 18.43.12.84.png",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Extraire le texte",
+            "w": 331,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Vider",
+            "w": 76,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Préparer la conversion",
+            "w": 207,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Texte de l’image",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 11,
+      "name": "formats-non-pris-en-charge",
+      "file": "11-formats-non-pris-en-charge.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Signaler un bug ou proposer une fonctionnalité",
+            "w": 210,
+            "h": 46,
+            "disabled": false
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer test.md",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer Grand Theft Auto V Screenshot 2026.01.05 - 18.43.12.84.png",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Extraire le texte",
+            "w": 331,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer archive.non-supported",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Vider",
+            "w": 76,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer les fichiers non pris en charge",
+            "w": 323,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Préparer la conversion",
+            "w": 207,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 12,
+      "name": "mobile-320",
+      "file": "12-mobile-320.png",
+      "metrics": {
+        "width": 320,
+        "scrollWidth": 320,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 100,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 100,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 100,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Signaler un bug ou proposer une fonctionnalité",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 258,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer test.md",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer Grand Theft Auto V Screenshot 2026.01.05 - 18.43.12.84.png",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Extraire le texte",
+            "w": 252,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer archive.non-supported",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Vider",
+            "w": 292,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Retirer les fichiers non pris en charge",
+            "w": 292,
+            "h": 53,
+            "disabled": false
+          },
+          {
+            "name": "Préparer la conversion",
+            "w": 292,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Fichiers"
+        ]
+      }
+    },
+    {
+      "number": 13,
+      "name": "grand-lot",
+      "file": "13-grand-lot.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0001.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0002.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0003.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0004.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0005.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0006.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0007.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0008.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0009.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0010.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "JPEGjpg",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "PNGpng",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "WebPwebp",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "BMPbmp",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "TIFFtiff",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "ICOico",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Choisissez les formats"
+        ]
+      }
+    },
+    {
+      "number": 14,
+      "name": "mise-a-jour",
+      "file": "14-mise-a-jour.png",
+      "metrics": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Signaler un bug ou proposer une fonctionnalité",
+            "w": 210,
+            "h": 46,
+            "disabled": false
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Détails",
+            "w": 39,
+            "h": 19,
+            "disabled": false
+          },
+          {
+            "name": "Mettre à jour",
+            "w": 94,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Parcourir",
+            "w": 105,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Fichiers"
+        ]
+      }
+    }
+  ],
+  "checks": {
+    "notificationsCheckboxName": {
+      "labels": [
+        ""
+      ],
+      "ariaLabel": null,
+      "ariaLabelledby": null
+    },
+    "modalBackground": {
+      "inertCount": 0,
+      "navInert": false,
+      "navHidden": false
+    },
+    "formatControls": [
+      "test.md · 41 MoÀ choisir",
+      "Grand Theft Auto V Screenshot 2026.01.05 - 18.43.12.84.png · 41 MoÀ choisir",
+      "Red Dead Redemption 2 Screenshot 2026.01.07 - 21.18.44.02.png · 41 MoÀ choisir",
+      "Enregistrement de l'écran 2025-10-13 184512.mp4 · 41 MoÀ choisir",
+      "Enregistrement de l'écran 2025-11-19 190508.mov · 41 MoÀ choisir",
+      "Enregistrement de l'écran 2025-11-19 190508 version très longue pour vérifier le découpage.mp4 · 41 MoÀ choisir",
+      "Capture audio réunion client avec un nom beaucoup trop long.wav · 41 MoÀ choisir",
+      "PDFpdf",
+      "HTMLhtml",
+      "JSONjson",
+      "Retour"
+    ],
+    "formatSearchLabel": [
+      {
+        "type": "text",
+        "placeholder": "Rechercher un format",
+        "labels": [
+          "Filtrer"
+        ],
+        "ariaLabel": null
+      }
+    ],
+    "resultControls": [
+      "Tous1",
+      "En cours0",
+      "Terminés1",
+      "Erreurs0",
+      "Nouvelle conversion",
+      "Exporter vers Téléchargements",
+      "Choisir un dossier"
+    ],
+    "ocrClipboard": "Texte reconnu localement dans l’image de démonstration.",
+    "overflow320": {
+      "viewport": 320,
+      "scroll": 320
+    },
+    "virtualization": {
+      "total": "2000",
+      "buttons": 10,
+      "scrollHeight": 158022,
+      "clientHeight": 448,
+      "tabIndex": null
+    },
+    "bulkApplyButton": 0,
+    "visibleControlContrast": [
+      {
+        "text": "01Fichiers",
+        "color": "rgb(61, 61, 58)",
+        "background": "rgb(228, 225, 216)",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "parentBackground": "rgb(235, 233, 225)"
+      },
+      {
+        "text": "02Formats",
+        "color": "rgb(20, 20, 19)",
+        "background": "rgb(250, 249, 245)",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "parentBackground": "rgb(235, 233, 225)"
+      },
+      {
+        "text": "03Sortie",
+        "color": "rgb(140, 138, 131)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "parentBackground": "rgb(235, 233, 225)"
+      },
+      {
+        "text": "0/2000 prêts",
+        "color": "rgb(107, 107, 102)",
+        "background": "rgba(0, 0, 0, 0)",
+        "fontSize": "11px",
+        "fontWeight": "640",
+        "parentBackground": "rgba(0, 0, 0, 0)"
+      }
+    ],
+    "consoleErrors": []
+  },
+  "errors": []
+}

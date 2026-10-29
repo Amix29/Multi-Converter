@@ -1,0 +1,875 @@
+{
+  "started": "2026-10-29T21:57:01.151Z",
+  "runtime": "Chromium preview with mock API; no native conversion or OCR inference",
+  "steps": [
+    {
+      "number": 15,
+      "name": "formats-1180x760",
+      "file": "15-formats-1180x760.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "test.md · 41 MoPDF",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "PDFpdf",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "HTMLhtml",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "JSONjson",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Lancer la conversion",
+            "w": 194,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Choisissez les formats"
+        ]
+      }
+    },
+    {
+      "number": 16,
+      "name": "formats-940x640",
+      "file": "16-formats-940x640.png",
+      "metrics": {
+        "width": 940,
+        "scrollWidth": 940,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "test.md · 41 MoPDF",
+            "w": 900,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "PDFpdf",
+            "w": 141,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "HTMLhtml",
+            "w": 141,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "JSONjson",
+            "w": 141,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Lancer la conversion",
+            "w": 194,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Choisissez les formats"
+        ]
+      }
+    },
+    {
+      "number": 17,
+      "name": "formats-1440x900",
+      "file": "17-formats-1440x900.png",
+      "metrics": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "test.md · 41 MoPDF",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "PDFpdf",
+            "w": 146,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "HTMLhtml",
+            "w": 146,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "JSONjson",
+            "w": 146,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Lancer la conversion",
+            "w": 194,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Choisissez les formats"
+        ]
+      }
+    },
+    {
+      "number": 18,
+      "name": "application-lot",
+      "file": "18-application-lot.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": true
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0028.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0029.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0030.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0031.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0032.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0033.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0034.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0035.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0036.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0037.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0038.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0039.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0040.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "conversion-0041.png · 41 MoÀ choisir",
+            "w": 231,
+            "h": 70,
+            "disabled": false
+          },
+          {
+            "name": "Appliquer aux fichiers compatibles",
+            "w": 255,
+            "h": 34,
+            "disabled": false
+          },
+          {
+            "name": "JPEGjpg",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "PNGpng",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "WebPwebp",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "BMPbmp",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "TIFFtiff",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "ICOico",
+            "w": 159,
+            "h": 58,
+            "disabled": false
+          },
+          {
+            "name": "Retour",
+            "w": 88,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Choisissez les formats"
+        ]
+      }
+    },
+    {
+      "number": 19,
+      "name": "export",
+      "file": "19-export.png",
+      "metrics": {
+        "width": 1180,
+        "scrollWidth": 1180,
+        "buttons": [
+          {
+            "name": "01Fichiers",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "02Formats",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "03Sortie",
+            "w": 114,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Paramètres",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Fermer",
+            "w": 44,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Tous1",
+            "w": 85,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "En cours0",
+            "w": 115,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Terminés1",
+            "w": 117,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Erreurs0",
+            "w": 104,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Nouvelle conversion",
+            "w": 193,
+            "h": 44,
+            "disabled": false
+          },
+          {
+            "name": "Ouvrir le dossier",
+            "w": 161,
+            "h": 44,
+            "disabled": false
+          }
+        ],
+        "headings": [
+          "Multi-Converter",
+          "Fichiers enregistrés"
+        ]
+      }
+    }
+  ],
+  "checks": {
+    "formatFooter-1180x760": [
+      {
+        "text": "Retour",
+        "top": 732,
+        "bottom": 776,
+        "viewport": 760,
+        "clippedBy": [
+          {
+            "className": "app-shell  ",
+            "bottom": 760
+          },
+          {
+            "className": "",
+            "bottom": 760
+          },
+          {
+            "className": "",
+            "bottom": 760
+          },
+          {
+            "className": "",
+            "bottom": 760
+          }
+        ]
+      },
+      {
+        "text": "Lancer la conversion",
+        "top": 732,
+        "bottom": 776,
+        "viewport": 760,
+        "clippedBy": [
+          {
+            "className": "app-shell  ",
+            "bottom": 760
+          },
+          {
+            "className": "",
+            "bottom": 760
+          },
+          {
+            "className": "",
+            "bottom": 760
+          },
+          {
+            "className": "",
+            "bottom": 760
+          }
+        ]
+      }
+    ],
+    "formatFooter-940x640": [
+      {
+        "text": "Retour",
+        "top": 689.3125,
+        "bottom": 733.3125,
+        "viewport": 640,
+        "clippedBy": [
+          {
+            "className": "",
+            "bottom": 640
+          },
+          {
+            "className": "",
+            "bottom": 640
+          },
+          {
+            "className": "",
+            "bottom": 640
+          }
+        ]
+      },
+      {
+        "text": "Lancer la conversion",
+        "top": 689.3125,
+        "bottom": 733.3125,
+        "viewport": 640,
+        "clippedBy": [
+          {
+            "className": "",
+            "bottom": 640
+          },
+          {
+            "className": "",
+            "bottom": 640
+          },
+          {
+            "className": "",
+            "bottom": 640
+          }
+        ]
+      }
+    ],
+    "formatFooter-1440x900": [
+      {
+        "text": "Retour",
+        "top": 872,
+        "bottom": 916,
+        "viewport": 900,
+        "clippedBy": [
+          {
+            "className": "app-shell  ",
+            "bottom": 900
+          },
+          {
+            "className": "",
+            "bottom": 900
+          },
+          {
+            "className": "",
+            "bottom": 900
+          },
+          {
+            "className": "",
+            "bottom": 900
+          }
+        ]
+      },
+      {
+        "text": "Lancer la conversion",
+        "top": 872,
+        "bottom": 916,
+        "viewport": 900,
+        "clippedBy": [
+          {
+            "className": "app-shell  ",
+            "bottom": 900
+          },
+          {
+            "className": "",
+            "bottom": 900
+          },
+          {
+            "className": "",
+            "bottom": 900
+          },
+          {
+            "className": "",
+            "bottom": 900
+          }
+        ]
+      }
+    ],
+    "keyboardVirtualRail": [
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0002.png · 41 MoÀ choisir",
+        "scroll": 0
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0003.png · 41 MoÀ choisir",
+        "scroll": 0
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0004.png · 41 MoÀ choisir",
+        "scroll": 0
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0005.png · 41 MoÀ choisir",
+        "scroll": 0
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0006.png · 41 MoÀ choisir",
+        "scroll": 19
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0007.png · 41 MoÀ choisir",
+        "scroll": 287
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0008.png · 41 MoÀ choisir",
+        "scroll": 287
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0009.png · 41 MoÀ choisir",
+        "scroll": 287
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0010.png · 41 MoÀ choisir",
+        "scroll": 335
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0011.png · 41 MoÀ choisir",
+        "scroll": 603
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0012.png · 41 MoÀ choisir",
+        "scroll": 603
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0013.png · 41 MoÀ choisir",
+        "scroll": 603
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0014.png · 41 MoÀ choisir",
+        "scroll": 651
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0015.png · 41 MoÀ choisir",
+        "scroll": 919
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0016.png · 41 MoÀ choisir",
+        "scroll": 919
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0017.png · 41 MoÀ choisir",
+        "scroll": 919
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0018.png · 41 MoÀ choisir",
+        "scroll": 967
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0019.png · 41 MoÀ choisir",
+        "scroll": 1235
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0020.png · 41 MoÀ choisir",
+        "scroll": 1235
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0021.png · 41 MoÀ choisir",
+        "scroll": 1235
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0022.png · 41 MoÀ choisir",
+        "scroll": 1283
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0023.png · 41 MoÀ choisir",
+        "scroll": 1551
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0024.png · 41 MoÀ choisir",
+        "scroll": 1551
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0025.png · 41 MoÀ choisir",
+        "scroll": 1551
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0026.png · 41 MoÀ choisir",
+        "scroll": 1599
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0027.png · 41 MoÀ choisir",
+        "scroll": 1867
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0028.png · 41 MoÀ choisir",
+        "scroll": 1867
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0029.png · 41 MoÀ choisir",
+        "scroll": 1867
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0030.png · 41 MoÀ choisir",
+        "scroll": 1915
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0031.png · 41 MoÀ choisir",
+        "scroll": 2183
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0032.png · 41 MoÀ choisir",
+        "scroll": 2183
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0033.png · 41 MoÀ choisir",
+        "scroll": 2183
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0034.png · 41 MoÀ choisir",
+        "scroll": 2231
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0035.png · 41 MoÀ choisir",
+        "scroll": 2499
+      },
+      {
+        "tag": "BUTTON",
+        "className": "rail-button  ",
+        "text": "conversion-0036.png · 41 MoÀ choisir",
+        "scroll": 2499
+      }
+    ],
+    "bulkApplyControls": [
+      "conversion-0028.png · 41 MoÀ choisir",
+      "conversion-0029.png · 41 MoÀ choisir",
+      "conversion-0030.png · 41 MoÀ choisir",
+      "conversion-0031.png · 41 MoÀ choisir",
+      "conversion-0032.png · 41 MoÀ choisir",
+      "conversion-0033.png · 41 MoÀ choisir",
+      "conversion-0034.png · 41 MoÀ choisir",
+      "conversion-0035.png · 41 MoÀ choisir",
+      "conversion-0036.png · 41 MoÀ choisir",
+      "conversion-0037.png · 41 MoÀ choisir",
+      "conversion-0038.png · 41 MoÀ choisir",
+      "conversion-0039.png · 41 MoÀ choisir",
+      "conversion-0040.png · 41 MoÀ choisir",
+      "conversion-0041.png · 41 MoÀ choisir",
+      "Appliquer aux fichiers compatibles",
+      "JPEGjpg",
+      "PNGpng",
+      "WebPwebp",
+      "BMPbmp",
+      "TIFFtiff",
+      "ICOico",
+      "Retour"
+    ],
+    "afterExportButtons": [
+      "Tous1",
+      "En cours0",
+      "Terminés1",
+      "Erreurs0",
+      "Nouvelle conversion",
+      "Ouvrir le dossier"
+    ],
+    "errorDetailPresent": 0,
+    "errorRowText": "test\n→ PDF\nÉchec\nRéessayer\n100%",
+    "consoleErrors": []
+  },
+  "errors": []
+}

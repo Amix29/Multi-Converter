@@ -1,0 +1,356 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "baseline-browser-mapping": {
+      "name": "baseline-browser-mapping",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1193686,
+          "name": "baseline-browser-mapping",
+          "dependency": "baseline-browser-mapping",
+          "title": "baseline-browser-mapping process termination on invalid input causes denial of service",
+          "url": "https://github.com/advisories/GHSA-w5vr-8v7q-w6rv",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-705"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=2.0.0 <2.11.0"
+        }
+      ],
+      "effects": [],
+      "range": ">=2.0.0 <2.11.0",
+      "nodes": [
+        "node_modules/baseline-browser-mapping"
+      ],
+      "fixAvailable": true
+    },
+    "nanoid": {
+      "name": "nanoid",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1139427,
+          "name": "nanoid",
+          "dependency": "nanoid",
+          "title": "nanoid: custom generators can loop indefinitely when size is zero",
+          "url": "https://github.com/advisories/GHSA-2v37-7h3g-55p8",
+          "severity": "high",
+          "cwe": [
+            "CWE-835"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.3.18"
+        }
+      ],
+      "effects": [],
+      "range": "<3.3.18",
+      "nodes": [
+        "node_modules/nanoid"
+      ],
+      "fixAvailable": true
+    },
+    "next": {
+      "name": "next",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1193676,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js: Unauthenticated Remote Code Execution on windows-hosted servers",
+          "url": "https://github.com/advisories/GHSA-p293-qw3h-jr36",
+          "severity": "critical",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H"
+          },
+          "range": ">=16.0.0 <16.3.3"
+        },
+        {
+          "source": 1193732,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js: Unauthenticated Remote Code Execution in Image Optimization API when AVIF files are used",
+          "url": "https://github.com/advisories/GHSA-2xp9-vwfh-vxw4",
+          "severity": "critical",
+          "cwe": [
+            "CWE-1395"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=16.0.0 <16.3.3"
+        },
+        {
+          "source": 1240609,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js: Remote Code Execution in next/og ImageResponse",
+          "url": "https://github.com/advisories/GHSA-vcvr-r3jv-pc5j",
+          "severity": "critical",
+          "cwe": [
+            "CWE-1395"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=16.2.0 <16.3.6"
+        },
+        {
+          "source": 1241490,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js has cache poisoning of SSG and ISR pages in self-hosted applications",
+          "url": "https://github.com/advisories/GHSA-4jqv-mc3x-m676",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-524"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": ">=16.0.0 <16.3.8"
+        },
+        {
+          "source": 1241492,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js has information disclosure in development server's Model Context Protocol endpoint",
+          "url": "https://github.com/advisories/GHSA-39w2-rjm5-chcv",
+          "severity": "low",
+          "cwe": [
+            "CWE-346"
+          ],
+          "cvss": {
+            "score": 5.4,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N"
+          },
+          "range": ">=16.0.0 <16.3.8"
+        },
+        {
+          "source": 1241493,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js has information disclosure in App Router metadata image routes via dynamicParams bypass",
+          "url": "https://github.com/advisories/GHSA-f87g-xv8r-7p7x",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-346"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+          },
+          "range": ">=16.0.0 <16.3.8"
+        },
+        {
+          "source": 1241495,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js has cache poisoning in SSG/ISR rendering that leads to cross-user content substitution and persistent denial of service",
+          "url": "https://github.com/advisories/GHSA-mcj8-r9mp-w47p",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-524"
+          ],
+          "cvss": {
+            "score": 4.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:L"
+          },
+          "range": ">=16.0.0 <16.3.8"
+        },
+        {
+          "source": 1241496,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js has Server-Side Request Forgery in Image Optimization",
+          "url": "https://github.com/advisories/GHSA-cjq9-62q9-8jv4",
+          "severity": "high",
+          "cwe": [
+            "CWE-918"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:L/A:N"
+          },
+          "range": ">=16.0.0 <16.3.8"
+        },
+        {
+          "source": 1242816,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js: Unauthenticated Remote Code Execution in Image Optimization API when SVG files are used",
+          "url": "https://github.com/advisories/GHSA-2464-fhr4-w9xw",
+          "severity": "critical",
+          "cwe": [
+            "CWE-1395"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=16.0.0 <=16.4.0"
+        },
+        {
+          "source": 1242818,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js: Denial of Service in App Router using Server Actions",
+          "url": "https://github.com/advisories/GHSA-p3m5-59mp-jv5r",
+          "severity": "high",
+          "cwe": [
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=16.0.0 <=16.4.0"
+        },
+        {
+          "source": 1242859,
+          "name": "next",
+          "dependency": "next",
+          "title": "Next.js: Unauthenticated Remote Code Execution in `use cache` functions returning typed arrays",
+          "url": "https://github.com/advisories/GHSA-673q-mjm6-r5xr",
+          "severity": "critical",
+          "cwe": [
+            "CWE-502"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=16.0.0 <=16.4.0"
+        },
+        "sharp"
+      ],
+      "effects": [],
+      "range": "9.5.6-canary.0 - 10.0.7 || 14.3.0-canary.0 - 15.5.23 || 15.6.0-canary.0 - 16.4.0",
+      "nodes": [
+        "node_modules/next"
+      ],
+      "fixAvailable": {
+        "name": "next",
+        "version": "16.4.3",
+        "isSemVerMajor": false
+      }
+    },
+    "sharp": {
+      "name": "sharp",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1193725,
+          "name": "sharp",
+          "dependency": "sharp",
+          "title": "sharp: Vulnerabilities in libheif: GHSA-g89c-p67h-r497 and GHSA-2jg2-4ch7-h545",
+          "url": "https://github.com/advisories/GHSA-rgj7-g3m4-5g8c",
+          "severity": "high",
+          "cwe": [
+            "CWE-122"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<0.35.4"
+        },
+        {
+          "source": 1241331,
+          "name": "sharp",
+          "dependency": "sharp",
+          "title": "sharp : Vulnerability in librsvg dependency CVE-2026-96889",
+          "url": "https://github.com/advisories/GHSA-wq5f-xc86-pv6w",
+          "severity": "high",
+          "cwe": [
+            "CWE-416",
+            "CWE-1395"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<0.35.5"
+        }
+      ],
+      "effects": [
+        "next"
+      ],
+      "range": "<=0.35.5-rc.1",
+      "nodes": [
+        "node_modules/sharp"
+      ],
+      "fixAvailable": {
+        "name": "next",
+        "version": "16.4.3",
+        "isSemVerMajor": false
+      }
+    },
+    "source-map-js": {
+      "name": "source-map-js",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241209,
+          "name": "source-map-js",
+          "dependency": "source-map-js",
+          "title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+          "url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+          "severity": "high",
+          "cwe": [
+            "CWE-1284"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=1.0.0 <1.2.2"
+        }
+      ],
+      "effects": [],
+      "range": "1.0.0 - 1.2.1",
+      "nodes": [
+        "node_modules/source-map-js"
+      ],
+      "fixAvailable": true
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 1,
+      "high": 3,
+      "critical": 1,
+      "total": 5
+    },
+    "dependencies": {
+      "prod": 20,
+      "dev": 17,
+      "optional": 35,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 71
+    }
+  }
+}

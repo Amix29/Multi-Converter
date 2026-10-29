@@ -1,0 +1,221 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@vitest/mocker": {
+      "name": "@vitest/mocker",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1242767,
+          "name": "@vitest/mocker",
+          "dependency": "@vitest/mocker",
+          "title": "Vitest: Code injection via unauthenticated manual mock registration",
+          "url": "https://github.com/advisories/GHSA-qxg6-89mg-rqv8",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-94",
+            "CWE-116",
+            "CWE-306"
+          ],
+          "cvss": {
+            "score": 4.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": ">=2.1.0-beta.7 <4.1.12"
+        },
+        {
+          "source": 1242769,
+          "name": "@vitest/mocker",
+          "dependency": "@vitest/mocker",
+          "title": "Vitest: Windows backslash traversal bypasses the @vitest/mocker redirect allowlist fix",
+          "url": "https://github.com/advisories/GHSA-xp26-3454-mjgp",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": ">=4.1.11 <4.1.12"
+        }
+      ],
+      "effects": [
+        "vitest"
+      ],
+      "range": "<=4.1.11",
+      "nodes": [
+        "node_modules/@vitest/mocker"
+      ],
+      "fixAvailable": {
+        "name": "vitest",
+        "version": "4.1.12",
+        "isSemVerMajor": false
+      }
+    },
+    "source-map-js": {
+      "name": "source-map-js",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241209,
+          "name": "source-map-js",
+          "dependency": "source-map-js",
+          "title": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+          "url": "https://github.com/advisories/GHSA-68fv-2mgg-jv7q",
+          "severity": "high",
+          "cwe": [
+            "CWE-1284"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=1.0.0 <1.2.2"
+        }
+      ],
+      "effects": [],
+      "range": "1.0.0 - 1.2.1",
+      "nodes": [
+        "node_modules/source-map-js"
+      ],
+      "fixAvailable": true
+    },
+    "vite": {
+      "name": "vite",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1242624,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "launch-editor: escapeCmdArgs() omits % escaping on Windows",
+          "url": "https://github.com/advisories/GHSA-698v-4r3x-3vcv",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-78"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=8.0.0 <=8.1.5"
+        },
+        {
+          "source": 1242653,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "launch-editor: Editor CLI flag misinterpretation causing arbitrary command execution for some editors",
+          "url": "https://github.com/advisories/GHSA-r825-w8mm-5pxw",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-88"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=8.0.0 <=8.1.5"
+        },
+        {
+          "source": 1242660,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "launch-editor: `fs.existsSync()` existence check can be bypassed on Windows",
+          "url": "https://github.com/advisories/GHSA-587h-7wmj-h5pm",
+          "severity": "high",
+          "cwe": [
+            "CWE-77"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=8.0.0 <=8.1.5"
+        },
+        {
+          "source": 1242726,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite: Cross origin script execution through Vite custom middleware",
+          "url": "https://github.com/advisories/GHSA-9jrq-w75r-8gcw",
+          "severity": "low",
+          "cwe": [
+            "CWE-80"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=8.0.0 <=8.1.5"
+        },
+        {
+          "source": 1242732,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite: Files outside `server.fs.allow` could be served when project paths match system paths on non-Windows machine",
+          "url": "https://github.com/advisories/GHSA-rq7h-c2jc-7f22",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22",
+            "CWE-284"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=8.0.0 <=8.1.5"
+        }
+      ],
+      "effects": [],
+      "range": "8.0.0 - 8.1.5",
+      "nodes": [
+        "node_modules/vite"
+      ],
+      "fixAvailable": {
+        "name": "vite",
+        "version": "8.3.5",
+        "isSemVerMajor": false
+      }
+    },
+    "vitest": {
+      "name": "vitest",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@vitest/mocker"
+      ],
+      "effects": [],
+      "range": "2.1.0-beta.1 - 4.1.11",
+      "nodes": [
+        "node_modules/vitest"
+      ],
+      "fixAvailable": {
+        "name": "vitest",
+        "version": "4.1.12",
+        "isSemVerMajor": false
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 2,
+      "high": 2,
+      "critical": 0,
+      "total": 4
+    },
+    "dependencies": {
+      "prod": 10,
+      "dev": 98,
+      "optional": 45,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 107
+    }
+  }
+}
