@@ -469,3 +469,10 @@ The actual Windows archive and all models passed the strengthened verifier in
 remain byte-identical; this corrects application verification, not the model or
 worker content. Native Linux/Mac verification and the final package rebuilds
 must use this correction before those candidates are considered current.
+
+Direct Mac bundle inspection also found that the project's root LICENSE and
+NOTICE were absent from application resources. Shared Tauri resource mappings
+now ship them as `licenses/LICENSE.txt` and `licenses/NOTICE.txt` on all three
+platforms. This does not claim completion of final third-party redistribution
+review. The previous Mac DMG image-creation helper stalled after producing an
+incomplete image; it must not be relabelled as a current package.

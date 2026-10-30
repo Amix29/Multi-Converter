@@ -44,7 +44,9 @@
       "binaries/ffprobe"
     ],
     "resources": {
-      "ocr-resources/": "ocr/"
+      "ocr-resources/": "ocr/",
+      "../LICENSE": "licenses/LICENSE.txt",
+      "../NOTICE": "licenses/NOTICE.txt"
     },
     "windows": {
       "nsis": {
