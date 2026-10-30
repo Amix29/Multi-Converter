@@ -4,6 +4,8 @@
 
 The maintainer approved AUDIT_COMPLET_2026_10_29.md and retired Intel macOS.
 Active targets: Windows x64, macOS Apple Silicon (aarch64-apple-darwin), Linux x64.
+The maintainer additionally selected macOS 15 and later after native runtime
+inspection established that minimum; Windows and Linux remain supported.
 Historical V1.0.6 universal assets/evidence stay unchanged. Conversion and local
 PP-OCRv6_medium OCR remain the product; document/PDF editors and cloud inference
 remain excluded. Preserve Vellum Paper, source files and the three-step journey.

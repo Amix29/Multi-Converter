@@ -1,3 +1,4 @@
+import "./test-macos-deployment-target.mjs";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
@@ -197,7 +198,7 @@ assert.deepEqual(
 );
 assert.equal(macosConfig.bundle.createUpdaterArtifacts, true, "macOS releases must create updater artifacts for Darwin automatic updates");
 assert.equal(macosConfig.bundle.macOS.signingIdentity, "-", "unsigned macOS builds should use Tauri ad-hoc signing");
-assert.equal(macosConfig.bundle.macOS.minimumSystemVersion, "11.0", "macOS minimum version must stay explicit");
+assert.equal(macosConfig.bundle.macOS.minimumSystemVersion, "15.0", "macOS minimum must match the approved Apple Silicon runtime policy");
 assert.match(macosChecklist, /## Mac Handoff Readiness/, "macOS checklist must include a clear handoff readiness section");
 assert.match(macosChecklist, /the only expected remaining work should be macOS-only work/, "macOS checklist must make the handoff boundary explicit");
 assert.match(macosChecklist, /npm run test:macos:conversions/, "macOS handoff must include the strict conversion matrix command");

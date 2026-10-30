@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "platform": "linux-x64",
+  "proof": "actual bundled LibreOffice with exact production private-profile settings",
+  "httpControl": true,
+  "cases": [
+    {
+      "field": "INCLUDEPICTURE",
+      "exitCode": 0,
+      "outputExists": true,
+      "requests": [],
+      "sourceUnchanged": true,
+      "stdout": "convert /tmp/mc-office-privacy-bvnikjao/INCLUDEPICTURE.rtf as a Writer document -> /tmp/mc-office-privacy-bvnikjao/INCLUDEPICTURE-output/INCLUDEPICTURE.docx using filter : Office Open XML Text\n",
+      "stderr": ""
+    },
+    {
+      "field": "INCLUDETEXT",
+      "exitCode": 0,
+      "outputExists": true,
+      "requests": [],
+      "sourceUnchanged": true,
+      "stdout": "convert /tmp/mc-office-privacy-bvnikjao/INCLUDETEXT.rtf as a Writer document -> /tmp/mc-office-privacy-bvnikjao/INCLUDETEXT-output/INCLUDETEXT.docx using filter : Office Open XML Text\n",
+      "stderr": ""
+    }
+  ]
+}

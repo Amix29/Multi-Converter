@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "platform": "windows-x64",
+  "sourceCommit": "d406e3e1bbe1926f0be07a76e25d32a29b125db6",
+  "bytes": 999609888,
+  "sha256": "a917c28b195adbc58a51c58b5c1aa8d49c4657a47c3000eb1f9bea89e47eb043",
+  "proof": "Tauri NSIS local build, zlib compression",
+  "updaterSigned": false,
+  "published": false,
+  "installedUiAcceptance": false
+}

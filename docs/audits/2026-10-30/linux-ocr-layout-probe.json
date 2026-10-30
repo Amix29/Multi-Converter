@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "platform": "linux-x64",
+  "networkDenied": true,
+  "fixtureProvenance": "Synthetic non-sensitive benchmark rendered at 1090x1530 pixels; CSS font pixels are not a printed DPI claim",
+  "results": [
+    {
+      "id": "small-14px",
+      "pass": 1,
+      "fontPixels": 14,
+      "inputSha256": "fb2c53e4d422b1d09535fa26bc1f077ecedda547e03c46b79c9bbc0280061c87",
+      "elapsedMs": 13452,
+      "workerRssBytes": 874618880,
+      "characterAccuracy": 1.0,
+      "actual": "la fa\u00e7ade prot\u00e8ge les fichiers locaux. d\u00e9j\u00e0 \u00e9t\u00e9 : accents fran\u00e7ais et caract\u00e8res. every original file remains unchanged.",
+      "expected": "la fa\u00e7ade prot\u00e8ge les fichiers locaux. d\u00e9j\u00e0 \u00e9t\u00e9 : accents fran\u00e7ais et caract\u00e8res. every original file remains unchanged."
+    },
+    {
+      "id": "small-10px",
+      "pass": 1,
+      "fontPixels": 10,
+      "inputSha256": "df4ee6e36843502706ccfd9102b7cb6a3a2c903a96245ac27f5948c873da438b",
+      "elapsedMs": 11910,
+      "workerRssBytes": 837935104,
+      "characterAccuracy": 1.0,
+      "actual": "la fa\u00e7ade prot\u00e8ge les fichiers locaux. d\u00e9j\u00e0 \u00e9t\u00e9 : accents fran\u00e7ais et caract\u00e8res. every original file remains unchanged.",
+      "expected": "la fa\u00e7ade prot\u00e8ge les fichiers locaux. d\u00e9j\u00e0 \u00e9t\u00e9 : accents fran\u00e7ais et caract\u00e8res. every original file remains unchanged."
+    },
+    {
+      "id": "two-columns",
+      "pass": 1,
+      "fontPixels": 24,
+      "inputSha256": "90c804e546ebcf09f0d927ab5a221bda8f489119af450b62479d858041490769",
+      "elapsedMs": 13605,
+      "workerRssBytes": 914341888,
+      "characterAccuracy": 0.8342541436464088,
+      "actual": "colonne gauche premi\u00e8re ligne colonne droite premi\u00e8re ligne colonne gauche deuxi\u00e8me ligne colonne droite deuxi\u00e8me ligne colonne gauche troisi\u00e8me ligne colonne droite troisi\u00e8me ligne",
+      "expected": "colonne gauche premi\u00e8re ligne colonne gauche deuxi\u00e8me ligne colonne gauche troisi\u00e8me ligne colonne droite premi\u00e8re ligne colonne droite deuxi\u00e8me ligne colonne droite troisi\u00e8me ligne"
+    },
+    {
+      "id": "table-grid",
+      "pass": 1,
+      "fontPixels": 24,
+      "inputSha256": "d6614558a3c6d0a4e553eb157f046ec7fd6dff1d84a7933797db3a02c8e78972",
+      "elapsedMs": 35135,
+      "workerRssBytes": 900759552,
+      "characterAccuracy": 1.0,
+      "actual": "produit quantit\u00e9 pommes douze poires six",
+      "expected": "produit quantit\u00e9 pommes douze poires six"
+    },
+    {
+      "id": "small-14px",
+      "pass": 2,
+      "fontPixels": 14,
+      "inputSha256": "fb2c53e4d422b1d09535fa26bc1f077ecedda547e03c46b79c9bbc0280061c87",
+      "elapsedMs": 45670,
+      "workerRssBytes": 921145344,
+      "characterAccuracy": 1.0,
+      "actual": "la fa\u00e7ade prot\u00e8ge les fichiers locaux. d\u00e9j\u00e0 \u00e9t\u00e9 : accents fran\u00e7ais et caract\u00e8res. every original file remains unchanged.",
+      "expected": "la fa\u00e7ade prot\u00e8ge les fichiers locaux. d\u00e9j\u00e0 \u00e9t\u00e9 : accents fran\u00e7ais et caract\u00e8res. every original file remains unchanged."
+    },
+    {
+      "id": "small-10px",
+      "pass": 2,
+      "fontPixels": 10,
+      "inputSha256": "df4ee6e36843502706ccfd9102b7cb6a3a2c903a96245ac27f5948c873da438b",
+      "elapsedMs": 16791,
+      "workerRssBytes": 921575424,
+      "characterAccuracy": 1.0,
+      "actual": "la fa\u00e7ade prot\u00e8ge les fichiers locaux. d\u00e9j\u00e0 \u00e9t\u00e9 : accents fran\u00e7ais et caract\u00e8res. every original file remains unchanged.",
+      "expected": "la fa\u00e7ade prot\u00e8ge les fichiers locaux. d\u00e9j\u00e0 \u00e9t\u00e9 : accents fran\u00e7ais et caract\u00e8res. every original file remains unchanged."
+    },
+    {
+      "id": "two-columns",
+      "pass": 2,
+      "fontPixels": 24,
+      "inputSha256": "90c804e546ebcf09f0d927ab5a221bda8f489119af450b62479d858041490769",
+      "elapsedMs": 17257,
+      "workerRssBytes": 930852864,
+      "characterAccuracy": 0.8342541436464088,
+      "actual": "colonne gauche premi\u00e8re ligne colonne droite premi\u00e8re ligne colonne gauche deuxi\u00e8me ligne colonne droite deuxi\u00e8me ligne colonne gauche troisi\u00e8me ligne colonne droite troisi\u00e8me ligne",
+      "expected": "colonne gauche premi\u00e8re ligne colonne gauche deuxi\u00e8me ligne colonne gauche troisi\u00e8me ligne colonne droite premi\u00e8re ligne colonne droite deuxi\u00e8me ligne colonne droite troisi\u00e8me ligne"
+    },
+    {
+      "id": "table-grid",
+      "pass": 2,
+      "fontPixels": 24,
+      "inputSha256": "d6614558a3c6d0a4e553eb157f046ec7fd6dff1d84a7933797db3a02c8e78972",
+      "elapsedMs": 17054,
+      "workerRssBytes": 922271744,
+      "characterAccuracy": 1.0,
+      "actual": "produit quantit\u00e9 pommes douze poires six",
+      "expected": "produit quantit\u00e9 pommes douze poires six"
+    }
+  ],
+  "proofLimits": "Synthetic raster fixtures; main-process RSS only; initialization is a fresh process, not an OS cold-cache claim.",
+  "freshProcessInitializationMs": 4352
+}

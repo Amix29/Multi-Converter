@@ -6,6 +6,7 @@ import { isX86_64Elf } from "./lib/elf.mjs";
 import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 import { readPdfiumLock, validateLockedPdfiumTree } from "./lib/pdfium-package.mjs";
 import { readPlatformProvenance } from "./lib/platform-provenance.mjs";
+import { validateMacosDeploymentTargets } from "./lib/macos-deployment-target.mjs";
 
 const root = process.cwd();
 const manifestPath = path.join(root, "src-tauri", "engines-manifest.json");
@@ -53,6 +54,14 @@ for (const engine of advancedEngines) {
 }
 
 validateNoStaleBundledEngines(manifest);
+
+if (platform === "macos-aarch64") {
+  const config = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "tauri.macos.conf.json"), "utf8"));
+  errors.push(...validateMacosDeploymentTargets(
+    [bundledEnginesDir, ...baseBinaries.map(({ filePath }) => filePath)],
+    config.bundle.macOS.minimumSystemVersion,
+  ));
+}
 
 if (requireAdvancedEngines && advancedEngines.length === 0) {
   errors.push(`No advanced bundled engines declared for ${platform}; strict release validation requires platform-specific advanced engines.`);

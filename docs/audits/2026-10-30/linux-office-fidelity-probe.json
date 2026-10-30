@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "platform": "linux-x64",
+  "fixture": "synthetic RTF with French/Cyrillic, two-cell table and embedded 16x16 PNG",
+  "proof": "actual bundled LibreOffice with exact production private-profile settings",
+  "routes": [
+    {
+      "sourceFormat": "rtf",
+      "targetFormat": "docx",
+      "durationMs": 32437,
+      "allTextMarkersPreserved": true,
+      "tableCount": 1,
+      "cellCount": 2,
+      "embeddedPngCount": 1,
+      "sourceUnchanged": true
+    },
+    {
+      "sourceFormat": "docx",
+      "targetFormat": "odt",
+      "durationMs": 34904,
+      "allTextMarkersPreserved": true,
+      "tableCount": 1,
+      "cellCount": 2,
+      "embeddedPngCount": 1,
+      "sourceUnchanged": true
+    },
+    {
+      "sourceFormat": "odt",
+      "targetFormat": "docx",
+      "durationMs": 32584,
+      "allTextMarkersPreserved": true,
+      "tableCount": 1,
+      "cellCount": 2,
+      "embeddedPngCount": 1,
+      "sourceUnchanged": true
+    }
+  ]
+}

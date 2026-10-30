@@ -60,6 +60,8 @@ try {
   const clean = results.filter(({ id }) => id.startsWith("clean-"));
   const difficult = results.filter(({ kind, id }) => kind === "ocr-image" && !id.startsWith("clean-") && id !== "blank");
   const measured = results.filter(({ elapsedMs }) => elapsedMs > 0);
+  const memorySamples = results.map(({ workerWorkingSetBytes }) => workerWorkingSetBytes)
+    .filter((value) => Number.isFinite(value) && value > 0);
   const report = {
     schemaVersion: 1,
     platform,
@@ -67,8 +69,7 @@ try {
     directExecutable: directExecutable ? path.relative(root, directExecutable).replaceAll("\\", "/") : null,
     runtimeExtractionMs: extractionMs,
     runtimeInitializationMs: worker.initializationMs,
-    peakWorkerWorkingSetBytes: results.some(({ workerWorkingSetBytes }) => workerWorkingSetBytes !== null)
-      ? Math.max(...results.map(({ workerWorkingSetBytes }) => workerWorkingSetBytes ?? 0)) : null,
+    peakWorkerWorkingSetBytes: memorySamples.length ? Math.max(...memorySamples) : null,
     memoryMeasurement: "Maximum of sampled main-process RSS/working-set values; child processes excluded.",
     medianRecognitionMs: median(measured.map(({ elapsedMs }) => elapsedMs)),
     cleanMean: clean.length ? mean(clean.map(({ accuracy }) => accuracy)) : null,

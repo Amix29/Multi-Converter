@@ -242,7 +242,7 @@ This section is for anyone who wants to run the project locally, fix a bug, sugg
 ### Prerequisites
 
 - Windows x64 for Windows development and packaging.
-- macOS 11 or newer with Xcode Command Line Tools is required for macOS packaging and validation.
+- macOS 15 or newer on Apple Silicon with Xcode Command Line Tools is required for V1.0.7 macOS packaging and validation.
 - Linux x64 with WebKitGTK 4.1 development packages is required for Linux AppImage packaging and host validation.
 - Node.js `>=24 <25` and npm `>=11 <12`.
 - Rust and Cargo.

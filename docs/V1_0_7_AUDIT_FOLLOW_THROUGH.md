@@ -335,6 +335,15 @@ and earlier signed libvips probe copy are not current-application proof.
 
 ## Native packaging and OCR startup checkpoint
 
+The maintainer subsequently approved **macOS 15 and later on Apple Silicon**.
+Static inspection of 671 ARM64 Mach-O files found a maximum declared minimum of
+15.0 in libvips and its libraries, and no foreign thin Mach-O files. The macOS
+configuration, README and packaging contract now match that policy. Bundled
+engine validation reads bounded Mach-O headers, including universal ARM slices,
+and rejects resources requiring a newer OS than the advertised target. Malformed
+headers and out-of-bounds slices are rejected. This does not establish acceptance
+on a real macOS 15 host; the available host runs 26.6.2.
+
 The `ef94503e` Linux AppImage is built and copied back: 1,176,226,296 bytes,
 SHA-256 `969288445b703bfd41fa9afb9d24ec1d6a367ad8d167aaa3b387c2fa2fa56c2f`.
 Its embedded OCR ZIP matches the reproducible archive and the extracted FFmpeg
@@ -350,9 +359,20 @@ measured a valid ready message at 36,408 ms under denied networking and 1,466 ms
 on the subsequent warm launch. The native Mac startup deadline is now 90 seconds;
 Windows/Linux retain 30 seconds, recognition retains 180 seconds, and cancellation
 is still checked every 50 ms. The corpus harness uses the same platform deadline
-and includes bounded stderr in startup failures. The native Mac rerun is pending.
+and includes bounded stderr in startup failures. The native Mac rerun passed all
+40 cases: clean/difficult means 100%, median 2,216 ms, extraction 4,805 ms,
+initialization 47,313 ms, 82 network observations and no connections under denied
+networking. Its reported RSS of zero was invalid: no positive sample was available.
+The harness now reports null for absent samples, including normalization-only
+cases with no memory field. Mac RSS calibration remains open; no zero-memory or
+measured reservation claim is made.
 The first application compiled but bundling failed while clearing xattrs; this
 is not a DMG success. The original attempts remain in the receipts.
+
+The xattr failure was reproduced on read-only libvips resources. Packaging now
+preserves executable bits while adding owner-write permission to copied Mac files.
+The next retry encountered old read-only copies in the failed build cache; that
+owned temporary cache must be made writable before rebuilding from source.
 
 An opt-in Rust integration test now extracts the actual prepared host OCR archive
 with the production extractor, verifies every runtime/model hash and checks host
@@ -375,3 +395,28 @@ No direct `VariantStrIter`/`iter_str` application use was found; this does not p
 absence of transitive reachability. That advisory remains open, without ignores.
 Sources: [RustSec](https://rustsec.org/advisories/RUSTSEC-2024-0429),
 [upstream correction](https://github.com/gtk-rs/gtk-rs-core/pull/1343).
+
+The final `d406e3e1` Windows NSIS candidate is 999,609,888 bytes, SHA-256
+`a917c28b195adbc58a51c58b5c1aa8d49c4657a47c3000eb1f9bea89e47eb043`.
+The corresponding Linux AppImage is 1,176,492,536 bytes, SHA-256
+`9243b28503f1ed40ab320a8e2cf89b43df4d7e5e33821422680c1dec8aa34763`.
+Both are local unsigned packages with installed acceptance pending. Linux was
+built on Ubuntu 24.04; that does not establish the CI Ubuntu 22.04 baseline.
+Its final inspection needed a distinct extraction directory after an existing
+checkpoint directory correctly refused reuse; the actual build and copy passed.
+
+Additional actual LibreOffice Linux fixtures passed with the exact private-profile
+settings: RTF INCLUDEPICTURE and INCLUDETEXT made zero HTTP requests after a
+positive control; RTF → DOCX → ODT → DOCX retained French/Cyrillic markers, one
+two-cell table and one embedded PNG at every step, with unchanged inputs. These
+are structural fixtures, not visual Office parity or a macro-execution corpus.
+
+Expanded isolated-network Linux OCR probes at 1090×1530 pixels recognized the
+14 px and 10 px synthetic text and the simple table grid at 100% on both passes.
+The two-column fixture exposed **row-wise interleaving across columns**: every
+line is recognized but expected column order scores 83.43%. Automatic column
+reordering must distinguish borderless tables and mixed layouts before adoption;
+the existing worker output is preserved and this limitation stays open.
+Fresh-process initialization was 4,352 ms; sampled RSS reached 887.7 MiB.
+Concurrent native builds affected timings, so these runs do not establish a warm
+speedup or uncontended performance, nor printed-DPI small-font parity.
