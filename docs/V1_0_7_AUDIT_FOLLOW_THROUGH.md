@@ -154,8 +154,6 @@ and its signature were downloaded and verified against GitHub asset digests
 and the configured updater public key before extraction. These baseline engines
 are test/build inputs; they do not certify a newly built 1.0.7 AppImage.
 
-## Remaining authorized work
-
 ## SVG resource correction
 
 A new synthetic regression failed before the fix: converting a SVG referencing
@@ -170,6 +168,32 @@ URIs and percent-encoded sibling names retain their pixels in the regression.
 SVGZ under a `.svg` name is refused before the unbounded upstream decompressor.
 Windows now passes 184 Rust units (12 opt-in exclusions) and all-target Clippy
 with denied warnings; Linux SVG-specific execution is still pending.
+
+## Real Linux engines and OCR preparation
+
+The full Linux conversion gate passed with all four real advanced engines and
+FFmpeg/ffprobe 8.1.1: 11 native conversion groups plus the HTTP control/blocked
+protocol fixture. LibreOffice/Pandoc/libvips originate in the signature-verified
+public V1.0.6 AppImage. PDFium was rebuilt from the locked Chromium 7825 library
+and wrapper 0.4.0 source with Rust 1.96. The validator had retained a hardcoded
+0.3.0 expectation on Unix; it now reads the required wrapper version from the
+same provenance lock. Candidate ZIPs and their manifest are local, unpublished
+test inputs using `example.invalid`; they are not public release assets.
+
+The official Linux OCR reference runtime built with pinned uv 0.11.21,
+Python 3.12.10 and hash-locked wheels. Two package creations were byte-identical:
+5,750 runtime files / 1,482,506,739 bytes; aggregate SHA-256
+`8b53953e8bc8ffa7c32fbe5b450dae3df15d98daf2aab2f833efde16f7ad6d47`;
+archive SHA-256 `7693f56b05aec6ba4633872d479eb847566922ffc9432b7366eed6d68c321710`.
+Its inventory covers 71 distributions / 103 license files, with no missing license
+files or unresolved metadata. Platform selection and inventory are temporary
+Linux build outputs; they have not replaced the Windows release selection.
+
+The first direct-runtime corpus run used a Linux user/network namespace; its
+control confirmed outbound network unavailable (errno 101). All seven clean
+language groups scored 100%; the run then exposed incorrect non-Windows FFmpeg
+sidecar names in the test runner at scanned-PDF cropping. It is recorded as a
+failed corpus run, not a complete Linux OCR pass. Correction/rerun is pending.
 
 ## Remaining authorized work
 

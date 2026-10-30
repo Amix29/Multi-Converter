@@ -5,12 +5,14 @@ import process from "node:process";
 import { isX86_64Elf } from "./lib/elf.mjs";
 import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 import { readPdfiumLock, validateLockedPdfiumTree } from "./lib/pdfium-package.mjs";
+import { readPlatformProvenance } from "./lib/platform-provenance.mjs";
 
 const root = process.cwd();
 const manifestPath = path.join(root, "src-tauri", "engines-manifest.json");
 const bundledEnginesDir = path.join(root, "src-tauri", "bundled-engines");
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 const expectedVersion = readRequiredFfmpegVersion(root);
+const pdfiumWrapperVersion = (await readPlatformProvenance(root)).pdfium.wrapperVersion;
 const platform = process.env.MULTI_CONVERTER_ENGINE_PLATFORM?.trim() || hostEnginePlatform();
 const baseBinaries = baseBinariesForPlatform(platform);
 const skipExecutableSmoke = process.env.MULTI_CONVERTER_SKIP_ENGINE_SMOKE === "1";
@@ -177,7 +179,7 @@ function validateEngineSmoke(engineRoot, engine) {
     pandoc: ["--version"],
     libvips: ["--version"],
   }[engine.id];
-  if (smoke) validateExecutable(engine.id, executable, smoke, engine.id === "pdfium" ? "pdfium-render-wrapper 0.3.0" : null, path.dirname(executable));
+  if (smoke) validateExecutable(engine.id, executable, smoke, engine.id === "pdfium" ? `pdfium-render-wrapper ${pdfiumWrapperVersion}` : null, path.dirname(executable));
 }
 
 function primaryExecutable(engineRoot, engine) {
