@@ -38,6 +38,8 @@ no product fixes were applied by this audit. Raw evidence is in
 
 ## Project Architecture
 
+- [`OPEN_DESIGN_SYSTEM.md`](OPEN_DESIGN_SYSTEM.md) records the approved light/dark
+  identity, its native Open Design registration and validation evidence.
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) defines the desktop, site, branding,
   conversion, OCR and standalone repository boundaries.
 - [`LOCAL_WORKSPACE.md`](LOCAL_WORKSPACE.md) records the standalone location,

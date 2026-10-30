@@ -1,0 +1,431 @@
+*{
+  box-sizing: border-box}
+  html{
+    scroll-behavior: smooth;
+    scroll-padding-top: 100px}
+    body{
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 16px/1.58 var(--font-body)}
+      a{
+        color: var(--vlm-accent-strong);
+        text-underline-offset: 4px}
+        button,input,select,textarea{
+          font: inherit}
+          button,a,input,select,textarea{
+            touch-action: manipulation}
+            button{
+              cursor: pointer}
+              button:disabled{
+                cursor: not-allowed}
+                button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+                  outline: 2px solid var(--vlm-focus);
+                  outline-offset: 3px}
+                  [hidden]{
+                    display: none!important}
+                    svg{
+                      width: 18px;
+                      height: 18px;
+                      fill: none;
+                      stroke: currentColor;
+                      stroke-width: 1.7;
+                      stroke-linecap: round;
+                      stroke-linejoin: round}
+                      .skip{
+                        position: absolute;
+                        top: -100px;
+                        left: 20px;
+                        z-index: 10;
+                        background: var(--surface);
+                        padding: 12px}
+                        .skip:focus{
+                          top: 12px}
+                          .masthead{
+                            min-height: 88px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 20px;
+                            padding: 16px 40px;
+                            border-bottom: 1px solid var(--border);
+                            background: var(--surface)}
+                            .brand{
+                              display: flex;
+                              align-items: center;
+                              gap: 12px;
+                              color: var(--fg);
+                              font-size: 18px;
+                              font-weight: 760;
+                              text-decoration: none}
+                              .brand small{
+                                display: block;
+                                font-size: 12px;
+                                font-weight: 430;
+                                color: var(--muted);
+                                letter-spacing: .02em}
+                                .local-badge{
+                                  display: flex;
+                                  gap: 8px;
+                                  align-items: center;
+                                  font-size: 12px;
+                                  color: var(--muted)}
+                                  .book{
+                                    display: grid;
+                                    grid-template-columns: 224px minmax(0,1fr);
+                                    max-width: 1600px;
+                                    margin: auto}
+                                    .sidebar{
+                                      padding: 42px 26px 20px 36px;
+                                      align-self: start;
+                                      position: sticky;
+                                      top: 0;
+                                      height: calc(100vh - 88px);
+                                      border-right: 1px solid var(--border)}
+                                      .eyebrow{
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                        margin: 0 0 16px;
+                                        font-size: 11px;
+                                        font-weight: 640;
+                                        text-transform: uppercase;
+                                        letter-spacing: .12em;
+                                        color: var(--muted)}
+                                        .sidebar nav{
+                                          display: grid;
+                                          gap: 6px}
+                                          .sidebar nav a{
+                                            display: flex;
+                                            align-items: center;
+                                            gap: 12px;
+                                            min-height: 44px;
+                                            border-radius: 10px;
+                                            text-decoration: none;
+                                            color: var(--fg);
+                                            font-size: 13px}
+                                            .sidebar nav a:hover{
+                                              color: var(--vlm-accent-strong);
+                                              background: var(--vlm-accent-soft)}
+                                              .sidebar nav span{
+                                                font: 11px var(--font-mono);
+                                                color: var(--muted)}
+                                                .sidebar-note{
+                                                  margin-top: 56px;
+                                                  padding-top: 24px;
+                                                  border-top: 1px solid var(--border);
+                                                  font-size: 12px;
+                                                  color: var(--muted)}
+                                                  .sidebar-note strong{
+                                                    color: var(--fg);
+                                                    font-size: 13px}
+                                                    .sidebar-note p{
+                                                      margin: 10px 0}
+                                                      main{
+                                                        min-width: 0;
+                                                        padding: 0 clamp(24px,4.5vw,76px)}
+                                                        .hero{
+                                                          padding: 68px 0 0;
+                                                          border-bottom: 1px solid var(--border)}
+                                                          .coral-dot{
+                                                            width: 7px;
+                                                            height: 7px;
+                                                            background: var(--vlm-accent);
+                                                            border-radius: 50%}
+                                                            h1,h2,h3,p{
+                                                              overflow-wrap: anywhere}
+                                                              h1{
+                                                                font: 430 clamp(44px,5.4vw,82px)/1.02 var(--font-display);
+                                                                letter-spacing: -.045em;
+                                                                margin: 24px 0}
+                                                                h1 em,.display-sample em{
+                                                                  font-weight: 430;
+                                                                  color: var(--vlm-accent-strong)}
+                                                                  .intro{
+                                                                    font-size: 16px;
+                                                                    color: var(--vlm-text-soft);
+                                                                    max-width: 60ch;
+                                                                    margin: 0 0 44px}
+                                                                    .hero-footer{
+                                                                      display: flex;
+                                                                      flex-wrap: wrap;
+                                                                      justify-content: space-between;
+                                                                      gap: 12px;
+                                                                      padding: 20px 0;
+                                                                      color: var(--muted);
+                                                                      font-size: 11px}
+                                                                      .section-heading{
+                                                                        display: flex;
+                                                                        align-items: center;
+                                                                        gap: 20px;
+                                                                        margin-bottom: 24px}
+                                                                        .section-heading .eyebrow{
+                                                                          margin: 0 0 8px}
+                                                                          .chapter{
+                                                                            color: var(--vlm-accent-strong);
+                                                                            font: 14px var(--font-mono);
+                                                                            padding-top: 4px;
+                                                                            align-self: start}
+                                                                            .section-heading h2{
+                                                                              margin: 0;
+                                                                              font-size: clamp(23px,2.7vw,32px);
+                                                                              font-weight: 640;
+                                                                              line-height: 1.18;
+                                                                              letter-spacing: -.025em}
+                                                                              main>section:not(.hero){
+                                                                                padding: 52px 0 0;
+                                                                                scroll-margin-top: 24px}
+                                                                                .section-copy{
+                                                                                  max-width: 65ch;
+                                                                                  color: var(--vlm-text-soft);
+                                                                                  font-size: 15px;
+                                                                                  margin: 0 0 28px}
+                                                                                  .swatches{
+                                                                                    display: grid;
+                                                                                    grid-template-columns: repeat(4,minmax(0,1fr));
+                                                                                    gap: 20px 16px;
+                                                                                    margin: 28px 0 32px}
+                                                                                    .swatch>div{
+                                                                                      height: 88px;
+                                                                                      border-radius: 12px;
+                                                                                      border: 1px solid var(--border)}
+                                                                                      .swatch strong,.swatch code{
+                                                                                        display: block;
+                                                                                        margin-top: 8px;
+                                                                                        font-size: 12px}
+                                                                                        .swatch code{
+                                                                                          margin-top: 3px;
+                                                                                          font: 11px var(--font-mono);
+                                                                                          color: var(--muted)}
+                                                                                          .two-up{
+                                                                                            display: grid;
+                                                                                            grid-template-columns: repeat(2,minmax(0,1fr));
+                                                                                            gap: 20px;
+                                                                                            margin-top: 20px}
+                                                                                            .paper-card{
+                                                                                              min-width: 0;
+                                                                                              padding: 26px;
+                                                                                              border: 1px solid var(--border);
+                                                                                              border-radius: var(--radius-lg);
+                                                                                              background: var(--surface);
+                                                                                              box-shadow: var(--vlm-edge-paper)}
+                                                                                              h3{
+                                                                                                font-size: 18px;
+                                                                                                font-weight: 640;
+                                                                                                letter-spacing: -.015em;
+                                                                                                line-height: 1.35;
+                                                                                                margin: 0 0 12px}
+                                                                                                .paper-card .eyebrow{
+                                                                                                  font-size: 10px;
+                                                                                                  margin-bottom: 12px}
+                                                                                                  .paper-card p{
+                                                                                                    margin: 0 0 20px;
+                                                                                                    color: var(--vlm-text-soft);
+                                                                                                    font-size: 14px}
+                                                                                                    .paper-card a{
+                                                                                                      font-size: 13px;
+                                                                                                      font-weight: 640}
+                                                                                                      .accent-card{
+                                                                                                        background: var(--vlm-accent-soft);
+                                                                                                        border-color: var(--vlm-accent-border)}
+                                                                                                        .button{
+                                                                                                          min-height: 44px;
+                                                                                                          display: inline-flex;
+                                                                                                          align-items: center;
+                                                                                                          justify-content: center;
+                                                                                                          gap: 14px;
+                                                                                                          border: 1px solid var(--control-border);
+                                                                                                          border-radius: var(--radius-sm);
+                                                                                                          padding: 10px 18px;
+                                                                                                          background: var(--surface);
+                                                                                                          color: var(--fg);
+                                                                                                          font-size: 13px;
+                                                                                                          font-weight: 640;
+                                                                                                          text-decoration: none;
+                                                                                                          transition: background var(--motion-fast) var(--ease-standard),transform var(--motion-fast) var(--ease-standard)}
+                                                                                                          .button:hover{
+                                                                                                            background: var(--vlm-surface-hover)}
+                                                                                                            .button:active{
+                                                                                                              transform: translateY(1px)}
+                                                                                                              .primary{
+                                                                                                                background: var(--accent);
+                                                                                                                border-color: var(--accent);
+                                                                                                                color: var(--accent-on)}
+                                                                                                                .primary:hover{
+                                                                                                                  background: var(--accent-hover)}
+                                                                                                                  .secondary{
+                                                                                                                    background: var(--vlm-surface-pure)}
+                                                                                                                    .quiet{
+                                                                                                                      border-color: transparent;
+                                                                                                                      background: transparent}
+                                                                                                                      .danger{
+                                                                                                                        color: var(--danger);
+                                                                                                                        border-color: var(--danger);
+                                                                                                                        background: var(--vlm-danger-bg)}
+                                                                                                                        .button:disabled{
+                                                                                                                          background: var(--vlm-canvas-deep);
+                                                                                                                          border-color: var(--border);
+                                                                                                                          color: var(--muted)}
+                                                                                                                          .button-row{
+                                                                                                                            display: flex;
+                                                                                                                            flex-wrap: wrap;
+                                                                                                                            gap: 10px}
+                                                                                                                            .compact{
+                                                                                                                              padding: 8px 12px}
+                                                                                                                              .type-stage{
+                                                                                                                                display: grid;
+                                                                                                                                grid-template-columns: 1.25fr 1fr;
+                                                                                                                                gap: 24px;
+                                                                                                                                align-items: center;
+                                                                                                                                border-top: 1px solid var(--border);
+                                                                                                                                border-bottom: 1px solid var(--border);
+                                                                                                                                padding: 32px 0}
+                                                                                                                                .display-sample{
+                                                                                                                                  font: 430 clamp(32px,3.4vw,48px)/1.08 var(--font-display);
+                                                                                                                                  letter-spacing: -.035em;
+                                                                                                                                  margin: 0}
+                                                                                                                                  .type-ui{
+                                                                                                                                    padding-left: 24px;
+                                                                                                                                    border-left: 1px solid var(--border)}
+                                                                                                                                    .type-ui h3{
+                                                                                                                                      font-size: 22px}
+                                                                                                                                      .type-ui p{
+                                                                                                                                        font-size: 15px;
+                                                                                                                                        margin: 0 0 20px}
+                                                                                                                                        .type-meta{
+                                                                                                                                          font-size: 12px;
+                                                                                                                                          color: var(--muted)}
+                                                                                                                                          .type-scale{
+                                                                                                                                            display: flex;
+                                                                                                                                            justify-content: space-between;
+                                                                                                                                            gap: 20px;
+                                                                                                                                            margin: 22px 0}
+                                                                                                                                            .type-scale span{
+                                                                                                                                              font-size: 11px;
+                                                                                                                                              color: var(--muted)}
+                                                                                                                                              .type-scale b{
+                                                                                                                                                display: block;
+                                                                                                                                                font-size: 24px;
+                                                                                                                                                color: var(--fg);
+                                                                                                                                                font-weight: 540;
+                                                                                                                                                font-variant-numeric: tabular-nums}
+                                                                                                                                                .caption{
+                                                                                                                                                  font-size: 12px!important;
+                                                                                                                                                  color: var(--muted)!important;
+                                                                                                                                                  margin: 16px 0 0!important}
+                                                                                                                                                  .spacing-samples{
+                                                                                                                                                    display: flex;
+                                                                                                                                                    flex-wrap: wrap;
+                                                                                                                                                    gap: 16px;
+                                                                                                                                                    margin-top: 24px}
+                                                                                                                                                    .spacing-samples span{
+                                                                                                                                                      display: grid;
+                                                                                                                                                      gap: 12px;
+                                                                                                                                                      font: 11px var(--font-mono);
+                                                                                                                                                      color: var(--muted)}
+                                                                                                                                                      .spacing-samples i{
+                                                                                                                                                        display: block;
+                                                                                                                                                        height: 32px;
+                                                                                                                                                        background: var(--vlm-accent);
+                                                                                                                                                        border-radius: 3px}
+                                                                                                                                                        .radius-samples{
+                                                                                                                                                          display: flex;
+                                                                                                                                                          flex-wrap: wrap;
+                                                                                                                                                          gap: 12px;
+                                                                                                                                                          margin-top: 24px}
+                                                                                                                                                          .radius-samples span{
+                                                                                                                                                            width: 46px;
+                                                                                                                                                            height: 46px;
+                                                                                                                                                            border: 1px solid var(--control-border);
+                                                                                                                                                            display: grid;
+                                                                                                                                                            place-items: center;
+                                                                                                                                                            font-size: 11px}
+                                                                                                                                                            #composants>.paper-card{
+                                                                                                                                                              margin-top: 24px}
+                                                                                                                                                              label,legend{
+                                                                                                                                                                display: block;
+                                                                                                                                                                font-size: 13px;
+                                                                                                                                                                font-weight: 540;
+                                                                                                                                                                margin-bottom: 8px}
+                                                                                                                                                                select,textarea{
+                                                                                                                                                                  width: 100%;
+                                                                                                                                                                  min-height: 44px;
+                                                                                                                                                                  border: 1px solid var(--control-border);
+                                                                                                                                                                  border-radius: 10px;
+                                                                                                                                                                  padding: 10px 12px;
+                                                                                                                                                                  background: var(--vlm-surface-pure);
+                                                                                                                                                                  color: var(--fg);
+                                                                                                                                                                  font-size: 13px}
+                                                                                                                                                                  .quality{
+                                                                                                                                                                    border: 0;
+                                                                                                                                                                    padding: 0;
+                                                                                                                                                                    margin: 24px 0 0;
+                                                                                                                                                                    display: flex;
+                                                                                                                                                                    flex-wrap: wrap;
+                                                                                                                                                                    gap: 8px}
+                                                                                                                                                                    .quality legend{
+                                                                                                                                                                      margin-bottom: 12px}
+                                                                                                                                                                      .quality label{
+                                                                                                                                                                        position: relative;
+                                                                                                                                                                        display: flex;
+                                                                                                                                                                        align-items: center;
+                                                                                                                                                                        min-height: 44px;
+                                                                                                                                                                        cursor: pointer;
+                                                                                                                                                                        margin: 0}
+                                                                                                                                                                        .quality input{
+                                                                                                                                                                          position: absolute;
+                                                                                                                                                                          opacity: 0;
+                                                                                                                                                                          width: 1px;
+                                                                                                                                                                          height: 1px}
+                                                                                                                                                                          .quality span{
+                                                                                                                                                                            border: 1px solid var(--control-border);
+                                                                                                                                                                            border-radius: 999px;
+                                                                                                                                                                            padding: 10px 12px;
+                                                                                                                                                                            font-size: 12px}
+                                                                                                                                                                            .quality input:checked+span{
+                                                                                                                                                                              color: var(--vlm-accent-strong);
+                                                                                                                                                                              background: var(--vlm-accent-soft);
+                                                                                                                                                                              border-color: var(--vlm-accent-strong)}
+                                                                                                                                                                              .quality input:focus-visible+span{
+                                                                                                                                                                                outline: 2px solid var(--vlm-focus);
+                                                                                                                                                                                outline-offset: 3px}
+                                                                                                                                                                                .status-list{
+                                                                                                                                                                                  display: flex;
+                                                                                                                                                                                  flex-direction: column;
+                                                                                                                                                                                  align-items: flex-start;
+                                                                                                                                                                                  gap: 12px}
+                                                                                                                                                                                  .status{
+                                                                                                                                                                                    display: inline-flex;
+                                                                                                                                                                                    gap: 6px;
+                                                                                                                                                                                    align-items: center;
+                                                                                                                                                                                    padding: 5px 9px;
+                                                                                                                                                                                    border-radius: 999px;
+                                                                                                                                                                                    font-size: 11px;
+                                                                                                                                                                                    font-weight: 540;
+                                                                                                                                                                                    white-space: nowrap}
+                                                                                                                                                                                    .neutral{
+                                                                                                                                                                                      background: var(--vlm-canvas-deep);
+                                                                                                                                                                                      color: var(--vlm-text-soft)}
+                                                                                                                                                                                      .progress{
+                                                                                                                                                                                        background: var(--vlm-accent-soft);
+                                                                                                                                                                                        color: var(--vlm-accent-strong)}
+                                                                                                                                                                                        .success{
+                                                                                                                                                                                          background: var(--vlm-success-bg);
+                                                                                                                                                                                          color: var(--success)}
+                                                                                                                                                                                          .warning{
+                                                                                                                                                                                            background: var(--vlm-warning-bg);
+                                                                                                                                                                                            color: var(--warn)}
+                                                                                                                                                                                            .error{
+                                                                                                                                                                                              background: var(--vlm-danger-bg);
+                                                                                                                                                                                              color: var(--danger)}
+                                                                                                                                                                                              .alert{
+                                                                                                                                                                                                padding: 18px 22px;
+                                                                                                                                                                                                margin-top: 16px;
+                                                                                                                                                                                                border-radius: 14px;
+                                                                                                                                                                                                border-left: 3px solid currentColor;
+                                                                                                                                                                                                font-size: 13px}
+                                                                                                                                                                                                .alert strong{
+                                                                                                                                                                                                  font-weight: 640}
+                                                                                                                                                                                                  .alert p{
+                                                                                                                                                                                                    margin: 5px 0 0;
+                                                                                                                                                                                                    font-size: 13px}

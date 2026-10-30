@@ -1,0 +1,120 @@
+{
+  "files": [
+    {
+      "path": "assets/catalogue-brand.css",
+      "sha256": "c3ebec4b9db15a38076d9da509532482642e34dce11ffb8739a4623688b85e1f"
+    },
+    {
+      "path": "assets/catalogue-product.css",
+      "sha256": "32f55a34f99359bacdfe4259f90d3039f8bdfc6d7666478530623ee829313472"
+    },
+    {
+      "path": "assets/catalogue-responsive.css",
+      "sha256": "6480c70f10e13f6c5fcd6b910508962307998bfef0ead7a6e47d010036acd294"
+    },
+    {
+      "path": "assets/catalogue.css",
+      "sha256": "400b6494f0c86e4fd741583666be4b6887423d9d33c3bcc8591ce7af25c80b67"
+    },
+    {
+      "path": "assets/catalogue.js",
+      "sha256": "859427b76b4b4882a413553da9787a8228ee6e4482dc535458de7b257ca57b01"
+    },
+    {
+      "path": "assets/logo-alternative-green.svg",
+      "sha256": "d2948aba4ed1d96c4e1b02e041b9ba92643bddb7e5275c5e87878ee1c8381bcc"
+    },
+    {
+      "path": "assets/logo-dark.svg",
+      "sha256": "8fdc37e9521c1aa1207acffc64014b0ad165e34f61568306244c5e37d5d28865"
+    },
+    {
+      "path": "assets/logo.svg",
+      "sha256": "c651e54b30035692632cf6d10f9ad68561bb3620b27fdc4dbaa376042b4ee446"
+    },
+    {
+      "path": "assets/paper-grid-dark.svg",
+      "sha256": "f15cbc644677cc87254cfc90144b83920306770324d8366591dda64f7aa9e6b9"
+    },
+    {
+      "path": "assets/paper-grid-light.svg",
+      "sha256": "b22c320c241e99e7a793dab3a49c25667da04cc7e0314b78a19782dbbff55ca6"
+    },
+    {
+      "path": "components.html",
+      "sha256": "8f8e46f52df29a9f0834c87d23c445685cb4faecdd9d91389ef0e493bb8f6d65"
+    },
+    {
+      "path": "components.manifest.json",
+      "sha256": "973b713e66cadf921c08e0fe860aa2f5b149b6322eb1e0ff05ac95f65488c710"
+    },
+    {
+      "path": "design-tokens.json",
+      "sha256": "b6ffa9f1ff17055b5a6d4e66864a4e5be38cad746709cc608640ca3f0ef1629f"
+    },
+    {
+      "path": "DESIGN.md",
+      "sha256": "3ad7c991eab6ae8efe39075846ecb886204b2fb5bfc518066ccae75bae0d3058"
+    },
+    {
+      "path": "manifest.json",
+      "sha256": "579197b868f02f0e3051d7042a9dba90f2c6f033b84b75a2cfa49bce8d99ac8d"
+    },
+    {
+      "path": "preview/app.html",
+      "sha256": "c93a2b91568bded0710a268ef36ef7b6e09ccc311ba42c2ad4abc6fa20065010"
+    },
+    {
+      "path": "preview/colors.html",
+      "sha256": "9c56da206b9d592c0013c583257ef3e6b93c690013e63a1576e3da6f400a63ee"
+    },
+    {
+      "path": "preview/components-buttons.html",
+      "sha256": "e58554b14d73c8a90b78e4d64a333ff12d6b616c24966eb49d348aabf72813a6"
+    },
+    {
+      "path": "preview/components-inputs.html",
+      "sha256": "477ef3c5eb7612242e0db1d45b417e29983dca832daff68eb29b921704cac642"
+    },
+    {
+      "path": "preview/spacing.html",
+      "sha256": "23a2ec880d896aeb30750f5c2a45472c7cfdf6611cb7172dfa4e46f950bbf75b"
+    },
+    {
+      "path": "preview/typography.html",
+      "sha256": "74d75d5d1538715c82cd495e44ba933419f960cfe7e0df3686d61592ec557b64"
+    },
+    {
+      "path": "source/evidence.md",
+      "sha256": "b8dc51a5e3734a76fbb35d049348827f822ef3d48a9b0870ea0f14fb3f2493e0"
+    },
+    {
+      "path": "source/provenance.json",
+      "sha256": "08aadffb7a859b833be17204f84d45a2951c6d413ac936a79aee14a495700a29"
+    },
+    {
+      "path": "source/theme-tokens.json",
+      "sha256": "00db4ded833654b1ba3166911b0a27451327d40643e75a98b0be3dfaed4c726b"
+    },
+    {
+      "path": "source/token-contract.report.json",
+      "sha256": "d2d4da377b5d8da0215bb65963cbda03779d6bf7e70f9efa11755b5d804514be"
+    },
+    {
+      "path": "system/kit.dark.html",
+      "sha256": "892b66c4472243520b51b6a8ae86dbb80f5300528a7a517638b3bdb6b86fe55a"
+    },
+    {
+      "path": "system/kit.html",
+      "sha256": "c93a2b91568bded0710a268ef36ef7b6e09ccc311ba42c2ad4abc6fa20065010"
+    },
+    {
+      "path": "tokens.css",
+      "sha256": "341a86c505e16a75a3af0aeb4735108403883c704de94801722f59130c15e02a"
+    },
+    {
+      "path": "USAGE.md",
+      "sha256": "f63c9fd6fd60643087791c70c7942f4eff58a956ca9ac5fee48602401516e93e"
+    }
+  ]
+}

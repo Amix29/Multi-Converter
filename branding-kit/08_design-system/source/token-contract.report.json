@@ -1,0 +1,702 @@
+{
+  "contract": "TOKEN_SCHEMA",
+  "generatedAt": "2026-10-30T23:08:32.834Z",
+  "defaultMode": "light",
+  "additionalModes": [
+    "dark"
+  ],
+  "assessment": "Author-verified declaration and reference coverage; no automated design-quality score is claimed.",
+  "summary": {
+    "totalTokens": 56,
+    "declaredTokens": 56,
+    "sourceBackedTokens": 56,
+    "sourceBackedA1": 26,
+    "fallbackTokens": 0,
+    "aliasTokens": 0,
+    "layerCounts": {
+      "A1-identity": 8,
+      "B-slot": 4,
+      "A2": 26,
+      "A1-structure": 18
+    }
+  },
+  "selfCheck": {
+    "ok": true,
+    "missingTokens": [],
+    "unresolvedReferences": []
+  },
+  "bindings": [
+    {
+      "name": "--bg",
+      "value": "#f5f3ec",
+      "layer": "A1-identity",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--bg"
+    },
+    {
+      "name": "--surface",
+      "value": "#fffdf7",
+      "layer": "A1-identity",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--surface"
+    },
+    {
+      "name": "--surface-warm",
+      "value": "#fffaf0",
+      "layer": "B-slot",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--surface-warm"
+    },
+    {
+      "name": "--fg",
+      "value": "#1d241f",
+      "layer": "A1-identity",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--fg"
+    },
+    {
+      "name": "--fg-2",
+      "value": "#34423b",
+      "layer": "B-slot",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--fg-2"
+    },
+    {
+      "name": "--muted",
+      "value": "#596253",
+      "layer": "A1-identity",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--muted"
+    },
+    {
+      "name": "--meta",
+      "value": "#596253",
+      "layer": "B-slot",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--meta"
+    },
+    {
+      "name": "--border",
+      "value": "#ded9cc",
+      "layer": "A1-identity",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--border"
+    },
+    {
+      "name": "--border-soft",
+      "value": "#e8e3d6",
+      "layer": "B-slot",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--border-soft"
+    },
+    {
+      "name": "--accent",
+      "value": "#c86a34",
+      "layer": "A1-identity",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--accent"
+    },
+    {
+      "name": "--accent-on",
+      "value": "#0b100a",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--accent-on"
+    },
+    {
+      "name": "--accent-hover",
+      "value": "#d77b40",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--accent-hover"
+    },
+    {
+      "name": "--accent-active",
+      "value": "#e08c52",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--accent-active"
+    },
+    {
+      "name": "--success",
+      "value": "#2f604f",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--success"
+    },
+    {
+      "name": "--warn",
+      "value": "#805514",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--warn"
+    },
+    {
+      "name": "--danger",
+      "value": "#a73f34",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--danger"
+    },
+    {
+      "name": "--font-display",
+      "value": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif",
+      "layer": "A1-identity",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--font-display"
+    },
+    {
+      "name": "--font-body",
+      "value": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif",
+      "layer": "A1-identity",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--font-body"
+    },
+    {
+      "name": "--font-mono",
+      "value": "ui-monospace, \"SFMono-Regular\", Consolas, monospace",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--font-mono"
+    },
+    {
+      "name": "--text-xs",
+      "value": "12px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--text-xs"
+    },
+    {
+      "name": "--text-sm",
+      "value": "14px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--text-sm"
+    },
+    {
+      "name": "--text-base",
+      "value": "16px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--text-base"
+    },
+    {
+      "name": "--text-lg",
+      "value": "20px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--text-lg"
+    },
+    {
+      "name": "--text-xl",
+      "value": "24px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--text-xl"
+    },
+    {
+      "name": "--text-2xl",
+      "value": "32px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--text-2xl"
+    },
+    {
+      "name": "--text-3xl",
+      "value": "48px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--text-3xl"
+    },
+    {
+      "name": "--text-4xl",
+      "value": "80px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--text-4xl"
+    },
+    {
+      "name": "--leading-body",
+      "value": "1.6",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--leading-body"
+    },
+    {
+      "name": "--leading-tight",
+      "value": "1.04",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--leading-tight"
+    },
+    {
+      "name": "--tracking-display",
+      "value": "-0.045em",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--tracking-display"
+    },
+    {
+      "name": "--space-1",
+      "value": "4px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--space-1"
+    },
+    {
+      "name": "--space-2",
+      "value": "8px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--space-2"
+    },
+    {
+      "name": "--space-3",
+      "value": "12px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--space-3"
+    },
+    {
+      "name": "--space-4",
+      "value": "16px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--space-4"
+    },
+    {
+      "name": "--space-5",
+      "value": "20px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--space-5"
+    },
+    {
+      "name": "--space-6",
+      "value": "24px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--space-6"
+    },
+    {
+      "name": "--space-8",
+      "value": "32px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--space-8"
+    },
+    {
+      "name": "--space-12",
+      "value": "48px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--space-12"
+    },
+    {
+      "name": "--section-y-desktop",
+      "value": "64px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--section-y-desktop"
+    },
+    {
+      "name": "--section-y-tablet",
+      "value": "48px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--section-y-tablet"
+    },
+    {
+      "name": "--section-y-phone",
+      "value": "36px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--section-y-phone"
+    },
+    {
+      "name": "--radius-sm",
+      "value": "12px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--radius-sm"
+    },
+    {
+      "name": "--radius-md",
+      "value": "18px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--radius-md"
+    },
+    {
+      "name": "--radius-lg",
+      "value": "26px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--radius-lg"
+    },
+    {
+      "name": "--radius-pill",
+      "value": "999px",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--radius-pill"
+    },
+    {
+      "name": "--elev-flat",
+      "value": "none",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--elev-flat"
+    },
+    {
+      "name": "--elev-ring",
+      "value": "0 0 0 1px #ded9cc",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--elev-ring"
+    },
+    {
+      "name": "--elev-raised",
+      "value": "3px 4px 0 rgba(29,36,31,0.12), 0 12px 28px rgba(29,36,31,0.045)",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--elev-raised"
+    },
+    {
+      "name": "--focus-ring",
+      "value": "0 0 0 2px #9d461c",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--focus-ring"
+    },
+    {
+      "name": "--motion-fast",
+      "value": "140ms",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--motion-fast"
+    },
+    {
+      "name": "--motion-base",
+      "value": "210ms",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--motion-base"
+    },
+    {
+      "name": "--ease-standard",
+      "value": "cubic-bezier(0.22,0.72,0.18,1)",
+      "layer": "A2",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--ease-standard"
+    },
+    {
+      "name": "--container-max",
+      "value": "1320px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--container-max"
+    },
+    {
+      "name": "--container-gutter-desktop",
+      "value": "40px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--container-gutter-desktop"
+    },
+    {
+      "name": "--container-gutter-tablet",
+      "value": "28px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--container-gutter-tablet"
+    },
+    {
+      "name": "--container-gutter-phone",
+      "value": "20px",
+      "layer": "A1-structure",
+      "confidence": "high",
+      "reason": "Explicit maintainer-approved brand anchor, derived accessible role or documented product scale.",
+      "sources": [
+        "tokens.css",
+        "source/theme-tokens.json"
+      ],
+      "sourceName": "--container-gutter-phone"
+    }
+  ]
+}

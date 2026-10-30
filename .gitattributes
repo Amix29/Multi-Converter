@@ -7,6 +7,7 @@
 *.mjs text eol=lf
 *.json text eol=lf
 *.md text eol=lf
+branding-kit/08_design-system/** text eol=lf
 src-tauri/ocr-resources/licenses/*.txt text eol=lf
 tools/ocr-runtime/*.lock.txt text eol=lf
 *.nsh text eol=crlf

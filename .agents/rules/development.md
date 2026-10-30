@@ -8,9 +8,12 @@ Multi-Converter owns its desktop application, marketing site and branding kit.
   repository does not authorize a framework or package-manager migration.
 - Desktop, `site/` and `branding-kit/` remain separate responsibilities within
   one repository. Each area uses repository-owned rules and build configuration.
-- Keep the desktop's Vellum Paper foundation, vendored tokens in
-  `src/styles/vendor/vellum-tokens.css` and focused styling described in
-  `docs/ARCHITECTURE.md`. Preserve keyboard access, visible focus, accessible
+- For new visual work, use the maintainer-approved identity in
+  `branding-kit/08_design-system/DESIGN.md`: warm graph paper, dense sans-serif
+  titles, rounded cards and offset shadows; light anchor `#c86a34`, dark anchor
+  `#4d8445`. Existing desktop runtime tokens record the current implementation;
+  migrate them only through a separately validated application change.
+  Preserve keyboard access, visible focus, accessible
   labels, reduced motion and narrow-window behavior when changing the UI.
   Target WCAG 2.2 AA, coherent SVG icons and layouts checked at 375, 768, 1024
   and 1440 pixels. Use measurements before adding caches or performance layers.

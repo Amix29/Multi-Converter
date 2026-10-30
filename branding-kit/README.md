@@ -25,3 +25,16 @@ restent dans [`../site/public/`](../site/public/).
 ## Direction principale
 
 Multi-Converter doit rester propre, local, rassurant, papier, encre, minimaliste, moderne et légèrement brouillon de façon maîtrisée. Si un choix hésite entre spectaculaire et simple, choisir simple.
+
+## Système de design actif
+
+[`08_design-system/DESIGN.md`](08_design-system/DESIGN.md) décrit l'identité
+validée le 30 octobre 2026 : papier quadrillé discret, titres sans-serif denses,
+cartes arrondies et ombres décalées. Le mode clair prend `#c86a34` comme ancre ;
+le mode sombre prend `#4d8445`. Les nuances dérivées assurent la lisibilité.
+
+Le dossier contient le paquet natif Open Design, ses tokens pour les deux modes,
+un catalogue interactif et six aperçus autonomes. Les anciens tokens, modèles
+et mockups restent des sources historiques. Les nouveaux travaux visuels
+s'appuient sur ce système ; son adoption dans le logiciel livré est distincte
+de sa création. Voir [`docs/OPEN_DESIGN_SYSTEM.md`](../docs/OPEN_DESIGN_SYSTEM.md).

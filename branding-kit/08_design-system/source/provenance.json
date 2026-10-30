@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "reference": "Maintainer-provided Multi-Converter screenshots and approved theme anchors",
+  "date": "2026-10-30",
+  "lightAnchor": "#c86a34",
+  "darkAnchor": "#4d8445",
+  "sourceFiles": [
+    "branding-kit/03_tokens/design-tokens.json",
+    "branding-kit/02_guides/02_typography.md",
+    "site/app/globals.css"
+  ],
+  "runtimeStyleAdoption": false,
+  "existingBrandAssetsPreserved": true,
+  "darkLogoVariant": "Original mark with approved #4d8445 dot",
+  "fontsBundled": false,
+  "paperOnly": false,
+  "openDesignSharedTokenCount": 56
+}

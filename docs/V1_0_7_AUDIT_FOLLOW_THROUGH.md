@@ -560,3 +560,19 @@ name. The real former portal registry loads without schema warnings; its
 catalogue route returns HTTP 200 without the removed entry. No persistent
 portal server was running, so that route was verified by Fastify injection.
 These are relocation/source checks, not a new installed-app acceptance claim.
+
+## 2026-10-31 — Approved Open Design system
+
+The personal Open Design library now contains **Multi-Converter**, using the
+maintainer's original graph-paper identity, bold sans-serif headings, rounded
+panels and offset shadows. Exact anchors: light `#c86a34`, dark `#4d8445`.
+The importer fallback palette and native generic showcase were corrected.
+Sources, token maps, six standalone previews and native showcase entries live
+in `branding-kit/08_design-system/`. Native export matches all 30 source files.
+Both native themes render without script/request failures; 10 viewport/theme
+checks and the interactive demonstration pass. Automated accessibility reports
+zero violations, with patterned-background contrast requiring measured review.
+See [the design-system ledger](OPEN_DESIGN_SYSTEM.md) and its validation receipt.
+Work uses `codex/open-design-system` and integrates locally on `codex/test`.
+Runtime styling adoption and native conversion acceptance remain separate work;
+this checkpoint creates a reusable design package and publishes no app release.

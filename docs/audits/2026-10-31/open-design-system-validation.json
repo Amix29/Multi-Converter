@@ -1,0 +1,451 @@
+{
+  "verifiedAt": "2026-10-30T23:08:40.730693+00:00",
+  "scope": "Reusable personal Open Design system; not converter runtime styling or native conversion acceptance",
+  "nativeRegistration": {
+    "id": "user:multi-converter-paper",
+    "title": "Multi-Converter",
+    "surface": "web",
+    "status": "published",
+    "swatches": [
+      "#f5f3ec",
+      "#4d8445",
+      "#1d241f",
+      "#c86a34"
+    ],
+    "nativeArchiveMatchedFiles": 30,
+    "mismatches": [],
+    "archiveSha256": "d5d2ea09dae4053cbc0d61807aea22b0f6c813235db9109512f84cdaae2b55d1",
+    "bodyMatches": true
+  },
+  "nativeRendering": {
+    "nativeShowcase": [
+      {
+        "status": 200,
+        "theme": "light",
+        "accent": "#c86a34",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif",
+        "overflow": false,
+        "heading": "Multi-Converter"
+      },
+      {
+        "status": 200,
+        "theme": "dark",
+        "accent": "#4d8445",
+        "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif",
+        "overflow": false,
+        "heading": "Multi-Converter"
+      }
+    ],
+    "standalonePreviewPages": 5,
+    "errors": [],
+    "failures": []
+  },
+  "manifest": {
+    "officialValidator": "PASS",
+    "sharedTokens": 56,
+    "requiredA1Tokens": 26,
+    "unresolvedTokenReferences": 0
+  },
+  "browser": {
+    "layoutChecks": [
+      {
+        "theme": "light",
+        "viewport": 320,
+        "document": 320,
+        "accent": "#c86a34",
+        "swatch": "#C86A34"
+      },
+      {
+        "theme": "light",
+        "viewport": 375,
+        "document": 375,
+        "accent": "#c86a34",
+        "swatch": "#C86A34"
+      },
+      {
+        "theme": "light",
+        "viewport": 768,
+        "document": 768,
+        "accent": "#c86a34",
+        "swatch": "#C86A34"
+      },
+      {
+        "theme": "light",
+        "viewport": 1024,
+        "document": 1024,
+        "accent": "#c86a34",
+        "swatch": "#C86A34"
+      },
+      {
+        "theme": "light",
+        "viewport": 1440,
+        "document": 1440,
+        "accent": "#c86a34",
+        "swatch": "#C86A34"
+      },
+      {
+        "theme": "dark",
+        "viewport": 320,
+        "document": 320,
+        "accent": "#4d8445",
+        "swatch": "#4D8445"
+      },
+      {
+        "theme": "dark",
+        "viewport": 375,
+        "document": 375,
+        "accent": "#4d8445",
+        "swatch": "#4D8445"
+      },
+      {
+        "theme": "dark",
+        "viewport": 768,
+        "document": 768,
+        "accent": "#4d8445",
+        "swatch": "#4D8445"
+      },
+      {
+        "theme": "dark",
+        "viewport": 1024,
+        "document": 1024,
+        "accent": "#4d8445",
+        "swatch": "#4D8445"
+      },
+      {
+        "theme": "dark",
+        "viewport": 1440,
+        "document": 1440,
+        "accent": "#4d8445",
+        "swatch": "#4D8445"
+      }
+    ],
+    "accessibility": [
+      {
+        "theme": "light",
+        "violations": [],
+        "passedRules": 28,
+        "incompleteRules": [
+          "color-contrast"
+        ]
+      },
+      {
+        "theme": "dark",
+        "violations": [],
+        "passedRules": 28,
+        "incompleteRules": [
+          "color-contrast"
+        ]
+      }
+    ],
+    "interactions": {
+      "completion": true,
+      "cancellation": true,
+      "qualityChange": true,
+      "ocrDialogAndFocusRestore": true,
+      "mobileMenu": true,
+      "reducedMotion": "1e-05s"
+    }
+  },
+  "contrastPairs": [
+    {
+      "mode": "light",
+      "foreground": "--fg",
+      "background": "--bg",
+      "ratio": 14.281,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--fg-2",
+      "background": "--bg",
+      "ratio": 9.512,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--muted",
+      "background": "--bg",
+      "ratio": 5.737,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--meta",
+      "background": "--bg",
+      "ratio": 5.737,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--accent-strong",
+      "background": "--bg",
+      "ratio": 5.686,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--fg",
+      "background": "--surface",
+      "ratio": 15.589,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--muted",
+      "background": "--surface",
+      "ratio": 6.262,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--accent-on",
+      "background": "--accent",
+      "ratio": 5.095,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--accent-on",
+      "background": "--accent-hover",
+      "ratio": 6.22,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--accent-on",
+      "background": "--accent-active",
+      "ratio": 7.36,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--success",
+      "background": "--success-bg",
+      "ratio": 6.19,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--warn",
+      "background": "--warning-bg",
+      "ratio": 5.873,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--danger",
+      "background": "--danger-bg",
+      "ratio": 5.561,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--fg",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 11.97,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--fg-2",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 7.972,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--muted",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 4.809,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--meta",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 4.809,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "foreground": "--accent-strong",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 4.766,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--fg",
+      "background": "--bg",
+      "ratio": 16.034,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--fg-2",
+      "background": "--bg",
+      "ratio": 12.613,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--muted",
+      "background": "--bg",
+      "ratio": 9.366,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--meta",
+      "background": "--bg",
+      "ratio": 9.366,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--accent-strong",
+      "background": "--bg",
+      "ratio": 10.576,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--fg",
+      "background": "--surface",
+      "ratio": 14.091,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--muted",
+      "background": "--surface",
+      "ratio": 8.231,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--accent-on",
+      "background": "--accent",
+      "ratio": 4.702,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--accent-on",
+      "background": "--accent-hover",
+      "ratio": 6.117,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--accent-on",
+      "background": "--accent-active",
+      "ratio": 7.142,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--success",
+      "background": "--success-bg",
+      "ratio": 7.405,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--warn",
+      "background": "--warning-bg",
+      "ratio": 8.462,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--danger",
+      "background": "--danger-bg",
+      "ratio": 7.291,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--fg",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 12.983,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--fg-2",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 10.213,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--muted",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 7.584,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--meta",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 7.584,
+      "threshold": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "foreground": "--accent-strong",
+      "background": "canvas including two intersecting SVG grid strokes",
+      "ratio": 8.564,
+      "threshold": 4.5,
+      "status": "PASS"
+    }
+  ],
+  "limits": [
+    "Axe cannot resolve every patterned background; selected semantic text pairs include worst-case grid intersections.",
+    "Selected contrast measurements and automated checks do not prove complete WCAG conformity.",
+    "Open Design artifact rendered through its native showcase endpoint; outer desktop application chrome was not visually automated."
+  ],
+  "corrections": [
+    "Neutral importer fallback replaced with approved authored palette and typography.",
+    "Native showcase requires system/kit.html; generic SaaS fallback replaced with self-contained Multi-Converter catalogue.",
+    "Theme swatch labels and feedback text corrected.",
+    "Accessible grouping, help associations and dedicated preview headings corrected.",
+    "Light and dark action foregrounds adjusted while preserving exact brand anchors."
+  ]
+}

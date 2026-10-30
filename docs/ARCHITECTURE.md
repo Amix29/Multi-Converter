@@ -121,11 +121,17 @@ command, while `npm run build:frontend` remains the production command. The
 production-build contract verifies that the packaged command never opts into
 preview mode; production-output inspection remains part of frontend validation.
 
-## Vellum Styling Boundary
+## Styling Boundary
 
 Vellum Paper remains the desktop foundation. `src/styles.css` imports the focused
 styles under `src/styles/`; components consume shared semantic `--vlm-*` tokens.
 Editor styles, bundled editor icons and font controls have been removed.
+
+The approved design reference for new visual work is
+[`branding-kit/08_design-system/DESIGN.md`](../branding-kit/08_design-system/DESIGN.md):
+the original warm sketchbook identity with light orange `#c86a34` and dark green
+`#4d8445`, approved on 2026-10-30. It is registered in Open Design; this design
+package does not itself migrate the current runtime stylesheet.
 
 ## Marketing Site Boundary
 
