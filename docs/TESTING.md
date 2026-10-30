@@ -482,6 +482,10 @@ sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicat
 
 Then run the Linux environment preflight:
 
+Use native Node 24.x/npm 11.x. Both Cargo and rustc must meet the application's
+declared Rust minimum; the preflight checks their versions independently.
+An old system Cargo beside current rustc/rustfmt/Clippy is not a valid toolchain.
+
 ```bash
 npm run test:linux:environment
 ```

@@ -2,9 +2,14 @@ import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 import os from "node:os";
 import process from "node:process";
+import fs from "node:fs";
+import { toolchainVersionFailure } from "./lib/linux-toolchain-version.mjs";
 
 const require = createRequire(import.meta.url);
 const failures = [];
+const rustMinimum = fs.readFileSync(new URL("../src-tauri/Cargo.toml", import.meta.url), "utf8")
+  .match(/^rust-version\s*=\s*"([^"]+)"/mu)?.[1];
+if (!rustMinimum) throw new Error("Application rust-version is missing.");
 const requiredPkgConfigPackages = [
   "dbus-1",
   "gtk+-3.0",
@@ -80,6 +85,9 @@ function requireCommand(command, args, message) {
   });
   if (result.status !== 0) {
     failures.push(`${message}\n${result.stderr || result.stdout || `${command} ${args.join(" ")} failed.`}`);
+  } else if (args.length === 1 && args[0] === "--version") {
+    const failure = toolchainVersionFailure(command, result.stdout, rustMinimum);
+    if (failure) failures.push(failure);
   }
 }
 

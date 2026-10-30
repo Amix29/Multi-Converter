@@ -7,6 +7,7 @@ documentation updates. The isolated work branch is `codex/audit-follow-through`,
 based on `41459c23`. Local integration remains `codex/test`; `main` and remote
 branches are untouched. V1.0.7 is unpublished. The earlier Windows installer
 is tied to application source `b766134f` and does not contain this new lot.
+First follow-through lot `9859e8d9` is now locally integrated on `codex/test`.
 
 ## First follow-through lot
 
@@ -108,6 +109,22 @@ Ubuntu package repositories. Node 24.22.2 was unpacked into the owned Linux
 temporary directory from the official archive with SHA-256
 `48cc0e21e048790e54c0cf5749c2725005313d652651c40b7a21feb9697aaf75`.
 A separate native Linux checkout is prepared next; this is not a Linux gate pass.
+
+The native checkout and npm install passed; the environment preflight initially
+passed too, but the CI gate exposed a mismatched system Cargo 1.75 alongside
+rustc/rustfmt/Clippy 1.96. The native Rustup Cargo 1.96 already exists and is now
+selected with the same native toolchain PATH. The source preflight now validates
+Node 24/npm 11 and both Cargo/rustc against the application's declared Rust
+minimum, so an old Cargo can no longer receive a false-positive environment pass.
+Two focused regressions and the complete 52-test frontend unit suite passed,
+as did test types, Linux packaging and workflow contracts.
+
+WSL purges its temporary filesystem when it stops. An owned keepalive process
+now maintains the test instance while work proceeds. The native checkout uses
+read-only Git object alternates to avoid copying 12 GiB of repository history;
+source files, index, npm dependencies and build outputs reside on Linux.
+The first Linux CI attempt stopped at release-asset tests before application
+compilation; it is recorded as failed, not as a native application gate pass.
 
 ## Remaining authorized work
 
