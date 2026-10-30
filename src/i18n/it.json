@@ -1,4 +1,13 @@
 {
+  "recovery.unavailable": "Questo lotto è scaduto o non è più disponibile.",
+  "recovery.setting": "Ricorda l’ultimo lotto avviato (24 ore)",
+  "recovery.settingDetail": "Disattivato per impostazione predefinita. Conserva percorsi e impostazioni su questo dispositivo, senza contenuti. Servono gli originali; i risultati vengono ricalcolati.",
+  "recovery.title": "Lotto precedente · {count}",
+  "recovery.restoreDetail": "Ricarica gli originali invariati e verifica i formati. I risultati precedenti non vengono conservati.",
+  "recovery.restore": "Ricarica gli originali",
+  "recovery.forget": "Dimentica questo lotto",
+  "recovery.failed": "Il recupero del lotto non è disponibile. È comunque possibile convertire i file.",
+  "recovery.skipped": "Originali non disponibili o modificati ignorati: {count}.",
   "progress.report": "Esporta rapporto del lotto",
   "progress.reportPrivacy": "Rapporto locale con nomi, impostazioni e impronte dei risultati. Nessun percorso completo o contenuto dei file.",
   "notice.reportSaved": "Rapporto del lotto esportato.",

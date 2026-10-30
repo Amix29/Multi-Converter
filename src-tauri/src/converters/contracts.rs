@@ -35,7 +35,7 @@ pub struct FileDescription {
     pub targets: Vec<crate::registry::TargetFormat>,
 }
 
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ImportOriginV1 {
     pub kind: ImportOriginKind,
@@ -44,7 +44,7 @@ pub struct ImportOriginV1 {
     pub relative_path: String,
 }
 
-#[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum ImportOriginKind {
     File,

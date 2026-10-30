@@ -12,6 +12,7 @@ import type {
   ProgressPayload,
   ConversionResult,
   WelcomeState,
+  RecoveryState,
 } from "./contracts";
 
 export function createTauriApi(): MultiConverterApi {
@@ -30,6 +31,10 @@ export function createTauriApi(): MultiConverterApi {
       invoke<ExportResult>("export_to_folder", { filePaths, destinationDir, outputDir, entries: entries ?? null }),
     exportBatchReport: (outputDir, destinationDir, rows) =>
       invoke<ExportResult>("export_batch_report", { outputDir, destinationDir, rows }),
+    loadBatchRecovery: () => invoke<RecoveryState>("load_batch_recovery"),
+    setBatchRecoveryEnabled: (enabled) => invoke<RecoveryState>("set_batch_recovery_enabled", { enabled }),
+    saveBatchRecovery: (plan) => invoke<number>("save_batch_recovery", { plan }),
+    clearBatchRecovery: () => invoke<boolean>("clear_batch_recovery"),
     describePaths: (paths) => invoke<ImportBatchResult>("describe_paths", { paths }),
     saveClipboardFiles: (files) => invoke<string[]>("save_clipboard_files", { files }),
     convert: (job) => invoke<ConversionResult>("start_conversion", { job }),

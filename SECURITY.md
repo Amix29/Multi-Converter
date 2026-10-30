@@ -58,6 +58,14 @@ directory, including after symlink resolution; network and nested SVG image
 resources are refused. Embedded and sibling PNG/JPEG/GIF/WebP images share
 compressed-byte and decoded-pixel budgets before the renderer receives them.
 
+Batch recovery is off by default. Enabling it explicitly stores local original
+paths, settings, import origins and size/mtime fingerprints in a bounded atomic
+application-data file (0600 in a 0700 directory on Unix). It stores no document
+body, recognized text or temporary result. Validity is 24 hours; expiry cleanup
+runs on the next load/startup. Missing or changed originals are excluded. Disabling
+the setting or forgetting the batch removes its saved paths; command serialization
+prevents an already queued save from recreating a disabled plan.
+
 ## Marketing Site Dependency Status
 
 The site pins its dependency versions in `site/package.json` and `site/package-lock.json`.

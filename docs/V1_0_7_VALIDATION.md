@@ -1,5 +1,20 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-10-30 — Latest local continuation
+
+Work remains on `codex/audit-follow-through`; `codex/test` is the local integration
+branch. New source includes private intermediates, SVG isolation, verified local
+batch reports and opt-in 24-hour source-plan recovery. Native contracts: 24 commands
+/ two events. Linux passes 198 Rust units and denied-warning Clippy; real engine
+validation passed 11 conversion groups plus media offline protocols. Its official
+OCR runtime was packaged reproducibly, with complete license inventory; the direct
+40-case corpus and isolated extracted-archive four-case probe passed. Current
+browser checks passed 12 tests with 10 declared exclusions, plus manual report/
+recovery checks at 375/1440 px. The final Windows canonical/native rerun is in
+progress for this lot. See [exact source/artifact boundaries and receipts](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
+**Overall release gate remains blocked**; no new current installer acceptance is
+claimed. Older sections below remain historical checkpoints.
+
 ## 2026-10-30 — Audit Follow-Through
 
 Current isolated work: `codex/audit-follow-through`, baseline `41459c23`.

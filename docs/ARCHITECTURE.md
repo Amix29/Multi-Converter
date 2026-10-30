@@ -54,7 +54,7 @@ Tauri invoke handlers
 ```
 
 `src-tauri/src/lib.rs` is the composition root: it registers application state,
-plugins and the existing 20 commands, but does not implement conversion or
+plugins and the existing 24 commands, but does not implement conversion or
 OCR behavior. The command modules translate Tauri inputs into domain calls;
 domain modules remain directly unit-testable without a WebView. Existing facade
 files retain their module paths and public contracts while delegating to focused
@@ -165,7 +165,7 @@ is limited to frontend development.
 
 ## Conversion-Only Scope (2026-10-29)
 
-The application exposes 20 native commands for conversion, OCR, export, onboarding
+The application exposes 24 native commands for conversion, OCR, export, onboarding
 and external links, with `convert-progress` and `ocr-progress` events. Neither
 frontend adapters nor the Tauri invoke handler expose document/PDF editing.
 The former editor-only Office bridge and font-enumeration modules are removed;
@@ -178,6 +178,15 @@ SHA-256/size, and uses the same no-overwrite export transaction. Reports contain
 basenames and bounded status/settings/warning codes; absolute paths, file bodies,
 OCR text and raw errors are excluded. Exporting a report does not mark outputs
 as safely exported or change their cleanup lifecycle.
+
+Batch recovery is an opt-in source/selection plan, separate from output caching.
+Native commands serialize consent changes, saves and clears under one lock, so
+a queued save cannot recreate a disabled checkpoint. A bounded atomic state file
+under application data stores paths, settings, import origins and size/mtime
+fingerprints; it contains no file bodies, results or OCR text. Plans expire after
+24 hours and expired entries are removed on load. Restoring re-describes unchanged
+originals and requires format review; outputs are recomputed. Unix state files
+use 0600 inside a 0700 directory.
 
 The PDFium source wrapper accepts conversion/OCR commands only. Existing packaged
 binaries and provenance fingerprints are not rewritten by this cleanup; the

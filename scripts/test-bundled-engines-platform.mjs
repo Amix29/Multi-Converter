@@ -51,6 +51,8 @@ function writeFixture() {
   const bundledEnginesDir = path.join(fixtureRoot, "src-tauri", "bundled-engines");
   fs.mkdirSync(binariesDir, { recursive: true });
   fs.mkdirSync(bundledEnginesDir, { recursive: true });
+  fs.mkdirSync(path.join(fixtureRoot, "tools"), { recursive: true });
+  fs.copyFileSync(path.join(root, "tools", "platform-runtime-provenance-lock.json"), path.join(fixtureRoot, "tools", "platform-runtime-provenance-lock.json"));
   copyRustModuleTree(root, fixtureRoot, "engines");
   linkFixtureBinary("ffmpeg-x86_64-pc-windows-msvc.exe");
   linkFixtureBinary("ffprobe-x86_64-pc-windows-msvc.exe");

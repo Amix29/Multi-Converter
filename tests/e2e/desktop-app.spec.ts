@@ -164,7 +164,7 @@ test("supports welcome, settings and feedback with keyboard focus and Escape", a
   const settings = page.getByRole("dialog", { name: "Paramètres" });
   await expect(settings).toBeVisible();
   await expect(settings.getByRole("button", { name: "Fermer" })).toBeFocused();
-  const notifications = settings.getByRole("checkbox");
+  const notifications = settings.getByRole("checkbox", { name: "Notifications de fin de conversion", exact: true });
   await expect(notifications).toBeChecked();
   await notifications.focus();
   await page.keyboard.press("Space");

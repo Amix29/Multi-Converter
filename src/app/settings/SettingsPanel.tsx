@@ -21,6 +21,8 @@ export function SettingsPanel(props: {
   dependencies: DependencyBootstrap | null;
   language: LanguageCode;
   notificationsEnabled: boolean;
+  recoveryEnabled: boolean;
+  recoveryBusy: boolean;
   internetAvailable: boolean;
   currentVersion: string;
   updateInfo: AppUpdateInfo | null;
@@ -30,6 +32,7 @@ export function SettingsPanel(props: {
   onClose(): void;
   onLanguage(language: LanguageCode): void;
   onNotificationsEnabled(enabled: boolean): void;
+  onRecoveryEnabled(enabled: boolean): void;
   onCheckForUpdate(): void;
   onInstallUpdate(): void;
 }) {
@@ -166,6 +169,18 @@ export function SettingsPanel(props: {
                     props.onNotificationsEnabled(event.currentTarget.checked)
                   }
                 />
+                <span aria-hidden="true" />
+              </label>
+            </section>
+            <section className="setting-toggle" aria-labelledby="recovery-setting-title">
+              <div>
+                <span className="label" id="recovery-setting-title">{t(props.language, "recovery.setting")}</span>
+                <p id="recovery-setting-detail">{t(props.language, "recovery.settingDetail")}</p>
+              </div>
+              <label className="switch-control">
+                <input type="checkbox" aria-labelledby="recovery-setting-title" aria-describedby="recovery-setting-detail"
+                  checked={props.recoveryEnabled} disabled={props.recoveryBusy}
+                  onChange={(event) => props.onRecoveryEnabled(event.currentTarget.checked)} />
                 <span aria-hidden="true" />
               </label>
             </section>

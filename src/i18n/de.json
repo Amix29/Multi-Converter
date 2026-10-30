@@ -1,4 +1,13 @@
 {
+  "recovery.unavailable": "Dieser Stapel ist abgelaufen oder nicht mehr verfügbar.",
+  "recovery.setting": "Letzten gestarteten Stapel merken (24 Std.)",
+  "recovery.settingDetail": "Standardmäßig aus. Speichert Pfade und Einstellungen auf diesem Gerät, ohne Dateiinhalte. Originale erforderlich; Ausgaben werden neu berechnet.",
+  "recovery.title": "Vorheriger Stapel · {count}",
+  "recovery.restoreDetail": "Unveränderte Originale erneut laden und Formate prüfen. Frühere Ausgaben werden nicht aufbewahrt.",
+  "recovery.restore": "Originale erneut laden",
+  "recovery.forget": "Diesen Stapel vergessen",
+  "recovery.failed": "Die Stapelwiederherstellung ist nicht verfügbar. Dateien können weiterhin konvertiert werden.",
+  "recovery.skipped": "Nicht verfügbare oder geänderte Originale übersprungen: {count}.",
   "progress.report": "Stapelbericht exportieren",
   "progress.reportPrivacy": "Lokaler Bericht mit Namen, Einstellungen und Ausgabeprüfsummen. Keine vollständigen Pfade oder Dateiinhalte.",
   "notice.reportSaved": "Stapelbericht exportiert.",

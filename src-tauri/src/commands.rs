@@ -3,6 +3,7 @@ mod conversion;
 mod engines;
 mod export;
 mod files;
+mod recovery;
 mod system;
 mod temp_output;
 mod welcome;
@@ -14,6 +15,9 @@ pub(crate) use conversion::{cancel_conversion, start_conversion};
 pub(crate) use engines::{bootstrap_dependencies, engine_statuses};
 pub(crate) use export::{export_batch_report, export_to_downloads, export_to_folder};
 pub(crate) use files::{describe_paths, pick_file_paths, pick_output_folder};
+pub(crate) use recovery::{
+    clear_batch_recovery, load_batch_recovery, save_batch_recovery, set_batch_recovery_enabled,
+};
 pub(crate) use system::{open_external_url, reveal_file};
 use temp_output::is_managed_temp_output_folder;
 pub(crate) use temp_output::{

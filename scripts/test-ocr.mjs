@@ -101,9 +101,12 @@ if (fs.existsSync(stagedModelsPath)) {
 const worker = fs.readFileSync(path.join(root, "tools", "ocr-runtime", "worker.py"), "utf8");
 const supervisor = fs.readFileSync(path.join(root, "src-tauri", "src", "ocr", "supervisor.rs"), "utf8");
 const runtimeSmoke = fs.readFileSync(path.join(root, "scripts", "test-ocr-runtime.mjs"), "utf8");
+const runtimeArchiveHelpers = fs.readFileSync(path.join(root, "scripts", "lib", "ocr-runtime-archive.mjs"), "utf8");
+const corpusRunner = fs.readFileSync(path.join(root, "scripts", "test-ocr-corpus.mjs"), "utf8");
 expect(supervisor.includes('command.env("LD_LIBRARY_PATH", library_dir)'), "Linux doit résoudre les bibliothèques Paddle embarquées");
 expect(!supervisor.includes("DYLD_LIBRARY_PATH"), "macOS doit conserver la résolution de bibliothèques PyInstaller validée");
-expect(runtimeSmoke.includes("runtimeLibraryEnvironment(workerPath)"), "le smoke doit reproduire l’environnement du superviseur OCR");
+expect(runtimeSmoke.includes("ocrRuntimeLibraryEnvironment(workerPath)") && corpusRunner.includes("ocrRuntimeLibraryEnvironment(workerPath)"), "le smoke et le corpus doivent utiliser les bibliothèques du worker réellement exécuté");
+expect(runtimeArchiveHelpers.includes("path.dirname(workerPath)") && runtimeArchiveHelpers.includes('"paddle", "libs"') && runtimeArchiveHelpers.includes("LD_LIBRARY_PATH") && !runtimeArchiveHelpers.includes("process.env.LD_LIBRARY_PATH"), "les tests OCR doivent résoudre leurs bibliothèques dans le worker extrait sans hériter d’un ancien runtime");
 for (const marker of [
   'HF_HUB_OFFLINE", "1',
   'PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "true',

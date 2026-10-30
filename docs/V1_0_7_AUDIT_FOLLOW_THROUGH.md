@@ -245,14 +245,44 @@ still unexported after report export. Screenshots:
 Contracts now expose 20 commands and two events. The screenshots use preview data;
 real filesystem behavior is covered by native tests, not by the preview receipt.
 
+## Opt-in batch recovery
+
+Settings now exposes recovery of the last launched full batch, disabled by default.
+Only source paths, chosen formats/modes, quality, import origins and size/mtime
+fingerprints are stored. No input body, OCR text, output path, result or raw error
+is a checkpoint field. Storage is atomic, bounded to 2 MiB / 2,000 files, and
+Unix permissions are explicitly private (directory 0700, state 0600).
+Validity is 24 hours; expiry removes paths at the next load/startup. Default-off
+usage creates no state directory. Disabling clears the plan under the same
+native lock as saving, preventing a late queued save from restoring private paths.
+
+The empty file screen offers **Reload originals / Forget batch**. Reload checks
+existence/size/mtime again, re-describes files against current engine availability,
+restores folder origins and settings, and opens format review with fresh file IDs
+and no cached results. Unavailable targets require a new choice. Existing queue
+entries are merged without overwriting them if an import finishes concurrently.
+Outputs are recomputed; the close guard still protects unexported output files.
+Reset/forget clears the plan while retaining the opt-in preference.
+
+Windows native tests cover default-off behavior, disable/late-save privacy,
+changed/moved sources, expiry cleanup, folder-origin preservation and traversal
+rejection. Linux passes 198 Rust units (12 opt-in exclusions) and all-target
+Clippy, including private state-file permissions. The existing Chromium suite
+passes 12 tests / 10 declared exclusions. Manual browser checks cover consent,
+restart simulation, mode/profile restoration, forgetting and disabling, at
+375/1440 px. These browser checks use preview storage and do not establish an
+installed native restart. Contracts now expose 24 commands / two events.
+Screenshots: [banner](audits/2026-10-30/recovery-banner-375.png),
+[setting](audits/2026-10-30/recovery-settings-375.png).
+
 ## Remaining authorized work
 
 - Native Linux source/build/package/engine/OCR validation as available; current
   Apple Silicon build/package and OCR evidence still need adequate build space.
 - Expanded OCR small-print/layout and cold/warm measurements; document fidelity,
   external-reference/macro fixtures and final package notices.
-- Explicit recovery/retention, useful batch manifests, target-size estimates and
-  practical folder/batch features. Do not persist private paths/content silently.
+- Target-size estimates and additional practical folder/batch features, evaluated
+  against measured behavior. Recovery and batch reports are implemented above.
 - Installed Windows GUI/offline/cancel/restart/picker/drop acceptance; current
   Mac/Linux final downloaded-package and clean-host acceptance.
 - Inherited GTK/Rust maintenance/unsoundness warning triage and final canonical

@@ -106,6 +106,18 @@ export interface BatchReportRow {
   outputPath: string | null;
 }
 
+export interface RecoveryPlan {
+  schemaVersion: 1;
+  qualityProfile: QualityProfile;
+  files: { path: string; targetFormat: string; mediaMode: MediaMode; importOrigin: ImportOriginV1 | null }[];
+}
+
+export interface RecoveryState {
+  enabled: boolean;
+  plan: RecoveryPlan | null;
+  skippedFiles: number;
+}
+
 export interface ExportEntryV1 {
   outputPath: string;
   relativePath: string;
@@ -226,6 +238,10 @@ export interface MultiConverterApi {
   exportToDownloads(filePaths: string[], outputDir?: string | null, entries?: ExportEntryV1[] | null): Promise<ExportResult>;
   exportToFolder(filePaths: string[], destinationDir: string, outputDir?: string | null, entries?: ExportEntryV1[] | null): Promise<ExportResult>;
   exportBatchReport(outputDir: string, destinationDir: string, rows: BatchReportRow[]): Promise<ExportResult>;
+  loadBatchRecovery(): Promise<RecoveryState>;
+  setBatchRecoveryEnabled(enabled: boolean): Promise<RecoveryState>;
+  saveBatchRecovery(plan: RecoveryPlan): Promise<number>;
+  clearBatchRecovery(): Promise<boolean>;
   describePaths(paths: string[]): Promise<ImportBatchResult>;
   saveClipboardFiles(files: ClipboardFileInput[]): Promise<string[]>;
   convert(job: ConversionJob): Promise<ConversionResult>;

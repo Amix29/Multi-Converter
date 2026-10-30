@@ -1,4 +1,13 @@
 {
+  "recovery.unavailable": "Este lote expirou ou já não está disponível.",
+  "recovery.setting": "Recordar o último lote iniciado (24 h)",
+  "recovery.settingDetail": "Desativado por predefinição. Guarda caminhos e definições neste dispositivo, sem conteúdo. Requer os originais; os resultados são recalculados.",
+  "recovery.title": "Lote anterior · {count}",
+  "recovery.restoreDetail": "Volte a carregar os originais inalterados e reveja os formatos. Os resultados anteriores não são guardados.",
+  "recovery.restore": "Carregar originais",
+  "recovery.forget": "Esquecer este lote",
+  "recovery.failed": "A recuperação do lote não está disponível. Pode continuar a converter ficheiros.",
+  "recovery.skipped": "Originais indisponíveis ou alterados ignorados: {count}.",
   "progress.report": "Exportar relatório do lote",
   "progress.reportPrivacy": "Relatório local com nomes, definições e impressões das saídas. Sem caminhos completos nem conteúdo dos ficheiros.",
   "notice.reportSaved": "Relatório do lote exportado.",

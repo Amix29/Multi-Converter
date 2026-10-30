@@ -1,4 +1,13 @@
 {
+  "recovery.unavailable": "This batch has expired or is no longer available.",
+  "recovery.setting": "Remember the last started batch (24 h)",
+  "recovery.settingDetail": "Off by default. Stores paths and settings on this device, without file contents. Originals required; outputs are recomputed.",
+  "recovery.title": "Previous batch · {count}",
+  "recovery.restoreDetail": "Reload unchanged originals, then review the formats. Previous outputs are not retained.",
+  "recovery.restore": "Reload originals",
+  "recovery.forget": "Forget this batch",
+  "recovery.failed": "Batch recovery is unavailable. You can still convert files.",
+  "recovery.skipped": "Unavailable or changed originals skipped: {count}.",
   "progress.report": "Export batch report",
   "progress.reportPrivacy": "Local report with names, settings and output hashes. No full paths or file contents.",
   "notice.reportSaved": "Batch report exported.",

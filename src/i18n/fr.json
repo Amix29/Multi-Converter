@@ -1,4 +1,13 @@
 {
+  "recovery.unavailable": "Ce lot a expiré ou n’est plus disponible.",
+  "recovery.setting": "Retrouver le dernier lot lancé (24 h)",
+  "recovery.settingDetail": "Désactivé par défaut. Conserve les chemins et réglages sur cet appareil, sans le contenu. Originaux nécessaires ; résultats recalculés.",
+  "recovery.title": "Lot précédent · {count}",
+  "recovery.restoreDetail": "Rechargez les originaux inchangés, puis vérifiez les formats. Les anciens résultats ne sont pas conservés.",
+  "recovery.restore": "Recharger les originaux",
+  "recovery.forget": "Oublier ce lot",
+  "recovery.failed": "La reprise du lot est indisponible. La conversion reste possible.",
+  "recovery.skipped": "Originaux indisponibles ou modifiés ignorés : {count}.",
   "progress.report": "Exporter le bilan du lot",
   "progress.reportPrivacy": "Bilan local avec noms, réglages et empreintes des sorties. Aucun chemin complet ni contenu de fichier.",
   "notice.reportSaved": "Bilan du lot exporté.",

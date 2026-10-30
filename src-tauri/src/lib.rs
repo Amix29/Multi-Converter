@@ -53,6 +53,10 @@ pub fn run() {
             export_to_downloads,
             export_to_folder,
             export_batch_report,
+            load_batch_recovery,
+            set_batch_recovery_enabled,
+            save_batch_recovery,
+            clear_batch_recovery,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Multi-Converter");

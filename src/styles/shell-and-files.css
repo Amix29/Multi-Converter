@@ -263,6 +263,17 @@
   display: grid;
 }
 
+.recovery-banner {
+  padding: 16px;
+  border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-md);
+  background: var(--vlm-surface);
+}
+
+.recovery-banner h3 { margin: 0 0 8px; font-size: 16px; }
+.recovery-banner p { margin: 0 0 12px; color: var(--vlm-text-muted); font-size: 13px; }
+.recovery-banner .screen-actions { flex-wrap: wrap; border: 0; padding: 0; justify-content: flex-start; }
+
 .upload-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

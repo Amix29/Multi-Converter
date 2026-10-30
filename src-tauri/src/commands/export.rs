@@ -12,6 +12,18 @@ mod report;
 mod source;
 pub(crate) use report::export_batch_report;
 
+pub(super) fn valid_recovery_origin(origin: &crate::converters::ImportOriginV1) -> bool {
+    use crate::converters::ImportOriginKind;
+    let folder = origin.kind == ImportOriginKind::Folder;
+    let value = if folder {
+        format!("{}/{}", origin.root_name, origin.relative_path)
+    } else {
+        origin.relative_path.clone()
+    };
+    paths::ParsedRelativePath::parse(&value, folder.then_some(origin.root_id.as_str()))
+        .is_ok_and(|path| path.components().first() == Some(&origin.root_name))
+}
+
 use copy::{copy_export_file, copy_export_file_exact};
 use paths::{
     ParsedRelativePath, ensure_safe_subdirectories, prepare_destination, reserve_unique_root,

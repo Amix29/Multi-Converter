@@ -20,6 +20,8 @@ export function useConversionWorkflow(options: {
   setFiles: Dispatch<SetStateAction<FileItem[]>>;
   setStep: Dispatch<SetStateAction<Step>>;
   showNotice(tone: NoticeTone, message: string): void;
+  beforeBatch?(files: FileItem[], quality: QualityProfile): Promise<void>;
+  onReset?(): Promise<void>;
 }) {
   const [outputDir, setOutputDir] = useState<string | null>(null);
   const [qualityProfile, setQualityProfile] = useState<QualityProfile>("balanced");
@@ -63,6 +65,7 @@ export function useConversionWorkflow(options: {
   async function resetAll() {
     if (batchLocked.current || isExporting) return;
     await cleanupCurrentTempFolder();
+    await options.onReset?.();
     options.setStep(1);
     options.setFiles([]);
     setOutputDir(null);
@@ -124,6 +127,7 @@ export function useConversionWorkflow(options: {
   }
 
   async function performConversionBatch(jobs: FileItem[], resetExportState: boolean) {
+    if (resetExportState) await options.beforeBatch?.(jobs, qualityProfile);
     let targetOutputDir: string;
     try {
       targetOutputDir = !resetExportState && outputDir && !isTempOutputCleaned ? outputDir : await api.createTempOutputFolder();

@@ -12,6 +12,10 @@ import {
 } from "./app/conversion/model";
 import { useConversionWorkflow } from "./app/conversion/useConversionWorkflow";
 import { useFileWorkflow } from "./app/conversion/useFileWorkflow";
+import { useBatchRecovery } from "./app/conversion/useBatchRecovery";
+import { restoredFiles } from "./app/conversion/recoveryModel";
+import { selectUniqueImports } from "./app/conversion/largeListModel";
+import { RecoveryBanner } from "./app/components/RecoveryBanner";
 import { FeedbackDialog, FeedbackPrivacyDialog } from "./app/feedback/FeedbackOverlays";
 import { AppTopbar } from "./app/layout/AppTopbar";
 import { FilesScreen } from "./app/screens/FilesScreen";
@@ -61,6 +65,7 @@ export default function App() {
   }, []);
 
   const fileWorkflow = useFileWorkflow({ language, showNotice });
+  const recovery = useBatchRecovery({ language, showNotice });
   const conversionWorkflow = useConversionWorkflow({
     files: fileWorkflow.files,
     language,
@@ -68,6 +73,17 @@ export default function App() {
     setFiles: fileWorkflow.setFiles,
     setStep: fileWorkflow.setStep,
     showNotice,
+    beforeBatch: recovery.saveBeforeBatch,
+    onReset: recovery.clear,
+  });
+  const restoreBatch = useStableEvent(async () => {
+    if (fileWorkflow.files.length || conversionWorkflow.isConverting) return;
+    const restored = await recovery.restore();
+    if (!restored) return;
+    const incoming = restoredFiles(restored.descriptions, restored.plan);
+    fileWorkflow.setFiles((current) => [...current, ...selectUniqueImports(current, incoming).accepted]);
+    conversionWorkflow.setQualityProfile(restored.plan.qualityProfile);
+    fileWorkflow.setStep(2);
   });
   const updater = useAppUpdater({ bootInfoLoaded, isTauriRuntime, isWelcomeOpen, language, showNotice });
   const setInternetAvailable = useStableEvent(updater.setInternetAvailable);
@@ -196,6 +212,9 @@ export default function App() {
         onClose={closeSettings}
         onLanguage={setLanguage}
         onNotificationsEnabled={setNotificationsEnabled}
+        recoveryEnabled={recovery.enabled}
+        recoveryBusy={recovery.isBusy || recovery.isLoading}
+        onRecoveryEnabled={recovery.configure}
         onCheckForUpdate={() => void updater.checkForAppUpdate(true)}
         onInstallUpdate={installUpdate}
       /></Suspense>}
@@ -255,6 +274,7 @@ export default function App() {
       /></Suspense>}
 
       <FilesScreen
+        recovery={recovery.pending && <RecoveryBanner language={language} count={recovery.pending.files.length} isBusy={recovery.isBusy} onRestore={restoreBatch} onForget={recovery.clear} />}
         isActive={fileWorkflow.step === 1}
         language={language}
         files={fileWorkflow.files}

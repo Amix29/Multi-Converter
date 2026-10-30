@@ -1,4 +1,13 @@
 {
+  "recovery.unavailable": "Este lote ha caducado o ya no está disponible.",
+  "recovery.setting": "Recordar el último lote iniciado (24 h)",
+  "recovery.settingDetail": "Desactivado por defecto. Guarda rutas y ajustes en este dispositivo, sin contenido. Requiere originales; los resultados se recalculan.",
+  "recovery.title": "Lote anterior · {count}",
+  "recovery.restoreDetail": "Vuelva a cargar los originales sin cambios y revise los formatos. Los resultados anteriores no se conservan.",
+  "recovery.restore": "Cargar originales",
+  "recovery.forget": "Olvidar este lote",
+  "recovery.failed": "La recuperación del lote no está disponible. Puede seguir convirtiendo archivos.",
+  "recovery.skipped": "Originales no disponibles o modificados omitidos: {count}.",
   "progress.report": "Exportar informe del lote",
   "progress.reportPrivacy": "Informe local con nombres, ajustes y huellas de las salidas. Sin rutas completas ni contenido de archivos.",
   "notice.reportSaved": "Informe del lote exportado.",

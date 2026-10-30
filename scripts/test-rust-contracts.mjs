@@ -33,6 +33,10 @@ assert.deepEqual(commands, [
   "export_to_downloads",
   "export_to_folder",
   "export_batch_report",
+  "load_batch_recovery",
+  "set_batch_recovery_enabled",
+  "save_batch_recovery",
+  "clear_batch_recovery",
 ]);
 
 function rustFilesUnder(directory) {
@@ -127,6 +131,10 @@ const expectedSignatures = new Map([
   ["export_to_downloads", "fn export_to_downloads(file_paths:Vec<String>,output_dir:Option<String>,entries:Option<Vec<ExportEntryV1>>)->CommandResult<ExportResult>"],
   ["export_to_folder", "fn export_to_folder(file_paths:Vec<String>,destination_dir:String,output_dir:Option<String>,entries:Option<Vec<ExportEntryV1>>)->CommandResult<ExportResult>"],
   ["export_batch_report", "async fn export_batch_report(output_dir:String,destination_dir:String,rows:Vec<BatchReportRow>)->CommandResult<ExportResult>"],
+  ["load_batch_recovery", "async fn load_batch_recovery(app:AppHandle)->CommandResult<RecoveryState>"],
+  ["set_batch_recovery_enabled", "async fn set_batch_recovery_enabled(app:AppHandle,enabled:bool)->CommandResult<RecoveryState>"],
+  ["save_batch_recovery", "async fn save_batch_recovery(app:AppHandle,plan:RecoveryPlan)->CommandResult<usize>"],
+  ["clear_batch_recovery", "async fn clear_batch_recovery(app:AppHandle)->CommandResult<bool>"],
 ]);
 
 assert.deepEqual(

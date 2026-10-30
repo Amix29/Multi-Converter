@@ -1,4 +1,5 @@
 import type { ExportEntryV1, MultiConverterApi, OcrProgressV1, ProgressPayload } from "./contracts";
+import { previewRecovery } from "./previewRecovery";
 import {
   makePreviewFile,
   PREVIEW_ROOT,
@@ -14,6 +15,10 @@ export function createPreviewApi(): MultiConverterApi {
   let shouldFailNextConversion = previewParams.get("mockConversionFailure") === "once";
 
   return {
+    loadBatchRecovery: previewRecovery.load,
+    setBatchRecoveryEnabled: previewRecovery.setEnabled,
+    saveBatchRecovery: previewRecovery.save,
+    clearBatchRecovery: previewRecovery.clear,
     async welcomeState() {
       return { show: previewParams.get("mockWelcomeSeen") !== "1" };
     },

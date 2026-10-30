@@ -1,4 +1,4 @@
-import { memo, useMemo, type DragEvent } from "react";
+import { memo, useMemo, type DragEvent, type ReactNode } from "react";
 import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
 import { t, type LanguageCode } from "../../i18n";
 import { fileSummary, hasAvailableTargets, uploadedFilesSummary } from "../conversion/model";
@@ -12,6 +12,7 @@ export const FilesScreen = memo(function FilesScreen(props: {
   files: FileItem[];
   isConverting: boolean;
   isDragOver: boolean;
+  recovery?: ReactNode;
   onAddFiles(): void;
   onClear(): void;
   onClearUnsupported(): void;
@@ -73,7 +74,7 @@ export const FilesScreen = memo(function FilesScreen(props: {
         data-total-count={props.files.length}
         onScroll={onScroll}
       >
-        {!hasFiles && <div className="empty-state">{t(props.language, "upload.empty")}</div>}
+        {!hasFiles && (props.recovery ?? <div className="empty-state">{t(props.language, "upload.empty")}</div>)}
         {hasFiles && (
           <div className="virtual-file-grid-content" style={{ height: `${windowState.totalHeight}px` }}>
             <div
