@@ -1,5 +1,14 @@
 # Multi-Converter Decisions
 
+## 2026-10-30 — macOS 15 And Later On Apple Silicon
+
+After native Mach-O inspection found a 15.0 minimum in the available libvips
+runtime, the maintainer explicitly selected **macOS 15 and later**. V1.0.7 Mac
+configuration, documentation and validation use that minimum and arm64 target.
+Windows and Linux remain supported. Historical releases keep their original
+platform metadata. Static compatibility checks do not substitute for macOS 15
+installed acceptance; the available development Mac runs 26.6.2.
+
 ## 2026-10-30 — Continue The Approved Audit On Available Native Hosts
 
 Continue on `codex/audit-follow-through` from `41459c23`, preserving the converter/

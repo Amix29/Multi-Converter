@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "provenance": "Synthetic non-sensitive benchmark rendered at 1090x1530 pixels; CSS font pixels are not a printed DPI claim",
+  "cases": [
+    {
+      "id": "small-14px",
+      "font": 14,
+      "expected": "La façade protège les fichiers locaux. Déjà été : accents français et caractères. Every original file remains unchanged."
+    },
+    {
+      "id": "small-10px",
+      "font": 10,
+      "expected": "La façade protège les fichiers locaux. Déjà été : accents français et caractères. Every original file remains unchanged."
+    },
+    {
+      "id": "two-columns",
+      "font": 24,
+      "expected": "Colonne gauche première ligne Colonne gauche deuxième ligne Colonne gauche troisième ligne Colonne droite première ligne Colonne droite deuxième ligne Colonne droite troisième ligne"
+    },
+    {
+      "id": "table-grid",
+      "font": 24,
+      "expected": "Produit Quantité Pommes Douze Poires Six"
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { validateMacosDeploymentTargets } from "./macos-deployment-target.mjs";
 
 export function ocrRuntimeArchivePath(root, platform) {
   return path.join(root, "src-tauri", "ocr-resources", "runtime", `${platform}.zip`);
@@ -35,6 +36,11 @@ export async function extractOcrRuntimeArchive(archivePath, destination, platfor
   } else {
     const result = spawnSync("unzip", ["-q", archivePath, "-d", destination], { stdio: "inherit" });
     if (result.status !== 0) throw new Error("Extraction de l’archive OCR impossible.");
+  }
+  if (platform === "macos-aarch64") {
+    const config = JSON.parse(await fs.readFile(path.join(process.cwd(), "src-tauri", "tauri.macos.conf.json"), "utf8"));
+    const errors = validateMacosDeploymentTargets([destination], config.bundle.macOS.minimumSystemVersion);
+    if (errors.length) throw new Error(`OCR runtime exceeds its macOS target:\n${errors.slice(0, 10).join("\n")}`);
   }
   return path.join(destination, platform === "windows-x64" ? "ocr-worker.exe" : "ocr-worker");
 }

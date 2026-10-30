@@ -20,6 +20,8 @@ try {
   assert.equal(readMacosMinimum(current), 15 * 65536);
   assert.equal(readMacosMinimum(write("legacy", thin(12 * 65536 + 3 * 256, true))), 12 * 65536 + 3 * 256);
   assert.equal(readMacosMinimum(write("license.txt", Buffer.from("License text"))), null);
+  const java = Buffer.alloc(12); java.writeUInt32BE(0xcafebabe); java.writeUInt32BE(52, 4);
+  assert.equal(readMacosMinimum(write("JREProperties.class", java)), null, "JVM class magic must not be mistaken for a universal Mach-O");
   assert.match(validateMacosDeploymentTargets([root], "11.0").join("\n"), /requires macOS 15\.0\.0/);
   assert.deepEqual(validateMacosDeploymentTargets([root], "15.0"), []);
   for (const wide of [false, true]) {

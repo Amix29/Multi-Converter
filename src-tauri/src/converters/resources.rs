@@ -3,9 +3,15 @@ use super::*;
 use std::sync::{Arc, Condvar};
 
 const MIB: u64 = 1024 * 1024;
-const TOTAL_BYTES: u64 = 2048 * MIB;
-// The native Linux corpus sampled ~1040 MiB; Windows sampled ~667 MiB.
-pub(crate) const OCR_RESERVATION_BYTES: u64 = if cfg!(target_os = "linux") {
+const TOTAL_BYTES: u64 = if cfg!(target_os = "macos") {
+    3072 * MIB
+} else {
+    2048 * MIB
+};
+// Native evidence: Mac time(1) peak ~1768 MiB; Linux RSS ~1040; Windows ~667.
+pub(crate) const OCR_RESERVATION_BYTES: u64 = if cfg!(target_os = "macos") {
+    2048 * MIB
+} else if cfg!(target_os = "linux") {
     1152 * MIB
 } else {
     768 * MIB

@@ -70,7 +70,9 @@ different.
 The audit follow-through adds a shared native admission pool in
 `converters/resources.rs`. Its cancellation-aware RAII reservations coordinate
 image/document/media operations and the retained OCR worker. The documented
-2 GiB reservation budget is an estimate, not an OS memory limit.
+reservation budget is 2 GiB on Windows/Linux and 3 GiB on macOS, an estimate rather
+than an OS memory limit. Native measurements reserve 768 MiB / 1152 MiB / 2048 MiB
+for the retained Windows / Linux / Mac OCR worker respectively.
 `converters/media/remux.rs` owns fail-closed stream-copy compatibility separately
 from re-encoding profiles. Image ICC/frame/depth policy lives in
 `converters/image/fidelity.rs`. See `V1_0_7_AUDIT_FOLLOW_THROUGH.md` for proof

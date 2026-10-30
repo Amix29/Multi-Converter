@@ -21,6 +21,9 @@ export function readMacosMinimum(filePath) {
     const magic = read(0, 4).readUInt32BE();
     if (magic === 0xcafebabe || magic === 0xcafebabf) {
       const count = read(0, 8).readUInt32BE(4);
+      // JVM class files share CAFEBABE: their next word is minor/major version.
+      if (magic === 0xcafebabe && path.extname(filePath) === ".class"
+          && [0, 65535].includes(count >>> 16) && (count & 65535) >= 45) return null;
       if (count < 1 || count > 32) throw new Error("Invalid universal Mach-O architecture count");
       const wide = magic === 0xcafebabf;
       const entries = read(8, count * (wide ? 32 : 20));

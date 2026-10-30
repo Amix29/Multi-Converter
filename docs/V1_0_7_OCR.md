@@ -208,7 +208,8 @@ clear permission.
 - remote URLs, corrupted files, wrong real types and password-protected PDFs
   are rejected;
 - output is Unicode NFC with LF endings and no trailing spaces;
-- blocks stay ordered by page, then top-to-bottom and left-to-right;
+- blocks stay ordered by page, then by deterministic anchored rows and left-to-right
+  within each row; this does not reconstruct semantic newspaper columns or tables;
 - low confidence alone never deletes recognized text.
 
 ## Commands

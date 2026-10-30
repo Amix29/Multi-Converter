@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "platform": "macos-aarch64",
+  "runtimeArchiveSha256": "27856062d3e9cea9973a64f730dcb19156a9e7a36ec26165203445fe962f7d58",
+  "method": "macOS /usr/bin/time -l maximum resident set size for sandboxed worker; sequential unique image fixtures, no GUI",
+  "peakBytes": 1853849600,
+  "uniqueImageCount": 12,
+  "runtimeInitializationMs": 4544,
+  "elapsedMs": 29254,
+  "exitCode": 0,
+  "networkDenied": true
+}

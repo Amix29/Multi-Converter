@@ -364,8 +364,13 @@ and includes bounded stderr in startup failures. The native Mac rerun passed all
 initialization 47,313 ms, 82 network observations and no connections under denied
 networking. Its reported RSS of zero was invalid: no positive sample was available.
 The harness now reports null for absent samples, including normalization-only
-cases with no memory field. Mac RSS calibration remains open; no zero-memory or
-measured reservation claim is made.
+cases with no memory field. A separate `/usr/bin/time -l` run measured the actual
+sandboxed worker over the 12 unique image fixtures: peak 1,853,849,600 bytes
+(1,768 MiB), initialization 4,544 ms, total 29,254 ms, exit 0. Mac OCR now reserves
+2,048 MiB; its admission pool is 3,072 MiB so document/media work can coexist with
+the retained worker. Windows/Linux remain at 2,048 MiB total and 768/1,152 MiB OCR.
+This is measured peak-RSS guidance, not an OS-enforced cap. The timing receipt is
+`audits/2026-10-30/macos-ocr-memory-probe.json`.
 The first application compiled but bundling failed while clearing xattrs; this
 is not a DMG success. The original attempts remain in the receipts.
 
@@ -420,3 +425,18 @@ the existing worker output is preserved and this limitation stays open.
 Fresh-process initialization was 4,352 ms; sampled RSS reached 887.7 MiB.
 Concurrent native builds affected timings, so these runs do not establish a warm
 speedup or uncontended performance, nor printed-DPI small-font parity.
+
+The row-order investigation additionally reproduced a native normalization defect:
+the same three boxes produced different text for different worker permutations.
+The former pairwise row-tolerance comparator was non-transitive. Normalization
+now first sorts by total coordinate order, forms rows using a fixed anchor, and
+then sorts each row by x. A regression failed before the fix and passes all six
+permutations after it. No blocks are removed; semantic column order stays open.
+
+The new deployment-target gate initially confused LibreOffice's Java `.class`
+CAFEBABE header with a universal Mach-O header. It now distinguishes the JVM
+version header, with a regression. The same bounded compatibility validation
+also runs on extracted Mac OCR archives before inference.
+
+Portable synthetic probe scripts and exact layout PNGs are preserved under
+`audits/2026-10-30/reproduce/`; their README states prerequisites and evidence limits.
