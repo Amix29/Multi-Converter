@@ -38,7 +38,7 @@ export async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir)
         await fs.mkdir(path.dirname(target), { recursive: true });
         await fs.copyFile(resolvedLinkTarget, target);
         const targetStat = await fs.stat(resolvedLinkTarget);
-        await fs.chmod(target, targetStat.mode);
+        await fs.chmod(target, packagedFileMode(targetStat.mode));
         continue;
       }
       await fs.mkdir(path.dirname(target), { recursive: true });
@@ -50,9 +50,15 @@ export async function copyTreeSafe(sourceDir, targetDir, sourceRoot = sourceDir)
       await fs.mkdir(path.dirname(target), { recursive: true });
       await fs.copyFile(source, target);
       const stat = await fs.stat(source);
-      await fs.chmod(target, stat.mode);
+      await fs.chmod(target, packagedFileMode(stat.mode));
     }
   }
+}
+
+function packagedFileMode(mode) {
+  // Tauri clears xattrs on copied macOS resources before signing. Homebrew
+  // libraries can be read-only; retain executable bits and permit owner writes.
+  return process.platform === "darwin" ? mode | 0o200 : mode;
 }
 
 function normalizeSafeSymlinkTarget(source, linkTarget) {
