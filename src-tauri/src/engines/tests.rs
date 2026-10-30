@@ -160,11 +160,11 @@ fn sidecar_names_are_stable_for_release_platforms() {
     );
     assert_eq!(
         universal_binary_name_for("ffmpeg", "macos", "aarch64"),
-        "ffmpeg-universal-apple-darwin"
+        "ffmpeg-aarch64-apple-darwin"
     );
     assert_eq!(
         universal_binary_name_for("ffmpeg", "macos", "x86_64"),
-        "ffmpeg-universal-apple-darwin"
+        "ffmpeg-x86_64-apple-darwin"
     );
     assert_eq!(
         universal_binary_name_for("ffprobe", "linux", "x86_64"),

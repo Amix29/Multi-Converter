@@ -1,5 +1,5 @@
 use super::CommandResult;
-use crate::converters::{self, ImportedFileDescription};
+use crate::converters::{self, ImportBatchResult, ImportRejection, ImportedFileDescription};
 use tauri::AppHandle;
 
 mod expansion;
@@ -8,28 +8,40 @@ mod expansion;
 pub(crate) async fn describe_paths(
     app: AppHandle,
     paths: Vec<String>,
-) -> CommandResult<Vec<ImportedFileDescription>> {
+) -> CommandResult<ImportBatchResult> {
     tauri::async_runtime::spawn_blocking(move || {
-        expansion::expand_file_paths(&paths)?
-            .files
-            .into_iter()
-            .map(|expanded| {
-                let mut description =
-                    converters::describe_file_with_app(Some(&app), &expanded.path)
-                        .map_err(|error| error.to_string())?;
-                if expanded.partial_import {
-                    description.warnings.push(converters::FileWarning {
-                        code: "partialFolderImport",
-                        severity: "warning",
-                        limit_bytes: None,
-                    });
-                }
-                Ok(ImportedFileDescription {
-                    description,
-                    import_origin: Some(expanded.import_origin),
-                })
-            })
-            .collect()
+        let expanded_paths = expansion::expand_file_paths(&paths)?;
+        let mut rejected = expanded_paths.rejected;
+        let mut files = Vec::new();
+        for expanded in expanded_paths.files {
+            let mut description =
+                match converters::describe_file_with_app(Some(&app), &expanded.path) {
+                    Ok(description) => description,
+                    Err(error) => {
+                        rejected.push(ImportRejection {
+                            path: expanded.path.to_string_lossy().to_string(),
+                            message: error.to_string(),
+                        });
+                        continue;
+                    }
+                };
+            if expanded.partial_import {
+                description.warnings.push(converters::FileWarning {
+                    code: "partialFolderImport",
+                    severity: "warning",
+                    limit_bytes: None,
+                });
+            }
+            files.push(ImportedFileDescription {
+                description,
+                import_origin: Some(expanded.import_origin),
+            });
+        }
+        Ok(ImportBatchResult {
+            files,
+            rejected,
+            truncated: expanded_paths.partial_import,
+        })
     })
     .await
     .map_err(|error| error.to_string())?

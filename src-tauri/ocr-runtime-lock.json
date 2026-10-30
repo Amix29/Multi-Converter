@@ -11,7 +11,7 @@
     "python": "3.12.10",
     "uv": "0.11.21",
     "requirements": "tools/ocr-runtime/requirements-windows-x64.lock.txt",
-    "requirementsSha256": "5baf7325b3f11468ff1d8e0040e18c900a630f3bb8924550ecfbfd44aa920e99"
+    "requirementsSha256": "bb4f0031b90bd68cc44c5e888c23212148602cfe80708ddc8e3ea956aa98246a"
   },
   "platformBuildEnvironments": {
     "windows-x64": {
@@ -25,12 +25,6 @@
       "requirements": "tools/ocr-runtime/requirements-macos-aarch64.lock.txt",
       "paddleSource": "official-wheel"
     },
-    "macos-x86_64": {
-      "python": "3.12.10",
-      "uv": "0.11.21",
-      "requirements": "tools/ocr-runtime/requirements-macos-x86_64.lock.txt",
-      "paddleSource": "locked-source-build"
-    },
     "linux-x64": {
       "python": "3.12.10",
       "uv": "0.11.21",
@@ -38,7 +32,15 @@
       "paddleSource": "official-wheel"
     }
   },
-  "languages": ["fr", "en", "es", "de", "it", "pt", "ja"],
+  "languages": [
+    "fr",
+    "en",
+    "es",
+    "de",
+    "it",
+    "pt",
+    "ja"
+  ],
   "modelArtifact": {
     "fileCount": 21,
     "totalBytes": 185082003,
@@ -53,9 +55,13 @@
       "providerFallbackReason": "DirectML reste désactivé jusqu'à validation de parité et de gain sur le corpus verrouillé.",
       "executable": "runtime/windows-x64/ocr-worker.exe",
       "artifact": {
-        "fileCount": 7260,
-        "totalBytes": 660098904,
-        "aggregateSha256": "b6ea96d25e8c43ffa09efe7b8b171b44d3a82049c7cd0662ce403e8399f10da4"
+        "fileCount": 7246,
+        "totalBytes": 660643156,
+        "aggregateSha256": "d386f7923fbea6fe6efa407b2f00d3e99e31ee9778027a67ca32e6b14adf759c"
+      },
+      "archive": {
+        "bytes": 236811152,
+        "sha256": "77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac"
       }
     },
     {
@@ -65,14 +71,6 @@
       "fallbackProvider": "cpu",
       "providerFallbackReason": "CoreML reste désactivé jusqu'à validation de parité et de gain sur Apple Silicon.",
       "executable": "runtime/macos-aarch64/ocr-worker"
-    },
-    {
-      "platform": "macos-x86_64",
-      "runtime": "official",
-      "provider": "cpu",
-      "fallbackProvider": "cpu",
-      "providerFallbackReason": "CoreML reste désactivé jusqu'à validation de parité et de gain sur Intel.",
-      "executable": "runtime/macos-x86_64/ocr-worker"
     },
     {
       "platform": "linux-x64",

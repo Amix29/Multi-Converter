@@ -10,21 +10,21 @@ const EOCD_MIN_BYTES: usize = 22;
 const EOCD_MAX_COMMENT_BYTES: usize = u16::MAX as usize;
 
 #[derive(Clone, Copy)]
-pub(super) struct TextArchiveLimits {
+pub(in crate::converters) struct TextArchiveLimits {
     entries: usize,
     uncompressed_bytes: u64,
     compression_ratio: u64,
     ratio_check_bytes: u64,
 }
 
-pub(super) const TEXT_ARCHIVE_LIMITS: TextArchiveLimits = TextArchiveLimits {
+pub(in crate::converters) const TEXT_ARCHIVE_LIMITS: TextArchiveLimits = TextArchiveLimits {
     entries: MAX_TEXT_ARCHIVE_ENTRIES,
     uncompressed_bytes: MAX_TEXT_ARCHIVE_UNCOMPRESSED_BYTES,
     compression_ratio: MAX_TEXT_ARCHIVE_COMPRESSION_RATIO,
     ratio_check_bytes: MIN_RATIO_CHECK_BYTES,
 };
 
-pub(super) fn open_validated_text_archive(
+pub(in crate::converters) fn open_validated_text_archive(
     input_path: &Path,
     label: &str,
     case_insensitive_names: bool,
@@ -133,7 +133,7 @@ fn validate_text_archive(
     let mut total_uncompressed = 0u64;
     for index in 0..archive.len() {
         let entry = archive.by_index(index)?;
-        let normalized_name = normalize_text_archive_entry_name(entry.name(), label)?;
+        let normalized_name = normalize_text_archive_entry_name(entry.name()?.as_ref(), label)?;
         let identity = if case_insensitive_names {
             normalized_name.to_ascii_lowercase()
         } else {

@@ -1,6 +1,23 @@
 use super::*;
 
 #[test]
+fn one_missing_root_does_not_discard_valid_files() {
+    let directory = tempfile::tempdir().unwrap();
+    let valid = directory.path().join("valid.txt");
+    fs::write(&valid, "contenu").unwrap();
+    let missing = directory.path().join("missing.txt");
+    let result = expand_file_paths(&[
+        missing.to_string_lossy().to_string(),
+        valid.to_string_lossy().to_string(),
+    ])
+    .unwrap();
+    assert_eq!(result.files.len(), 1);
+    assert_eq!(result.files[0].path, valid);
+    assert_eq!(result.rejected.len(), 1);
+    assert_eq!(result.rejected[0].path, missing.to_string_lossy());
+}
+
+#[test]
 fn multiple_import_roots_keep_distinct_private_provenance() {
     let first = tempfile::tempdir().unwrap();
     let second = tempfile::tempdir().unwrap();

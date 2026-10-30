@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T13:14:22.524Z",
+  "budgets": {
+    "frontendRawBytes": 1095149,
+    "initialChunkBytes": 211600,
+    "largestChunkBytes": 500000,
+    "windowsExecutableBytes": 28070784
+  },
+  "frontend": {
+    "exists": true,
+    "rawBytes": 534762,
+    "initialChunkBytes": 88560,
+    "initialJavaScriptBytes": 400652,
+    "initialJavaScriptFiles": [
+      "api-CQZk0j-I.js",
+      "event-CpjZXHKX.js",
+      "index-BhFeKAkN.js",
+      "react-vendor-BfXDu3aj.js"
+    ],
+    "largestChunkBytes": 189544
+  },
+  "windowsExecutable": {
+    "exists": false,
+    "bytes": null,
+    "path": null
+  }
+}

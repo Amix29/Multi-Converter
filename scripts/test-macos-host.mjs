@@ -6,16 +6,16 @@ import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 
 const root = process.cwd();
 const binariesDir = path.join(root, "src-tauri", "binaries");
-const requiredTargets = ["aarch64-apple-darwin", "x86_64-apple-darwin"];
+const requiredTargets = ["aarch64-apple-darwin"];
 const sidecars = ["ffmpeg", "ffprobe"];
 const expectedSidecarVersion = readRequiredFfmpegVersion(root);
 
-if (process.platform !== "darwin") {
+if (process.platform !== "darwin" || process.arch !== "arm64") {
   fail("Real macOS host validation must run on macOS. Use GitHub Actions macos-latest or a real Mac.");
 }
 
 requireCommand("xcode-select", ["-p"], "Xcode Command Line Tools are required.");
-requireCommand("xcrun", ["-find", "lipo"], "lipo is required to validate universal sidecars.");
+requireCommand("xcrun", ["-find", "lipo"], "lipo is required to validate Apple Silicon sidecars.");
 
 const installedTargets = commandOutput("rustup", ["target", "list", "--installed"], "rustup target list failed.");
 for (const target of requiredTargets) {
@@ -26,16 +26,9 @@ for (const target of requiredTargets) {
 
 for (const stem of sidecars) {
   const arm64 = path.join(binariesDir, `${stem}-aarch64-apple-darwin`);
-  const x64 = path.join(binariesDir, `${stem}-x86_64-apple-darwin`);
-  const universal = path.join(binariesDir, `${stem}-universal-apple-darwin`);
-
   assertExecutableFile(arm64);
-  assertExecutableFile(x64);
-  assertExecutableFile(universal);
   verifyArch(arm64, "arm64");
-  verifyArch(x64, "x86_64");
-  verifyArch(universal, "arm64", "x86_64");
-  verifySidecarVersion(universal, stem);
+  verifySidecarVersion(arm64, stem);
 }
 
 runNodeScript("scripts/validate-bundled-engines.mjs", "macOS bundled engine validation failed.");
@@ -96,7 +89,7 @@ function commandOutput(command, args, message) {
 function runNodeScript(scriptPath, message) {
   const result = spawnSync(process.execPath, [scriptPath], {
     cwd: root,
-    env: { ...process.env, MULTI_CONVERTER_ENGINE_PLATFORM: "macos-universal", MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES: "1" },
+    env: { ...process.env, MULTI_CONVERTER_ENGINE_PLATFORM: "macos-aarch64", MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES: "1" },
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   });

@@ -48,6 +48,11 @@
   display: grid;
 }
 
+.engine-diagnostics dl { display: grid; gap: 8px; margin: 0; }
+.engine-diagnostics dl > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
+.engine-diagnostics dt { font-weight: 650; }
+.engine-diagnostics dd { margin: 0; color: var(--vlm-text-muted); overflow-wrap: anywhere; }
+
 .settings-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.92fr);

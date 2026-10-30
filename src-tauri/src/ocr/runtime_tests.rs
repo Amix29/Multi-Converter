@@ -104,9 +104,10 @@ fn manifest_paths_must_remain_relative() {
 }
 
 #[test]
-fn platform_selection_distinguishes_both_macos_architectures() {
+fn platform_selection_rejects_intel_macos_and_preserves_supported_targets() {
     assert_eq!(platform_key_for("macos", "aarch64"), "macos-aarch64");
-    assert_eq!(platform_key_for("macos", "x86_64"), "macos-x86_64");
+    assert_eq!(platform_key_for("macos", "x86_64"), "unsupported");
+    assert_eq!(platform_key_for("windows", "x86_64"), "windows-x64");
     assert_eq!(platform_key_for("linux", "x86_64"), "linux-x64");
     assert_eq!(platform_key_for("linux", "aarch64"), "unsupported");
 }

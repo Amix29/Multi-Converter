@@ -28,8 +28,17 @@ const indexHtml = path.join(root, "dist", "index.html");
 const initialNames = fs.existsSync(indexHtml)
   ? [...fs.readFileSync(indexHtml, "utf8").matchAll(/src="(?:\.\/|\/)?assets\/([^"]+\.js)"/gu)].map((match) => match[1])
   : [];
+const preloadedNames = fs.existsSync(indexHtml)
+  ? [...fs.readFileSync(indexHtml, "utf8").matchAll(/<link\b[^>]*>/gu)]
+    .filter(([tag]) => /rel="modulepreload"/u.test(tag))
+    .flatMap(([tag]) => [...tag.matchAll(/href="(?:\.\/|\/)?assets\/([^"]+\.js)"/gu)].map((match) => match[1]))
+  : [];
+const initialGraphNames = new Set([...initialNames, ...preloadedNames]);
 const initialChunkBytes = javascript
   .filter((filePath) => initialNames.includes(path.basename(filePath)))
+  .reduce((total, filePath) => total + bytes(filePath), 0);
+const initialJavaScriptBytes = javascript
+  .filter((filePath) => initialGraphNames.has(path.basename(filePath)))
   .reduce((total, filePath) => total + bytes(filePath), 0);
 const largestChunkBytes = Math.max(0, ...javascript.map(bytes));
 const frontendRawBytes = distFiles.reduce((total, filePath) => total + bytes(filePath), 0);
@@ -43,13 +52,17 @@ const executablePath = executableCandidates.find(fs.existsSync) ?? null;
 const windowsExecutableBytes = executablePath ? bytes(executablePath) : null;
 
 const measurements = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   generatedAt: new Date().toISOString(),
   budgets,
   frontend: {
     exists: distFiles.length > 0,
     rawBytes: frontendRawBytes,
     initialChunkBytes,
+    // Retain the existing entry-chunk budget; disclose the complete initial
+    // module-preload graph separately rather than calling the entry the total.
+    initialJavaScriptBytes,
+    initialJavaScriptFiles: [...initialGraphNames].sort(),
     largestChunkBytes,
   },
   windowsExecutable: {

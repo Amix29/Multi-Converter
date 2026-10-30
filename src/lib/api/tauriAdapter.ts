@@ -4,7 +4,7 @@ import type {
   DependencyBootstrap,
   EngineStatus,
   ExportResult,
-  FileDescription,
+  ImportBatchResult,
   MultiConverterApi,
   OcrDocumentResultV1,
   OcrProgressV1,
@@ -28,7 +28,7 @@ export function createTauriApi(): MultiConverterApi {
       invoke<ExportResult>("export_to_downloads", { filePaths, outputDir, entries: entries ?? null }),
     exportToFolder: (filePaths, destinationDir, outputDir, entries) =>
       invoke<ExportResult>("export_to_folder", { filePaths, destinationDir, outputDir, entries: entries ?? null }),
-    describePaths: (paths) => invoke<FileDescription[]>("describe_paths", { paths }),
+    describePaths: (paths) => invoke<ImportBatchResult>("describe_paths", { paths }),
     saveClipboardFiles: (files) => invoke<string[]>("save_clipboard_files", { files }),
     convert: (job) => invoke<ConversionResult>("start_conversion", { job }),
     cancelConversion: (jobId) => invoke<boolean>("cancel_conversion", { jobId }),

@@ -81,7 +81,7 @@ export function createPreviewApi(): MultiConverterApi {
       };
     },
     async describePaths(paths) {
-      return paths.map((filePath) => {
+      const files = paths.map((filePath) => {
         const name = filePath.split(/[\\/]/).pop() || "fichier.mp4";
         const extension = previewExtension(name);
         const description = makePreviewFile(name, extension, 42865012);
@@ -89,6 +89,7 @@ export function createPreviewApi(): MultiConverterApi {
           ? { ...description, category: "Inconnu", categoryId: "unknown", targets: [] }
           : description;
       });
+      return { files, rejected: [], truncated: false };
     },
     async saveClipboardFiles(files) {
       return files.map((file, index) => `${PREVIEW_ROOT}\\Desktop\\clipboard-${index + 1}-${file.name || "file.txt"}`);

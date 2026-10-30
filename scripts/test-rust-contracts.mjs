@@ -109,7 +109,7 @@ const expectedSignatures = new Map([
   ["welcome_state", "fn welcome_state()->CommandResult<WelcomeState>"],
   ["mark_welcome_seen", "fn mark_welcome_seen()->CommandResult<bool>"],
   ["pick_file_paths", "async fn pick_file_paths()->CommandResult<Vec<String>>"],
-  ["describe_paths", "async fn describe_paths(app:AppHandle,paths:Vec<String>)->CommandResult<Vec<ImportedFileDescription>>"],
+  ["describe_paths", "async fn describe_paths(app:AppHandle,paths:Vec<String>)->CommandResult<ImportBatchResult>"],
   ["save_clipboard_files", "async fn save_clipboard_files(files:Vec<ClipboardFile>)->CommandResult<Vec<String>>"],
   ["pick_output_folder", "async fn pick_output_folder()->CommandResult<Option<String>>"],
   ["create_temp_output_folder", "fn create_temp_output_folder()->CommandResult<String>"],

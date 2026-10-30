@@ -17,12 +17,10 @@ on:
       arch:
         description: "Runtime architecture to build"
         required: true
-        default: "both"
+        default: "aarch64"
         type: choice
         options:
-          - both
           - aarch64
-          - x86_64
 
 permissions:
   contents: write
@@ -40,15 +38,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON((github.event_name != 'workflow_dispatch' || inputs.arch == 'both') && '[{"arch":"aarch64","runner":"macos-latest"},{"arch":"x86_64","runner":"macos-15-intel"}]' || inputs.arch == 'aarch64' && '[{"arch":"aarch64","runner":"macos-latest"}]' || '[{"arch":"x86_64","runner":"macos-15-intel"}]') }}
+        include:
+          - arch: aarch64
+            runner: macos-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
@@ -67,7 +67,7 @@ jobs:
           npm run build:libvips-macos-runtime -- --arch "${{ matrix.arch }}"
           --output-dir "$RUNNER_TEMP/mc-libvips-${{ matrix.arch }}"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: libvips-macos-${{ matrix.arch }}
           path: ${{ steps.libvips.outputs.archive }}

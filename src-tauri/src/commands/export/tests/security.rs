@@ -239,7 +239,12 @@ fn exports_reject_directory_reparse_points() {
         std::time::Duration::from_secs(5),
     )
     .unwrap();
-    assert!(output.status.success());
+    assert!(
+        output.status.success(),
+        "junction fixture failed: {} {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
     assert!(ensure_exportable_conversion_file(&link.join("outside.txt")).is_err());
     fs::remove_dir(&link).unwrap();
 }

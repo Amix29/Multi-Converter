@@ -3,9 +3,9 @@
 ## Status
 
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
-- Last documentation review: **2026-10-29**.
+- Last documentation review: **2026-10-30**.
 - Release status: **not ready**.
-- Local implementation branch: `codex/remove-file-editor`, based on `codex/test`.
+- Local implementation branch: `codex/converter-audit-apple-silicon`, based on `codex/test`.
 - `codex/test` remains the persistent integration/CI validation branch; `main` is the public stable branch.
 
 The maintainer cancelled document and PDF editing on 2026-10-29. Multi-Converter
@@ -57,7 +57,7 @@ and the documentation index; they no longer define feature or release gates.
 2. Verify installed Windows conversion/OCR, native picker/drop, offline behavior,
    cancellation, cleanup, restart and source integrity using the current 66-scenario
    acceptance manifest. Old 101-scenario editor-inclusive receipts are historical.
-3. Build and verify real macOS universal and Linux x64 engine/runtime packages;
+3. Build and verify real macOS Apple Silicon and Linux x64 engine/runtime packages;
    complete native conversion/OCR and final downloaded-package acceptance.
 4. Review final third-party licenses/NOTICE files and signed updater artifacts.
 5. Validate exact application assets and release metadata before publication.
@@ -65,3 +65,11 @@ and the documentation index; they no longer define feature or release gates.
 `docs/V1_0_7_VALIDATION.md` records current checks and proof limits.
 `docs/V1_0_7_OCR.md` remains the OCR runtime and behavior contract.
 Browser previews prove UI behavior only, not native conversions or inference.
+
+## Approved Audit Implementation — 2026-10-30
+
+The maintainer approved the comprehensive audit recommendations and retired Intel
+macOS. Windows x64, Apple Silicon macOS and Linux x64 remain the supported targets.
+The implementation and evidence ledger is [V1_0_7_APPROVED_IMPLEMENTATION.md](V1_0_7_APPROVED_IMPLEMENTATION.md).
+It separates completed changes, local checks and outstanding native/release gates.
+Historical V1.0.6 universal artifacts and their evidence remain unchanged.

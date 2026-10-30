@@ -6,7 +6,7 @@ import { CloseIcon } from "./Icons";
 export function PageNotice(props: { language: LanguageCode; notice: Notice | null; onDismiss(): void }) {
   if (!props.notice) return null;
   return (
-    <aside className={`page-notice is-${props.notice.tone}`} role="status" aria-live="polite">
+    <aside className={`page-notice is-${props.notice.tone}`} role={props.notice.tone === "error" ? "alert" : "status"} aria-live={props.notice.tone === "error" ? "assertive" : "polite"}>
       <span />
       <p>{props.notice.message}</p>
       <button type="button" aria-label={t(props.language, "app.close")} onClick={props.onDismiss}><CloseIcon /></button>

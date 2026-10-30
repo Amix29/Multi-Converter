@@ -130,11 +130,7 @@ export function FeedbackPrivacyDialog(props: {
             disabled={!canClose}
             onClick={props.onClose}
           >
-            {canClose
-              ? t(props.language, "feedback.close")
-              : t(props.language, "feedback.wait", {
-                  seconds: remainingSeconds,
-                })}
+            {t(props.language, "feedback.close")}
           </button>
           <button
             className="primary-button"

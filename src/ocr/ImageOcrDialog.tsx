@@ -10,6 +10,7 @@ export function ImageOcrDialog(props: {
   fileName: string;
   path: string;
   onClose(): void;
+  onTask?(task: { jobId: string; completion: Promise<void> }): void;
   onNotice(tone: "info" | "success" | "error", message: string): void;
 }) {
   const surfaceRef = useRef<HTMLDivElement>(null);
@@ -17,6 +18,7 @@ export function ImageOcrDialog(props: {
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const retryButtonRef = useRef<HTMLButtonElement>(null);
   const jobIdRef = useRef("");
+  const taskRef = useRef<Promise<void> | null>(null);
   const sequenceRef = useRef(0);
   const cancelledJobs = useRef(new Set<string>());
   const [attempt, setAttempt] = useState(0);
@@ -54,8 +56,8 @@ export function ImageOcrDialog(props: {
       if (!disposed && sequenceRef.current === sequence && payload.jobId === jobId && !cancelledJobs.current.has(jobId)) {
         setProgress(payload);
       }
-    }).then((listener) => { unlisten = listener; });
-    void api.recognizeImage(props.path, jobId)
+    }).then((listener) => { if (disposed) listener(); else unlisten = listener; });
+    const completion = api.recognizeImage(props.path, jobId)
       .then((value) => {
         if (!disposed && sequenceRef.current === sequence && !cancelledJobs.current.has(jobId)) setResult(value);
       })
@@ -69,6 +71,8 @@ export function ImageOcrDialog(props: {
           setCancelling(false);
         }
       });
+    taskRef.current = completion;
+    props.onTask?.({ jobId, completion });
     return () => {
       disposed = true;
       unlisten?.();
@@ -100,6 +104,7 @@ export function ImageOcrDialog(props: {
 
   async function cancel(closeAfter = false) {
     const jobId = jobIdRef.current;
+    const completion = taskRef.current;
     if (!jobId || (!running && !cancelling)) {
       if (closeAfter) props.onClose();
       return;
@@ -112,6 +117,7 @@ export function ImageOcrDialog(props: {
     if (closeAfter) props.onClose();
     try {
       await api.cancelOcr(jobId);
+      await completion;
     } catch (reason) {
       props.onNotice("error", cleanOcrError(reason));
     } finally {

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "platform": "win32",
+  "arch": "x64",
+  "controlRequests": 1,
+  "restricted": [
+    {
+      "tool": "ffmpeg",
+      "rejected": true,
+      "requests": 0
+    },
+    {
+      "tool": "ffprobe",
+      "rejected": true,
+      "requests": 0
+    }
+  ],
+  "sourceUnchanged": true
+}

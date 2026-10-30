@@ -65,7 +65,6 @@ a:focus-visible,
 
 .app-shell {
   --floating-toast-offset: 24px;
-  --page-notice-offset: var(--floating-toast-offset);
   display: grid;
   grid-template-rows: 72px minmax(0, 1fr);
   width: min(var(--vlm-container-product), 100%);
@@ -77,8 +76,4 @@ a:focus-visible,
 
 .app-shell.has-update-reminder {
   --floating-toast-offset: 190px;
-}
-
-.app-shell.has-import-toast {
-  --page-notice-offset: calc(var(--floating-toast-offset) + 86px);
 }

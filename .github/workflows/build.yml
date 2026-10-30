@@ -18,7 +18,6 @@ concurrency:
 jobs:
   quality-gate:
     name: Windows x64 quality gate
-    if: ${{ github.event_name != 'push' || github.ref_name != 'codex/test' || vars.MC_ENABLE_CODEX_TEST_BUILD == '1' }}
     runs-on: windows-latest
     timeout-minutes: 120
     env:
@@ -26,20 +25,20 @@ jobs:
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
           components: rustfmt, clippy
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cargo/registry
@@ -48,7 +47,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-registry-v2-
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: src-tauri/bundled-engines
           key: ${{ runner.os }}-bundled-engines-${{ hashFiles('src-tauri/engines-manifest.json') }}
@@ -56,20 +55,32 @@ jobs:
             ${{ runner.os }}-bundled-engines-
 
       - id: cargo-audit-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.cargo/bin/cargo-audit.exe
           key: ${{ runner.os }}-cargo-audit-bin-v1
 
       - run: npm ci
       - run: npx playwright install chromium
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12.10"
+      - name: Build and verify current Windows OCR resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install uv==0.11.21
+          npm run build:ocr-runtime:platform -- --platform windows-x64 --install
+          npm run prepare:ocr-runtime -- --platform windows-x64 --output-dir "$RUNNER_TEMP/ocr-runtime-artifact" --verify-reproducible
+          npm run prepare:ocr-models -- --allow-download --output-dir "$RUNNER_TEMP/ocr-models"
+          npm run stage:ocr-runtime-artifacts -- --platform windows-x64 --runtime-dir "$RUNNER_TEMP/ocr-runtime-artifact" --models-dir "$RUNNER_TEMP/ocr-models"
+          npm run inventory:ocr-runtime-licenses
       - run: cargo install cargo-audit --locked
         if: steps.cargo-audit-cache.outputs.cache-hit != 'true'
       - run: npm run test:windows:ci
 
   macos-code-check:
     name: macOS code check (${{ matrix.rust-target }})
-    if: ${{ github.event_name != 'push' || github.ref_name != 'codex/test' || vars.MC_ENABLE_CODEX_TEST_BUILD == '1' }}
     runs-on: macos-latest
     timeout-minutes: 60
     strategy:
@@ -77,28 +88,27 @@ jobs:
       matrix:
         rust-target:
           - aarch64-apple-darwin
-          - x86_64-apple-darwin
     env:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_CARGO_TARGET_NAME: mc-cargo-target-${{ matrix.rust-target }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
           components: rustfmt, clippy
           targets: ${{ matrix.rust-target }}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cargo/registry
@@ -127,7 +137,6 @@ jobs:
 
   macos-host-tests:
     name: macOS host unit tests
-    if: ${{ github.event_name != 'push' || github.ref_name != 'codex/test' || vars.MC_ENABLE_CODEX_TEST_BUILD == '1' }}
     runs-on: macos-latest
     timeout-minutes: 60
     env:
@@ -136,20 +145,20 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_CARGO_TARGET_NAME: mc-cargo-target-macos-host-tests
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
           components: rustfmt, clippy
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cargo/registry
@@ -167,7 +176,6 @@ jobs:
 
   linux-code-check:
     name: Linux x64 code check
-    if: ${{ github.event_name != 'push' || github.ref_name != 'codex/test' || vars.MC_ENABLE_CODEX_TEST_BUILD == '1' }}
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     env:
@@ -176,16 +184,16 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_CARGO_TARGET_NAME: mc-cargo-target-linux-x64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
           components: rustfmt, clippy
           targets: x86_64-unknown-linux-gnu
@@ -205,7 +213,7 @@ jobs:
             pkg-config \
             patchelf
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cargo/registry

@@ -13,9 +13,12 @@ import type {
   UpdateStatus,
 } from "../../lib/updateService";
 import { CloseIcon } from "../components/Icons";
+import { EngineDiagnostics } from "./EngineDiagnostics";
+import type { DependencyBootstrap } from "../../lib/api";
 
 export function SettingsPanel(props: {
   isOpen: boolean;
+  dependencies: DependencyBootstrap | null;
   language: LanguageCode;
   notificationsEnabled: boolean;
   internetAvailable: boolean;
@@ -157,6 +160,7 @@ export function SettingsPanel(props: {
               <label className="switch-control">
                 <input
                   type="checkbox"
+                  aria-labelledby="notifications-setting-title"
                   checked={props.notificationsEnabled}
                   onChange={(event) =>
                     props.onNotificationsEnabled(event.currentTarget.checked)
@@ -168,6 +172,7 @@ export function SettingsPanel(props: {
           </section>
 
           <section className="settings-side">
+            <EngineDiagnostics language={props.language} initial={props.dependencies} />
             <section
               className="update-settings-card"
               aria-labelledby="update-settings-title"

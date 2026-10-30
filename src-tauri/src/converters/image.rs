@@ -1,18 +1,23 @@
 use super::*;
 
+#[cfg(test)]
+#[path = "image/fidelity_tests.rs"]
+mod fidelity_tests;
+
 pub(in crate::converters) fn convert_image(
     app: &AppHandle,
     job_id: &str,
     input_path: &Path,
     output_path: &Path,
     target_format: &str,
+    quality: QualityProfile,
 ) -> Result<()> {
     ensure_integrated_memory_budget(input_path, "image")?;
     emit_progress(app, job_id, 18, "Lecture de l'image");
     let image = read_integrated_image(input_path)?;
 
     emit_progress(app, job_id, 52, "Encodage de l'image");
-    write_integrated_image(output_path, image, target_format)?;
+    write_integrated_image_with_quality(output_path, image, target_format, quality)?;
     emit_progress(app, job_id, 88, "Finalisation");
     Ok(())
 }
@@ -34,20 +39,51 @@ pub(in crate::converters) fn read_integrated_image(
         let reader = image::ImageReader::open(input_path)?.with_guessed_format()?;
         let (width, height) = reader.into_dimensions()?;
         ensure_image_dimensions(width, height, "image")?;
-        let image = image::ImageReader::open(input_path)?
-            .with_guessed_format()?
-            .decode()?;
+        use ::image::ImageDecoder;
+        let mut reader = image::ImageReader::open(input_path)?.with_guessed_format()?;
+        let mut limits = image::Limits::default();
+        limits.max_alloc = Some(256 * 1024 * 1024);
+        reader.limits(limits);
+        let mut decoder = reader.into_decoder()?;
+        let orientation = decoder.orientation()?;
+        let mut image = ::image::DynamicImage::from_decoder(decoder)?;
+        image.apply_orientation(orientation);
         Ok(image)
     }
 }
 
+#[cfg(test)]
 pub(in crate::converters) fn write_integrated_image(
     output_path: &Path,
     image: ::image::DynamicImage,
     target_format: &str,
 ) -> Result<()> {
+    write_integrated_image_with_quality(output_path, image, target_format, QualityProfile::Balanced)
+}
+
+fn write_integrated_image_with_quality(
+    output_path: &Path,
+    image: ::image::DynamicImage,
+    target_format: &str,
+    quality: QualityProfile,
+) -> Result<()> {
     if target_format == "ico" {
         write_windows_ico(output_path, image)?;
+    } else if target_format == "jpg" {
+        let mut rgba = image.into_rgba8();
+        for pixel in rgba.pixels_mut() {
+            let alpha = u16::from(pixel[3]);
+            for channel in &mut pixel.0[..3] {
+                *channel = ((u16::from(*channel) * alpha + 255 * (255 - alpha) + 127) / 255) as u8;
+            }
+            pixel[3] = 255;
+        }
+        let rgb = ::image::DynamicImage::ImageRgba8(rgba).into_rgb8();
+        ::image::codecs::jpeg::JpegEncoder::new_with_quality(
+            File::create(output_path)?,
+            quality.jpeg_quality(),
+        )
+        .encode_image(&::image::DynamicImage::ImageRgb8(rgb))?;
     } else {
         let format = image_format_for_target(target_format)?;
         image.write_to(&mut File::create(output_path)?, format)?;
@@ -144,6 +180,13 @@ pub(in crate::converters) fn read_svg_image(input_path: &Path) -> Result<::image
         .map_err(|error| ConvertError::Message(format!("SVG illisible: {error}")))?;
     let size = tree.size().to_int_size();
     ensure_image_dimensions(size.width(), size.height(), "SVG")?;
+    // tiny-skia plus the owned RGBA image coexist during this copy.
+    let peak_bytes = u64::from(size.width()) * u64::from(size.height()) * 8;
+    if peak_bytes > 256 * 1024 * 1024 {
+        return Err(ConvertError::Message(
+            "Ce SVG nécessite trop de mémoire pour le rendu intégré actuel.".to_string(),
+        ));
+    }
     let mut pixmap = resvg::tiny_skia::Pixmap::new(size.width(), size.height())
         .ok_or_else(|| ConvertError::Message("SVG illisible.".to_string()))?;
     resvg::render(
@@ -151,7 +194,15 @@ pub(in crate::converters) fn read_svg_image(input_path: &Path) -> Result<::image
         resvg::tiny_skia::Transform::default(),
         &mut pixmap.as_mut(),
     );
-    let rgba = ::image::RgbaImage::from_raw(size.width(), size.height(), pixmap.data().to_vec())
+    let pixels = pixmap
+        .pixels()
+        .iter()
+        .flat_map(|pixel| {
+            let color = pixel.demultiply();
+            [color.red(), color.green(), color.blue(), color.alpha()]
+        })
+        .collect();
+    let rgba = ::image::RgbaImage::from_raw(size.width(), size.height(), pixels)
         .ok_or_else(|| ConvertError::Message("SVG illisible.".to_string()))?;
     Ok(::image::DynamicImage::ImageRgba8(rgba))
 }

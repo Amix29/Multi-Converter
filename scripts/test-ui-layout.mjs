@@ -78,9 +78,7 @@ assert.match(cssRule(".floating-corner > *"), /transform-origin:\s*right bottom;
 assert.match(css, /--vlm-ease-standard:\s*cubic-bezier\(0\.22,\s*0\.72,\s*0\.18,\s*1\);/, "shared Vellum UI easing token is missing");
 assert.match(cssRule("button"), /touch-action:\s*manipulation;/, "buttons should use manipulation touch action");
 assert.match(cssRule(".app-shell"), /--floating-toast-offset:\s*24px;/, "app shell must define the default floating toast offset");
-assert.match(cssRule(".app-shell"), /--page-notice-offset:\s*var\(--floating-toast-offset\);/, "page notices must default to the floating toast offset");
 assert.match(cssRule(".app-shell.has-update-reminder"), /--floating-toast-offset:\s*190px;/, "update reminder state must reserve vertical toast space");
-assert.match(cssRule(".app-shell.has-import-toast"), /--page-notice-offset:\s*calc\(var\(--floating-toast-offset\) \+ 86px\);/, "page notices must move above import toast when both are visible");
 
 const updateReminder = cssRule(".update-reminder");
 const feedbackLauncher = cssRule(".feedback-launcher");
@@ -90,8 +88,10 @@ assert.doesNotMatch(updateReminder, /position:\s*fixed;/, "update-reminder must 
 assert.doesNotMatch(feedbackLauncher, /position:\s*fixed;/, "feedback-launcher must not be fixed independently");
 assert.match(importToast, /bottom:\s*var\(--floating-toast-offset\);/, "import toast must avoid the floating feedback/update stack");
 assert.match(importToast, /transition:\s*bottom 180ms var\(--vlm-ease-standard\);/, "import toast should move smoothly when floating controls appear");
-assert.match(pageNotice, /bottom:\s*var\(--page-notice-offset\);/, "page notices must avoid the floating feedback/update/import stack");
-assert.match(pageNotice, /transition:\s*bottom var\(--vlm-motion-base\) var\(--vlm-ease-standard\);/, "page notices should move smoothly when floating controls appear");
+assert.match(pageNotice, /position:\s*relative;/, "notices must participate in layout rather than cover output actions");
+assert.match(pageNotice, /grid-row:\s*2;/, "notices need their own row below navigation");
+assert.match(cssRule(".app-shell.has-page-notice"), /grid-template-rows:\s*(?:104px|auto) auto minmax\(0, 1fr\);/, "desktop and responsive notices must reserve a separate row");
+assert.doesNotMatch(pageNotice, /position:\s*fixed;/, "notices must not obscure export controls");
 assert.match(floatingCorner, /max-height:\s*calc\(100vh - 44px\);/, "floating corner must stay inside short viewports");
 assert.match(floatingCorner, /overflow:\s*auto;/, "floating corner must scroll instead of covering the app in short viewports");
 assert.match(css, /@media\s*\(max-width:\s*720px\)[\s\S]*?\.floating-corner\s*{[\s\S]*?width:\s*calc\(100vw - 28px\);/, "mobile layout must resize the floating stack");

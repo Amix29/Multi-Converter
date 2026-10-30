@@ -4,6 +4,9 @@ use std::path::Path;
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::time::{Duration, Instant};
 
+mod child;
+pub(crate) use child::ManagedChild;
+
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 #[cfg(target_os = "windows")]
@@ -153,12 +156,14 @@ pub(crate) fn run_command_bounded(
     timeout: Duration,
 ) -> Result<BoundedCommandOutput, ProcessRunError> {
     configure_child_process(command);
-    let mut child = command
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(ProcessRunError::Io)?;
+    let mut child = ManagedChild::new(
+        command
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(ProcessRunError::Io)?,
+    );
     let mut stdout_reader = child.stdout.take().map(drain_child_output);
     let mut stderr_reader = child.stderr.take().map(drain_child_output);
     let started = Instant::now();

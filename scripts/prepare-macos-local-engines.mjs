@@ -13,12 +13,12 @@ const targetManifest = path.join(root, "src-tauri", "engines-manifest.json");
 const releaseBaseUrl = args.releaseBaseUrl ?? "https://local.invalid/multi-converter/macos/";
 const env = {
   ...process.env,
-  MULTI_CONVERTER_ENGINE_PLATFORM: "macos-universal",
+  MULTI_CONVERTER_ENGINE_PLATFORM: "macos-aarch64",
 };
 let originalManifest = null;
 let stagedManifest = false;
 
-if (process.platform !== "darwin") {
+if (process.platform !== "darwin" || process.arch !== "arm64") {
   fail("Local macOS engine staging must run on macOS.");
 }
 
@@ -72,13 +72,12 @@ console.log("Do not commit generated engine manifests or archives without mainta
 
 async function configureLibvips(targetEnv) {
   if (args.libvipsAarch64Dir) targetEnv.LIBVIPS_MACOS_AARCH64_SOURCE_DIR = path.resolve(args.libvipsAarch64Dir);
-  if (args.libvipsX86_64Dir) targetEnv.LIBVIPS_MACOS_X86_64_SOURCE_DIR = path.resolve(args.libvipsX86_64Dir);
-  if (targetEnv.LIBVIPS_MACOS_AARCH64_SOURCE_DIR && targetEnv.LIBVIPS_MACOS_X86_64_SOURCE_DIR) return;
+  if (targetEnv.LIBVIPS_MACOS_AARCH64_SOURCE_DIR) return;
 
-  if (!args.libvipsAarch64Archive || !args.libvipsX86_64Archive) {
+  if (!args.libvipsAarch64Archive) {
     fail([
       "Missing libvips portable inputs.",
-      "Provide --libvips-aarch64-dir and --libvips-x86_64-dir, or provide --libvips-aarch64-archive and --libvips-x86_64-archive.",
+      "Provide --libvips-aarch64-dir or --libvips-aarch64-archive.",
     ].join("\n"));
   }
 
@@ -86,16 +85,15 @@ async function configureLibvips(targetEnv) {
   const output = runNode("scripts/prepare-libvips-macos-release-inputs.mjs", [
     "--out-dir", libvipsOutDir,
     "--aarch64-archive", path.resolve(args.libvipsAarch64Archive),
-    "--x86_64-archive", path.resolve(args.libvipsX86_64Archive),
   ], targetEnv, { capture: true });
 
   for (const line of output.split(/\r?\n/)) {
-    const match = line.match(/^(LIBVIPS_MACOS_(?:AARCH64|X86_64)_SOURCE_DIR)=(.+)$/);
+    const match = line.match(/^(LIBVIPS_MACOS_AARCH64_SOURCE_DIR)=(.+)$/);
     if (match) targetEnv[match[1]] = match[2];
   }
 
-  if (!targetEnv.LIBVIPS_MACOS_AARCH64_SOURCE_DIR || !targetEnv.LIBVIPS_MACOS_X86_64_SOURCE_DIR) {
-    fail("prepare-libvips-macos-release-inputs did not return both libvips source directories.");
+  if (!targetEnv.LIBVIPS_MACOS_AARCH64_SOURCE_DIR) {
+    fail("prepare-libvips-macos-release-inputs did not return the Apple Silicon source directory.");
   }
 }
 
@@ -104,9 +102,9 @@ async function stagePackagedEngines() {
   await fs.mkdir(cacheDir, { recursive: true });
 
   const manifest = JSON.parse(await fs.readFile(sourceManifest, "utf8"));
-  const engines = (manifest.engines ?? []).filter((engine) => engine.platform === "macos-universal");
+  const engines = (manifest.engines ?? []).filter((engine) => engine.platform === "macos-aarch64");
   if (engines.length === 0) {
-    fail("Packaged manifest does not contain macos-universal engine entries.");
+    fail("Packaged manifest does not contain macos-aarch64 engine entries.");
   }
   await writeEmbeddedManifest(manifest, engines);
   stagedManifest = true;
@@ -122,7 +120,7 @@ async function stagePackagedEngines() {
 async function writeEmbeddedManifest(sourceManifest, macosEngines) {
   const embeddedEngines = macosEngines.filter((engine) => engine.mode === "advanced");
   if (embeddedEngines.length === 0) {
-    fail("Packaged manifest does not contain advanced macos-universal engine entries.");
+    fail("Packaged manifest does not contain advanced macos-aarch64 engine entries.");
   }
   const embeddedManifest = {
     ...sourceManifest,
@@ -173,9 +171,7 @@ function parseArgs(rawArgs) {
     if (arg === "--output-dir") parsed.outputDir = rawArgs[++index];
     else if (arg === "--release-base-url") parsed.releaseBaseUrl = rawArgs[++index];
     else if (arg === "--libvips-aarch64-archive") parsed.libvipsAarch64Archive = rawArgs[++index];
-    else if (arg === "--libvips-x86_64-archive") parsed.libvipsX86_64Archive = rawArgs[++index];
     else if (arg === "--libvips-aarch64-dir") parsed.libvipsAarch64Dir = rawArgs[++index];
-    else if (arg === "--libvips-x86_64-dir") parsed.libvipsX86_64Dir = rawArgs[++index];
     else if (arg === "--host-check") parsed.hostCheck = true;
     else if (arg === "--conversions") parsed.conversions = true;
     else if (arg === "--keep-generated-manifest") parsed.keepGeneratedManifest = true;

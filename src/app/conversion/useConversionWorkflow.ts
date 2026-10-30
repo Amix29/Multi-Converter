@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { api, createExportEntries, type ExportEntryV1, type ExportResult } from "../../lib/api";
+import { api, createExportEntries, type ExportEntryV1, type ExportResult, type QualityProfile } from "../../lib/api";
 import { t, translateBackendMessage, type LanguageCode } from "../../i18n";
 import type { ExportKind, FileItem, NoticeTone, Step } from "../types";
 import {
-  clamp,
   conversionConcurrency,
   exportNoticeMessage,
   notifyConversionFinished,
@@ -22,6 +21,7 @@ export function useConversionWorkflow(options: {
   showNotice(tone: NoticeTone, message: string): void;
 }) {
   const [outputDir, setOutputDir] = useState<string | null>(null);
+  const [qualityProfile, setQualityProfile] = useState<QualityProfile>("balanced");
   const [isConverting, setIsConverting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -29,6 +29,9 @@ export function useConversionWorkflow(options: {
   const [exportResult, setExportResult] = useState<ExportResult | null>(null);
   const wasConverting = useRef(false);
   const cancellationRequested = useRef(false);
+  const batchLocked = useRef(false);
+  const batchCompletion = useRef<Promise<void> | null>(null);
+  const [exportedPaths, setExportedPaths] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     if (isConverting) {
@@ -43,23 +46,6 @@ export function useConversionWorkflow(options: {
     void notifyConversionFinished(options.language, selectedFiles.some((file) => file.status === "error"), options.notificationsEnabled);
   }, [isConverting, options.files, options.language, options.notificationsEnabled]);
 
-  useEffect(() => {
-    if (!isConverting) return;
-    const interval = window.setInterval(() => {
-      options.setFiles((items) => items.map((file) => {
-        if (file.status === "queued") return { ...file, progress: Math.max(file.progress, 5) };
-        if (file.status !== "working") return file;
-        const current = clamp(file.progress, 0, 100);
-        const optimisticCap = file.size > 700 * 1024 * 1024 ? 78 : file.size > 120 * 1024 * 1024 ? 88 : 94;
-        if (current >= optimisticCap) return file;
-        const sizeFactor = file.size > 700 * 1024 * 1024 ? 0.55 : file.size > 120 * 1024 * 1024 ? 0.75 : 1;
-        const pace = current < 45 ? 2.8 : current < 75 ? 1.7 : 0.65;
-        return { ...file, progress: Math.max(current, Math.min(optimisticCap, current + pace * sizeFactor)) };
-      }));
-    }, 900);
-    return () => window.clearInterval(interval);
-  }, [isConverting, options.setFiles]);
-
   async function cleanupCurrentTempFolder(cleanupOptions: { notifyOnError?: boolean } = {}) {
     if (!outputDir || isTempOutputCleaned) return false;
     try {
@@ -73,8 +59,9 @@ export function useConversionWorkflow(options: {
     }
   }
 
-  function resetAll() {
-    void cleanupCurrentTempFolder();
+  async function resetAll() {
+    if (batchLocked.current || isExporting) return;
+    await cleanupCurrentTempFolder();
     options.setStep(1);
     options.setFiles([]);
     setOutputDir(null);
@@ -84,9 +71,11 @@ export function useConversionWorkflow(options: {
     setIsCancelling(false);
     cancellationRequested.current = false;
     setExportResult(null);
+    setExportedPaths(new Set());
   }
 
   async function startConversion() {
+    return withBatchLock(async () => {
     if (isConverting) return;
     if (!options.files.some((file) => file.selectedFormat && file.status !== "unsupported")) return;
     const replacesExistingOutputDir = Boolean(outputDir);
@@ -98,29 +87,40 @@ export function useConversionWorkflow(options: {
       options.setStep(3);
       return;
     }
-    await runConversionBatch(jobs, true);
+    await performConversionBatch(jobs, true);
+    });
   }
 
   async function retryFile(fileId: string) {
     if (isConverting) return;
     const file = options.files.find((item) => item.id === fileId);
     if (!file || file.status !== "error" || !file.selectedFormat) return;
-    await runConversionBatch([file], false);
+    await withBatchLock(() => performConversionBatch([file], false));
   }
 
   async function retryFailedConversions() {
     if (isConverting) return;
     const jobs = options.files.filter((file) => file.status === "error" && file.selectedFormat);
-    if (jobs.length) await runConversionBatch(jobs, false);
+    if (jobs.length) await withBatchLock(() => performConversionBatch(jobs, false));
   }
 
   async function continueConversions() {
     if (isConverting) return;
     const jobs = options.files.filter((file) => file.selectedFormat && file.status !== "done" && file.status !== "unsupported");
-    if (jobs.length) await runConversionBatch(jobs, false);
+    if (jobs.length) await withBatchLock(() => performConversionBatch(jobs, false));
   }
 
-  async function runConversionBatch(jobs: FileItem[], resetExportState: boolean) {
+  async function withBatchLock(action: () => Promise<void>) {
+    if (batchLocked.current) return;
+    batchLocked.current = true;
+    setIsConverting(true);
+    const completion = action();
+    batchCompletion.current = completion;
+    try { await completion; }
+    finally { batchLocked.current = false; batchCompletion.current = null; setIsConverting(false); }
+  }
+
+  async function performConversionBatch(jobs: FileItem[], resetExportState: boolean) {
     let targetOutputDir: string;
     try {
       targetOutputDir = !resetExportState && outputDir && !isTempOutputCleaned ? outputDir : await api.createTempOutputFolder();
@@ -138,6 +138,8 @@ export function useConversionWorkflow(options: {
     cancellationRequested.current = false;
     options.setStep(3);
     const concurrency = conversionConcurrency(jobs);
+    const replacedPaths = new Set(jobs.flatMap((job) => job.result?.outputPath ? [job.result.outputPath] : []));
+    setExportedPaths((paths) => new Set([...paths].filter((value) => !replacedPaths.has(value))));
     const jobIds = new Map(jobs.map((job) => [job.id, crypto.randomUUID()]));
     options.setFiles((items) => items.map((file) => {
       const jobId = jobIds.get(file.id);
@@ -159,6 +161,7 @@ export function useConversionWorkflow(options: {
             targetFormat: file.selectedFormat as string,
             outputDir: targetOutputDir,
             batchConcurrency: concurrency,
+            qualityProfile,
           });
           options.setFiles((items) => items.map((item) => item.id === file.id
             ? { ...item, result, convertedFormat: file.selectedFormat, progress: 100, phase: "phase.done", status: "done", error: null }
@@ -192,8 +195,8 @@ export function useConversionWorkflow(options: {
 
   async function finalizeSuccessfulExport(kind: ExportKind, result: ExportResult) {
     setExportResult(result);
+    setExportedPaths((paths) => new Set([...paths, ...convertedExportPlan(options.files).paths]));
     options.showNotice("success", exportNoticeMessage(options.language, kind, result));
-    await cleanupCurrentTempFolder({ notifyOnError: false });
   }
 
   async function exportResults(
@@ -248,6 +251,11 @@ export function useConversionWorkflow(options: {
   }
 
   return {
+    hasUnexportedResults: options.files.some((file) => file.result?.outputPath && !exportedPaths.has(file.result.outputPath)),
+    async cancelAndWait() {
+      await cancelConversions();
+      await batchCompletion.current;
+    },
     cancelConversions,
     continueConversions,
     exportResult,
@@ -258,6 +266,8 @@ export function useConversionWorkflow(options: {
     isExporting,
     isTempOutputCleaned,
     outputDir,
+    qualityProfile,
+    setQualityProfile,
     resetAll,
     retryFailedConversions,
     retryFile,

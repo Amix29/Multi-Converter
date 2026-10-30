@@ -111,15 +111,24 @@ export function useFileWorkflow(options: {
     }
   }, [addFiles]);
 
+  const describePaths = useCallback(async (paths: string[]) => {
+    const result = await api.describePaths(paths);
+    if (result.rejected.length) {
+      const details = result.rejected.slice(0, 5).map((failure) =>
+        `${failure.path.split(/[\\/]/).pop()}: ${translateBackendMessage(languageRef.current, failure.message)}`,
+      ).join(" · ");
+      showNoticeRef.current("error", `${skippedFilesText(languageRef.current, result.rejected.length)} ${details}`);
+    } else if (!result.files.length && paths.length) {
+      showNoticeRef.current("error", skippedFilesText(languageRef.current, paths.length));
+    }
+    return result.files;
+  }, []);
+
   const addFilePaths = useCallback(async (paths: string[]) => {
     await importFiles(paths.length, async () => {
-      const descriptions = await api.describePaths(paths);
-      if (!descriptions.length && paths.length) {
-        showNoticeRef.current("error", skippedFilesText(languageRef.current, paths.length));
-      }
-      return descriptions;
+      return describePaths(paths);
     });
-  }, [importFiles]);
+  }, [describePaths, importFiles]);
 
   const importClipboardContent = useCallback(async (pastedFiles: File[], text: string) => {
     const nativePaths = pastedFiles
@@ -134,13 +143,9 @@ export function useFileWorkflow(options: {
         ? await api.saveClipboardFiles(await Promise.all(localFiles.map(toClipboardFileInput)))
         : [];
       const paths = [...nativePaths, ...savedPaths];
-      const descriptions = await api.describePaths(paths);
-      if (!descriptions.length && paths.length) {
-        showNoticeRef.current("error", skippedFilesText(languageRef.current, paths.length));
-      }
-      return descriptions;
+      return describePaths(paths);
     });
-  }, [importFiles]);
+  }, [describePaths, importFiles]);
 
   useEffect(() => {
     function onPaste(event: ClipboardEvent) {

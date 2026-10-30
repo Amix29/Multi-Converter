@@ -37,21 +37,30 @@ try {
 
   if (process.platform !== "darwin") {
     result = runTauri(
-      ["build", "--target", "universal-apple-darwin", "--bundles", "dmg", "--config", "src-tauri/tauri.macos.conf.json"],
+      ["build", "--target", "aarch64-apple-darwin", "--bundles", "dmg", "--config", "src-tauri/tauri.macos.conf.json"],
       fakeBin,
       fakeLog,
       macosTargetDir,
     );
-    assert.notEqual(result.status, 0, "non-macOS hosts must not start a universal macOS build");
-    assert.match(result.stderr, /macOS universal DMG builds must run on macOS/);
+    assert.notEqual(result.status, 0, "non-macOS hosts must not start a Apple Silicon macOS build");
+    assert.match(result.stderr, /macOS Apple Silicon DMG builds must run on an Apple Silicon Mac/);
     assert.ok(!fs.existsSync(fakeLog), "Tauri must not be invoked after a non-macOS universal build refusal");
-    assert.ok(!fs.existsSync(macosBundleRoot), "refused macOS builds should still clean stale bundle artifacts");
+    assert.ok(fs.existsSync(macosBundleRoot), "refused builds must preserve existing artifacts");
     fs.mkdirSync(path.join(macosBundleRoot, "dmg"), { recursive: true });
     fs.writeFileSync(path.join(macosBundleRoot, "dmg", "old.dmg"), "stale\n");
   }
 
+  for (const target of ["x86_64-apple-darwin", "universal-apple-darwin"]) {
+    const refused = runTauri(["build", "--target", target], fakeBin, fakeLog, macosTargetDir,
+      { MULTI_CONVERTER_ALLOW_NON_DARWIN_MACOS_BUILD: "1" });
+    assert.notEqual(refused.status, 0, "unsupported Mac targets must fail even with host-test bypass");
+    assert.match(refused.stderr, /Only Apple Silicon/);
+    assert.ok(!fs.existsSync(fakeLog), "unsupported targets must not invoke Tauri");
+    assert.ok(fs.existsSync(macosBundleRoot), "unsupported targets must preserve existing artifacts");
+  }
+
   result = runTauri(
-    ["build", "--target", "universal-apple-darwin", "--bundles", "dmg", "--config", "src-tauri/tauri.macos.conf.json"],
+    ["build", "--target", "aarch64-apple-darwin", "--bundles", "dmg", "--config", "src-tauri/tauri.macos.conf.json"],
     fakeBin,
     fakeLog,
     macosTargetDir,
@@ -64,7 +73,7 @@ try {
   assert.deepEqual(invocation.args, [
     "build",
     "--target",
-    "universal-apple-darwin",
+    "aarch64-apple-darwin",
     "--bundles",
     "dmg",
     "--config",

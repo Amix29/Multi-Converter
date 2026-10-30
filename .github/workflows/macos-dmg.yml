@@ -39,7 +39,7 @@ on:
         default: ""
         type: string
       ocr_staging_run_id:
-        description: "OCR Runtime Staging run ID containing both macOS runtimes and shared models"
+        description: "OCR Runtime Staging run ID containing the Apple Silicon runtime and shared models"
         required: true
         type: string
 
@@ -53,7 +53,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build verified universal DMG
+    name: Build verified Apple Silicon DMG
     if: ${{ github.event_name == 'workflow_dispatch' || vars.MC_ENABLE_MACOS_DMG == '1' }}
     runs-on: macos-latest
     timeout-minutes: 120
@@ -66,27 +66,27 @@ jobs:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
+      MULTI_CONVERTER_ENGINE_PLATFORM: macos-aarch64
       SIDECAR_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_release_tag || '' }}
       ENGINE_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_release_tag || '' }}
       ENGINE_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_MACOS_ENGINE_STAGING_RUN_ID || '' }}
       OCR_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.ocr_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_OCR_RUNTIME_STAGING_RUN_ID || '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
           components: rustfmt, clippy
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
+          targets: aarch64-apple-darwin
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cargo/registry
@@ -126,7 +126,7 @@ jobs:
 
       - name: Download staged macOS assets from a workflow artifact
         if: ${{ env.ENGINE_STAGING_RUN_ID != '' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: macos-engine-assets
           path: ${{ runner.temp }}/mc-macos-engine-assets
@@ -154,13 +154,7 @@ jobs:
             fi
           fi
           echo "Using staged macOS asset directory: $asset_dir"
-          for asset in \
-            ffmpeg-aarch64-apple-darwin \
-            ffmpeg-x86_64-apple-darwin \
-            ffmpeg-universal-apple-darwin \
-            ffprobe-aarch64-apple-darwin \
-            ffprobe-x86_64-apple-darwin \
-            ffprobe-universal-apple-darwin
+          for asset in ffmpeg-aarch64-apple-darwin ffprobe-aarch64-apple-darwin
           do
             if [[ ! -s "$asset_dir/$asset" ]]; then
               echo "Missing staged macOS asset: $asset" >&2
@@ -184,26 +178,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p src-tauri/binaries
-          for asset in \
-            ffmpeg-aarch64-apple-darwin \
-            ffmpeg-x86_64-apple-darwin \
-            ffprobe-aarch64-apple-darwin \
-            ffprobe-x86_64-apple-darwin
+          for asset in ffmpeg-aarch64-apple-darwin ffprobe-aarch64-apple-darwin
           do
             gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries
             gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset.sha256" --dir src-tauri/binaries
             (cd src-tauri/binaries && shasum -a 256 -c "$asset.sha256")
-          done
-          for asset in \
-            ffmpeg-universal-apple-darwin \
-            ffprobe-universal-apple-darwin
-          do
-            gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries || true
-            gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset.sha256" --dir src-tauri/binaries || true
-            if [[ -f "src-tauri/binaries/$asset" ]]; then
-              test -s "src-tauri/binaries/$asset.sha256"
-              (cd src-tauri/binaries && shasum -a 256 -c "$asset.sha256")
-            fi
           done
           chmod +x src-tauri/binaries/*-apple-darwin
 
@@ -214,7 +193,7 @@ jobs:
         run: node scripts/prepare-macos-engine-release-assets.mjs --tag "$ENGINE_RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
 
       - name: Download locked OCR artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: ocr-*
           path: ${{ runner.temp }}/mc-ocr-staging
@@ -222,7 +201,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ env.OCR_STAGING_RUN_ID }}
 
-      - name: Verify and stage universal macOS OCR resources
+      - name: Verify and stage Apple Silicon OCR resources
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -236,8 +215,7 @@ jobs:
           runtime_dir="$RUNNER_TEMP/mc-ocr-runtime"
           mkdir -p "$runtime_dir"
           cp "$RUNNER_TEMP/mc-ocr-staging/ocr-runtime-macos-aarch64/"* "$runtime_dir/"
-          cp "$RUNNER_TEMP/mc-ocr-staging/ocr-runtime-macos-x86_64/"* "$runtime_dir/"
-          npm run stage:ocr-runtime-artifacts -- --platform macos-universal --runtime-dir "$runtime_dir" --models-dir "$RUNNER_TEMP/mc-ocr-staging/ocr-models"
+          npm run stage:ocr-runtime-artifacts -- --platform macos-aarch64 --runtime-dir "$runtime_dir" --models-dir "$RUNNER_TEMP/mc-ocr-staging/ocr-models"
 
       - name: Validate macOS build prerequisites
         run: |
@@ -262,7 +240,7 @@ jobs:
           npm run test:ocr:runtime
           npm run test:ocr:corpus
 
-      - name: Build universal DMG and updater artifacts
+      - name: Build Apple Silicon DMG and updater artifacts
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -272,9 +250,9 @@ jobs:
         run: |
           version="$(node -p "require('./package.json').version")"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "dmg_name=Multi-Converter_${version}_macos-universal.dmg" >> "$GITHUB_OUTPUT"
-          echo "updater_archive_name=Multi-Converter_${version}_macos-universal.app.tar.gz" >> "$GITHUB_OUTPUT"
-          echo "updater_signature_name=Multi-Converter_${version}_macos-universal.app.tar.gz.sig" >> "$GITHUB_OUTPUT"
+          echo "dmg_name=Multi-Converter_${version}_macos-aarch64.dmg" >> "$GITHUB_OUTPUT"
+          echo "updater_archive_name=Multi-Converter_${version}_macos-aarch64.app.tar.gz" >> "$GITHUB_OUTPUT"
+          echo "updater_signature_name=Multi-Converter_${version}_macos-aarch64.app.tar.gz.sig" >> "$GITHUB_OUTPUT"
 
       - name: Prepare release-named macOS artifacts
         run: npm run prepare:macos-release-artifacts -- --version "${{ steps.version.outputs.version }}" --out-dir "$RUNNER_TEMP/mc-macos-release-artifacts"
@@ -285,7 +263,7 @@ jobs:
       - name: Launch packaged app twice on Apple Silicon
         run: npm run test:macos:native -- --package "$RUNNER_TEMP/mc-macos-release-artifacts/${{ steps.version.outputs.dmg_name }}" --proof-dir "$RUNNER_TEMP/mc-macos-native-proof"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: macos-release-artifacts
           path: |
@@ -294,42 +272,8 @@ jobs:
             ${{ runner.temp }}/mc-macos-release-artifacts/${{ steps.version.outputs.updater_signature_name }}
           if-no-files-found: error
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: macos-native-proof-apple-silicon
-          path: ${{ runner.temp }}/mc-macos-native-proof
-          if-no-files-found: error
-
-  verify-intel:
-    name: Verify universal DMG on Intel
-    needs: build
-    if: ${{ needs.build.result == 'success' }}
-    runs-on: macos-15-intel
-    timeout-minutes: 30
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: false
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: macos-release-artifacts
-          path: ${{ runner.temp }}/mc-macos-release-artifacts
-
-      - name: Verify final DMG on Intel
-        run: npm run verify:macos-dmg -- --version "${{ needs.build.outputs.version }}" --dmg "$RUNNER_TEMP/mc-macos-release-artifacts/${{ needs.build.outputs.dmg_name }}"
-
-      - name: Launch packaged app twice on Intel
-        run: npm run test:macos:native -- --package "$RUNNER_TEMP/mc-macos-release-artifacts/${{ needs.build.outputs.dmg_name }}" --proof-dir "$RUNNER_TEMP/mc-macos-native-proof"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-native-proof-intel
           path: ${{ runner.temp }}/mc-macos-native-proof
           if-no-files-found: error

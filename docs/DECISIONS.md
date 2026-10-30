@@ -1,5 +1,18 @@
 # Multi-Converter Decisions
 
+## 2026-10-30 — Audit Approved; Apple Silicon macOS Only
+
+The maintainer approved the comprehensive conversion/OCR audit recommendations,
+including contextual quality profiles. V1.0.7 retains Windows x64 and Linux x64
+and retires Intel macOS. New Mac app/engine/OCR packages target Apple Silicon
+only; updater metadata must reject Intel entries. Historical V1.0.6 universal
+downloads and evidence remain unchanged.
+
+Implementation runs on `codex/converter-audit-apple-silicon` before integration
+into `codex/test`. Follow V1_0_7_APPROVED_IMPLEMENTATION.md for current proof and
+outstanding work. Approval does not authorize publication or a remote push;
+source tests do not substitute for installed/native platform acceptance.
+
 ## 2026-10-29 — Conversion And OCR Only
 
 **Decision:** remove the document and structural PDF editors at the maintainer's

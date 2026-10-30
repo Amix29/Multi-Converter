@@ -34,16 +34,16 @@ try {
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
   const expected = [
-    `Multi-Converter_${version}_macos-universal.app.tar.gz`,
-    `Multi-Converter_${version}_macos-universal.app.tar.gz.sig`,
-    `Multi-Converter_${version}_macos-universal.dmg`,
-    "Multi-Converter_macos-universal.dmg",
+    `Multi-Converter_${version}_macos-aarch64.app.tar.gz`,
+    `Multi-Converter_${version}_macos-aarch64.app.tar.gz.sig`,
+    `Multi-Converter_${version}_macos-aarch64.dmg`,
+    "Multi-Converter_macos-aarch64.dmg",
   ].sort();
   const actual = fs.readdirSync(outDir).sort();
   assert.deepEqual(actual, expected);
   assert.equal(
-    fs.readFileSync(path.join(outDir, `Multi-Converter_${version}_macos-universal.dmg`), "utf8"),
-    fs.readFileSync(path.join(outDir, "Multi-Converter_macos-universal.dmg"), "utf8"),
+    fs.readFileSync(path.join(outDir, `Multi-Converter_${version}_macos-aarch64.dmg`), "utf8"),
+    fs.readFileSync(path.join(outDir, "Multi-Converter_macos-aarch64.dmg"), "utf8"),
     "stable DMG alias must match the versioned DMG",
   );
 

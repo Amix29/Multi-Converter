@@ -8,17 +8,17 @@
     "wrapperCargoLockSha256": "6462b7bf8f748280d276316c2634f0faf8eb8ecd5c0d794ca0c445edc4decc7f",
     "wrapperBuildRustVersion": "1.96.0",
     "platforms": {
-      "macos-universal": {
-        "archiveName": "pdfium-mac-univ.tgz",
-        "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7825/pdfium-mac-univ.tgz",
-        "bytes": 6866454,
-        "sha256": "3782e6cbc13c75dcf6461fdd33048fd7507730e095181427de24c0c400ea3eb6",
+      "macos-aarch64": {
+        "archiveName": "pdfium-mac-arm64.tgz",
+        "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7825/pdfium-mac-arm64.tgz",
+        "bytes": 3403205,
+        "sha256": "0e9692fa2063f5b5e6f6129680fe618f47efb9d728dd02e9db9b8999e386c84e",
         "libraryPath": "lib/libpdfium.dylib",
-        "libraryBytes": 14534128,
-        "librarySha256": "365155f66b5d859d4a37393640ed6dab1976dc0afcbfbf5d00737da96b18b461",
+        "libraryBytes": 7079408,
+        "librarySha256": "3aed5632c54a689ade84a811b93943ea8afa8c3ccae6b3e7e9e58de87bea42af",
         "package": {
           "status": "pending-native-rebuild",
-          "archiveName": "pdfium-compatible-macos-universal.zip",
+          "archiveName": "pdfium-compatible-macos-aarch64.zip",
           "archiveSizeBytes": null,
           "archiveSha256": null,
           "installedSizeBytes": null,
@@ -104,10 +104,6 @@
           "url": "https://files.pythonhosted.org/packages/3b/97/62d061b4700a7020506f4db80c4721100b5b2fa0709f4e999c38dc7e2293/paddlepaddle-3.3.1-cp312-cp312-macosx_11_0_arm64.whl",
           "bytes": 104546703,
           "sha256": "d7827d867503b502a881c718e3743d9b91648a62d01f93bcd5ba3d7846de5ab5"
-        },
-        "macos-x86_64": {
-          "kind": "source",
-          "sourceCommit": "7688495538f4d6c1893f084dd238a402e8f68ab6"
         },
         "linux-x64": {
           "kind": "wheel",

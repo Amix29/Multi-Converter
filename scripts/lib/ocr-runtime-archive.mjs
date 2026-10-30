@@ -10,7 +10,6 @@ export function ocrRuntimeArchivePath(root, platform) {
 export function hostOcrPlatform() {
   if (process.platform === "win32" && process.arch === "x64") return "windows-x64";
   if (process.platform === "darwin" && process.arch === "arm64") return "macos-aarch64";
-  if (process.platform === "darwin" && process.arch === "x64") return "macos-x86_64";
   if (process.platform === "linux" && process.arch === "x64") return "linux-x64";
   throw new Error(`Plateforme OCR non prise en charge: ${process.platform}/${process.arch}.`);
 }

@@ -10,12 +10,15 @@ const root = process.cwd();
 const sourceDir = path.join(root, "tools", "pdfium-render-wrapper");
 const tempRoot = process.env.TEMP ?? process.env.TMPDIR ?? os.tmpdir();
 const workDir = await fs.mkdtemp(path.join(tempRoot, "multi-converter-pdfium-wrapper-cargo-"));
-const targetDir = await fs.mkdtemp(path.join(tempRoot, "mc-cargo-target-pdfium-wrapper-"));
 const manifest = path.join(workDir, "Cargo.toml");
 const args = process.argv.slice(2);
 const expectedPdfiumRenderVersion = "=0.9.1";
 const expectedLopdfVersion = "=0.42.0";
 const pdfiumLock = JSON.parse(await fs.readFile(path.join(root, "tools", "pdfium-windows-x64.lock.json"), "utf8"));
+// Cargo still validates fingerprints, current sources, compiler and flags.
+// Keep dependency artifacts between checks instead of rebuilding the entire
+// wrapper graph in a disposable target directory on every invocation.
+const targetDir = path.join(tempRoot, "mc-cargo-target-pdfium-wrapper-cache", pdfiumLock.wrapper.cargoLockSha256);
 
 if (args.length === 0) {
   throw new Error("Missing cargo command for PDFium wrapper.");
@@ -38,6 +41,7 @@ if (configuredLopdfVersion !== expectedLopdfVersion) {
 let exitCode = 1;
 try {
   await fs.cp(sourceDir, workDir, { recursive: true, force: true });
+  await fs.mkdir(targetDir, { recursive: true });
   const canonicalLock = (await fs.readFile(path.join(workDir, "Cargo.lock"), "utf8")).replace(/\r\n?/gu, "\n");
   const actualLockSha256 = createHash("sha256").update(canonicalLock, "utf8").digest("hex");
   if (actualLockSha256 !== pdfiumLock.wrapper.cargoLockSha256) {
@@ -77,7 +81,6 @@ try {
   }
 } finally {
   await fs.rm(workDir, { recursive: true, force: true });
-  await fs.rm(targetDir, { recursive: true, force: true });
 }
 
 process.exit(exitCode);

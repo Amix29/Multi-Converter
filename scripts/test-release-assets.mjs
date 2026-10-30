@@ -9,9 +9,9 @@ const version = "9.8.7";
 const tag = `v${version}`;
 const versionedInstaller = `Multi-Converter_${version}_x64-setup.exe`;
 const stableInstaller = "Multi-Converter_windows-x64_setup.exe";
-const macosDmg = `Multi-Converter_${version}_macos-universal.dmg`;
-const stableMacosDmg = "Multi-Converter_macos-universal.dmg";
-const macosUpdaterArchive = `Multi-Converter_${version}_macos-universal.app.tar.gz`;
+const macosDmg = `Multi-Converter_${version}_macos-aarch64.dmg`;
+const stableMacosDmg = "Multi-Converter_macos-aarch64.dmg";
+const macosUpdaterArchive = `Multi-Converter_${version}_macos-aarch64.app.tar.gz`;
 const macosUpdaterSignature = `${macosUpdaterArchive}.sig`;
 const linuxAppImage = `Multi-Converter_${version}_linux-x64.AppImage`;
 const stableLinuxAppImage = "Multi-Converter_linux-x64.AppImage";
@@ -48,11 +48,11 @@ const notes = [
   "## Download And Installation",
   "",
   `- Windows uses ${versionedInstaller}.`,
-  `- macOS uses Multi-Converter_${version}_macos-universal.dmg. This macOS build is not Apple-signed and not notarized. After the first launch warning, open System Settings > Privacy & Security, choose Open Anyway, then confirm Open. macOS automatic updates are enabled.`,
+  `- macOS uses Multi-Converter_${version}_macos-aarch64.dmg. This macOS build is not Apple-signed and not notarized. After the first launch warning, open System Settings > Privacy & Security, choose Open Anyway, then confirm Open. macOS automatic updates are enabled.`,
   "",
   "## Validation",
   "",
-  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon and Intel in this test fixture.",
+  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon in this test fixture.",
 ].join("\n");
 const linuxNotes = [
   `# Multi-Converter v${version}`,
@@ -106,7 +106,7 @@ const desktopNotes = [
   "",
   "## Validation",
   "",
-  "- Release asset validation, updater metadata validation, naming checks, macOS DMG verification passed on Apple Silicon and Intel, and Linux AppImage verification passed on Linux in this test fixture.",
+  "- Release asset validation, updater metadata validation, naming checks, macOS DMG verification passed on Apple Silicon, and Linux AppImage verification passed on Linux in this test fixture.",
 ].join("\n");
 const notesWithoutMacosWarning = [
   `# Multi-Converter v${version}`,
@@ -120,7 +120,7 @@ const notesWithoutMacosWarning = [
   "## Download And Installation",
   "",
   `- Windows uses ${versionedInstaller}.`,
-  `- macOS uses Multi-Converter_${version}_macos-universal.dmg.`,
+  `- macOS uses Multi-Converter_${version}_macos-aarch64.dmg.`,
   "",
   "## Validation",
   "",
@@ -138,7 +138,7 @@ const notesWithPendingMacosDmgVerification = notes.replace(
   "macOS DMG verification passed",
   "macOS DMG verification pending",
 );
-const notesWithoutMacosDmgArchitectures = notes.replace(" on Apple Silicon and Intel", "");
+const notesWithoutMacosDmgArchitectures = notes.replace(" on Apple Silicon", "");
 const notesWithUnsupportedMacosConversionClaim = [
   `# Multi-Converter v${version}`,
   "",
@@ -151,14 +151,14 @@ const notesWithUnsupportedMacosConversionClaim = [
   "## Download And Installation",
   "",
   `- Windows uses ${versionedInstaller}.`,
-  `- macOS uses Multi-Converter_${version}_macos-universal.dmg. This macOS build is not Apple-signed and not notarized. After the first launch warning, open System Settings > Privacy & Security, choose Open Anyway, then confirm Open. macOS automatic updates are enabled.`,
+  `- macOS uses Multi-Converter_${version}_macos-aarch64.dmg. This macOS build is not Apple-signed and not notarized. After the first launch warning, open System Settings > Privacy & Security, choose Open Anyway, then confirm Open. macOS automatic updates are enabled.`,
   "",
   "## Validation",
   "",
-  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon and Intel in this test fixture.",
+  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon in this test fixture.",
 ].join("\n");
 const notesWithUnsupportedMacosConversionArchitectureClaim = notesWithUnsupportedMacosConversionClaim.replace(
-  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon and Intel in this test fixture.",
+  "- Release asset validation, updater metadata validation, naming checks and macOS DMG verification passed on Apple Silicon in this test fixture.",
   "- Release asset validation, updater metadata validation, naming checks, macOS Conversion Matrix and macOS DMG verification passed in this test fixture.",
 );
 const notesWithUnsupportedLinuxConversionClaim = linuxNotes.replace(
@@ -295,7 +295,7 @@ try {
 
   const macosNotesWithoutDmgArchitecturesPath = path.join(preparedDmgDir, "macos-notes-without-dmg-architectures.md");
   fs.writeFileSync(macosNotesWithoutDmgArchitecturesPath, notesWithoutMacosDmgArchitectures);
-  runReleaseNotesValidatorFails(macosNotesWithoutDmgArchitecturesPath, true, false, "Apple Silicon and Intel");
+  runReleaseNotesValidatorFails(macosNotesWithoutDmgArchitecturesPath, true, false, "Apple Silicon");
 
   const linuxNotesWithFailedAppImageVerificationPath = path.join(preparedDmgDir, "linux-notes-with-failed-appimage-verification.md");
   fs.writeFileSync(linuxNotesWithFailedAppImageVerificationPath, notesWithFailedLinuxAppImageVerification);
@@ -348,6 +348,9 @@ try {
   writeMacosAssets(allDarwinUpdaterDir);
   runValidatorFails(allDarwinUpdaterDir, "all", "expected updater platforms");
 
+  writeWindowsAssets(allDarwinUpdaterDir, notes, { includeMacosUpdater: true, includeIntelUpdater: true });
+  runValidatorFails(allDarwinUpdaterDir, "all", "expected updater platforms");
+
   writeWindowsAssets(allMissingDmgDir);
   runValidatorFails(allMissingDmgDir, "all", "Release asset set");
 
@@ -361,7 +364,7 @@ try {
 
   writeMacosAssets(allUnsupportedMacosConversionArchitectureClaimDir);
   writeWindowsAssets(allUnsupportedMacosConversionArchitectureClaimDir, notesWithUnsupportedMacosConversionArchitectureClaim, { includeMacosUpdater: true });
-  runValidatorFails(allUnsupportedMacosConversionArchitectureClaimDir, "all", "Apple Silicon and Intel");
+  runValidatorFails(allUnsupportedMacosConversionArchitectureClaimDir, "all", "Apple Silicon");
 
   writeLinuxAssets(linuxUnsupportedConversionClaimDir);
   writeLinuxLatest(linuxUnsupportedConversionClaimDir, notesWithUnsupportedLinuxConversionClaim);

@@ -47,6 +47,9 @@ def create_pipeline(models: Path):
         use_textline_orientation=True,
         device="cpu",
         enable_mkldnn=False,
+        # Bound CPU detection cost; recognition keeps the original image crops.
+        text_det_limit_side_len=1536,
+        text_det_limit_type="max",
     )
 
 

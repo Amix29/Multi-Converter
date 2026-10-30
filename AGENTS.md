@@ -49,9 +49,9 @@ Read the relevant focused rule before acting:
 
 - Build and package macOS releases on macOS. Do not claim macOS release readiness from Windows-only builds, Vite preview, or source inspection alone.
 - Real macOS host validation must run on macOS. `npm run test:macos-packaging` is only a static contract test; `npm run test:macos:host` must run on a real Mac or GitHub Actions `macos-latest` and intentionally fails on Windows/Linux.
-- The project ships a single macOS installer: one universal `.dmg` that supports Apple Silicon and Intel Macs. Do not publish separate `arm64` and `x64` DMG installers unless this file is intentionally updated first.
-- The macOS app bundle, sidecars and bundled engines must all be compatible with the universal macOS target. Verify that required executables keep their executable bit and are available for both Apple Silicon and Intel, either as universal binaries or correctly packaged architecture-specific binaries.
-- For Tauri `externalBin` sidecars in a `universal-apple-darwin` release build, stage the Apple Silicon and Intel inputs, then create and validate `*-universal-apple-darwin` sidecars before bundling. Do not rely on only `*-aarch64-apple-darwin` and `*-x86_64-apple-darwin` files for the final universal build.
+- From V1.0.7, macOS supports Apple Silicon only, by maintainer decision on 2026-10-30. Windows x64 and Linux x64 remain supported. Published V1.0.6 universal artifacts are historical and must not be rewritten.
+- Ship one Apple Silicon `.dmg` targeting `aarch64-apple-darwin`. Do not build, stage, advertise or publish an Intel macOS package or OCR runtime for new releases.
+- The app, sidecars and bundled engines must contain native arm64 executables with executable permissions preserved. Stage `*-aarch64-apple-darwin` Tauri sidecars directly; no universal sidecar synthesis or Intel input is required.
 - Prefer a normal Tauri macOS bundle/DMG workflow. Do not hand-edit files inside the generated `.app` after packaging. If the app bundle, `Info.plist`, sidecars, resources or icons need changes, update source/config and rebuild.
 - Use Tauri ad-hoc signing for unsigned macOS builds when no Apple Developer ID certificate is available. Ad-hoc signing is free and can reduce technical launch problems, especially on Apple Silicon, but it does not make the app Apple-signed or notarized.
 - Unless Apple signing credentials are explicitly added, macOS release builds are not Apple-signed and not notarized. Treat this as an intentional distribution limitation, not as a build failure.
@@ -111,10 +111,10 @@ When a public release includes macOS support, it must upload exactly these nine 
 3. `Multi-Converter_X.Y.Z_x64-setup.exe.sig`
 4. `Multi-Converter_X.Y.Z_x64-setup.exe.sha256`
 5. `Multi-Converter_windows-x64_setup.exe`
-6. `Multi-Converter_X.Y.Z_macos-universal.dmg`
-7. `Multi-Converter_macos-universal.dmg`
-8. `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz`
-9. `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig`
+6. `Multi-Converter_X.Y.Z_macos-aarch64.dmg`
+7. `Multi-Converter_macos-aarch64.dmg`
+8. `Multi-Converter_X.Y.Z_macos-aarch64.app.tar.gz`
+9. `Multi-Converter_X.Y.Z_macos-aarch64.app.tar.gz.sig`
 
 Keep the Windows assets unless the release is intentionally macOS-only and this section is intentionally updated first. `--platform all` is the historical Windows + macOS asset set. Use `--platform desktop` instead when the same release also includes Linux.
 
@@ -127,9 +127,9 @@ npm run validate:release-assets -- --version X.Y.Z --dir "<folder>" --platform a
 Current macOS updater status:
 
 - macOS automatic updates are enabled when a release includes macOS.
-- `latest.json` must contain exactly the Windows updater platforms plus `darwin-aarch64` and `darwin-x86_64` when macOS is included.
-- Both Darwin entries must point to the same verified universal updater archive: `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz`.
-- Both Darwin entries must use the exact signature content from `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig`.
+- `latest.json` must contain exactly the Windows updater platforms plus `darwin-aarch64` when macOS is included. Reject any `darwin-x86_64` entry.
+- The Darwin entry must point to the verified Apple Silicon updater archive: `Multi-Converter_X.Y.Z_macos-aarch64.app.tar.gz`.
+- The Darwin entry must use the exact signature content from `Multi-Converter_X.Y.Z_macos-aarch64.app.tar.gz.sig`.
 - Do not upload `.dmg.sig`, `.app.tar.gz.sha256`, invented Darwin updater aliases or separate architecture-specific macOS updater archives unless this section and `scripts/validate-release-assets.mjs` are intentionally updated together.
 
 Asset rules:
@@ -139,13 +139,13 @@ Asset rules:
 - `Multi-Converter_X.Y.Z_x64-setup.exe.sig` is the updater signature for the versioned installer.
 - `Multi-Converter_X.Y.Z_x64-setup.exe.sha256` is the manual integrity check for the versioned installer. It must contain the SHA-256 hash computed from `Multi-Converter_X.Y.Z_x64-setup.exe`, preferably in the format `<SHA256>  Multi-Converter_X.Y.Z_x64-setup.exe`.
 - `Multi-Converter_windows-x64_setup.exe` is the stable download alias used by README download links and must be copied from the exact same versioned installer.
-- `Multi-Converter_X.Y.Z_macos-universal.dmg` is the only user-facing macOS installer when macOS support is included. It must be generated from a clean macOS build and verified on macOS before publication.
-- `Multi-Converter_macos-universal.dmg` is the stable macOS download alias used by README download links and must be copied from the exact same verified versioned DMG.
-- `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz` is the Tauri macOS updater archive generated from the universal `.app` bundle.
-- `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig` is the Tauri updater signature for the macOS updater archive.
+- `Multi-Converter_X.Y.Z_macos-aarch64.dmg` is the only user-facing macOS installer when macOS support is included. It must be generated from a clean macOS build and verified on macOS before publication.
+- `Multi-Converter_macos-aarch64.dmg` is the stable macOS download alias used by README download links and must be copied from the exact same verified versioned DMG.
+- `Multi-Converter_X.Y.Z_macos-aarch64.app.tar.gz` is the Tauri macOS updater archive generated from the Apple Silicon `.app` bundle.
+- `Multi-Converter_X.Y.Z_macos-aarch64.app.tar.gz.sig` is the Tauri updater signature for the macOS updater archive.
 - Do not upload MSI files, ZIP archives, logs, extra checksum files, engine archives, source archives, portable folders, direct `.exe` app binaries or extra installer aliases as application release assets unless this section is intentionally updated first.
 - Do not create a separate SHA-256 asset for `Multi-Converter_windows-x64_setup.exe`; it is an alias of the versioned installer and must have the same hash.
-- Do not create a separate SHA-256 asset for `Multi-Converter_macos-universal.dmg`; it is an alias of the versioned DMG and must have the same hash.
+- Do not create a separate SHA-256 asset for `Multi-Converter_macos-aarch64.dmg`; it is an alias of the versioned DMG and must have the same hash.
 - Do not upload a separate `.sha256` file for the macOS DMG unless `scripts/validate-release-assets.mjs`, the release workflow and this section are intentionally updated to require it.
 - Do not upload source code archives manually; instead make sure the tag points to the exact commit being released.
 - Before publication, copy or generate the final required release assets into a clean folder such as `%LOCALAPPDATA%\Temp\mc-release-assets\vX.Y.Z` and run the matching `npm run validate:release-assets` command above.
@@ -153,7 +153,7 @@ Asset rules:
 
 When a public release includes macOS support:
 
-- Do not upload separate Apple Silicon and Intel DMG installers.
+- Do not upload an Intel or universal macOS installer for V1.0.7 or later.
 - Do not upload a macOS DMG unless it was generated from a clean macOS build and verified on macOS.
 - Include only the exact macOS updater artifacts generated by Tauri and make sure `latest.json` contains the matching macOS updater metadata. Do not invent updater signatures or platform entries by hand.
 - The release body, `latest.json` notes when relevant, README download instructions and any visible installation notes must always say whether the macOS build is Apple-signed and whether it is notarized.
@@ -208,10 +208,10 @@ When a public release includes Windows, macOS and Linux together, it must upload
 3. `Multi-Converter_X.Y.Z_x64-setup.exe.sig`
 4. `Multi-Converter_X.Y.Z_x64-setup.exe.sha256`
 5. `Multi-Converter_windows-x64_setup.exe`
-6. `Multi-Converter_X.Y.Z_macos-universal.dmg`
-7. `Multi-Converter_macos-universal.dmg`
-8. `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz`
-9. `Multi-Converter_X.Y.Z_macos-universal.app.tar.gz.sig`
+6. `Multi-Converter_X.Y.Z_macos-aarch64.dmg`
+7. `Multi-Converter_macos-aarch64.dmg`
+8. `Multi-Converter_X.Y.Z_macos-aarch64.app.tar.gz`
+9. `Multi-Converter_X.Y.Z_macos-aarch64.app.tar.gz.sig`
 10. `Multi-Converter_X.Y.Z_linux-x64.AppImage`
 11. `Multi-Converter_linux-x64.AppImage`
 12. `Multi-Converter_X.Y.Z_linux-x64.AppImage.sig`
@@ -266,7 +266,7 @@ Every release note must include these main sections, in this order. These requir
 4. `## Download And Installation`: supported platform, installer asset and any updater/signing note users must know.
 5. `## Validation`: concise proof that the release was checked, including tests and build status.
 
-For releases that include macOS, `## Download And Installation` must name the universal DMG exactly and state whether the macOS build is Apple-signed/notarized. If it is not Apple-signed and not notarized, include short, user-facing instructions to open it through `System Settings > Privacy & Security > Open Anyway` after the first launch warning.
+For releases that include macOS, `## Download And Installation` must name the Apple Silicon DMG exactly and state whether the macOS build is Apple-signed/notarized. If it is not Apple-signed and not notarized, include short, user-facing instructions to open it through `System Settings > Privacy & Security > Open Anyway` after the first launch warning.
 
 ### Conditional Sections
 

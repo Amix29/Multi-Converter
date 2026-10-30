@@ -1,7 +1,13 @@
 use super::*;
 
+mod libreoffice_profile;
+#[cfg(test)]
+mod native_tests;
+mod office_resources;
+mod offline_input;
 mod output;
 mod process;
+mod resources;
 
 pub(in crate::converters) use output::{move_external_output, path_to_file_url};
 pub(crate) use process::{
@@ -15,7 +21,11 @@ pub(in crate::converters) fn convert_with_libreoffice(
     output_path: &Path,
     target_format: &str,
 ) -> Result<()> {
-    let engine_input = absolute_engine_input(input_path)?;
+    let source_input = absolute_engine_input(input_path)?;
+    let input_staging = tempfile::Builder::new()
+        .prefix("multi-converter-office-input-")
+        .tempdir()?;
+    let engine_input = offline_input::prepare(app, job_id, &source_input, input_staging.path())?;
     let soffice = libreoffice_conversion_launcher(&engine_path(app, "libreoffice")?);
     let out_dir = output_path
         .parent()
@@ -23,6 +33,7 @@ pub(in crate::converters) fn convert_with_libreoffice(
     let profile_dir = tempfile::Builder::new()
         .prefix("multi-converter-lo-")
         .tempdir()?;
+    libreoffice_profile::prepare(profile_dir.path())?;
     let engine_output_dir = tempfile::Builder::new()
         .prefix(".multi-converter-lo-output-")
         .tempdir_in(out_dir)?;
@@ -100,10 +111,16 @@ pub(in crate::converters) fn convert_with_pandoc(
 ) -> Result<()> {
     let engine_input = absolute_engine_input(input_path)?;
     let pandoc = engine_path(app, "pandoc")?;
+    let staging = tempfile::Builder::new()
+        .prefix("multi-converter-document-")
+        .tempdir()?;
+    let prepared_input = prepare_pandoc_input(app, job_id, &pandoc, &engine_input, staging.path())?;
     emit_progress(app, job_id, 24, "Conversion Pandoc");
     run_external_command_with_progress(
         engine_command(&pandoc)
-            .arg(&engine_input)
+            .arg("--sandbox")
+            .arg("--fail-if-warnings")
+            .arg(&prepared_input)
             .arg("-o")
             .arg(output_path),
         "Pandoc",
@@ -120,12 +137,67 @@ pub(in crate::converters) fn convert_with_pandoc(
     Ok(())
 }
 
+fn prepare_pandoc_input(
+    app: &AppHandle,
+    job_id: &str,
+    pandoc: &Path,
+    input: &Path,
+    staging: &Path,
+) -> Result<PathBuf> {
+    prepare_local_input(pandoc, input, staging, |command| {
+        run_external_command_with_progress(
+            command,
+            "Pandoc",
+            Duration::from_secs(180),
+            ExternalCommandProgress {
+                app,
+                job_id,
+                phase: "Analyse des ressources locales",
+                start: 12,
+                max: 22,
+            },
+        )
+    })
+}
+
+fn prepare_local_input(
+    pandoc: &Path,
+    input: &Path,
+    staging: &Path,
+    mut run: impl FnMut(&mut Command) -> Result<()>,
+) -> Result<PathBuf> {
+    let extension = input
+        .extension()
+        .and_then(OsStr::to_str)
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    if !matches!(extension.as_str(), "md" | "markdown" | "html" | "htm") {
+        return Ok(input.to_path_buf());
+    }
+    let ast_path = staging.join("document.json");
+    run(engine_command(pandoc)
+        .args(["--sandbox", "--fail-if-warnings", "--to=json"])
+        .arg(input)
+        .arg("-o")
+        .arg(&ast_path))?;
+    if fs::metadata(&ast_path)?.len() > MAX_EXTRACTED_TEXT_BYTES {
+        return Err(ConvertError::Message(
+            "Document trop volumineux pour la préparation locale.".to_string(),
+        ));
+    }
+    let mut ast: serde_json::Value = serde_json::from_reader(File::open(&ast_path)?)?;
+    resources::embed_local_images(&mut ast, input.parent().unwrap_or(Path::new(".")))?;
+    serde_json::to_writer(File::create(&ast_path)?, &ast)?;
+    Ok(ast_path)
+}
+
 pub(in crate::converters) fn convert_with_pdfium(
     app: &AppHandle,
     job_id: &str,
     input_path: &Path,
     output_path: &Path,
     target_format: &str,
+    quality: QualityProfile,
 ) -> Result<()> {
     let engine_input = absolute_engine_input(input_path)?;
     let pdfium = engine_path(app, "pdfium")?;
@@ -142,7 +214,7 @@ pub(in crate::converters) fn convert_with_pdfium(
             .arg("--format")
             .arg(format)
             .arg("--dpi")
-            .arg("220"),
+            .arg(quality.pdf_dpi()),
         "PDFium",
         Duration::from_secs(240),
         ExternalCommandProgress {
@@ -198,15 +270,29 @@ pub(in crate::converters) fn convert_with_libvips(
     job_id: &str,
     input_path: &Path,
     output_path: &Path,
+    quality: QualityProfile,
+    batch_concurrency: usize,
 ) -> Result<()> {
     let engine_input = absolute_engine_input(input_path)?;
     let vips = engine_path(app, "libvips")?;
+    let staging = tempfile::Builder::new()
+        .prefix("multi-converter-image-")
+        .tempdir()?;
+    let normalized = staging.path().join("oriented.v");
+    let threads = std::thread::available_parallelism()
+        .map(|value| value.get())
+        .unwrap_or(2)
+        .checked_div(batch_concurrency.max(1))
+        .unwrap_or(1)
+        .max(1)
+        .to_string();
     emit_progress(app, job_id, 24, "Conversion libvips");
     run_external_command_with_progress(
         engine_command(&vips)
-            .arg("copy")
+            .env("VIPS_CONCURRENCY", &threads)
+            .arg("autorot")
             .arg(&engine_input)
-            .arg(output_path),
+            .arg(&normalized),
         "libvips",
         Duration::from_secs(180),
         ExternalCommandProgress {
@@ -214,6 +300,32 @@ pub(in crate::converters) fn convert_with_libvips(
             job_id,
             phase: "Conversion libvips",
             start: 24,
+            max: 52,
+        },
+    )?;
+    let mut command = engine_command(&vips);
+    command.env("VIPS_CONCURRENCY", &threads);
+    if output_path.extension().and_then(OsStr::to_str) == Some("jpg") {
+        command
+            .arg("jpegsave")
+            .arg(&normalized)
+            .arg(output_path)
+            .arg("--Q")
+            .arg(quality.jpeg_quality().to_string())
+            .arg("--background")
+            .arg("255");
+    } else {
+        command.arg("copy").arg(&normalized).arg(output_path);
+    }
+    run_external_command_with_progress(
+        &mut command,
+        "libvips",
+        Duration::from_secs(180),
+        ExternalCommandProgress {
+            app,
+            job_id,
+            phase: "Encodage de l’image",
+            start: 52,
             max: 82,
         },
     )?;

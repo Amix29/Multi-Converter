@@ -43,9 +43,9 @@ if (args.macosDmg) {
   const macosDmgSource = path.resolve(args.macosDmg);
   const macosUpdaterArchiveSource = path.resolve(args.macosUpdaterArchive);
   const macosUpdaterSignatureSource = path.resolve(args.macosUpdaterSignature);
-  const macosDmgName = `Multi-Converter_${version}_macos-universal.dmg`;
-  const stableMacosDmgName = "Multi-Converter_macos-universal.dmg";
-  const macosUpdaterArchiveName = `Multi-Converter_${version}_macos-universal.app.tar.gz`;
+  const macosDmgName = `Multi-Converter_${version}_macos-aarch64.dmg`;
+  const stableMacosDmgName = "Multi-Converter_macos-aarch64.dmg";
+  const macosUpdaterArchiveName = `Multi-Converter_${version}_macos-aarch64.app.tar.gz`;
   const macosUpdaterSignatureName = `${macosUpdaterArchiveName}.sig`;
   if (!fs.existsSync(macosDmgSource)) fail(`Missing macOS DMG: ${macosDmgSource}`);
   if (!fs.existsSync(macosUpdaterArchiveSource)) fail(`Missing macOS updater archive: ${macosUpdaterArchiveSource}`);
@@ -85,7 +85,7 @@ fs.writeFileSync(path.join(outDir, `${versionedInstaller}.sha256`), `${hash}  ${
 
 const signature = fs.readFileSync(signaturePath, "utf8").trim();
 const downloadUrl = `https://github.com/Amix29/Multi-Converter/releases/download/${tag}/${versionedInstaller}`;
-const macosUpdaterArchiveName = `Multi-Converter_${version}_macos-universal.app.tar.gz`;
+const macosUpdaterArchiveName = `Multi-Converter_${version}_macos-aarch64.app.tar.gz`;
 const macosUpdaterSignaturePath = path.join(outDir, `${macosUpdaterArchiveName}.sig`);
 const macosUpdaterSignature = args.macosDmg ? fs.readFileSync(macosUpdaterSignaturePath, "utf8").trim() : null;
 const macosUpdaterUrl = `https://github.com/Amix29/Multi-Converter/releases/download/${tag}/${macosUpdaterArchiveName}`;
@@ -111,10 +111,6 @@ const latest = {
         signature: macosUpdaterSignature,
         url: macosUpdaterUrl,
       },
-      "darwin-x86_64": {
-        signature: macosUpdaterSignature,
-        url: macosUpdaterUrl,
-      },
     } : {}),
     ...(includeLinux ? {
       "linux-x86_64": {
@@ -130,10 +126,10 @@ fs.writeFileSync(path.join(outDir, "latest.json"), `${JSON.stringify(latest, nul
 console.log(`Release assets prepared for Multi-Converter v${version}: ${outDir}`);
 console.log(`SHA256 ${versionedInstaller}: ${hash}`);
 if (args.macosDmg) {
-  console.log(`macOS DMG copied as Multi-Converter_${version}_macos-universal.dmg`);
-  console.log("macOS stable DMG alias copied as Multi-Converter_macos-universal.dmg");
-  console.log(`macOS updater archive copied as Multi-Converter_${version}_macos-universal.app.tar.gz`);
-  console.log(`macOS updater signature copied as Multi-Converter_${version}_macos-universal.app.tar.gz.sig`);
+  console.log(`macOS DMG copied as Multi-Converter_${version}_macos-aarch64.dmg`);
+  console.log("macOS stable DMG alias copied as Multi-Converter_macos-aarch64.dmg");
+  console.log(`macOS updater archive copied as Multi-Converter_${version}_macos-aarch64.app.tar.gz`);
+  console.log(`macOS updater signature copied as Multi-Converter_${version}_macos-aarch64.app.tar.gz.sig`);
 }
 if (includeLinux) {
   console.log(`Linux AppImage copied as Multi-Converter_${version}_linux-x64.AppImage`);

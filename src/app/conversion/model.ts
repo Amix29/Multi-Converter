@@ -305,7 +305,7 @@ function fileWarningText(code: string, language: LanguageCode) {
   return t(language, "file.warningGeneric");
 }
 
-function formatBytes(bytes: number, language: LanguageCode) {
+export function formatBytes(bytes: number, language: LanguageCode) {
   if (!Number.isFinite(bytes) || bytes <= 0) return `0 ${t(language, "common.bytes")}`;
   const units = [t(language, "common.bytes"), t(language, "common.kilobytes"), t(language, "common.megabytes"), t(language, "common.gigabytes")];
   const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);

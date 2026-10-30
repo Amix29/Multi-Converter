@@ -6,7 +6,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const version = "9.8.7";
-const expectedName = `Multi-Converter_${version}_macos-universal.dmg`;
+const expectedName = `Multi-Converter_${version}_macos-aarch64.dmg`;
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "mc-macos-dmg-artifact-"));
 
 try {

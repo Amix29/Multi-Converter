@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
+import { reviewedRustAction } from "./workflow-action-pins.mjs";
 
 export function assertWindowsPdfiumWorkflowContracts({ workflow, job }) {
   assert.match(workflow, /name:\s+Windows PDFium Engine Staging/, "PDFium staging workflow must be clearly named");
   assert.match(workflow, /push:\s*\n\s+branches:\s*\n\s+- codex\/test/, "PDFium staging must run from the persistent test branch");
   assert.doesNotMatch(workflow, /lfs:\s*true/, "PDFium staging must not use Git LFS checkout");
   assert.match(job, /runs-on:\s+windows-2025/, "PDFium staging must run on Windows x64");
-  assert.match(job, /dtolnay\/rust-toolchain@1\.96\.0/, "PDFium staging must use the exact locked build toolchain");
+  assert.ok(job.includes(reviewedRustAction), "PDFium staging must use the exact locked build toolchain");
   assert.match(job, /wrapper 0\.4\.0/, "PDFium staging must identify wrapper 0.4.0");
   assert.match(job, /npm run prepare:pdfium-engine/, "PDFium staging must prepare the locked upstream archive");
   assert.equal((job.match(/npm run package:pdfium-engine/g) ?? []).length, 2, "PDFium staging must package twice");

@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ImportToast, PageNotice } from "./app/components/AppNotices";
+import { SessionGuardDialog } from "./app/components/SessionGuardDialog";
+import { useSessionGuard } from "./app/conversion/useSessionGuard";
 import {
   feedbackPrivacyStorageKey,
   notificationsStorageKey,
@@ -15,25 +17,26 @@ import { AppTopbar } from "./app/layout/AppTopbar";
 import { FilesScreen } from "./app/screens/FilesScreen";
 import { FormatScreen } from "./app/screens/FormatScreen";
 import { ProgressScreen } from "./app/screens/ProgressScreen";
-import { SettingsPanel } from "./app/settings/SettingsPanel";
 import type { Notice, NoticeTone } from "./app/types";
 import { useStableEvent } from "./app/useStableEvent";
 import { WelcomePanel } from "./app/welcome/WelcomePanel";
 import { UpdateDialog, UpdateInstallDialog, UpdateReminder } from "./components/UpdateFlow";
 import { useAppUpdater } from "./hooks/useAppUpdater";
 import { t, useI18n } from "./i18n";
-import { api } from "./lib/api";
+import { api, type DependencyBootstrap } from "./lib/api";
 import { repositoryUrl } from "./lib/updateService";
-import { ImageOcrDialog } from "./ocr/ImageOcrDialog";
 import type { FileItem } from "./app/types";
 
 const isTauriRuntime = "__TAURI_INTERNALS__" in window;
+const SettingsPanel = lazy(() => import("./app/settings/SettingsPanel").then((module) => ({ default: module.SettingsPanel })));
+const ImageOcrDialog = lazy(() => import("./ocr/ImageOcrDialog").then((module) => ({ default: module.ImageOcrDialog })));
 
 export default function App() {
   const { language, setLanguage } = useI18n();
   const bootStarted = useRef(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(readStoredNotificationsEnabled);
   const [bootInfoLoaded, setBootInfoLoaded] = useState(false);
+  const [dependencies, setDependencies] = useState<DependencyBootstrap | null>(null);
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(shouldShowWelcome);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
@@ -41,6 +44,18 @@ export default function App() {
   const [feedbackPrivacyAccepted, setFeedbackPrivacyAccepted] = useState(readStoredFeedbackPrivacyAccepted);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [ocrFile, setOcrFile] = useState<FileItem | null>(null);
+  const [ocrJobId, setOcrJobId] = useState<string | null>(null);
+  const ocrTask = useRef<{ jobId: string; completion: Promise<void> } | null>(null);
+  const registerOcrTask = useStableEvent((task: { jobId: string; completion: Promise<void> }) => {
+    ocrTask.current = task;
+    setOcrJobId(task.jobId);
+    const finished = () => {
+      if (ocrTask.current?.jobId !== task.jobId) return;
+      ocrTask.current = null;
+      setOcrJobId(null);
+    };
+    void task.completion.then(finished, finished);
+  });
   const showNotice = useCallback((tone: NoticeTone, message: string) => {
     setNotice({ id: Date.now(), tone, message });
   }, []);
@@ -56,10 +71,28 @@ export default function App() {
   });
   const updater = useAppUpdater({ bootInfoLoaded, isTauriRuntime, isWelcomeOpen, language, showNotice });
   const setInternetAvailable = useStableEvent(updater.setInternetAvailable);
-  const startConversion = useStableEvent(conversionWorkflow.startConversion);
+  const sessionGuard = useSessionGuard({
+    isConverting: conversionWorkflow.isConverting || Boolean(ocrJobId),
+    isExporting: conversionWorkflow.isExporting,
+    hasUnexportedResults: conversionWorkflow.hasUnexportedResults,
+    async cancelAndWait() {
+      const activeOcr = ocrTask.current;
+      await Promise.all([
+        conversionWorkflow.cancelAndWait(),
+        activeOcr ? api.cancelOcr(activeOcr.jobId).then(() => activeOcr.completion) : Promise.resolve(),
+      ]);
+    },
+    onError: () => showNotice("error", t(language, "session.busy")),
+  });
+  const startConversion = useStableEvent(() => sessionGuard.request(conversionWorkflow.startConversion));
+  const installUpdate = useStableEvent(() => {
+    updater.cancelUpdateDialog();
+    setIsSettingsOpen(false);
+    sessionGuard.request(updater.installAvailableUpdate);
+  });
   const cancelConversions = useStableEvent(conversionWorkflow.cancelConversions);
   const continueConversions = useStableEvent(conversionWorkflow.continueConversions);
-  const resetConversion = useStableEvent(conversionWorkflow.resetAll);
+  const resetConversion = useStableEvent(() => sessionGuard.request(conversionWorkflow.resetAll));
   const retryFile = useStableEvent(conversionWorkflow.retryFile);
   const retryFailed = useStableEvent(conversionWorkflow.retryFailedConversions);
   const exportFolder = useStableEvent(conversionWorkflow.exportResultsToFolder);
@@ -94,7 +127,7 @@ export default function App() {
   }, [notificationsEnabled]);
 
   useEffect(() => {
-    if (!notice) return;
+    if (!notice || notice.tone === "error") return;
     const timeout = window.setTimeout(() => setNotice(null), 5200);
     return () => window.clearTimeout(timeout);
   }, [notice]);
@@ -106,7 +139,10 @@ export default function App() {
       .then((state) => setIsWelcomeOpen(state.show))
       .catch(() => setIsWelcomeOpen(shouldShowWelcome()));
     api.bootstrapDependencies()
-      .then((dependencies) => setInternetAvailable(dependencies.internetAvailable))
+      .then((result) => {
+        setDependencies(result);
+        setInternetAvailable(result.internetAvailable);
+      })
       .catch(() => setInternetAvailable(navigator.onLine))
       .finally(() => setBootInfoLoaded(true));
   }, [setInternetAvailable]);
@@ -131,7 +167,7 @@ export default function App() {
   }
 
   return (
-    <main className={`app-shell ${updateReminderActive ? "has-update-reminder" : ""} ${importToastActive ? "has-import-toast" : ""}`}>
+    <main className={`app-shell ${notice ? "has-page-notice" : ""} ${updateReminderActive ? "has-update-reminder" : ""} ${importToastActive ? "has-import-toast" : ""}`}>
       <AppTopbar
         step={fileWorkflow.step}
         language={language}
@@ -143,8 +179,12 @@ export default function App() {
       />
 
       <WelcomePanel isOpen={isWelcomeOpen} language={language} onClose={closeWelcome} />
-      <SettingsPanel
+      <SessionGuardDialog isOpen={sessionGuard.isOpen} isConfirming={sessionGuard.isConfirming}
+        isConverting={conversionWorkflow.isConverting || Boolean(ocrJobId)} language={language}
+        onCancel={sessionGuard.dismiss} onConfirm={() => void sessionGuard.confirm()} />
+      {isSettingsOpen && <Suspense fallback={<span role="status">{t(language, "common.loading")}</span>}><SettingsPanel
         isOpen={isSettingsOpen}
+        dependencies={dependencies}
         language={language}
         notificationsEnabled={notificationsEnabled}
         internetAvailable={updater.internetAvailable}
@@ -157,8 +197,8 @@ export default function App() {
         onLanguage={setLanguage}
         onNotificationsEnabled={setNotificationsEnabled}
         onCheckForUpdate={() => void updater.checkForAppUpdate(true)}
-        onInstallUpdate={() => void updater.installAvailableUpdate()}
-      />
+        onInstallUpdate={installUpdate}
+      /></Suspense>}
       <UpdateDialog
         isOpen={updater.isUpdateDialogOpen}
         language={language}
@@ -166,7 +206,7 @@ export default function App() {
         updateStatus={updater.updateStatus}
         updateDownloadProgress={updater.updateDownloadProgress}
         updateDownloadSize={updater.updateDownloadSize}
-        onInstall={() => void updater.installAvailableUpdate()}
+        onInstall={installUpdate}
         onCancel={updater.cancelUpdateDialog}
       />
       <UpdateInstallDialog
@@ -184,7 +224,7 @@ export default function App() {
             language={language}
             updateInfo={updater.updateInfo}
             updateStatus={updater.updateStatus}
-            onInstall={() => void updater.installAvailableUpdate()}
+            onInstall={installUpdate}
             onOpenDetails={() => updater.setIsUpdateDialogOpen(true)}
           />
         </div>
@@ -204,14 +244,15 @@ export default function App() {
         onClose={() => setIsFeedbackOpen(false)}
       />
       <PageNotice language={language} notice={notice} onDismiss={() => setNotice(null)} />
-      <ImageOcrDialog
+      {ocrFile && <Suspense fallback={<span role="status">{t(language, "common.loading")}</span>}><ImageOcrDialog
         isOpen={Boolean(ocrFile)}
         language={language}
         fileName={ocrFile?.name ?? ""}
         path={ocrFile?.path ?? ""}
         onClose={closeOcr}
         onNotice={showNotice}
-      />
+        onTask={registerOcrTask}
+      /></Suspense>}
 
       <FilesScreen
         isActive={fileWorkflow.step === 1}
@@ -220,7 +261,10 @@ export default function App() {
         isConverting={conversionWorkflow.isConverting}
         isDragOver={fileWorkflow.isDragOver}
         onAddFiles={fileWorkflow.addPickedFiles}
-        onClear={fileWorkflow.resetFiles}
+        onClear={() => sessionGuard.request(async () => {
+          await conversionWorkflow.resetAll();
+          fileWorkflow.resetFiles();
+        })}
         onClearUnsupported={fileWorkflow.removeUnsupported}
         onDragOver={fileWorkflow.setIsDragOver}
         onDrop={fileWorkflow.handleHtmlDrop}
@@ -237,6 +281,8 @@ export default function App() {
         onBack={showFiles}
         onChooseFileFormat={fileWorkflow.applyFileFormat}
         onApplyCompatibleFormat={fileWorkflow.applyCompatibleFormat}
+        qualityProfile={conversionWorkflow.qualityProfile}
+        onQualityProfile={conversionWorkflow.setQualityProfile}
         onStart={startConversion}
       />
       <ProgressScreen

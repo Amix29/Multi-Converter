@@ -32,7 +32,7 @@ on:
         default: ""
         type: string
       ocr_staging_run_id:
-        description: "OCR Runtime Staging run ID containing both macOS runtimes and shared models"
+        description: "OCR Runtime Staging run ID containing the Apple Silicon runtime and shared models"
         required: true
         type: string
 
@@ -55,37 +55,34 @@ jobs:
           - arch: aarch64
             arch_label: Apple Silicon
             runner: macos-latest
-          - arch: x86_64
-            arch_label: Intel
-            runner: macos-15-intel
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 180
     env:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
+      MULTI_CONVERTER_ENGINE_PLATFORM: macos-aarch64
       MACOS_CONVERSION_ARCH: ${{ matrix.arch }}
       SIDECAR_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.sidecar_release_tag || '' }}
       ENGINE_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_release_tag || '' }}
       ENGINE_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.engine_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_MACOS_ENGINE_STAGING_RUN_ID || '' }}
       OCR_STAGING_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.ocr_staging_run_id || github.event_name != 'workflow_dispatch' && vars.MC_OCR_RUNTIME_STAGING_RUN_ID || '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
           components: rustfmt, clippy
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
+          targets: aarch64-apple-darwin
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cargo/registry
@@ -95,7 +92,7 @@ jobs:
             ${{ runner.os }}-macos-conversions-cargo-registry-v2-
             ${{ runner.os }}-cargo-registry-v2-
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: src-tauri/bundled-engines
           key: ${{ runner.os }}-macos-conversions-bundled-engines-${{ env.ENGINE_STAGING_RUN_ID || env.ENGINE_RELEASE_TAG || 'embedded-manifest' }}-${{ hashFiles('src-tauri/engines-manifest.json') }}
@@ -130,7 +127,7 @@ jobs:
 
       - name: Download staged macOS assets from a workflow artifact
         if: ${{ env.ENGINE_STAGING_RUN_ID != '' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: macos-engine-assets
           path: ${{ runner.temp }}/mc-macos-engine-assets
@@ -158,11 +155,7 @@ jobs:
             fi
           fi
           echo "Using staged macOS asset directory: $asset_dir"
-          for asset in \
-            ffmpeg-aarch64-apple-darwin \
-            ffmpeg-x86_64-apple-darwin \
-            ffprobe-aarch64-apple-darwin \
-            ffprobe-x86_64-apple-darwin
+          for asset in ffmpeg-aarch64-apple-darwin ffprobe-aarch64-apple-darwin
           do
             if [[ ! -s "$asset_dir/$asset" ]]; then
               echo "Missing staged macOS asset: $asset" >&2
@@ -186,11 +179,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p src-tauri/binaries
-          for asset in \
-            ffmpeg-aarch64-apple-darwin \
-            ffmpeg-x86_64-apple-darwin \
-            ffprobe-aarch64-apple-darwin \
-            ffprobe-x86_64-apple-darwin
+          for asset in ffmpeg-aarch64-apple-darwin ffprobe-aarch64-apple-darwin
           do
             gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir src-tauri/binaries
             gh release download "$SIDECAR_RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern "$asset.sha256" --dir src-tauri/binaries
@@ -205,7 +194,7 @@ jobs:
         run: node scripts/prepare-macos-engine-release-assets.mjs --tag "$ENGINE_RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
 
       - name: Download locked OCR artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: ocr-*
           path: ${{ runner.temp }}/mc-ocr-staging
@@ -213,7 +202,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ env.OCR_STAGING_RUN_ID }}
 
-      - name: Verify and stage universal macOS OCR resources
+      - name: Verify and stage Apple Silicon OCR resources
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -227,8 +216,7 @@ jobs:
           runtime_dir="$RUNNER_TEMP/mc-ocr-runtime"
           mkdir -p "$runtime_dir"
           cp "$RUNNER_TEMP/mc-ocr-staging/ocr-runtime-macos-aarch64/"* "$runtime_dir/"
-          cp "$RUNNER_TEMP/mc-ocr-staging/ocr-runtime-macos-x86_64/"* "$runtime_dir/"
-          npm run stage:ocr-runtime-artifacts -- --platform macos-universal --runtime-dir "$runtime_dir" --models-dir "$RUNNER_TEMP/mc-ocr-staging/ocr-models"
+          npm run stage:ocr-runtime-artifacts -- --platform macos-aarch64 --runtime-dir "$runtime_dir" --models-dir "$RUNNER_TEMP/mc-ocr-staging/ocr-models"
 
       - name: Run strict macOS conversion and OCR validation
         env:

@@ -53,7 +53,7 @@ export function createReleaseAssetTestTools({
         signature: macosSignature,
         url: macosUrl,
       };
-      platforms["darwin-x86_64"] = {
+      if (options.includeIntelUpdater) platforms["darwin-x86_64"] = {
         signature: macosSignature,
         url: macosUrl,
       };

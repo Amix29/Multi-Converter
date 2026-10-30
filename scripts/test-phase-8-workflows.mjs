@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { reviewedRustAction } from "./lib/workflow-action-pins.mjs";
 
 const root = process.cwd();
 const staging = read("ocr-runtime-staging.yml");
@@ -9,73 +10,42 @@ const conversions = read("macos-conversions.yml");
 const dmg = read("macos-dmg.yml");
 const appimage = read("linux-appimage.yml");
 const engines = read("phase-8-engine-staging.yml");
-const paddleIntelBuild = fs.readFileSync(path.join(root, "scripts", "build-paddle-macos-intel.mjs"), "utf8");
-const paddleIntelBuildLock = fs.readFileSync(path.join(root, "tools", "ocr-runtime", "paddle-build-macos-x86_64.lock.txt"), "utf8");
 const pythonAudit = fs.readFileSync(path.join(root, "scripts", "audit-ocr-platform-locks.mjs"), "utf8");
 
 assert.match(staging, /^name: OCR Runtime Staging$/m);
 assert.match(staging, /lfs: false/g);
 assert.match(staging, /macos-aarch64[\s\S]*macos-latest/);
-assert.match(staging, /macos-x86_64[\s\S]*macos-15-intel/);
+assert.doesNotMatch(staging, /macos-x86_64|macos-15-intel|build:paddle:macos-intel/);
 assert.match(staging, /linux-x64[\s\S]*ubuntu-22\.04/);
 assert.match(staging, /PYTHON_VERSION: 3\.12\.10/);
 assert.match(staging, /UV_VERSION: 0\.11\.21/);
-assert.match(staging, /build:paddle:macos-intel/);
+assert.match(staging, /windows-x64[\s\S]*windows-latest/);
 assert.match(staging, /paddle\.utils\.run_check/);
 assert.match(staging, /--verify-reproducible/);
 assert.match(staging, /name: ocr-models[\s\S]*include-hidden-files: true/);
 assert.match(staging, /inventory:ocr-runtime-licenses/);
 assert.doesNotMatch(staging, /CoreML|OpenVINO|DirectML/);
 assert.doesNotMatch(staging, /gh release (create|upload)/);
-assert.match(paddleIntelBuild, /paddle-build-macos-x86_64\.lock\.txt/);
-assert.match(paddleIntelBuild, /--require-hashes/);
-assert.match(paddleIntelBuild, /uv 0\.11\.21/);
-assert.match(paddleIntelBuild, /PADDLE_VERSION: paddleVersion/);
-assert.match(paddleIntelBuild, /_PYTHON_HOST_PLATFORM: "macosx-11\.0-x86_64"/);
-assert.match(paddleIntelBuild, /CMAKE_OSX_ARCHITECTURES=x86_64/);
-assert.match(paddleIntelBuild, /CMAKE_OSX_DEPLOYMENT_TARGET=11\.0/);
-assert.match(paddleIntelBuild, /restorePinnedSubmodule\(sourceRoot, "third_party\/warprnnt", "CMakeLists\.txt"\)/);
-assert.match(paddleIntelBuild, /submodule", "update", "--init", "--recursive", "--force", "--", submodulePath/);
-assert.match(paddleIntelBuild, /ls-tree", "HEAD", "--", submodulePath/);
-assert.match(paddleIntelBuild, /commit restauré différent du gitlink PaddlePaddle/);
-for (const requirement of [
-  "httpx==0.28.1",
-  "networkx==3.6.1",
-  "numpy==2.3.5",
-  "opt-einsum==3.3.0",
-  "pillow==12.3.0",
-  "protobuf==7.35.1",
-  "safetensors==0.8.0",
-  "setuptools==83.0.0",
-  "typing-extensions==4.16.0",
-  "wheel==0.46.3",
-]) {
-  assert.match(paddleIntelBuildLock, new RegExp(`^${requirement.replaceAll(".", "\\.")} `, "m"));
-}
-assert.match(paddleIntelBuild, /runWithRetries/);
-assert.match(paddleIntelBuild, /stageCompatibilityRefs/);
-assert.match(paddleIntelBuild, /fetch", "--depth", "1", "origin", entry\.objectSha/);
-assert.match(paddleIntelBuild, /rev-parse", "FETCH_HEAD/);
-assert.match(paddleIntelBuild, /refs\/\$\{kind\}\/\$\{localName\}/);
-assert.match(paddleIntelBuild, /refs\/\$\{kind\}\/\$\{localName\}\^\{commit\}/);
-assert.match(paddleIntelBuild, /branch", "-f", localName, entry\.commit/);
-assert.match(pythonAudit, /paddle-build-macos-x86_64\.lock\.txt/);
+assert.doesNotMatch(pythonAudit, /macos-x86_64|paddle-build-macos/);
+assert.match(pythonAudit, /windows-x64/);
+assert.match(pythonAudit, /macos-aarch64/);
+assert.match(pythonAudit, /linux-x64/);
 
 assert.match(engines, /^name: Phase 8 Engine Staging$/m);
-assert.match(engines, /artifact_id: 7609654944/);
 assert.match(engines, /artifact_id: 7621760659/);
-assert.match(engines, /artifact_sha256: d393adbaddeb900cee51a62d7ef0cee589da6f344f660b329e960f1327d3cbf5/);
 assert.match(engines, /artifact_sha256: 1d16c5ad057d16b6a2293c1d49ee0e5f591bf380f5bcdecf1e83058d4e2de082/);
 assert.match(engines, /package-locked-pdfium-platform\.mjs/);
-assert.match(engines, /dtolnay\/rust-toolchain@1\.96\.0/);
+assert.ok(engines.includes(reviewedRustAction));
 assert.match(engines, /wrapper 0\.4\.0/);
 assert.match(engines, /--evidence "\$evidence"/);
 assert.match(engines, /pdfium-0\.4-package-evidence-/);
 assert.match(engines, /test:pdfium-wrapper/);
 assert.match(engines, /clippy:pdfium-wrapper/);
 assert.match(engines, /restage-platform-pdfium\.mjs/);
-assert.match(engines, /complete-macos-sidecar-set\.mjs/);
-assert.match(engines, /lipo "\$output\/ffprobe-x86_64-apple-darwin" -verify_arch x86_64/);
+assert.doesNotMatch(engines, /complete-macos-sidecar-set\.mjs/);
+assert.match(engines, /lipo "src-tauri\/binaries\/\$engine-aarch64-apple-darwin" -verify_arch arm64/);
+assert.match(engines, /macOS Engine Staging\|success\|\$GITHUB_SHA/);
+assert.doesNotMatch(engines, /macos-universal|macos-x86_64|macos-15-intel/);
 assert.doesNotMatch(engines, /gh release (create|upload)/);
 
 for (const [label, workflow] of [["macOS conversions", conversions], ["macOS DMG", dmg], ["Linux AppImage", appimage]]) {
@@ -90,13 +60,13 @@ for (const [label, workflow] of [["macOS conversions", conversions], ["macOS DMG
 
 assert.match(dmg, /test:macos:native/);
 assert.match(dmg, /macos-native-proof-apple-silicon/);
-assert.match(dmg, /macos-native-proof-intel/);
-assert.doesNotMatch(dmg, /mc-macos-release-artifacts\/Multi-Converter_macos-universal\.dmg/);
+assert.doesNotMatch(dmg, /macos-native-proof-intel|verify-intel:/);
+assert.doesNotMatch(dmg, /mc-macos-release-artifacts\/Multi-Converter_macos-aarch64\.dmg/);
 assert.match(appimage, /xvfb-run -a npm run test:linux:native/);
 assert.match(appimage, /linux-native-proof/);
 assert.doesNotMatch(appimage, /mc-linux-release-artifacts\/Multi-Converter_linux-x64\.AppImage/);
 
-console.log("Phase 8 workflow contracts passed: native OCR staging, universal DMG and Linux AppImage evidence are wired without public aliases.");
+console.log("Phase 8 workflow contracts passed: native OCR staging, Apple Silicon DMG and Linux AppImage evidence are wired without public aliases.");
 
 function read(name) {
   return fs.readFileSync(path.join(root, ".github", "workflows", name), "utf8");

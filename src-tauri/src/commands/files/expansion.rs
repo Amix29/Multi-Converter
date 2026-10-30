@@ -1,5 +1,5 @@
 use super::CommandResult;
-use crate::converters::{ImportOriginKind, ImportOriginV1};
+use crate::converters::{ImportOriginKind, ImportOriginV1, ImportRejection};
 use std::{
     collections::HashSet,
     fs,
@@ -17,6 +17,7 @@ pub(super) struct ExpandedPaths {
     pub(super) files: Vec<ExpandedFile>,
     #[cfg_attr(not(test), allow(dead_code))]
     pub(super) partial_import: bool,
+    pub(super) rejected: Vec<ImportRejection>,
 }
 
 pub(super) struct ExpandedFile {
@@ -34,6 +35,7 @@ pub(super) fn expand_file_paths(paths: &[String]) -> CommandResult<ExpandedPaths
     let mut visited_directories = HashSet::new();
     let mut entries_seen = 0usize;
     let mut partial_import = false;
+    let mut rejected = Vec::new();
 
     for raw_path in paths.iter().filter(|item| !item.trim().is_empty()) {
         if files.len() >= MAX_IMPORT_FILES {
@@ -41,7 +43,16 @@ pub(super) fn expand_file_paths(paths: &[String]) -> CommandResult<ExpandedPaths
             break;
         }
         let path = Path::new(raw_path);
-        let metadata = fs::symlink_metadata(path).map_err(|error| error.to_string())?;
+        let metadata = match fs::symlink_metadata(path) {
+            Ok(metadata) => metadata,
+            Err(error) => {
+                rejected.push(ImportRejection {
+                    path: raw_path.clone(),
+                    message: error.to_string(),
+                });
+                continue;
+            }
+        };
         let root_id = uuid::Uuid::new_v4().to_string();
         let root_name = safe_import_component(
             path.file_name()
@@ -58,6 +69,10 @@ pub(super) fn expand_file_paths(paths: &[String]) -> CommandResult<ExpandedPaths
 
         if metadata.file_type().is_symlink() || is_windows_reparse_point(&metadata) {
             partial_import = true;
+            rejected.push(ImportRejection {
+                path: raw_path.clone(),
+                message: "Les liens symboliques et jonctions ne sont pas importés.".to_string(),
+            });
             continue;
         }
         if metadata.is_file() {
@@ -72,7 +87,16 @@ pub(super) fn expand_file_paths(paths: &[String]) -> CommandResult<ExpandedPaths
                 partial_import: false,
             });
         } else if metadata.is_dir() {
-            let canonical = path.canonicalize().map_err(|error| error.to_string())?;
+            let canonical = match path.canonicalize() {
+                Ok(canonical) => canonical,
+                Err(error) => {
+                    rejected.push(ImportRejection {
+                        path: raw_path.clone(),
+                        message: error.to_string(),
+                    });
+                    continue;
+                }
+            };
             if visited_directories.len() >= MAX_FOLDER_IMPORT_DIRECTORIES
                 || !visited_directories.insert(canonical)
             {
@@ -117,6 +141,7 @@ pub(super) fn expand_file_paths(paths: &[String]) -> CommandResult<ExpandedPaths
     Ok(ExpandedPaths {
         files,
         partial_import,
+        rejected,
     })
 }
 

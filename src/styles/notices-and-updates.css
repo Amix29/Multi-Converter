@@ -1,8 +1,9 @@
 .page-notice {
-  position: fixed;
-  right: 24px;
-  bottom: var(--page-notice-offset);
-  z-index: 30;
+  position: relative;
+  grid-row: 2;
+  margin-top: 12px;
+  max-height: 120px;
+  overflow: auto;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -15,7 +16,6 @@
   background: var(--vlm-surface-raised);
   box-shadow: var(--vlm-shadow-sm);
   animation: noticeIn var(--vlm-motion-fast) var(--vlm-ease-standard) both;
-  transition: bottom var(--vlm-motion-base) var(--vlm-ease-standard);
 }
 
 .page-notice > span {

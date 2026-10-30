@@ -5,18 +5,13 @@ import process from "node:process";
 import { publicSourceLabel } from "./lib/download-integrity.mjs";
 
 const root = process.cwd();
-const sourceDir = path.join(root, "engine-sources", "macos-universal", "libvips");
+const sourceDir = path.join(root, "engine-sources", "macos-aarch64", "libvips");
 const workDir = path.join(root, "engine-sources", ".extracts", "libvips-macos-smoke");
 const archInputs = [
   {
     arch: "aarch64",
     lipoArch: "arm64",
     sourceEnv: "LIBVIPS_MACOS_AARCH64_SOURCE_DIR",
-  },
-  {
-    arch: "x86_64",
-    lipoArch: "x86_64",
-    sourceEnv: "LIBVIPS_MACOS_X86_64_SOURCE_DIR",
   },
 ];
 const forbiddenLinkPrefixes = [
@@ -26,7 +21,7 @@ const forbiddenLinkPrefixes = [
   "/sw/",
 ];
 
-if (process.platform !== "darwin") {
+if (process.platform !== "darwin" || process.arch !== "arm64") {
   throw new Error("macOS libvips engine preparation must run on macOS so otool and native smoke tests can validate the portable trees.");
 }
 
@@ -132,7 +127,7 @@ function isAllowedDependency(value) {
 }
 
 async function smokeTestNative(targetRoot, arch) {
-  const nativeArch = process.arch === "arm64" ? "aarch64" : "x86_64";
+  const nativeArch = "aarch64";
   if (arch !== nativeArch) return;
 
   await fs.rm(workDir, { recursive: true, force: true });

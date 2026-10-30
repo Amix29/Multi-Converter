@@ -1,6 +1,8 @@
 use super::*;
 
 mod runner;
+mod streams;
+pub(super) use streams::{INPUT_PROTOCOLS, source_warnings};
 
 #[cfg(test)]
 pub(in crate::converters) use runner::append_limited_log;
@@ -41,8 +43,13 @@ pub(in crate::converters) fn convert_audio(
     output_path: &Path,
     target_format: &str,
     batch_concurrency: usize,
+    quality: QualityProfile,
 ) -> Result<()> {
-    let args = audio_args(target_format)?;
+    let args = quality::audio_arguments(
+        owned_args(&audio_args(target_format)?),
+        target_format,
+        quality,
+    );
     run_ffmpeg(
         app,
         job_id,
@@ -57,7 +64,8 @@ pub(in crate::converters) fn convert_audio(
 }
 
 pub(in crate::converters) fn audio_args(target_format: &str) -> Result<Vec<&'static str>> {
-    Ok(match target_format {
+    let mut args = vec!["-map", "0:a:0?", "-sn", "-dn"];
+    args.extend(match target_format {
         "mp3" => vec!["-vn", "-codec:a", "libmp3lame", "-q:a", "2"],
         "m4a" => vec!["-vn", "-codec:a", "aac", "-b:a", "192k"],
         "flac" => vec!["-vn", "-codec:a", "flac"],
@@ -90,7 +98,8 @@ pub(in crate::converters) fn audio_args(target_format: &str) -> Result<Vec<&'sta
                 target_format.to_uppercase()
             )));
         }
-    })
+    });
+    Ok(args)
 }
 
 pub(in crate::converters) fn convert_video(
@@ -100,9 +109,11 @@ pub(in crate::converters) fn convert_video(
     output_path: &Path,
     target_format: &str,
     batch_concurrency: usize,
+    quality: QualityProfile,
 ) -> Result<()> {
     let mut gpu_attempted = false;
     for args in gpu_video_args(app, target_format) {
+        let args = quality::video_arguments(args, quality);
         gpu_attempted = true;
         check_cancelled(job_id)?;
         if run_ffmpeg(
@@ -131,7 +142,7 @@ pub(in crate::converters) fn convert_video(
         );
     }
 
-    let args = cpu_video_args(target_format)?;
+    let args = quality::video_arguments(cpu_video_args(target_format)?, quality);
     run_ffmpeg(
         app,
         job_id,
@@ -146,7 +157,8 @@ pub(in crate::converters) fn convert_video(
 }
 
 pub(in crate::converters) fn cpu_video_args(target_format: &str) -> Result<Vec<String>> {
-    Ok(match target_format {
+    let mut args = streams::primary_video_arguments();
+    args.extend(match target_format {
         "mp4" => owned_args(&[
             "-codec:v",
             "libx264",
@@ -255,7 +267,8 @@ pub(in crate::converters) fn cpu_video_args(target_format: &str) -> Result<Vec<S
                 target_format.to_uppercase()
             )));
         }
-    })
+    });
+    Ok(args)
 }
 
 pub(in crate::converters) fn gpu_video_args(
@@ -278,9 +291,10 @@ pub(in crate::converters) fn wmv_compatibility_scale_filter() -> &'static str {
 }
 
 pub(in crate::converters) fn gpu_h264_args(target_format: &str, encoder: &str) -> Vec<String> {
-    let mut args = owned_args(&[
+    let mut args = streams::primary_video_arguments();
+    args.extend(owned_args(&[
         "-codec:v", encoder, "-b:v", "8M", "-maxrate", "12M", "-bufsize", "16M",
-    ]);
+    ]));
 
     match target_format {
         "mts" => args.extend(owned_args(&[

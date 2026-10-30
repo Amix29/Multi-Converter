@@ -23,15 +23,20 @@ const tauriArgs = [command, ...extraArgs];
 const hasConfigOverride = extraArgs.includes("--config") || extraArgs.includes("-c");
 const hasSigningKey = Boolean(env.TAURI_SIGNING_PRIVATE_KEY?.trim());
 const explicitTarget = optionValue(extraArgs, "--target", "-t");
-const isMacosUniversalBuild = command === "build" && explicitTarget === "universal-apple-darwin";
+const isMacosBuild = command === "build" && explicitTarget?.endsWith("-apple-darwin");
+
+if (isMacosBuild && explicitTarget !== "aarch64-apple-darwin") {
+  console.error("Only Apple Silicon aarch64-apple-darwin macOS builds are supported.");
+  process.exit(1);
+}
+
+if (isMacosBuild && (process.platform !== "darwin" || process.arch !== "arm64") && env.MULTI_CONVERTER_ALLOW_NON_DARWIN_MACOS_BUILD !== "1") {
+  console.error("macOS Apple Silicon DMG builds must run on an Apple Silicon Mac. Use a Mac or GitHub Actions macos-latest runner.");
+  process.exit(1);
+}
 
 if (command === "build") {
   removeBundleArtifacts(env.CARGO_TARGET_DIR);
-}
-
-if (isMacosUniversalBuild && process.platform !== "darwin" && env.MULTI_CONVERTER_ALLOW_NON_DARWIN_MACOS_BUILD !== "1") {
-  console.error("macOS universal DMG builds must run on macOS. Use a Mac or GitHub Actions macos-latest runner.");
-  process.exit(1);
 }
 
 if (command === "build" && !hasSigningKey && !hasConfigOverride) {

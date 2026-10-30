@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   clearScreen: false,
   build: {
+    emptyOutDir: true,
     rolldownOptions: {
       output: {
         codeSplitting: {

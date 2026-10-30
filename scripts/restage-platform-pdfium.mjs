@@ -6,7 +6,7 @@ import process from "node:process";
 
 const args = parseArgs(process.argv.slice(2));
 const platform = args.platform;
-if (!new Set(["macos-universal", "linux-x64"]).has(platform)
+if (!new Set(["macos-aarch64", "linux-x64"]).has(platform)
     || !args.baselineDir || !args.replacementDir || !args.outputDir) {
   throw new Error("--platform, --baseline-dir, --replacement-dir et --output-dir sont requis.");
 }
@@ -22,7 +22,7 @@ if (replacementEntries.length !== 1 || replacementEntries[0].id !== "pdfium") {
 }
 const oldPdfium = platformEntries.find((entry) => entry.id === "pdfium");
 if (!oldPdfium) throw new Error("L’artefact de référence ne contient pas PDFium.");
-const required = platform === "macos-universal"
+const required = platform === "macos-aarch64"
   ? ["ffmpeg", "ffprobe", "pdfium", "libreoffice", "pandoc", "libvips"]
   : ["pdfium", "libreoffice", "pandoc", "libvips"];
 if (JSON.stringify(platformEntries.map((entry) => entry.id).sort()) !== JSON.stringify([...required].sort())) {

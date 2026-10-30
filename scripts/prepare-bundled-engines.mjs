@@ -113,53 +113,16 @@ async function prepareBaseSidecar(item) {
 }
 
 async function prepareDerivedSidecars(targetPlatform) {
-  if (targetPlatform !== "macos-universal") return;
-  if (process.platform !== "darwin") {
-    throw new Error("macOS universal sidecars must be prepared and architecture-verified on macOS.");
+  if (targetPlatform !== "macos-aarch64") return;
+  if (process.platform !== "darwin" || process.arch !== "arm64") {
+    throw new Error("macOS Apple Silicon sidecars must be verified on Apple Silicon.");
   }
-
   for (const stem of ["ffmpeg", "ffprobe"]) {
-    const universalTarget = path.join(binariesDir, `${stem}-universal-apple-darwin`);
-    if (await sidecarLooksCurrent(universalTarget, { id: stem, smoke: true, lipoArch: ["arm64", "x86_64"] })) continue;
-
-    const universalSource = await firstExisting([
-      path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", stem, ffmpegVersion, "bin", `${stem}-universal-apple-darwin`),
-      path.join(root, "engine-sources", "macos-universal", stem, "bin", `${stem}-universal-apple-darwin`),
-    ]);
-    if (universalSource) {
-      await fs.copyFile(universalSource, universalTarget);
-      await ensureExecutable(universalTarget);
-      if (await sidecarLooksCurrent(universalTarget, { id: stem, smoke: true, lipoArch: ["arm64", "x86_64"] })) continue;
-    }
-
-    const arm64Source = path.join(binariesDir, `${stem}-aarch64-apple-darwin`);
-    const x64Source = path.join(binariesDir, `${stem}-x86_64-apple-darwin`);
-    await createUniversalDarwinBinary(stem, arm64Source, x64Source, universalTarget);
-    if (!(await sidecarLooksCurrent(universalTarget, { id: stem, smoke: true, lipoArch: ["arm64", "x86_64"] }))) {
-      throw new Error(`${stem}: le sidecar universel macOS prepare ne repond pas avec la version attendue.`);
+    const target = path.join(binariesDir, stem + "-aarch64-apple-darwin");
+    if (!(await sidecarLooksCurrent(target, { id: stem, smoke: true, lipoArch: "arm64" }))) {
+      throw new Error(stem + ": Apple Silicon sidecar version or architecture invalid.");
     }
   }
-}
-
-async function createUniversalDarwinBinary(stem, arm64Source, x64Source, universalTarget) {
-  const missing = [];
-  for (const filePath of [arm64Source, x64Source]) {
-    const stat = await fs.stat(filePath).catch(() => null);
-    if (!stat?.isFile()) missing.push(path.relative(root, filePath));
-  }
-  if (missing.length) {
-    throw new Error(`${stem}: impossible de creer le sidecar universel macOS, fichiers manquants: ${missing.join(", ")}`);
-  }
-
-  await fs.rm(universalTarget, { force: true });
-  const result = spawnSync("lipo", ["-create", arm64Source, x64Source, "-output", universalTarget], {
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  if (result.status !== 0) {
-    throw new Error(`${stem}: creation du sidecar universel macOS impossible: ${result.stderr || result.stdout}`);
-  }
-  await ensureExecutable(universalTarget);
 }
 
 async function prepareBundledEngine(engine) {

@@ -15,7 +15,7 @@ expect(lock.pdfium?.tag === "chromium/7825", "le tag PDFium doit être chromium/
 expect(lock.pdfium?.wrapperVersion === "0.4.0", "le wrapper PDFium doit être verrouillé en 0.4.0");
 expect(lock.pdfium?.wrapperBuildRustVersion === "1.96.0", "la toolchain du wrapper PDFium doit être verrouillée");
 expect(isSha(lock.pdfium?.wrapperCargoLockSha256), "le Cargo.lock du wrapper PDFium doit être verrouillé");
-for (const platform of ["macos-universal", "linux-x64"]) {
+for (const platform of ["macos-aarch64", "linux-x64"]) {
   const entry = lock.pdfium.platforms?.[platform];
   expect(entry?.url?.startsWith("https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7825/"), `${platform}: URL PDFium verrouillée absente`);
   expect(Number.isInteger(entry?.bytes) && entry.bytes > 0, `${platform}: taille PDFium absente`);
@@ -59,7 +59,7 @@ for (const platform of ["macos-aarch64", "linux-x64"]) {
   expect(wheel?.url?.startsWith("https://files.pythonhosted.org/"), `${platform}: wheel officiel absent`);
   expect(isSha(wheel?.sha256), `${platform}: SHA-256 du wheel invalide`);
 }
-expect(lock.ocr?.paddlepaddle?.platforms?.["macos-x86_64"]?.kind === "source", "macOS Intel doit imposer la compilation source");
+expect(!lock.ocr?.paddlepaddle?.platforms?.["macos-x86_64"], "macOS Intel ne doit plus faire partie des plateformes OCR actives");
 
 for (const [name, baseline] of Object.entries(lock.v106Baselines ?? {})) {
   expect(Number.isInteger(baseline.runId) && baseline.runId > 0, `${name}: run ID absent`);

@@ -10,7 +10,7 @@ Le périmètre demandé reste **conversion de documents, images, audio et vidéo
 
 | Élément | État vérifié |
 | --- | --- |
-| Dépôt indépendant | `C:\Users\ryadb\Développement\LATELIER_IA\projets\multi-converter` |
+| Dépôt indépendant | `<Atelier>/projets/multi-converter` (chemin du compte local masqué le 30 octobre) |
 | Branche locale | `codex/test` |
 | Révision | `98726742 — Remove document and PDF editors while retaining conversion OCR` |
 | Version de développement | 1.0.7, non publiée |
@@ -20,7 +20,7 @@ Le périmètre demandé reste **conversion de documents, images, audio et vidéo
 | Compétences utilisées | better, product-design:audit, security-best-practices |
 | Modification du produit | Aucune correction appliquée pendant cet audit ; rapport et preuves uniquement |
 
-L’ancien chemin `C:\Users\ryadb\Projet\Multi Converter\Multi-Converter` fourni par le contexte de la conversation n’existe plus. Le dépôt ci-dessus a été retrouvé puis vérifié. Le dossier projet configuré dans les outils de travail mérite d’être réaligné.
+L’ancien chemin `<ancien-espace>/Multi Converter/Multi-Converter` fourni par le contexte de la conversation n’existe plus. Le dépôt ci-dessus a été retrouvé puis vérifié. Le dossier projet configuré dans les outils de travail mérite d’être réaligné. Les chemins du compte local ont été masqués le 30 octobre, sans modifier les résultats mesurés.
 
 Trois niveaux de preuve sont distingués :
 

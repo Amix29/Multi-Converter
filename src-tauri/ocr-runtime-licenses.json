@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "platform": "windows-x64",
-  "runtimeFileCount": 7260,
-  "runtimeTotalBytes": 660098904,
-  "runtimeAggregateSha256": "b6ea96d25e8c43ffa09efe7b8b171b44d3a82049c7cd0662ce403e8399f10da4",
+  "runtimeFileCount": 7246,
+  "runtimeTotalBytes": 660643156,
+  "runtimeAggregateSha256": "d386f7923fbea6fe6efa407b2f00d3e99e31ee9778027a67ca32e6b14adf759c",
   "generatedFrom": "engine-sources/ocr-runtime/windows-x64/dist/ocr-worker",
   "packageCount": 71,
   "packagesWithLicenseFiles": 71,
-  "licenseFileCount": 106,
+  "licenseFileCount": 104,
   "packagesWithoutEmbeddedLicenseFiles": [
     "bce-python-sdk"
   ],
@@ -39,9 +39,9 @@
     },
     {
       "name": "aiohttp",
-      "version": "3.14.3",
-      "licenseExpression": null,
-      "license": "Apache-2.0 AND MIT",
+      "version": "3.14.4",
+      "licenseExpression": "Apache-2.0 AND MIT",
+      "license": null,
       "licenseClassifiers": [],
       "projectUrls": [
         "Homepage, https://github.com/aio-libs/aiohttp",
@@ -56,14 +56,14 @@
       ],
       "licenseFiles": [
         {
-          "path": "_internal/aiohttp-3.14.3.dist-info/licenses/LICENSE.txt",
-          "bytes": 11514,
-          "sha256": "ea195371abbf66a39eef56600955d1137c2c196dc144ffec46b6ea530ce70044"
+          "path": "_internal/aiohttp-3.14.4.dist-info/licenses/LICENSE.txt",
+          "bytes": 11313,
+          "sha256": "2e4be5fc6c4c72a466fcb665d726e049a6891981fe536c4f04b6366749461d23"
         },
         {
-          "path": "_internal/aiohttp-3.14.3.dist-info/licenses/vendor/llhttp/LICENSE",
-          "bytes": 1091,
-          "sha256": "279012e02a10acfd59a3f2d8f13a497332535d871c2b27c89988985b06a3a438"
+          "path": "_internal/aiohttp-3.14.4.dist-info/licenses/vendor/llhttp/LICENSE",
+          "bytes": 1069,
+          "sha256": "628168d68bb5a8a17e0bbefb3bd74e326e1edc20583d76f52f457c82c921867d"
         }
       ],
       "supplementalLicenseFiles": []
@@ -217,7 +217,7 @@
     },
     {
       "name": "certifi",
-      "version": "2026.7.22",
+      "version": "2026.10.19",
       "licenseExpression": null,
       "license": "MPL-2.0",
       "licenseClassifiers": [
@@ -228,7 +228,7 @@
       ],
       "licenseFiles": [
         {
-          "path": "_internal/certifi-2026.7.22.dist-info/licenses/LICENSE",
+          "path": "_internal/certifi-2026.10.19.dist-info/licenses/LICENSE",
           "bytes": 989,
           "sha256": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7"
         }
@@ -377,7 +377,7 @@
     },
     {
       "name": "filelock",
-      "version": "3.32.2",
+      "version": "4.2.1",
       "licenseExpression": "MIT",
       "license": null,
       "licenseClassifiers": [
@@ -391,7 +391,7 @@
       ],
       "licenseFiles": [
         {
-          "path": "_internal/filelock-3.32.2.dist-info/licenses/LICENSE",
+          "path": "_internal/filelock-4.2.1.dist-info/licenses/LICENSE",
           "bytes": 1088,
           "sha256": "608c89d5060ae9921adccf3236695bc654a9946e12323ef6c021dfa04e294d48"
         }
@@ -645,7 +645,7 @@
     },
     {
       "name": "multidict",
-      "version": "6.7.1",
+      "version": "6.9.1",
       "licenseExpression": null,
       "license": "Apache License 2.0",
       "licenseClassifiers": [],
@@ -662,9 +662,9 @@
       ],
       "licenseFiles": [
         {
-          "path": "_internal/multidict-6.7.1.dist-info/licenses/LICENSE",
-          "bytes": 611,
-          "sha256": "93d11a968e2f0f36373c40811ff6d20e173f58c3cab5884cd6617bbfd795492a"
+          "path": "_internal/multidict-6.9.1.dist-info/licenses/LICENSE",
+          "bytes": 11313,
+          "sha256": "2e4be5fc6c4c72a466fcb665d726e049a6891981fe536c4f04b6366749461d23"
         }
       ],
       "supplementalLicenseFiles": []
@@ -797,11 +797,6 @@
           "path": "_internal/paddleocr-3.7.0.dist-info/LICENSE",
           "bytes": 11376,
           "sha256": "3840c5c0c61c294264d2dd77b8777be6ddd90121ef4e0e64abcd22edea581d6e"
-        },
-        {
-          "path": "_internal/paddleocr-3.7.0.dist-info/paddleocr-3.7.0.dist-info/LICENSE",
-          "bytes": 11376,
-          "sha256": "3840c5c0c61c294264d2dd77b8777be6ddd90121ef4e0e64abcd22edea581d6e"
         }
       ],
       "supplementalLicenseFiles": []
@@ -837,11 +832,6 @@
       "licenseFiles": [
         {
           "path": "_internal/paddlex-3.7.0.dist-info/licenses/LICENSE",
-          "bytes": 11325,
-          "sha256": "accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043"
-        },
-        {
-          "path": "_internal/paddlex-3.7.0.dist-info/paddlex-3.7.0.dist-info/licenses/LICENSE",
           "bytes": 11325,
           "sha256": "accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043"
         }
@@ -888,7 +878,7 @@
     },
     {
       "name": "pillow",
-      "version": "12.3.0",
+      "version": "13.0.0",
       "licenseExpression": "MIT-CMU",
       "license": null,
       "licenseClassifiers": [],
@@ -896,16 +886,17 @@
         "Release notes, https://pillow.readthedocs.io/en/stable/releasenotes/index.html",
         "Changelog, https://github.com/python-pillow/Pillow/releases",
         "Documentation, https://pillow.readthedocs.io",
-        "Funding, https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi",
-        "Homepage, https://python-pillow.github.io",
+        "Funding, https://tidelift.com/lifter/search/pypi/pillow",
+        "Homepage, https://python-pillow.org",
         "Mastodon, https://fosstodon.org/@pillow",
+        "Security, https://pillow.readthedocs.io/en/stable/handbook/security.html",
         "Source, https://github.com/python-pillow/Pillow"
       ],
       "licenseFiles": [
         {
-          "path": "_internal/pillow-12.3.0.dist-info/licenses/LICENSE",
-          "bytes": 78016,
-          "sha256": "4f7866a74802c6326f81faff59a56546b6aec2b10b91973e0e9308de95e79857"
+          "path": "_internal/pillow-13.0.0.dist-info/licenses/LICENSE",
+          "bytes": 78481,
+          "sha256": "988ffe8ab3480b0f4e9a0ab2702bffd73d9fb6b47198043fb3ba101a62fac236"
         }
       ],
       "supplementalLicenseFiles": []
@@ -1423,7 +1414,7 @@
     },
     {
       "name": "setuptools",
-      "version": "83.0.0",
+      "version": "84.1.0",
       "licenseExpression": "MIT",
       "license": null,
       "licenseClassifiers": [],
@@ -1434,7 +1425,7 @@
       ],
       "licenseFiles": [
         {
-          "path": "_internal/setuptools-83.0.0.dist-info/licenses/LICENSE",
+          "path": "_internal/setuptools-84.1.0.dist-info/licenses/LICENSE",
           "bytes": 1023,
           "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741"
         }
@@ -1602,7 +1593,7 @@
     },
     {
       "name": "urllib3",
-      "version": "2.7.0",
+      "version": "2.8.0",
       "licenseExpression": "MIT",
       "license": null,
       "licenseClassifiers": [],
@@ -1610,11 +1601,12 @@
         "Changelog, https://github.com/urllib3/urllib3/blob/main/CHANGES.rst",
         "Documentation, https://urllib3.readthedocs.io",
         "Code, https://github.com/urllib3/urllib3",
-        "Issue tracker, https://github.com/urllib3/urllib3/issues"
+        "Issue tracker, https://github.com/urllib3/urllib3/issues",
+        "Security policy, https://urllib3.readthedocs.io/en/latest/security.html"
       ],
       "licenseFiles": [
         {
-          "path": "_internal/urllib3-2.7.0.dist-info/licenses/LICENSE.txt",
+          "path": "_internal/urllib3-2.8.0.dist-info/licenses/LICENSE.txt",
           "bytes": 1093,
           "sha256": "130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686"
         }
@@ -1641,7 +1633,7 @@
     },
     {
       "name": "yarl",
-      "version": "1.24.5",
+      "version": "1.25.1",
       "licenseExpression": null,
       "license": "Apache-2.0",
       "licenseClassifiers": [],
@@ -1658,12 +1650,12 @@
       ],
       "licenseFiles": [
         {
-          "path": "_internal/yarl-1.24.5.dist-info/licenses/LICENSE",
+          "path": "_internal/yarl-1.25.1.dist-info/licenses/LICENSE",
           "bytes": 11358,
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         },
         {
-          "path": "_internal/yarl-1.24.5.dist-info/licenses/NOTICE",
+          "path": "_internal/yarl-1.25.1.dist-info/licenses/NOTICE",
           "bytes": 609,
           "sha256": "56d6ac6c8105c0a51304c21db060e361af9a8ea0af9a75c239c28b5d13693838"
         }

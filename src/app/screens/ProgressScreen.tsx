@@ -70,8 +70,9 @@ export const ProgressScreen = memo(function ProgressScreen(props: {
           <div className="progress-percentage" aria-hidden="true">{average}%</div>
           <div className="screen-copy compact">
             <h2 id="progress-title">{title}</h2>
-            {subtitle && <p>{subtitle}</p>}
-            {props.exportResult && <p>{exportedFilesText(props.language, props.exportResult.files.length)}</p>}
+            {props.exportResult
+              ? <p>{exportedFilesText(props.language, props.exportResult.files.length)}</p>
+              : subtitle && <p>{subtitle}</p>}
             {total > 0 && <p className="conversion-count">{progressSummaryText(props.language, completed, failed, canceled, total)}</p>}
           </div>
           <div
@@ -129,10 +130,11 @@ export const ProgressScreen = memo(function ProgressScreen(props: {
             <div className="destination-actions">
               {props.exportResult ? (
                 <button className="primary-button" type="button" disabled={props.isExporting} onClick={props.onRevealFolder}>{t(props.language, "progress.openFolder")}</button>
-              ) : (
+              ) : null}
+              {canExport && (
                 <>
-                  {canExport && <button className="primary-button" type="button" onClick={props.onExportDownloads}>{props.isExporting ? t(props.language, "progress.copying") : t(props.language, "progress.download")}</button>}
-                  {canExport && <button className="secondary-button" type="button" onClick={props.onExportFolder}>{props.isExporting ? t(props.language, "progress.copying") : t(props.language, "progress.folder")}</button>}
+                  <button className={props.exportResult ? "secondary-button" : "primary-button"} type="button" onClick={props.onExportDownloads}>{t(props.language, "progress.download")}</button>
+                  <button className="secondary-button" type="button" onClick={props.onExportFolder}>{t(props.language, "progress.folder")}</button>
                 </>
               )}
             </div>

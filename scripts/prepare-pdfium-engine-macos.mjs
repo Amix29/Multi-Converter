@@ -13,15 +13,15 @@ import { lockedPdfiumPlatform } from "./lib/platform-provenance.mjs";
 const root = process.cwd();
 const downloads = path.join(root, "engine-sources", ".downloads");
 const extracts = path.join(root, "engine-sources", ".extracts");
-const sourceDir = path.join(root, "engine-sources", "macos-universal", "pdfium");
+const sourceDir = path.join(root, "engine-sources", "macos-aarch64", "pdfium");
 const wrapperSource = path.join(root, "tools", "pdfium-render-wrapper");
 const wrapperBuild = path.join(os.tmpdir(), "multi-converter-pdfium-render-macos-build");
 const wrapperTarget = path.join(os.tmpdir(), "multi-converter-pdfium-render-macos-target");
 const userAgent = { "User-Agent": "Multi-Converter-Packager" };
-const darwinTargets = ["aarch64-apple-darwin", "x86_64-apple-darwin"];
+const darwinTargets = ["aarch64-apple-darwin"];
 
-if (process.platform !== "darwin") {
-  throw new Error("macOS PDFium engine preparation must run on macOS so lipo can create a universal wrapper.");
+if (process.platform !== "darwin" || process.arch !== "arm64") {
+  throw new Error("macOS PDFium preparation requires an Apple Silicon Mac.");
 }
 
 requireCommand("xcrun", ["-find", "lipo"]);
@@ -29,7 +29,7 @@ requireCommand("xcrun", ["-find", "lipo"]);
 await fs.mkdir(downloads, { recursive: true });
 await fs.mkdir(extracts, { recursive: true });
 
-const asset = await lockedPdfiumPlatform("macos-universal", root);
+const asset = await lockedPdfiumPlatform("macos-aarch64", root);
 
 const archive = path.join(downloads, asset.archiveName);
 await downloadIfMissingVerified(
@@ -41,7 +41,7 @@ await downloadIfMissingVerified(
 const archiveStat = await fs.stat(archive);
 if (archiveStat.size !== asset.bytes) throw new Error("Locked macOS PDFium archive size differs.");
 
-const extractDir = path.join(extracts, "pdfium-macos-universal");
+const extractDir = path.join(extracts, "pdfium-macos-aarch64");
 await extractTgz(archive, extractDir);
 
 const dylib = path.join(extractDir, ...asset.libraryPath.split("/"));
@@ -72,21 +72,19 @@ for (const target of darwinTargets) {
 }
 
 const armWrapper = path.join(wrapperTarget, "aarch64-apple-darwin", "release", "pdfium-render");
-const x64Wrapper = path.join(wrapperTarget, "x86_64-apple-darwin", "release", "pdfium-render");
 await assertFile(armWrapper, "Apple Silicon pdfium-render wrapper build is missing.");
-await assertFile(x64Wrapper, "Intel pdfium-render wrapper build is missing.");
 
 await fs.rm(sourceDir, { recursive: true, force: true });
 await fs.mkdir(path.join(sourceDir, "bin"), { recursive: true });
 await fs.mkdir(path.join(sourceDir, "licenses"), { recursive: true });
+run("lipo", [dylib, "-verify_arch", "arm64"]);
 await fs.copyFile(dylib, path.join(sourceDir, "bin", "libpdfium.dylib"));
 await fs.chmod(path.join(sourceDir, "bin", "libpdfium.dylib"), 0o755);
 
-const universalWrapper = path.join(sourceDir, "bin", "pdfium-render-universal-apple-darwin");
-run("lipo", ["-create", armWrapper, x64Wrapper, "-output", universalWrapper]);
+const universalWrapper = path.join(sourceDir, "bin", "pdfium-render-aarch64-apple-darwin");
+await fs.copyFile(armWrapper, universalWrapper);
 await fs.chmod(universalWrapper, 0o755);
 run("lipo", [universalWrapper, "-verify_arch", "arm64"]);
-run("lipo", [universalWrapper, "-verify_arch", "x86_64"]);
 assertWrapperVersion(universalWrapper, asset.wrapperVersion);
 
 await copyIfExists(path.join(extractDir, "LICENSE"), path.join(sourceDir, "licenses", "LICENSE.txt"));
@@ -97,14 +95,14 @@ await fs.cp(path.join(extractDir, "licenses"), path.join(sourceDir, "licenses", 
 await fs.writeFile(
   path.join(sourceDir, "licenses", "THIRD_PARTY_NOTICES.txt"),
   [
-    "PDFium macOS universal package",
+    "PDFium macOS Apple Silicon package",
     `Source: ${publicSourceLabel(asset.url)}`,
     `Release: PDFium ${asset.version} (${asset.tag})`,
     "",
     "PDFium is distributed by bblanchon/pdfium-binaries from Chromium PDFium sources.",
     "The extracted package includes third-party notices under licenses/pdfium-third-party/.",
     "",
-    "Wrapper: Multi-Converter pdfium-render universal macOS binary, built with the Rust pdfium-render crate.",
+    "Wrapper: Multi-Converter pdfium-render arm64 macOS binary, built with the Rust pdfium-render crate.",
     "Wrapper license: AGPL-3.0-or-later for Multi-Converter code; pdfium-render crate keeps its own MIT OR Apache-2.0 license.",
     "",
   ].join("\n"),

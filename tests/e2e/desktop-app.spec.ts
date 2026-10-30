@@ -64,6 +64,14 @@ test("runs cancellation, failure retry and export through the preview API", asyn
   await page.getByRole("button", { name: "Exporter vers Téléchargements" }).click();
   await expect(page.getByRole("heading", { name: "Fichiers enregistrés" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Ouvrir le dossier" })).toBeVisible();
+  const geometry = await page.locator(".progress-panel").evaluate((panel) => {
+    const hero = panel.querySelector(".progress-hero")!.getBoundingClientRect();
+    const count = panel.querySelector(".conversion-count")!.getBoundingClientRect();
+    const filters = panel.querySelector(".output-filters")!.getBoundingClientRect();
+    return { heroBottom: hero.bottom, countBottom: count.bottom, filtersTop: filters.top };
+  });
+  expect(geometry.countBottom).toBeLessThanOrEqual(geometry.heroBottom);
+  expect(geometry.filtersTop).toBeGreaterThanOrEqual(geometry.heroBottom);
   await expectNoHorizontalOverflow(page);
   expect(consoleErrors).toEqual([]);
 });

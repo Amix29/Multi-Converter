@@ -17,6 +17,11 @@ on:
       - "tools/engine-packages.linux.config.json"
       - "tools/pdfium-render-wrapper/**"
   workflow_dispatch:
+    inputs:
+      macos_staging_run_id:
+        description: "Successful Apple Silicon macOS Engine Staging run for this commit"
+        required: false
+        type: string
 
 permissions:
   actions: read
@@ -35,14 +40,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: macos-universal
-            runner: macos-latest
-            baseline_run_id: 27463128979
-            artifact_id: 7609654944
-            artifact_name: macos-engine-assets
-            artifact_bytes: 1236181474
-            artifact_sha256: d393adbaddeb900cee51a62d7ef0cee589da6f344f660b329e960f1327d3cbf5
-            baseline_head_sha: 1e2dc0dd14e9656248da221577ab76c70eb9103c
           - platform: linux-x64
             runner: ubuntu-22.04
             baseline_run_id: 27501141759
@@ -56,16 +53,16 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       MULTI_CONVERTER_ENGINE_PLATFORM: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
-      - uses: dtolnay/rust-toolchain@1.96.0
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
-          targets: aarch64-apple-darwin,x86_64-apple-darwin,x86_64-unknown-linux-gnu
+          targets: x86_64-unknown-linux-gnu
       - name: Install archive tools
         if: ${{ runner.os == 'Linux' }}
         run: sudo apt-get update && sudo apt-get install -y unzip zip
@@ -82,7 +79,7 @@ jobs:
             echo "V1.0.6 baseline artifact identity differs. Expected $expected, got $actual" >&2
             exit 1
           fi
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ runner.temp }}/mc-engine-baseline
@@ -92,20 +89,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${{ matrix.platform }}" == "macos-universal" ]]; then
-            npm run prepare:pdfium-engine:macos
-          else
-            npm run prepare:pdfium-engine:linux
-          fi
+          npm run prepare:pdfium-engine:linux
       - name: Test and lint wrapper against the staged native library
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${{ matrix.platform }}" == "macos-universal" ]]; then
-            export MULTI_CONVERTER_TEST_PDFIUM_LIBRARY="$GITHUB_WORKSPACE/engine-sources/macos-universal/pdfium/bin/libpdfium.dylib"
-          else
             export MULTI_CONVERTER_TEST_PDFIUM_LIBRARY="$GITHUB_WORKSPACE/engine-sources/linux-x64/pdfium/bin/libpdfium.so"
-          fi
           npm run test:pdfium-wrapper
           npm run clippy:pdfium-wrapper
       - name: Package PDFium twice and merge with exact V1.0.6 engines
@@ -117,19 +106,81 @@ jobs:
           evidence="$RUNNER_TEMP/mc-pdfium-evidence/${{ matrix.platform }}.json"
           node scripts/package-locked-pdfium-platform.mjs --platform "${{ matrix.platform }}" --output-dir "$replacement" --evidence "$evidence"
           node scripts/restage-platform-pdfium.mjs --platform "${{ matrix.platform }}" --baseline-dir "$RUNNER_TEMP/mc-engine-baseline" --replacement-dir "$replacement" --output-dir "$output"
-          if [[ "${{ matrix.platform }}" == "macos-universal" ]]; then
-            node scripts/complete-macos-sidecar-set.mjs --asset-dir "$output"
-            lipo "$output/ffprobe-x86_64-apple-darwin" -verify_arch x86_64
-          fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ runner.temp }}/mc-phase-8-engine-assets
           if-no-files-found: error
           compression-level: 0
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pdfium-0.4-package-evidence-${{ matrix.platform }}
           path: ${{ runner.temp }}/mc-pdfium-evidence/${{ matrix.platform }}.json
           if-no-files-found: error
           compression-level: 0
+
+  stage-macos:
+    name: Verify fresh Apple Silicon engines (no V1.0.6 universal reuse)
+    if: ${{ inputs.macos_staging_run_id != '' || vars.MC_MACOS_ARM_ENGINE_STAGING_RUN_ID != '' }}
+    runs-on: macos-latest
+    timeout-minutes: 120
+    env:
+      MULTI_CONVERTER_ENGINE_PLATFORM: macos-aarch64
+      MACOS_STAGING_RUN_ID: ${{ inputs.macos_staging_run_id || vars.MC_MACOS_ARM_ENGINE_STAGING_RUN_ID }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          lfs: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
+        with:
+          targets: aarch64-apple-darwin
+      - run: npm ci
+      - name: Validate fresh ARM staging source and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$MACOS_STAGING_RUN_ID" =~ ^[0-9]+$ ]]
+          actual="$(gh run view "$MACOS_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json name,conclusion,headSha --jq '.name + "|" + .conclusion + "|" + .headSha')"
+          expected="macOS Engine Staging|success|$GITHUB_SHA"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "Fresh Apple Silicon engines must come from this successful commit: $expected; got $actual" >&2
+            exit 1
+          fi
+          gh run download "$MACOS_STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --name macos-engine-assets --dir "$RUNNER_TEMP/mc-macos-arm-baseline"
+      - name: Verify ARM engines and locked PDFium package
+        shell: bash
+        run: |
+          set -euo pipefail
+          assets="$RUNNER_TEMP/mc-macos-arm-baseline"
+          npm run prepare:macos-engine-release-assets -- --from-local-assets --asset-dir "$assets"
+          mkdir -p src-tauri/binaries
+          for engine in ffmpeg ffprobe; do
+            (cd "$assets" && shasum -a 256 --check "$engine-aarch64-apple-darwin.sha256")
+            cp "$assets/$engine-aarch64-apple-darwin" src-tauri/binaries/
+            chmod +x "src-tauri/binaries/$engine-aarch64-apple-darwin"
+            lipo "src-tauri/binaries/$engine-aarch64-apple-darwin" -verify_arch arm64
+          done
+          npm run prepare:bundled-engines
+          MULTI_CONVERTER_REQUIRE_ADVANCED_ENGINES=1 npm run validate:bundled-engines
+          npm run prepare:pdfium-engine:macos
+          export MULTI_CONVERTER_TEST_PDFIUM_LIBRARY="$GITHUB_WORKSPACE/engine-sources/macos-aarch64/pdfium/bin/libpdfium.dylib"
+          npm run test:pdfium-wrapper
+          npm run clippy:pdfium-wrapper
+          node scripts/package-locked-pdfium-platform.mjs --platform macos-aarch64 --output-dir "$RUNNER_TEMP/mc-pdfium-arm-replacement" --evidence "$RUNNER_TEMP/mc-pdfium-arm-evidence.json"
+          node scripts/restage-platform-pdfium.mjs --platform macos-aarch64 --baseline-dir "$assets" --replacement-dir "$RUNNER_TEMP/mc-pdfium-arm-replacement" --output-dir "$RUNNER_TEMP/mc-macos-arm-assets"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: macos-engine-assets
+          path: ${{ runner.temp }}/mc-macos-arm-assets
+          if-no-files-found: error
+          compression-level: 0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pdfium-0.4-package-evidence-macos-aarch64
+          path: ${{ runner.temp }}/mc-pdfium-arm-evidence.json
+          if-no-files-found: error

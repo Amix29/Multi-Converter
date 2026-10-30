@@ -67,9 +67,9 @@ pub(crate) fn cleanup_stale_temp_output_folders() {
             runtime_log::write(
                 "cleanup",
                 &format!(
-                    "temp cleanup failed for {}: {}",
+                    "temp cleanup failed for {}: {:?}",
                     runtime_log::path(&path),
-                    error
+                    error.kind()
                 ),
             );
         }

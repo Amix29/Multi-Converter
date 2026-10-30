@@ -5,7 +5,7 @@ description = "Local desktop file converter for documents, images, audio and vid
 authors = ["Multi-Converter"]
 license = "AGPL-3.0-or-later"
 edition = "2024"
-rust-version = "1.88"
+rust-version = "1.90"
 
 [lib]
 name = "multi_converter_lib"
@@ -24,20 +24,21 @@ image = { version = "0.25.10", default-features = true }
 kamadak-exif = "=0.6.1"
 pdf-extract = "0.12"
 resvg = "0.47"
+roxmltree = "=0.21.1"
 rfd = "=0.17.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "=0.10.9"
-tauri = { version = "2.11.0", features = [] }
+tauri = { version = "2.12.0", features = [] }
 tempfile = "3"
 thiserror = "2"
 time = { version = "0.3", features = ["formatting"] }
 unicode-normalization = "=0.1.25"
 uuid = { version = "1", features = ["v4"] }
-zip = { version = "8.6.0", default-features = false, features = ["deflate"] }
+zip = { version = "=9.0.0", default-features = false, features = ["deflate"] }
 tauri-plugin-notification = "2.3.3"
 tauri-plugin-clipboard-manager = "=2.3.2"
-tauri-plugin-updater = "2.10.1"
+tauri-plugin-updater = "=2.14.1"
 tauri-plugin-process = "2.3.1"
 
 [target.'cfg(windows)'.dependencies]

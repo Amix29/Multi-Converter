@@ -2,11 +2,17 @@ export const disallowedReleaseNoteLanguages = Object.freeze(["fr", "es", "de", "
 export const requiredReleaseNoteSections = Object.freeze(["Highlights", "Download And Installation", "Validation"]);
 
 export function expectedMacosDmgName(version) {
-  return `Multi-Converter_${version}_macos-universal.dmg`;
+  return `Multi-Converter_${version}_${macosArtifactPlatform(version)}.dmg`;
 }
 
-export function stableMacosDmgName() {
-  return "Multi-Converter_macos-universal.dmg";
+export function stableMacosDmgName(version = "1.0.7") {
+  return `Multi-Converter_${macosArtifactPlatform(version)}.dmg`;
+}
+
+function macosArtifactPlatform(version) {
+  const [major, minor, patch] = String(version).split(".").map(Number);
+  // Keep historical published-release notes valid; new releases are Apple Silicon only.
+  return major === 1 && minor === 0 && patch <= 6 ? "macos-universal" : "macos-aarch64";
 }
 
 export function expectedLinuxAppImageName(version) {
@@ -115,7 +121,7 @@ export function validateReleaseNotes({ body, version, includeMacos = false, incl
     errors.push("Release notes still contain draft-only or do-not-publish wording.");
   }
 
-  if (!includeMacos && (notesBody.includes(macosDmgName) || /_macos-universal\.dmg/i.test(notesBody))) {
+  if (!includeMacos && (notesBody.includes(macosDmgName) || /_macos-(?:universal|aarch64)\.dmg/i.test(notesBody))) {
     errors.push("Release notes mention a macOS DMG, but this workflow run was not started with include_macos=true.");
   }
 
@@ -151,14 +157,17 @@ export function validateReleaseNotes({ body, version, includeMacos = false, incl
   if (includeMacos && (!macosDmgVerificationPassed || macosDmgVerificationFailed)) {
     errors.push("Release notes must mention that the macOS DMG was verified on macOS.");
   }
-  if (includeMacos && (!/Apple\s+Silicon/i.test(notesBody) || !/Intel/i.test(notesBody))) {
-    errors.push("Release notes must mention that the macOS DMG was verified for Apple Silicon and Intel.");
+  const requiresIntel = macosArtifactPlatform(version) === "macos-universal";
+  const namesRequiredArchitectures = /Apple\s+Silicon/i.test(notesBody)
+    && (!requiresIntel || /Intel/i.test(notesBody));
+  if (includeMacos && !namesRequiredArchitectures) {
+    errors.push(`Release notes must mention that the macOS DMG was verified for Apple Silicon${requiresIntel ? " and Intel" : ""}.`);
   }
   if (includeMacos && claimsFullMacosConversionCoverage(notesBody) && !/macOS\s+Conversion\s+Matrix/i.test(notesBody)) {
     errors.push("Release notes must mention the macOS Conversion Matrix before claiming full macOS conversion coverage.");
   }
-  if (includeMacos && claimsFullMacosConversionCoverage(notesBody) && (!/Apple\s+Silicon/i.test(notesBody) || !/Intel/i.test(notesBody))) {
-    errors.push("Release notes must mention Apple Silicon and Intel before claiming full macOS conversion coverage.");
+  if (includeMacos && claimsFullMacosConversionCoverage(notesBody) && !namesRequiredArchitectures) {
+    errors.push("Release notes must name the supported Mac architectures before claiming full macOS conversion coverage.");
   }
 
   if (includeLinux && !notesBody.includes(linuxAppImageName)) {

@@ -158,7 +158,7 @@ function validatePlatformBinaryPath(engine, relative) {
   if (platform === "linux-x64" && /\.(app|bat|cmd|dll|dmg|dylib|exe|msi|pkg|ps1)$/i.test(normalized)) {
     errors.push(`${engine.id}: chemin binaire non-Linux dans le manifeste (${relative})`);
   }
-  if (platform === "macos-universal" && /\.(bat|cmd|dll|exe|msi|ps1)$/i.test(normalized)) {
+  if (platform === "macos-aarch64" && /\.(bat|cmd|dll|exe|msi|ps1)$/i.test(normalized)) {
     errors.push(`${engine.id}: chemin binaire non-macOS dans le manifeste (${relative})`);
   }
 }
@@ -202,7 +202,7 @@ function executableScore(filePath) {
 }
 
 function architectureScore(filePath) {
-  if (platform !== "macos-universal" && platform !== "linux-x64") return 5;
+  if (platform !== "macos-aarch64" && platform !== "linux-x64") return 5;
   const text = filePath.replaceAll("\\", "/").toLowerCase();
   const nativeArm = process.arch === "arm64";
   const hasArm = text.includes("aarch64") || text.includes("arm64");
@@ -211,7 +211,7 @@ function architectureScore(filePath) {
 
   if (nativeArm && hasArm) return 30;
   if (!nativeArm && hasX64) return 30;
-  if (platform === "macos-universal" && hasUniversal) return 25;
+  if (platform === "macos-aarch64" && hasUniversal) return 25;
   if (hasArm || hasX64) return 1;
   return 15;
 }
@@ -320,7 +320,7 @@ function normalizeArchivePath(relative) {
 
 function hostEnginePlatform() {
   if (process.platform === "win32" && process.arch === "x64") return "windows-x64";
-  if (process.platform === "darwin") return "macos-universal";
+  if (process.platform === "darwin" && process.arch === "arm64") return "macos-aarch64";
   if (process.platform === "linux" && process.arch === "x64") return "linux-x64";
   return "unsupported";
 }
@@ -343,24 +343,14 @@ function baseBinariesForPlatform(targetPlatform) {
     ];
   }
 
-  if (targetPlatform === "macos-universal") {
-    const nativeTriple = process.arch === "arm64" ? "aarch64-apple-darwin" : "x86_64-apple-darwin";
-    return ["ffmpeg", "ffprobe"].flatMap((stem) => [
-      ...["aarch64-apple-darwin", "x86_64-apple-darwin"].map((targetTriple) => ({
-        id: `${stem}-${targetTriple}`,
-        filePath: path.join(root, "src-tauri", "binaries", `${stem}-${targetTriple}`),
-        args: ["-version"],
-        expectedText: expectedVersion,
-        smoke: process.platform === "darwin" && targetTriple === nativeTriple,
-      })),
-      {
-        id: `${stem}-universal-apple-darwin`,
-        filePath: path.join(root, "src-tauri", "binaries", `${stem}-universal-apple-darwin`),
-        args: ["-version"],
-        expectedText: expectedVersion,
-        smoke: process.platform === "darwin",
-      },
-    ]);
+  if (targetPlatform === "macos-aarch64") {
+    return ["ffmpeg", "ffprobe"].map((stem) => ({
+      id: stem + "-aarch64-apple-darwin",
+      filePath: path.join(root, "src-tauri", "binaries", stem + "-aarch64-apple-darwin"),
+      args: ["-version"],
+      expectedText: expectedVersion,
+      smoke: process.platform === "darwin" && process.arch === "arm64",
+    }));
   }
 
   if (targetPlatform === "linux-x64") {

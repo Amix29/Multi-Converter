@@ -40,7 +40,7 @@ pub(crate) fn bootstrap_dependencies(app: AppHandle) -> CommandResult<Dependency
                 );
             }
         }
-        Err(error) => runtime_log::write("engines", &format!("bootstrap failed: {error}")),
+        Err(_) => runtime_log::write("engines", "bootstrap failed"),
     }
     result
 }

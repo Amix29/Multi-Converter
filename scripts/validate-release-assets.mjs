@@ -30,8 +30,8 @@ const stableInstaller = "Multi-Converter_windows-x64_setup.exe";
 const signatureFile = `${versionedInstaller}.sig`;
 const checksumFile = `${versionedInstaller}.sha256`;
 const macosDmg = expectedMacosDmgName(version);
-const stableMacosDmg = stableMacosDmgName();
-const macosUpdaterArchive = `Multi-Converter_${version}_macos-universal.app.tar.gz`;
+const stableMacosDmg = stableMacosDmgName(version);
+const macosUpdaterArchive = `Multi-Converter_${version}_macos-aarch64.app.tar.gz`;
 const macosUpdaterSignature = `${macosUpdaterArchive}.sig`;
 const linuxAppImage = `Multi-Converter_${version}_linux-x64.AppImage`;
 const stableLinuxAppImage = "Multi-Converter_linux-x64.AppImage";
@@ -81,7 +81,7 @@ if (includeWindows) {
   const expectedPlatforms = [
     "windows-x86_64",
     "windows-x86_64-nsis",
-    ...(includeMacos ? ["darwin-aarch64", "darwin-x86_64"] : []),
+    ...(includeMacos ? ["darwin-aarch64"] : []),
     ...(includeLinux ? ["linux-x86_64"] : []),
   ];
   const actualPlatforms = Object.keys(latest.platforms ?? {}).sort();
@@ -101,7 +101,7 @@ if (includeWindows) {
       fail("macOS updater signature is missing or unexpectedly short.");
     }
     verifyUpdaterSignature(path.join(dir, macosUpdaterArchive), path.join(dir, macosUpdaterSignature));
-    for (const platform of ["darwin-aarch64", "darwin-x86_64"]) {
+    for (const platform of ["darwin-aarch64"]) {
       const entry = latest.platforms?.[platform];
       if (!entry) fail(`latest.json missing platform ${platform}.`);
       if (entry.url !== expectedMacosUpdaterUrl) fail(`latest.json ${platform} URL is ${entry.url}, expected ${expectedMacosUpdaterUrl}.`);

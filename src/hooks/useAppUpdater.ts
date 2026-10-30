@@ -128,23 +128,23 @@ export function useAppUpdater(options: UseAppUpdaterOptions) {
           setUpdateReminderVisible(true);
         }
       } catch (error) {
+        if (checkId !== updateCheckSequence.current) return;
         if (isMissingUpdateReleaseError(error)) {
           updateRef.current = null;
           setUpdateInfo(null);
-          setAppUpdateStatus("notAvailable");
+          setAppUpdateStatus("error");
           setUpdateCheckStartedAt(null);
-          if (manual) showNoticeRef.current("success", t(options.language, "update.remoteUnavailable"));
+          if (manual) showNoticeRef.current("error", t(options.language, "update.remoteUnavailable"));
           return;
         }
-        if (checkId !== updateCheckSequence.current) return;
         if (isUpdateCheckTimeout(error)) {
           updateRef.current = null;
           setUpdateInfo(null);
-          setAppUpdateStatus("notAvailable");
+          setAppUpdateStatus("error");
           setUpdateCheckStartedAt(null);
           setUpdateDownloadProgress(null);
           setUpdateDownloadSize(null);
-          if (manual) showNoticeRef.current("success", t(options.language, "update.none"));
+          if (manual) showNoticeRef.current("error", updateCheckErrorMessage(options.language, error));
           return;
         }
         setAppUpdateStatus("error");
@@ -277,13 +277,14 @@ export function useAppUpdater(options: UseAppUpdaterOptions) {
       updateCheckSequence.current += 1;
       updateRef.current = null;
       setUpdateInfo(null);
-      setAppUpdateStatus("notAvailable");
+      setAppUpdateStatus("error");
       setUpdateCheckStartedAt(null);
       setUpdateDownloadProgress(null);
       setUpdateDownloadSize(null);
+      showNoticeRef.current("error", updateCheckErrorMessage(options.language, new Error("update-check-timeout")));
     }, updateCheckTimeoutMs + 2500);
     return () => window.clearTimeout(timeout);
-  }, [setAppUpdateStatus, updateCheckStartedAt, updateStatus]);
+  }, [options.language, setAppUpdateStatus, updateCheckStartedAt, updateStatus]);
 
   useEffect(() => {
     const refreshBrowserNetwork = () => {

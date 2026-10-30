@@ -38,6 +38,7 @@ mod image_conversion;
 mod media;
 mod orchestrator;
 mod output;
+mod quality;
 mod text;
 
 #[cfg(test)]
@@ -59,8 +60,9 @@ use text::{
 pub use cancellation::cancel_conversion;
 pub(crate) use cancellation::{ActiveConversion, begin_conversion};
 pub use contracts::{
-    ConversionJob, ConversionResult, ConvertError, FileDescription, FileWarning, ImportOriginKind,
-    ImportOriginV1, ImportedFileDescription, ProgressPayload, Result,
+    ConversionJob, ConversionResult, ConversionWarning, ConvertError, FileDescription, FileWarning,
+    ImportBatchResult, ImportOriginKind, ImportOriginV1, ImportRejection, ImportedFileDescription,
+    ProgressPayload, QualityProfile, Result,
 };
 pub use describe::describe_file_with_app;
 pub(crate) use orchestrator::convert_registered;

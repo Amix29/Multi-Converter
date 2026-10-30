@@ -5,7 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const args = parseArgs(process.argv.slice(2));
 const version = args.version ?? readPackageVersion();
-const expectedName = `Multi-Converter_${version}_macos-universal.dmg`;
+const expectedName = `Multi-Converter_${version}_macos-aarch64.dmg`;
 const outDir = path.resolve(args.outDir ?? path.join(os.tmpdir(), "mc-macos-dmg-artifact", `v${version}`));
 const sourceDmg = args.dmg ? path.resolve(args.dmg) : findSourceDmg(args.bundleDir);
 
@@ -44,9 +44,9 @@ function findSourceDmg(bundleDirArg) {
 function defaultBundleRoots() {
   const targetDir = path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(root, "src-tauri", "target"));
   return [
-    path.join(targetDir, "universal-apple-darwin", "release", "bundle", "dmg"),
+    path.join(targetDir, "aarch64-apple-darwin", "release", "bundle", "dmg"),
     path.join(targetDir, "release", "bundle", "dmg"),
-    path.join(root, "src-tauri", "target", "universal-apple-darwin", "release", "bundle", "dmg"),
+    path.join(root, "src-tauri", "target", "aarch64-apple-darwin", "release", "bundle", "dmg"),
     path.join(root, "src-tauri", "target", "release", "bundle", "dmg"),
   ];
 }

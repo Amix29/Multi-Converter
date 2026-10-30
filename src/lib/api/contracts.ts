@@ -32,6 +32,12 @@ export interface FileDescription {
   importOrigin?: ImportOriginV1 | null;
 }
 
+export interface ImportBatchResult {
+  files: FileDescription[];
+  rejected: { path: string; message: string }[];
+  truncated: boolean;
+}
+
 export interface ImportOriginV1 {
   kind: "file" | "folder";
   rootId: string;
@@ -57,10 +63,19 @@ export interface ConversionJob {
   targetFormat: string;
   outputDir: string;
   batchConcurrency?: number;
+  qualityProfile?: QualityProfile;
 }
+
+export type QualityProfile = "compact" | "balanced" | "high";
 
 export interface ConversionResult {
   outputPath: string;
+  engine?: string;
+  warnings?: { code: string; message: string; pageNumber?: number | null }[];
+  inputBytes?: number;
+  outputBytes?: number;
+  durationMs?: number;
+  qualityProfile?: QualityProfile;
 }
 
 export interface ProgressPayload {
@@ -194,7 +209,7 @@ export interface MultiConverterApi {
   cleanupTempOutputFolder(folder: string): Promise<boolean>;
   exportToDownloads(filePaths: string[], outputDir?: string | null, entries?: ExportEntryV1[] | null): Promise<ExportResult>;
   exportToFolder(filePaths: string[], destinationDir: string, outputDir?: string | null, entries?: ExportEntryV1[] | null): Promise<ExportResult>;
-  describePaths(paths: string[]): Promise<FileDescription[]>;
+  describePaths(paths: string[]): Promise<ImportBatchResult>;
   saveClipboardFiles(files: ClipboardFileInput[]): Promise<string[]>;
   convert(job: ConversionJob): Promise<ConversionResult>;
   cancelConversion(jobId: string): Promise<boolean>;

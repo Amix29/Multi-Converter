@@ -160,7 +160,7 @@ fn conversion_matrix_document_outputs_preserve_french_characters() {
 fn csv_outputs_are_utf8_bom_tagged_for_spreadsheet_detection() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("accented.csv");
-    let content = to_csv("J’ai déjà testé façade.", "txt");
+    let content = to_csv("J’ai déjà testé façade.", "txt").unwrap();
 
     write_utf8_csv(&output, &content).unwrap();
 
@@ -180,6 +180,26 @@ fn csv_to_json_handles_quoted_commas() {
     assert_eq!(value[0]["name"], "Alice");
     assert_eq!(value[0]["note"], "un, deux");
     assert_eq!(value[1]["note"], "trois");
+}
+
+#[test]
+fn csv_to_json_refuses_duplicate_or_colliding_headers() {
+    for content in [
+        "name,name\nAlice,Bob",
+        " name ,name\nAlice,Bob",
+        ",col1\nAlice,Bob",
+    ] {
+        assert!(to_json(content, "csv").is_err());
+    }
+}
+
+#[test]
+fn csv_to_json_preserves_values_and_rejects_irregular_rows() {
+    let json = to_json("name,note\nAlice,\"  keep spaces  \"", "csv").unwrap();
+    let value: serde_json::Value = serde_json::from_str(&json).unwrap();
+    assert_eq!(value[0]["note"], "  keep spaces  ");
+    assert!(to_json("name,note\nAlice", "csv").is_err());
+    assert!(to_json("name,note\nAlice,Bob,extra", "csv").is_err());
 }
 
 pub(super) fn extension_for_test_source(source_format: &str) -> &'static str {
@@ -406,7 +426,7 @@ fn write_document_target(
         "md" => fs::write(path, to_markdown(content, source_format)).unwrap(),
         "html" => fs::write(path, to_html(content, source_format)).unwrap(),
         "rtf" => fs::write(path, to_rtf(content, source_format)).unwrap(),
-        "csv" => write_utf8_csv(path, &to_csv(content, source_format)).unwrap(),
+        "csv" => write_utf8_csv(path, &to_csv(content, source_format).unwrap()).unwrap(),
         "json" => fs::write(path, to_json(content, source_format).unwrap()).unwrap(),
         "xml" => fs::write(path, to_xml(content, source_format)).unwrap(),
         "docx" => write_docx(path, content, source_format).unwrap(),

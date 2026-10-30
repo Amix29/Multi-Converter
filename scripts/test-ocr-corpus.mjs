@@ -29,6 +29,7 @@ const selectedCases = partial ? manifest.cases.filter(({ id }) => requestedIds.h
 if (partial && selectedCases.length !== requestedIds.size) throw new Error("Un identifiant demandé est absent du manifeste OCR.");
 const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "multi-converter-ocr-corpus-"));
 let worker;
+let runFailed = false;
 try {
   const extractionStarted = performance.now();
   const executable = directExecutable
@@ -86,8 +87,11 @@ try {
   for (const result of results) {
     if (result.kind === "rust-normalization") logResult(result);
   }
+} catch (error) {
+  runFailed = true;
+  throw error;
 } finally {
-  await worker?.close();
+  await worker?.close(runFailed);
   await fs.rm(temporary, { recursive: true, force: true });
 }
 
@@ -191,7 +195,9 @@ async function startWorker(workerPath, modelsPath) {
   let stderr = "";
   child.stderr.on("data", (chunk) => { stderr = `${stderr}${chunk}`.slice(-8_000); });
   const lines = readline.createInterface({ input: child.stdout })[Symbol.asyncIterator]();
-  const ready = await nextMessage(lines, 30_000);
+  let ready;
+  try { ready = await nextMessage(lines, 30_000); }
+  catch (error) { network.stop(); child.kill(); throw error; }
   if (ready.type !== "ready") throw new Error(`Message initial OCR inattendu: ${JSON.stringify(ready)}`);
   return {
     pid: child.pid,
@@ -199,16 +205,25 @@ async function startWorker(workerPath, modelsPath) {
     network,
     async recognize(jobId, input, output) {
       child.stdin.write(`${JSON.stringify({ schemaVersion: 1, jobId, input, output })}\n`);
-      const message = await nextMessage(lines, 180_000);
+      let message;
+      try {
+        message = await nextMessage(lines, 180_000);
+      } catch (error) {
+        throw new Error(`${jobId}: ${error.message}; worker exit=${child.exitCode}; stderr=${stderr}`);
+      }
       if (message.type === "failed") throw new Error(`${jobId}: ${message.message}`);
       if (message.type !== "completed" || message.jobId !== jobId) throw new Error(`${jobId}: réponse OCR inattendue ${JSON.stringify(message)}`);
     },
-    async close() {
+    async close(force = false) {
       network.stop();
       if (child.exitCode !== null) return;
+      if (force) child.kill();
       child.stdin.end();
-      const [code] = await once(child, "exit");
-      if (code !== 0) throw new Error(`Le runtime OCR s’est arrêté (${code}): ${stderr}`);
+      const exited = once(child, "exit");
+      const grace = setTimeout(() => child.kill(), 5_000);
+      let code;
+      try { [code] = await exited; } finally { clearTimeout(grace); }
+      if (code !== 0 && !force) throw new Error(`Le runtime OCR s’est arrêté (${code}): ${stderr}`);
     },
   };
 }
@@ -246,11 +261,14 @@ function monitorNetwork(pid) {
 }
 
 async function nextMessage(lines, timeoutMs) {
+  let timer;
   const timeout = new Promise((_, reject) => {
-    const id = setTimeout(() => reject(new Error(`Aucun message OCR reçu en ${timeoutMs} ms.`)), timeoutMs);
-    id.unref?.();
+    timer = setTimeout(() => reject(new Error(`Aucun message OCR reçu en ${timeoutMs} ms.`)), timeoutMs);
+    timer.unref?.();
   });
-  const result = await Promise.race([lines.next(), timeout]);
+  let result;
+  try { result = await Promise.race([lines.next(), timeout]); }
+  finally { clearTimeout(timer); }
   if (result.done) throw new Error("Le flux du runtime OCR s’est fermé prématurément.");
   return JSON.parse(result.value);
 }

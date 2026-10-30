@@ -12,22 +12,17 @@ pub(crate) fn convert_registered(
         ));
     }
     let result = convert_impl(app, job.clone());
-    if let Err(error) = &result {
+    if result.is_err() {
         runtime_log::write(
             "conversion",
-            &format!(
-                "job {} failed: {} -> {}: {}",
-                job.id,
-                runtime_log::path(Path::new(&job.input_path)),
-                job.target_format,
-                error
-            ),
+            &format!("job {} failed; target={}", job.id, job.target_format),
         );
     }
     result
 }
 
 fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult> {
+    let started = std::time::Instant::now();
     if job.input_path.trim().is_empty() || job.target_format.trim().is_empty() {
         return Err(ConvertError::Message("Conversion invalide.".to_string()));
     }
@@ -35,6 +30,7 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
 
     let input_path = PathBuf::from(&job.input_path);
     ensure_source_file_available(&input_path)?;
+    let input_bytes = fs::metadata(&input_path)?.len();
     let target_format = job.target_format.to_ascii_lowercase();
     let extension = input_path
         .extension()
@@ -94,8 +90,10 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
     emit_progress(app, &job.id, 4, "Préparation");
     check_cancelled(&job.id)?;
 
+    let mut warnings = Vec::new();
     match engine.id.as_str() {
         "ffmpeg" => {
+            warnings = media::source_warnings(app, &input_path, target.category_id == "video")?;
             if target.category_id == "video" {
                 convert_video(
                     app,
@@ -104,6 +102,7 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
                     &output_path,
                     target.id,
                     batch_concurrency,
+                    job.quality_profile,
                 )?;
             } else {
                 convert_audio(
@@ -113,48 +112,74 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
                     &output_path,
                     target.id,
                     batch_concurrency,
+                    job.quality_profile,
                 )?;
             }
         }
-        engine_id if uses_integrated_image_pipeline(engine_id) => {
-            convert_image(app, &job.id, &input_path, &output_path, target.id)?
-        }
-        "rust-text" | "pdf-extract" | "text" => convert_text_document(
+        engine_id if uses_integrated_image_pipeline(engine_id) => convert_image(
             app,
             &job.id,
             &input_path,
             &output_path,
-            source_format.id,
             target.id,
+            job.quality_profile,
         )?,
-        "libreoffice" => convert_external_document_with_text_fallback(
-            ExternalDocumentFallbackContext {
+        "rust-text" | "pdf-extract" | "text" => {
+            warnings = convert_text_document(
                 app,
-                job_id: &job.id,
-                input_path: &input_path,
-                output_path: &output_path,
-                source_format: source_format.id,
-                target_format: target.id,
-            },
-            "LibreOffice",
-            |app, job_id, input_path, output_path| {
-                convert_with_libreoffice(app, job_id, input_path, output_path, target.id)
-            },
+                &job.id,
+                &input_path,
+                &output_path,
+                source_format.id,
+                target.id,
+            )?
+        }
+        "libreoffice" => {
+            warnings = convert_external_document_with_text_fallback(
+                ExternalDocumentFallbackContext {
+                    app,
+                    job_id: &job.id,
+                    input_path: &input_path,
+                    output_path: &output_path,
+                    source_format: source_format.id,
+                    target_format: target.id,
+                },
+                "LibreOffice",
+                |app, job_id, input_path, output_path| {
+                    convert_with_libreoffice(app, job_id, input_path, output_path, target.id)
+                },
+            )?
+        }
+        "pandoc" => {
+            warnings = convert_external_document_with_text_fallback(
+                ExternalDocumentFallbackContext {
+                    app,
+                    job_id: &job.id,
+                    input_path: &input_path,
+                    output_path: &output_path,
+                    source_format: source_format.id,
+                    target_format: target.id,
+                },
+                "Pandoc",
+                convert_with_pandoc,
+            )?
+        }
+        "pdfium" => convert_with_pdfium(
+            app,
+            &job.id,
+            &input_path,
+            &output_path,
+            target.id,
+            job.quality_profile,
         )?,
-        "pandoc" => convert_external_document_with_text_fallback(
-            ExternalDocumentFallbackContext {
-                app,
-                job_id: &job.id,
-                input_path: &input_path,
-                output_path: &output_path,
-                source_format: source_format.id,
-                target_format: target.id,
-            },
-            "Pandoc",
-            convert_with_pandoc,
+        "libvips" => convert_with_libvips(
+            app,
+            &job.id,
+            &input_path,
+            &output_path,
+            job.quality_profile,
+            batch_concurrency,
         )?,
-        "pdfium" => convert_with_pdfium(app, &job.id, &input_path, &output_path, target.id)?,
-        "libvips" => convert_with_libvips(app, &job.id, &input_path, &output_path)?,
         _ => {
             return Err(ConvertError::Message(format!(
                 "Conversion fidèle impossible pour {} -> {}. {} Moteurs évalués : {}.",
@@ -169,9 +194,23 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
     validate_conversion_output(app, &output_path, &output_extension, target.category_id)?;
     check_cancelled(&job.id)?;
     let output_path = staged_output.commit()?;
+    let output_bytes = fs::metadata(&output_path)?.len();
     emit_progress(app, &job.id, 100, "Terminé");
     Ok(ConversionResult {
         output_path: output_path.to_string_lossy().to_string(),
+        engine: if warnings
+            .iter()
+            .any(|warning| warning.code == "integrated-text-fallback")
+        {
+            "rust-text".to_string()
+        } else {
+            engine.id
+        },
+        warnings,
+        input_bytes,
+        output_bytes,
+        duration_ms: started.elapsed().as_millis().try_into().unwrap_or(u64::MAX),
+        quality_profile: job.quality_profile,
     })
 }
 
@@ -232,9 +271,8 @@ fn validate_conversion_output_inner(
         )));
     }
     if target_category_id == "images" && expected != "zip" {
-        image::ImageReader::open(output_path)?
-            .with_guessed_format()?
-            .decode()?;
+        // Use the same decoded-pixel/allocation limits as the input path.
+        image_conversion::read_integrated_image(output_path)?;
     }
     if matches!(target_category_id, "audio" | "video")
         && let Some(ffprobe) = engines::resolve_tool(Some(app), "ffprobe")
@@ -244,6 +282,8 @@ fn validate_conversion_output_inner(
             .args([
                 "-v",
                 "error",
+                "-protocol_whitelist",
+                media::INPUT_PROTOCOLS,
                 "-show_entries",
                 "format=duration",
                 "-of",

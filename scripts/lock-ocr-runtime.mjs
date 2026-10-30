@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { normalizeOcrLockHeader } from "./lib/ocr-lock-header.mjs";
 
 const root = process.cwd();
 const expectedUvVersion = "0.11.21";
@@ -43,7 +44,7 @@ try {
   });
   if (result.status !== 0) throw new Error(result.stderr || result.stdout || "Résolution uv impossible.");
 
-  const generated = normalizeHeader(await fs.readFile(temporary, "utf8"));
+  const generated = normalizeOcrLockHeader(await fs.readFile(temporary, "utf8"), "windows-x64");
   if (checkOnly) {
     const current = await fs.readFile(outputPath, "utf8");
     if (current !== generated) throw new Error("Le verrou Python OCR n’est plus reproductible depuis l’inventaire.");
@@ -54,14 +55,4 @@ try {
   }
 } finally {
   await fs.rm(temporary, { force: true });
-}
-
-function normalizeHeader(source) {
-  const lines = source.replaceAll("\r\n", "\n").split("\n");
-  while (lines[0]?.startsWith("#")) lines.shift();
-  return [
-    "# Locked with uv 0.11.21 for CPython 3.12.10 on Windows x64.",
-    "# Regenerate through scripts/lock-ocr-runtime.mjs; do not edit by hand.",
-    ...lines,
-  ].join("\n");
 }

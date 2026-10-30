@@ -2,6 +2,136 @@ use super::*;
 
 #[test]
 #[ignore = "full conversion matrix is run by npm run test:conversions"]
+fn conversion_matrix_primary_stream_policy_is_explicit() {
+    let directory = tempfile::tempdir().unwrap();
+    let subtitle = directory.path().join("captions.srt");
+    fs::write(
+        &subtitle,
+        "1\n00:00:00,000 --> 00:00:00,300\nSubtitle fixture\n",
+    )
+    .unwrap();
+    let input = directory.path().join("multilingual.mkv");
+    let output = directory.path().join("primary.mp4");
+    let mut args = owned_args(&[
+        "-y",
+        "-v",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        "color=size=96x64:duration=0.4",
+        "-f",
+        "lavfi",
+        "-i",
+        "sine=frequency=440:duration=0.4",
+        "-f",
+        "lavfi",
+        "-i",
+        "sine=frequency=880:duration=0.4",
+        "-i",
+    ]);
+    args.push(subtitle.to_string_lossy().to_string());
+    args.extend(owned_args(&[
+        "-map",
+        "0:v",
+        "-map",
+        "1:a",
+        "-map",
+        "2:a",
+        "-map",
+        "3:s",
+        "-codec:v",
+        "libx264",
+        "-codec:a",
+        "aac",
+        "-codec:s",
+        "srt",
+        "-metadata:s:a:0",
+        "language=fra",
+        "-metadata:s:a:1",
+        "language=eng",
+    ]));
+    args.push(input.to_string_lossy().to_string());
+    run_ffmpeg_args(&args, "multilingual source");
+    assert_eq!(probe_streams(&input).len(), 4);
+    run_ffmpeg_conversion(&input, &output, cpu_video_args("mp4").unwrap());
+    let streams = probe_streams(&output);
+    assert_eq!(streams.len(), 2);
+    assert_eq!(
+        streams
+            .iter()
+            .filter(|stream| stream["codec_type"] == "audio")
+            .count(),
+        1
+    );
+    assert_eq!(
+        streams
+            .iter()
+            .find(|stream| stream["codec_type"] == "audio")
+            .unwrap()["tags"]["language"],
+        "fra"
+    );
+}
+
+fn probe_streams(input: &Path) -> Vec<serde_json::Value> {
+    let output = Command::new(ffprobe_test_path())
+        .args(["-v", "error", "-show_streams", "-of", "json"])
+        .arg(input)
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap()["streams"]
+        .as_array()
+        .unwrap()
+        .clone()
+}
+
+#[test]
+#[ignore = "full conversion matrix is run by npm run test:conversions"]
+fn conversion_matrix_audio_quality_profiles_encode_real_media() {
+    let directory = tempfile::tempdir().unwrap();
+    let input = directory.path().join("quality.wav");
+    let mut fixture_args = [
+        "-y",
+        "-v",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        "anoisesrc=color=pink:sample_rate=48000:duration=2:seed=20261030",
+    ]
+    .map(str::to_string)
+    .to_vec();
+    fixture_args.push(input.to_string_lossy().to_string());
+    run_ffmpeg_args(&fixture_args, "quality profile source");
+    let mut sizes = Vec::new();
+    for (name, profile) in [
+        ("compact", QualityProfile::Compact),
+        ("balanced", QualityProfile::Balanced),
+        ("high", QualityProfile::High),
+    ] {
+        let output = directory.path().join(format!("{name}.mp3"));
+        let args = quality::audio_arguments(
+            audio_args("mp3")
+                .unwrap()
+                .into_iter()
+                .map(str::to_string)
+                .collect(),
+            "mp3",
+            profile,
+        );
+        run_ffmpeg_conversion(&input, &output, args);
+        assert_media_file_is_probeable(&output, name);
+        sizes.push(fs::metadata(output).unwrap().len());
+    }
+    assert!(
+        sizes[0] < sizes[2],
+        "this high-complexity fixture should use more data for high quality"
+    );
+}
+
+#[test]
+#[ignore = "full conversion matrix is run by npm run test:conversions"]
 fn conversion_matrix_image_png_to_webp_fixture() {
     let dir = tempfile::tempdir().unwrap();
     let input = dir.path().join("pixel.png");
@@ -228,12 +358,24 @@ fn generate_video_fixture(path: &Path, source_format: &str) {
         "sine=frequency=440:duration=0.18".to_string(),
         "-shortest".to_string(),
     ];
-    args.extend(cpu_video_args(source_format).unwrap());
+    let mut encoding = cpu_video_args(source_format).unwrap();
+    // This fixture has separate lavfi inputs for video and audio.
+    for argument in &mut encoding {
+        if argument == "0:a:0?" {
+            *argument = "1:a:0".to_string();
+        }
+    }
+    args.extend(encoding);
     args.push("-threads".to_string());
     args.push("1".to_string());
     args.push(path.to_string_lossy().to_string());
 
     run_ffmpeg_args(&args, &format!("fixture video {source_format}"));
+    assert_eq!(
+        probe_streams(path).len(),
+        2,
+        "video fixture must contain video and audio"
+    );
 }
 
 fn run_ffmpeg_conversion<T: AsRef<str>>(input: &Path, output: &Path, codec_args: Vec<T>) {
@@ -330,15 +472,7 @@ fn sidecar_test_names(stem: &str) -> Vec<String> {
         return vec![format!("{stem}-x86_64-pc-windows-msvc.exe")];
     }
     if cfg!(target_os = "macos") {
-        let native = if cfg!(target_arch = "aarch64") {
-            "aarch64-apple-darwin"
-        } else {
-            "x86_64-apple-darwin"
-        };
-        return vec![
-            format!("{stem}-universal-apple-darwin"),
-            format!("{stem}-{native}"),
-        ];
+        return vec![format!("{stem}-aarch64-apple-darwin")];
     }
     let native = if cfg!(target_arch = "aarch64") {
         "aarch64-unknown-linux-gnu"

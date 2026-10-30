@@ -149,11 +149,11 @@ pub(in crate::converters) fn read_docx_text(input_path: &Path) -> Result<String>
     let mut secondary_names = Vec::new();
     for index in 0..archive.len() {
         let file = archive.by_index(index)?;
-        let name = file.name().to_ascii_lowercase();
+        let name = file.name()?.to_ascii_lowercase();
         if (name.starts_with("word/header") || name.starts_with("word/footer"))
             && name.ends_with(".xml")
         {
-            secondary_names.push(file.name().to_string());
+            secondary_names.push(file.name()?.into_owned());
         }
     }
     secondary_names.sort();
@@ -272,7 +272,7 @@ pub(in crate::converters) fn read_epub_text(input_path: &Path) -> Result<String>
     let mut total_bytes = 0u64;
     for index in 0..archive.len() {
         let mut file = archive.by_index(index)?;
-        let name = file.name().to_ascii_lowercase();
+        let name = file.name()?.to_ascii_lowercase();
         if name.ends_with(".xhtml") || name.ends_with(".html") || name.ends_with(".htm") {
             ensure_extracted_text_budget(file.size(), "ePub")?;
             let remaining = MAX_EXTRACTED_TEXT_BYTES.saturating_sub(total_bytes);

@@ -365,7 +365,7 @@ Generated folders (`dist`, `node_modules`, build caches, local engine sources, e
 
 The Windows x64 base engines `ffmpeg` and `ffprobe` are bundled in `src-tauri/binaries`. Advanced engines are prepared into `src-tauri/bundled-engines` and bundled as Tauri resources. Both groups are validated before each build.
 
-The macOS universal DMG must include universal FFmpeg/ffprobe sidecars. Advanced macOS engines must not be advertised unless the release workflow stages reviewed `macos-universal` entries with verified archives, licenses, notices and checksums and the final DMG passes macOS validation.
+From V1.0.7, macOS builds support Apple Silicon only; Windows x64 and Linux x64 remain supported. The V1.0.6 universal downloads above remain the published baseline until a new release is verified and published. Advanced macOS engines must not be advertised unless the release workflow stages reviewed `macos-aarch64` entries with verified archives, licenses, notices and checksums and the final DMG passes macOS validation.
 
 Restore and validate the bundled engines:
 
@@ -378,7 +378,7 @@ To work locally on engine scripts, place temporary sources under:
 
 ```text
 engine-sources/windows-x64/<engineId>/
-engine-sources/macos-universal/<engineId>/
+engine-sources/macos-aarch64/<engineId>/
 ```
 
 > **Important**

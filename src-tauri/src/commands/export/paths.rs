@@ -103,9 +103,9 @@ pub(super) fn prepare_destination(destination: &Path) -> CommandResult<PathBuf> 
         runtime_log::write(
             "export",
             &format!(
-                "create_dir_all failed for {}: {}",
+                "create_dir_all failed for {}: {:?}",
                 runtime_log::path(destination),
-                error
+                error.kind()
             ),
         );
         format!(

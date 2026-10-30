@@ -227,7 +227,6 @@ fn platform_key_for(os: &str, arch: &str) -> &'static str {
     match (os, arch) {
         ("windows", "x86_64") => "windows-x64",
         ("macos", "aarch64") => "macos-aarch64",
-        ("macos", "x86_64") => "macos-x86_64",
         ("linux", "x86_64") => "linux-x64",
         _ => "unsupported",
     }
@@ -287,7 +286,6 @@ fn verify_worker_architecture(
                 && bytes.get(18..20) == Some(&[0x3e, 0x00])
         }
         "macos-aarch64" => mach_cpu(&bytes) == Some(0x0100_000c),
-        "macos-x86_64" => mach_cpu(&bytes) == Some(0x0100_0007),
         _ => false,
     };
     if valid {

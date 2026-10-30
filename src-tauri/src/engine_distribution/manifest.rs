@@ -24,8 +24,8 @@ pub fn manifest_for_platform(manifest: &EngineManifest, engine_id: &str) -> Opti
 pub fn current_platform_id() -> &'static str {
     if cfg!(all(target_os = "windows", target_arch = "x86_64")) {
         "windows-x64"
-    } else if cfg!(target_os = "macos") {
-        "macos-universal"
+    } else if cfg!(all(target_os = "macos", target_arch = "aarch64")) {
+        "macos-aarch64"
     } else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
         "linux-x64"
     } else {

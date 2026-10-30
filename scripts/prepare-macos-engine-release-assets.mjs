@@ -23,9 +23,9 @@ await ensureAsset("engines-manifest.json");
 await assertFile(manifestAsset, "downloaded engines-manifest.json");
 
 const manifest = JSON.parse(await fs.readFile(manifestAsset, "utf8"));
-const engines = (manifest.engines ?? []).filter((engine) => engine.platform === "macos-universal");
+const engines = (manifest.engines ?? []).filter((engine) => engine.platform === "macos-aarch64");
 if (engines.length === 0) {
-  fail("No macos-universal engine entries found in staged engines-manifest.json.");
+  fail("No macos-aarch64 engine entries found in staged engines-manifest.json.");
 }
 
 await writeEmbeddedManifest(manifest, engines);
@@ -45,7 +45,7 @@ console.log(`Staged ${engines.length} macOS engine archives from ${sourceLabel}.
 async function writeEmbeddedManifest(sourceManifest, macosEngines) {
   const embeddedEngines = macosEngines.filter((engine) => engine.mode === "advanced");
   if (embeddedEngines.length === 0) {
-    fail("No advanced macos-universal engine entries found for the embedded manifest.");
+    fail("No advanced macos-aarch64 engine entries found for the embedded manifest.");
   }
   const embeddedManifest = {
     ...sourceManifest,

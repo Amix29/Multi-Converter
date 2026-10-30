@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { assertWorkflowActionPins, reviewedRustAction } from "./lib/workflow-action-pins.mjs";
 
 import { assertWindowsCiContracts } from "./lib/windows-ci-contracts.mjs";
 import { assertWindowsPdfiumWorkflowContracts } from "./lib/windows-pdfium-workflow-contracts.mjs";
 
 const root = process.cwd(), packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+assertWorkflowActionPins(root);
 const buildWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "build.yml"), "utf8");
 const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
 const macosEngineStagingWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-engine-staging.yml"), "utf8");
@@ -40,7 +42,6 @@ const linuxCodeCheckJob = workflowJob(buildWorkflow, "linux-code-check");
 const macosEngineStagingJob = workflowJob(macosEngineStagingWorkflow, "stage");
 const macosLibvipsRuntimeJob = workflowJob(macosLibvipsRuntimeWorkflow, "build");
 const macosDmgBuildJob = workflowJob(macosDmgWorkflow, "build");
-const macosDmgIntelVerifyJob = workflowJob(macosDmgWorkflow, "verify-intel");
 const macosConversionsJob = workflowJob(macosConversionsWorkflow, "macos-conversions");
 const linuxEngineStagingJob = workflowJob(linuxEngineStagingWorkflow, "stage");
 const linuxSidecarStagingJob = workflowJob(linuxSidecarStagingWorkflow, "stage");
@@ -57,7 +58,7 @@ assert.match(buildWorkflow, /macos-code-check:/, "build workflow must include a 
 assert.match(macosBuildJob, /runs-on:\s+macos-latest/, "macOS CI must run on macOS");
 assertCodexTestBuildGate(macosBuildJob, "macOS code-check");
 assert.match(macosBuildJob, /aarch64-apple-darwin/, "macOS CI must check Apple Silicon target compilation");
-assert.match(macosBuildJob, /x86_64-apple-darwin/, "macOS CI must check Intel target compilation");
+assert.doesNotMatch(macosBuildJob, /x86_64-apple-darwin/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosBuildJob, /components:\s+rustfmt, clippy/, "macOS CI must install Rust formatting and Clippy components explicitly");
 assert.match(macosBuildJob, /npm run validate:embedded-manifest/, "macOS CI must validate the embedded engine manifest");
 assert.match(macosBuildJob, /npm run validate:i18n/, "macOS CI must validate translations");
@@ -141,7 +142,7 @@ assert.match(linuxAppImageBuildJob, /npm run tauri:build:linux -- --verbose/, "L
 assert.match(linuxAppImageBuildJob, /TAURI_SIGNING_PRIVATE_KEY/, "Linux AppImage build must receive updater signing credentials");
 assert.match(linuxAppImageBuildJob, /npm run prepare:linux-release-artifacts/, "Linux AppImage build must normalize AppImage release asset names");
 assert.match(linuxAppImageBuildJob, /npm run verify:linux-appimage/, "Linux AppImage build must verify the release-named AppImage before upload");
-assert.match(linuxAppImageBuildJob, /actions\/upload-artifact@v4/, "Linux AppImage build must upload the verified AppImage artifact set");
+assert.match(linuxAppImageBuildJob, /actions\/upload-artifact@[a-f0-9]{40}/, "Linux AppImage build must upload the verified AppImage artifact set");
 
 assert.match(linuxEngineStagingWorkflow, /name:\s+Linux Engine Staging/, "Linux engine staging workflow must be clearly named");
 assert.match(linuxEngineStagingWorkflow, /workflow_dispatch:/, "Linux engine staging workflow must be manually runnable");
@@ -176,7 +177,7 @@ assert.match(linuxEngineStagingJob, /npm run prepare:pandoc-engine:linux/, "Linu
 assert.match(linuxEngineStagingJob, /npm run prepare:libvips-engine:linux/, "Linux engine staging must be able to prepare a Linux libvips runtime");
 assert.match(linuxEngineStagingJob, /npm run prepare:linux-engine-sources -- --allow-existing/, "Linux engine staging must validate both archived and prebuilt source trees");
 assert.match(linuxEngineStagingJob, /npm run package:linux-engines/, "Linux engine staging must package Linux engine archives");
-assert.match(linuxEngineStagingJob, /actions\/upload-artifact@v4/, "Linux engine staging must upload staged engine assets");
+assert.match(linuxEngineStagingJob, /actions\/upload-artifact@[a-f0-9]{40}/, "Linux engine staging must upload staged engine assets");
 assert.match(linuxEngineStagingJob, /gh release upload/, "Linux engine staging must optionally upload staged assets to a test release");
 
 assert.match(linuxSidecarStagingWorkflow, /name:\s+Linux Sidecar Staging/, "Linux sidecar staging workflow must be clearly named");
@@ -193,7 +194,7 @@ assert.match(linuxSidecarStagingJob, /MC_FFMPEG_LINUX_X64_BINARY/, "Linux sideca
 assert.match(linuxSidecarStagingJob, /MC_FFPROBE_LINUX_X64_BINARY/, "Linux sidecar staging must accept a Linux ffprobe binary repository variable");
 assert.match(linuxSidecarStagingJob, /Invalid Linux sidecar output release tag input/, "Linux sidecar staging must validate the optional output release tag before gh release commands");
 assert.match(linuxSidecarStagingJob, /npm run prepare:linux-sidecar-release-assets/, "Linux sidecar staging must prepare validated Linux sidecar release assets");
-assert.match(linuxSidecarStagingJob, /actions\/upload-artifact@v4/, "Linux sidecar staging must upload staged sidecar assets");
+assert.match(linuxSidecarStagingJob, /actions\/upload-artifact@[a-f0-9]{40}/, "Linux sidecar staging must upload staged sidecar assets");
 assert.match(linuxSidecarStagingJob, /gh release upload/, "Linux sidecar staging must optionally upload staged sidecars to a test release");
 
 assert.match(releaseWorkflow, /include_macos:/, "release workflow must expose the manual include_macos switch");
@@ -212,7 +213,7 @@ assert.match(releaseNotesValidationLibrary, /requiredReleaseNoteSections/, "shar
 assert.match(releaseNotesValidationLibrary, /Release notes must be published in English only/, "shared release-note validation must reject localized release-note blocks");
 assert.match(releaseNotesValidationLibrary, /Release notes mention a macOS DMG, but this workflow run was not started with include_macos=true\./, "shared release-note validation must reject accidental macOS notes in Windows-only runs");
 assert.match(releaseNotesValidationLibrary, /Release notes mention a Linux AppImage, but this workflow run was not started with include_linux=true\./, "shared release-note validation must reject accidental Linux notes in Windows-only runs");
-assert.match(releaseNotesValidationLibrary, /Multi-Converter_\$\{version\}_macos-universal\.dmg/, "shared release-note validation must require the exact macOS universal DMG name");
+assert.match(releaseNotesValidationLibrary, /Multi-Converter_\$\{version\}_\$\{macosArtifactPlatform\(version\)\}\.dmg/, "shared release-note validation must require the exact macOS universal DMG name");
 assert.match(releaseNotesValidationLibrary, /not\\s\+Apple-signed/, "shared release-note validation must validate unsigned macOS wording before DMG verification");
 assert.match(releaseNotesValidationLibrary, /System Settings/, "shared release-note validation must validate the full System Settings path before DMG verification");
 assert.match(releaseNotesValidationLibrary, /Open Anyway/, "shared release-note validation must validate Open Anyway guidance before DMG verification");
@@ -220,7 +221,7 @@ assert.match(releaseNotesValidationLibrary, /confirm\\s\+\`\?Open/, "shared rele
 assert.match(releaseNotesValidationLibrary, /macOS\\s\+automatic\\s\+updates\\s\+are\\s\+enabled/, "shared release-note validation must validate enabled macOS updater wording before DMG verification");
 assert.match(releaseNotesValidationLibrary, /macOS\\s\+DMG\\s\+verification\\s\+\(\?:passed\|succeeded\|completed\)/, "shared release-note validation must require positive macOS DMG verification wording before DMG verification");
 assert.match(releaseNotesValidationLibrary, /macOS\\s\+DMG\\s\+verification\\s\+\(\?:failed\|did\\s\+not\\s\+pass\|not\\s\+completed\|pending/, "shared release-note validation must reject failed or pending macOS DMG verification wording");
-assert.match(releaseNotesValidationLibrary, /macOS DMG was verified for Apple Silicon and Intel/, "shared release-note validation must require two-architecture DMG verification wording");
+assert.doesNotMatch(releaseNotesValidationLibrary, /macOS DMG was verified for Apple Silicon and Intel/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(releaseNotesValidationLibrary, /Linux\\s\+automatic\\s\+updates\\s\+are\\s\+enabled/, "shared release-note validation must validate enabled Linux updater wording");
 assert.match(releaseNotesValidationLibrary, /Linux\\s\+AppImage\\s\+verification\\s\+\(\?:passed\|succeeded\|completed\)/, "shared release-note validation must require positive Linux AppImage verification wording");
 assert.match(releaseNotesValidationLibrary, /Linux\\s\+AppImage\\s\+verification\\s\+\(\?:failed\|did\\s\+not\\s\+pass\|not\\s\+completed\|pending/, "shared release-note validation must reject failed or pending Linux AppImage verification wording");
@@ -234,14 +235,14 @@ assert.match(releaseWorkflow, /macos-dmg-verify:[\s\S]*?needs:\s+release-preflig
 assert.match(releaseWorkflow, /needs\.release-preflight\.outputs\.include_macos == 'true'/, "macOS DMG verification must only run when preflight confirms macOS publication");
 assert.match(releaseWorkflow, /name:\s+macOS DMG verification \(\$\{\{\s*matrix\.arch_label\s*\}\}\)/, "release macOS DMG verification must identify the tested architecture");
 assert.match(releaseWorkflow, /arch_label:\s+Apple Silicon[\s\S]*?runner:\s+macos-latest/, "release macOS DMG verification must run on Apple Silicon");
-assert.match(releaseWorkflow, /arch_label:\s+Intel[\s\S]*?runner:\s+macos-15-intel/, "release macOS DMG verification must run on Intel");
+assert.doesNotMatch(releaseWorkflow, /arch_label:\s+Intel[\s\S]*?runner:\s+macos-15-intel/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(releaseWorkflow, /runs-on:\s+\$\{\{\s*matrix\.runner\s*\}\}/, "release macOS DMG verification must use the matrix runner");
 assert.match(releaseWorkflow, /npm run verify:macos-dmg -- --version "\$\{\{ steps\.version\.outputs\.version \}\}" --dmg "\$MACOS_DMG_PATH"/, "release workflow must verify the downloaded DMG on macOS");
 assert.match(releaseWorkflow, /linux-appimage-verify:/, "release workflow must include a Linux AppImage verification job");
 assert.match(releaseWorkflow, /needs\.release-preflight\.outputs\.include_linux == 'true'/, "Linux AppImage verification must only run when preflight confirms Linux publication");
 assert.match(releaseWorkflow, /runs-on:\s+ubuntu-22\.04/, "Linux AppImage verification must run on the supported Linux baseline");
 assert.match(releaseWorkflow, /linux-appimage-verify:[\s\S]*?timeout-minutes:\s+30/, "Linux AppImage verification must allow time for AppImage extraction and updater signature verification");
-assert.match(releaseWorkflow, /linux-appimage-verify:[\s\S]*?dtolnay\/rust-toolchain@stable/, "Linux AppImage verification must install Rust for updater signature verification");
+assert.ok(releaseWorkflow.slice(releaseWorkflow.indexOf("linux-appimage-verify:")).includes(reviewedRustAction), "Linux AppImage verification must install the reviewed Rust action for updater signature verification");
 assert.match(releaseWorkflow, /Multi-Converter_\$\{version\}_linux-x64\.AppImage/, "release workflow must download the versioned Linux AppImage");
 assert.match(releaseWorkflow, /npm run verify:linux-appimage -- --version "\$\{\{ steps\.version\.outputs\.version \}\}" --appimage "\$LINUX_APPIMAGE_PATH" --signature "\$LINUX_APPIMAGE_SIGNATURE_PATH"/, "release workflow must verify the downloaded Linux AppImage on Linux");
 assert.match(releaseWorkflow, /"--linux-appimage", \$linuxAppImagePath/, "release workflow must prepare clean assets from the downloaded Linux AppImage");
@@ -264,10 +265,10 @@ assert.match(releaseWorkflow, /\$platform = if \(\$includeMacos\) \{ "desktop" \
 assert.match(releaseWorkflow, /\$platform = "all"[\s\S]*?\$platform = if \(\$includeMacos\) \{ "desktop" \} else \{ "windows-linux" \}/, "release workflow must keep all for Windows + macOS and use windows-linux only for Windows + Linux");
 assert.match(releaseWorkflow, /--macos-dmg-sha256/, "release workflow must bind Windows packaging to the verified macOS DMG hash");
 assert.match(releaseWorkflow, /--macos-updater-sha256/, "release workflow must bind Windows packaging to the verified macOS updater archive hash");
-assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_\$\{version\}_macos-universal\.dmg"/, "release workflow must preserve exactly one macOS universal DMG when enabled");
-assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_macos-universal\.dmg"/, "release workflow must publish the stable latest macOS DMG alias when enabled");
-assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_\$\{version\}_macos-universal\.app\.tar\.gz"/, "release workflow must publish the macOS updater archive when enabled");
-assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_\$\{version\}_macos-universal\.app\.tar\.gz\.sig"/, "release workflow must publish the macOS updater signature when enabled");
+assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_\$\{version\}_macos-aarch64\.dmg"/, "release workflow must preserve exactly one macOS universal DMG when enabled");
+assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_macos-aarch64\.dmg"/, "release workflow must publish the stable latest macOS DMG alias when enabled");
+assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_\$\{version\}_macos-aarch64\.app\.tar\.gz"/, "release workflow must publish the macOS updater archive when enabled");
+assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_\$\{version\}_macos-aarch64\.app\.tar\.gz\.sig"/, "release workflow must publish the macOS updater signature when enabled");
 assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_\$\{version\}_linux-x64\.AppImage"/, "release workflow must publish the versioned Linux AppImage when enabled");
 assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_linux-x64\.AppImage"/, "release workflow must publish the stable latest Linux AppImage alias when enabled");
 assert.match(releaseWorkflow, /\$expectedAssets \+= "Multi-Converter_\$\{version\}_linux-x64\.AppImage\.sig"/, "release workflow must publish the Linux updater signature when enabled");
@@ -282,15 +283,15 @@ assert.match(macosEngineStagingWorkflow, /ffmpeg_aarch64_archive_url:/, "macOS e
 assert.match(macosEngineStagingWorkflow, /ffmpeg_aarch64_archive_sha256:/, "macOS engine staging must require an Apple Silicon FFmpeg checksum");
 assert.match(macosEngineStagingWorkflow, /ffprobe_aarch64_archive_url:/, "macOS engine staging must allow a separate Apple Silicon FFprobe archive URL");
 assert.match(macosEngineStagingWorkflow, /ffprobe_aarch64_archive_sha256:/, "macOS engine staging must allow a separate Apple Silicon FFprobe checksum");
-assert.match(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_url:/, "macOS engine staging must require an Intel FFmpeg archive URL");
-assert.match(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_sha256:/, "macOS engine staging must require an Intel FFmpeg checksum");
-assert.match(macosEngineStagingWorkflow, /ffprobe_x86_64_archive_url:/, "macOS engine staging must allow a separate Intel FFprobe archive URL");
-assert.match(macosEngineStagingWorkflow, /ffprobe_x86_64_archive_sha256:/, "macOS engine staging must allow a separate Intel FFprobe checksum");
+assert.doesNotMatch(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_url:/, "Mac workflows must exclude Intel inputs and jobs");
+assert.doesNotMatch(macosEngineStagingWorkflow, /ffmpeg_x86_64_archive_sha256:/, "Mac workflows must exclude Intel inputs and jobs");
+assert.doesNotMatch(macosEngineStagingWorkflow, /ffprobe_x86_64_archive_url:/, "Mac workflows must exclude Intel inputs and jobs");
+assert.doesNotMatch(macosEngineStagingWorkflow, /ffprobe_x86_64_archive_sha256:/, "Mac workflows must exclude Intel inputs and jobs");
 assert.doesNotMatch(macosEngineStagingWorkflow, /pdfium_macos_universal_archive_sha256:/, "macOS engine staging must not accept a PDFium checksum override");
 assert.match(macosEngineStagingWorkflow, /libreoffice_macos_aarch64_dmg_sha256:/, "macOS engine staging must require an Apple Silicon LibreOffice checksum");
-assert.match(macosEngineStagingWorkflow, /libreoffice_macos_x86_64_dmg_sha256:/, "macOS engine staging must require an Intel LibreOffice checksum");
+assert.doesNotMatch(macosEngineStagingWorkflow, /libreoffice_macos_x86_64_dmg_sha256:/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosEngineStagingWorkflow, /pandoc_macos_aarch64_archive_sha256:/, "macOS engine staging must require an Apple Silicon Pandoc checksum");
-assert.match(macosEngineStagingWorkflow, /pandoc_macos_x86_64_archive_sha256:/, "macOS engine staging must require an Intel Pandoc checksum");
+assert.doesNotMatch(macosEngineStagingWorkflow, /pandoc_macos_x86_64_archive_sha256:/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosEngineStagingWorkflow, /libvips_release_tag:/, "macOS engine staging must support portable libvips release inputs");
 assert.match(macosEngineStagingWorkflow, /libvips_runtime_run_id:/, "macOS engine staging must support portable libvips workflow artifacts");
 assert.match(macosEngineStagingWorkflow, /permissions:[\s\S]*?contents:\s+write/, "macOS engine staging must be able to upload optional test release assets");
@@ -304,27 +305,27 @@ assert.match(macosEngineStagingJob, /FFMPEG_MACOS_LICENSE_FILE=\$bundle/, "macOS
 assert.match(macosEngineStagingJob, /prepare:ffmpeg-engine:macos/, "macOS engine staging must prepare real FFmpeg sidecars");
 assert.match(macosEngineStagingJob, /shasum -a 256 "\$asset" > "\$asset\.sha256"/, "macOS engine staging must publish SHA-256 files for sidecars");
 assert.match(macosEngineStagingJob, /vars\.MC_FFMPEG_MACOS_AARCH64_ARCHIVE_URL/, "macOS engine staging push runs must read Apple Silicon FFmpeg URLs from repository variables");
-assert.match(macosEngineStagingJob, /vars\.MC_FFMPEG_MACOS_X86_64_ARCHIVE_SHA256/, "macOS engine staging push runs must read Intel FFmpeg checksums from repository variables");
+assert.doesNotMatch(macosEngineStagingJob, /vars\.MC_FFMPEG_MACOS_X86_64_ARCHIVE_SHA256/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosEngineStagingJob, /FFPROBE_MACOS_AARCH64_ARCHIVE_URL/, "macOS engine staging must pass separate Apple Silicon FFprobe URLs to the preparation script");
-assert.match(macosEngineStagingJob, /FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "macOS engine staging must pass separate Intel FFprobe checksums to the preparation script");
+assert.doesNotMatch(macosEngineStagingJob, /FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosEngineStagingJob, /vars\.MC_FFPROBE_MACOS_AARCH64_ARCHIVE_URL/, "macOS engine staging push runs must read Apple Silicon FFprobe URLs from repository variables");
-assert.match(macosEngineStagingJob, /vars\.MC_FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "macOS engine staging push runs must read Intel FFprobe checksums from repository variables");
+assert.doesNotMatch(macosEngineStagingJob, /vars\.MC_FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosEngineStagingWorkflow, /tools\/platform-runtime-provenance-lock\.json/, "macOS engine staging must rebuild when the platform provenance lock changes");
 assert.match(macosEngineStagingJob, /vars\.MC_LIBREOFFICE_MACOS_AARCH64_DMG_SHA256/, "macOS engine staging push runs must read Apple Silicon LibreOffice checksums from repository variables");
-assert.match(macosEngineStagingJob, /vars\.MC_LIBREOFFICE_MACOS_X86_64_DMG_SHA256/, "macOS engine staging push runs must read Intel LibreOffice checksums from repository variables");
+assert.doesNotMatch(macosEngineStagingJob, /vars\.MC_LIBREOFFICE_MACOS_X86_64_DMG_SHA256/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosEngineStagingJob, /vars\.MC_PANDOC_MACOS_AARCH64_ARCHIVE_SHA256/, "macOS engine staging push runs must read Apple Silicon Pandoc checksums from repository variables");
-assert.match(macosEngineStagingJob, /vars\.MC_PANDOC_MACOS_X86_64_ARCHIVE_SHA256/, "macOS engine staging push runs must read Intel Pandoc checksums from repository variables");
+assert.doesNotMatch(macosEngineStagingJob, /vars\.MC_PANDOC_MACOS_X86_64_ARCHIVE_SHA256/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosEngineStagingJob, /prepare:macos-upstream-engines/, "macOS engine staging must prepare PDFium, LibreOffice and Pandoc");
 assert.match(macosEngineStagingJob, /Provide only one libvips input source/, "macOS engine staging must reject ambiguous libvips input sources");
 assert.match(macosEngineStagingJob, /vars\.MC_LIBVIPS_MACOS_RUNTIME_RUN_ID/, "macOS engine staging push runs must read libvips runtime run IDs from repository variables");
 assert.match(macosEngineStagingJob, /gh run download "\$LIBVIPS_RUNTIME_RUN_ID"/, "macOS engine staging must download libvips runtime workflow artifacts");
 assert.match(macosEngineStagingJob, /--name libvips-macos-aarch64/, "macOS engine staging must download the Apple Silicon libvips artifact");
-assert.match(macosEngineStagingJob, /--name libvips-macos-x86_64/, "macOS engine staging must download the Intel libvips artifact");
+assert.doesNotMatch(macosEngineStagingJob, /--name libvips-macos-x86_64/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosEngineStagingJob, /--aarch64-archive "\$aarch64_archive"/, "macOS engine staging must pass local Apple Silicon libvips archives to the input helper");
 assert.match(macosEngineStagingJob, /prepare:libvips-macos-release-inputs/, "macOS engine staging must prepare portable libvips inputs");
 assert.match(macosEngineStagingJob, /prepare:libvips-engine:macos/, "macOS engine staging must validate and stage libvips");
-assert.match(macosEngineStagingJob, /package:macos-engines/, "macOS engine staging must package macos-universal engine archives");
-assert.match(macosEngineStagingJob, /actions\/upload-artifact@v4/, "macOS engine staging must upload staged assets as a workflow artifact");
+assert.match(macosEngineStagingJob, /package:macos-engines/, "macOS engine staging must package macos-aarch64 engine archives");
+assert.match(macosEngineStagingJob, /actions\/upload-artifact@[a-f0-9]{40}/, "macOS engine staging must upload staged assets as a workflow artifact");
 assert.match(macosEngineStagingJob, /if:\s+\$\{\{\s*env\.OUTPUT_RELEASE_TAG != ''\s*\}\}/, "macOS engine staging must use the resolved output release tag before publishing public test assets");
 assert.match(macosEngineStagingJob, /gh release upload/, "macOS engine staging must optionally upload assets to a test release");
 
@@ -335,12 +336,11 @@ assert.match(macosLibvipsRuntimeWorkflow, /workflow_dispatch:/, "macOS libvips r
 assert.match(macosLibvipsRuntimeWorkflow, /arch:\s*\n\s+description:\s+"Runtime architecture to build"/, "macOS libvips runtime workflow must allow architecture-scoped retries");
 assert.match(macosLibvipsRuntimeWorkflow, /permissions:\s*\n\s+contents:\s+write/, "macOS libvips runtime workflow must be able to upload optional test release assets");
 assert.match(macosLibvipsRuntimeJob, /vars\.MC_ENABLE_MACOS_LIBVIPS_RUNTIME == '1'/, "codex/test macOS libvips runtime push runs must require an explicit repository variable gate");
-assert.match(macosLibvipsRuntimeJob, /fromJSON\(\(github\.event_name != 'workflow_dispatch' \|\| inputs\.arch == 'both'\)/, "macOS libvips runtime matrix must default push runs to both architectures before runner allocation");
-assert.match(macosLibvipsRuntimeJob, /"arch":"aarch64","runner":"macos-latest"/, "macOS libvips runtime must build Apple Silicon on an arm64 macOS runner");
-assert.match(macosLibvipsRuntimeJob, /"arch":"x86_64","runner":"macos-15-intel"/, "macOS libvips runtime must build Intel on an Intel macOS runner");
+assert.match(macosLibvipsRuntimeJob, /arch: aarch64[\s\S]*runner: macos-latest/, "macOS libvips runtime must build Apple Silicon on an arm64 macOS runner");
+assert.doesNotMatch(macosLibvipsRuntimeJob, /"arch":"x86_64","runner":"macos-15-intel"/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosLibvipsRuntimeJob, /brew install vips/, "macOS libvips runtime must install libvips from Homebrew before packaging");
 assert.match(macosLibvipsRuntimeJob, /build:libvips-macos-runtime/, "macOS libvips runtime must call the portable runtime builder");
-assert.match(macosLibvipsRuntimeJob, /actions\/upload-artifact@v4/, "macOS libvips runtime must upload both runtime archives as artifacts");
+assert.match(macosLibvipsRuntimeJob, /actions\/upload-artifact@[a-f0-9]{40}/, "macOS libvips runtime must upload both runtime archives as artifacts");
 assert.match(macosLibvipsRuntimeJob, /gh release upload/, "macOS libvips runtime must optionally upload runtime archives to a test release");
 
 assert.match(macosDmgWorkflow, /name:\s+macOS DMG Build/, "macOS DMG workflow must be clearly named");
@@ -359,13 +359,13 @@ assert.match(macosDmgBuildJob, /vars\.MC_ENABLE_MACOS_DMG == '1'/, "codex/test m
 assert.match(macosDmgBuildJob, /outputs:[\s\S]*?version:\s+\$\{\{\s*steps\.version\.outputs\.version\s*\}\}[\s\S]*?dmg_name:\s+\$\{\{\s*steps\.version\.outputs\.dmg_name\s*\}\}/, "macOS DMG build must expose the verified artifact name to follow-up verification jobs");
 assert.match(macosDmgBuildJob, /vars\.MC_MACOS_ENGINE_STAGING_RUN_ID/, "codex/test macOS DMG push runs must read the staging run ID from a repository variable");
 assert.match(macosDmgBuildJob, /runs-on:\s+macos-latest/, "macOS DMG build must run on macOS");
-assert.match(macosDmgBuildJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS DMG build must prepare macos-universal engines");
+assert.match(macosDmgBuildJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-aarch64/, "macOS DMG build must prepare macos-aarch64 engines");
 assert.doesNotMatch(macosDmgBuildJob, /CARGO_TARGET_DIR:\s+\$\{\{\s*runner\.temp/, "macOS DMG job env must not use runner context before it is available");
 assert.match(macosDmgBuildJob, /CARGO_TARGET_DIR=\$RUNNER_TEMP\/mc-cargo-target-macos-dmg/, "macOS DMG build must configure Cargo target dir through GITHUB_ENV");
-assert.match(macosDmgBuildJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS DMG build must install both Darwin Rust targets");
+assert.match(macosDmgBuildJob, /targets:\s+aarch64-apple-darwin/, "macOS DMG build must install the Apple Silicon Rust target");
 assert.match(macosDmgBuildJob, /Download staged macOS engine archives from a release/, "macOS DMG build must support staged macOS engine release assets");
 assert.match(macosDmgBuildJob, /Download staged macOS assets from a workflow artifact/, "macOS DMG build must support staged macOS engine workflow artifacts");
-assert.match(macosDmgBuildJob, /actions\/download-artifact@v4[\s\S]*name:\s+macos-engine-assets[\s\S]*run-id:\s+\$\{\{\s*env\.ENGINE_STAGING_RUN_ID\s*\}\}/, "macOS DMG build must download the macOS engine staging artifact");
+assert.match(macosDmgBuildJob, /actions\/download-artifact@[a-f0-9]{40}[\s\S]*name:\s+macos-engine-assets[\s\S]*run-id:\s+\$\{\{\s*env\.ENGINE_STAGING_RUN_ID\s*\}\}/, "macOS DMG build must download the macOS engine staging artifact");
 assert.match(macosDmgBuildJob, /Phase 8 Engine Staging\|success\|\$GITHUB_SHA/, "macOS DMG build must verify the Phase 8 staging commit");
 assert.match(macosDmgBuildJob, /shasum -a 256 -c "\$asset\.sha256"/, "macOS DMG build must verify staged sidecar checksums");
 assert.match(macosDmgBuildJob, /--from-local-assets --asset-dir "\$asset_dir"/, "macOS DMG build must stage engine artifacts without a public release");
@@ -377,14 +377,8 @@ assert.match(macosDmgBuildJob, /npm run tauri:build:macos/, "macOS DMG build mus
 assert.match(macosDmgBuildJob, /TAURI_SIGNING_PRIVATE_KEY/, "macOS DMG build must receive updater signing credentials");
 assert.match(macosDmgBuildJob, /npm run prepare:macos-release-artifacts/, "macOS DMG build must normalize the DMG and updater release asset names");
 assert.match(macosDmgBuildJob, /npm run verify:macos-dmg/, "macOS DMG build must verify the final DMG on macOS");
-assert.match(macosDmgBuildJob, /actions\/upload-artifact@v4/, "macOS DMG build must upload the verified DMG artifact");
-assert.match(macosDmgWorkflow, /verify-intel:/, "macOS DMG workflow must verify the uploaded universal DMG on Intel");
-assert.match(macosDmgIntelVerifyJob, /needs:\s+build/, "macOS Intel DMG verification must wait for the build artifact");
-assert.match(macosDmgIntelVerifyJob, /needs\.build\.result == 'success'/, "macOS Intel DMG verification must only run after a successful build");
-assert.match(macosDmgIntelVerifyJob, /runs-on:\s+macos-15-intel/, "macOS Intel DMG verification must run on an Intel runner");
-assert.match(macosDmgIntelVerifyJob, /actions\/download-artifact@v4/, "macOS Intel DMG verification must download the exact uploaded DMG artifact");
-assert.match(macosDmgIntelVerifyJob, /name:\s+macos-release-artifacts/, "macOS Intel DMG verification must download the full macOS release artifact set");
-assert.match(macosDmgIntelVerifyJob, /npm run verify:macos-dmg -- --version "\$\{\{\s*needs\.build\.outputs\.version\s*\}\}" --dmg "\$RUNNER_TEMP\/mc-macos-release-artifacts\/\$\{\{\s*needs\.build\.outputs\.dmg_name\s*\}\}"/, "macOS Intel DMG verification must verify the same uploaded DMG artifact");
+assert.match(macosDmgBuildJob, /actions\/upload-artifact@[a-f0-9]{40}/, "macOS DMG build must upload the verified DMG artifact");
+assert.doesNotMatch(macosDmgWorkflow, /verify-intel:/, "Mac workflows must exclude Intel inputs and jobs");
 
 assert.match(macosConversionsWorkflow, /name:\s+macOS Conversion Matrix/, "macOS conversion workflow must be clearly named");
 assert.match(macosConversionsWorkflow, /workflow_dispatch:/, "macOS conversion workflow must be manually runnable");
@@ -402,18 +396,18 @@ assert.match(macosConversionsJob, /vars\.MC_MACOS_ENGINE_STAGING_RUN_ID/, "codex
 assert.match(macosConversionsJob, /name:\s+Real macOS conversion matrix \(\$\{\{\s*matrix\.arch_label\s*\}\}\)/, "macOS conversion job name must identify the tested architecture");
 assert.match(macosConversionsJob, /strategy:[\s\S]*?fail-fast:\s+false/, "macOS conversion matrix must keep architecture results independent");
 assert.match(macosConversionsJob, /arch:\s+aarch64[\s\S]*?arch_label:\s+Apple Silicon[\s\S]*?runner:\s+macos-latest/, "macOS conversion matrix must run on an Apple Silicon macOS runner");
-assert.match(macosConversionsJob, /arch:\s+x86_64[\s\S]*?arch_label:\s+Intel[\s\S]*?runner:\s+macos-15-intel/, "macOS conversion matrix must run on an Intel macOS runner");
+assert.doesNotMatch(macosConversionsJob, /arch:\s+x86_64[\s\S]*?arch_label:\s+Intel[\s\S]*?runner:\s+macos-15-intel/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosConversionsJob, /runs-on:\s+\$\{\{\s*matrix\.runner\s*\}\}/, "macOS conversion matrix must use the runner selected by the architecture matrix");
 assert.match(macosConversionsJob, /timeout-minutes:\s+180/, "macOS conversion matrix must allow enough time for real engine downloads and conversions");
-assert.match(macosConversionsJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-universal/, "macOS conversion matrix must validate macos-universal engines");
+assert.match(macosConversionsJob, /MULTI_CONVERTER_ENGINE_PLATFORM:\s+macos-aarch64/, "macOS conversion matrix must validate macos-aarch64 engines");
 assert.match(macosConversionsJob, /MACOS_CONVERSION_ARCH:\s+\$\{\{\s*matrix\.arch\s*\}\}/, "macOS conversion matrix must expose the tested architecture to logs and subprocesses");
 assert.match(macosConversionsJob, /macos-conversions-bundled-engines-\$\{\{\s*env\.ENGINE_STAGING_RUN_ID \|\| env\.ENGINE_RELEASE_TAG \|\| 'embedded-manifest'\s*\}\}/, "macOS conversion matrix bundled-engine cache must be keyed by the staged engine source");
 assert.doesNotMatch(macosConversionsJob, /restore-keys:\s*\|\r?\n\s+\$\{\{\s*runner\.os\s*\}\}-macos-conversions-bundled-engines-/, "macOS conversion matrix must not restore stale bundled-engine caches across staging runs");
 assert.doesNotMatch(macosConversionsJob, /prepare-tauri-ci-sidecars/, "macOS conversion matrix must never use compile-only placeholder sidecars");
-assert.match(macosConversionsJob, /targets:\s+aarch64-apple-darwin,x86_64-apple-darwin/, "macOS conversion matrix must install both Darwin Rust targets");
+assert.match(macosConversionsJob, /targets:\s+aarch64-apple-darwin/, "macOS conversion matrix must install the Apple Silicon Rust target");
 assert.match(macosConversionsJob, /Download staged macOS engine archives from a release/, "macOS conversion matrix must support staged macOS engine release assets");
 assert.match(macosConversionsJob, /Download staged macOS assets from a workflow artifact/, "macOS conversion matrix must support staged macOS engine workflow artifacts");
-assert.match(macosConversionsJob, /actions\/download-artifact@v4[\s\S]*name:\s+macos-engine-assets[\s\S]*run-id:\s+\$\{\{\s*env\.ENGINE_STAGING_RUN_ID\s*\}\}/, "macOS conversion matrix must download the macOS engine staging artifact");
+assert.match(macosConversionsJob, /actions\/download-artifact@[a-f0-9]{40}[\s\S]*name:\s+macos-engine-assets[\s\S]*run-id:\s+\$\{\{\s*env\.ENGINE_STAGING_RUN_ID\s*\}\}/, "macOS conversion matrix must download the macOS engine staging artifact");
 assert.match(macosConversionsJob, /Phase 8 Engine Staging\|success\|\$GITHUB_SHA/, "macOS conversion matrix must verify the Phase 8 staging commit");
 assert.match(macosConversionsJob, /shasum -a 256 -c "\$asset\.sha256"/, "macOS conversion matrix must verify staged sidecar checksums");
 assert.match(macosConversionsJob, /--from-local-assets --asset-dir "\$asset_dir"/, "macOS conversion matrix must stage engine artifacts without a public release");
@@ -448,7 +442,7 @@ assert.match(macosEngineReleaseScript, /--from-local-assets/, "macOS staged engi
 assert.match(macosEngineReleaseScript, /engines-manifest\.json/, "macOS staged engine helper must download the staged engine manifest");
 assert.match(macosEngineReleaseScript, /engine-sources", "\.bundled-engine-cache"/, "macOS staged engine helper must seed the bundled-engine cache");
 assert.match(macosEngineReleaseScript, /engine\.mode === "advanced"/, "macOS staged engine helper must write only advanced engines into the embedded manifest");
-assert.match(macosEngineReleaseScript, /No advanced macos-universal engine entries found/, "macOS staged engine helper must fail when the downloaded manifest has no advanced macOS engines");
+assert.match(macosEngineReleaseScript, /No advanced macos-aarch64 engine entries found/, "macOS staged engine helper must fail when the downloaded manifest has no advanced macOS engines");
 assert.match(macosEngineReleaseScript, /verifySha256/, "macOS staged engine helper must verify downloaded engine checksums");
 assert.match(macosLibvipsRuntimeScript, /process\.platform !== "darwin"/, "macOS libvips runtime builder must refuse non-macOS hosts");
 assert.match(macosLibvipsRuntimeScript, /brew.*--prefix.*vips/s, "macOS libvips runtime builder must package the installed Homebrew libvips formula");
@@ -458,7 +452,7 @@ assert.match(macosLibvipsRuntimeScript, /Non-portable dependency remains/, "macO
 assert.match(macosLibvipsRuntimeScript, /libvips-macos-\$\{arch\}\.tar\.gz/, "macOS libvips runtime builder must emit architecture-specific runtime archives");
 assert.match(macosLibvipsReleaseInputsScript, /gh.*release.*download/s, "macOS libvips input helper must download staged release assets through gh");
 assert.match(macosLibvipsReleaseInputsScript, /LIBVIPS_MACOS_AARCH64_SOURCE_DIR/, "macOS libvips input helper must export the Apple Silicon source directory");
-assert.match(macosLibvipsReleaseInputsScript, /LIBVIPS_MACOS_X86_64_SOURCE_DIR/, "macOS libvips input helper must export the Intel source directory");
+assert.doesNotMatch(macosLibvipsReleaseInputsScript, /LIBVIPS_MACOS_X86_64_SOURCE_DIR/, "Mac workflows must exclude Intel inputs and jobs");
 assert.match(macosLibvipsReleaseInputsScript, /bin", "vips"/, "macOS libvips input helper must find a runtime root containing bin/vips");
 assert.match(linuxSidecarScript, /verifySha256/, "Linux sidecar staging helper must verify sidecar checksums");
 assert.match(linuxSidecarScript, /placeholder sidecar rejected/, "Linux sidecar staging helper must reject compile-only placeholders");
@@ -515,6 +509,6 @@ function readWorkflow(fileName) {
 }
 
 function assertCodexTestBuildGate(job, label) {
-  const gate = /if:\s+\$\{\{\s*github\.event_name != 'push' \|\| github\.ref_name != 'codex\/test' \|\| vars\.MC_ENABLE_CODEX_TEST_BUILD == '1'\s*\}\}/;
-  assert.match(job, gate, `${label} must skip codex/test push runs unless MC_ENABLE_CODEX_TEST_BUILD=1`);
+  assert.doesNotMatch(job, /MC_ENABLE_CODEX_TEST_BUILD/, `${label} must run on the development branch without a hidden opt-in variable`);
+  assert.ok(job.includes(reviewedRustAction), `${label} must use the reviewed Rust toolchain`);
 }

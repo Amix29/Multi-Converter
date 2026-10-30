@@ -28,10 +28,10 @@ const windowsSelection = lock.platformSelections?.find((value) => value.platform
 expect(windowsSelection?.runtime === "official", "Windows doit utiliser le runtime officiel tant que le candidat natif n’est pas validé");
 expect(windowsSelection?.provider === "cpu", "DirectML ne doit pas être activé sans preuve de parité et de gain");
 expect(/^[a-f0-9]{64}$/.test(windowsSelection?.artifact?.aggregateSha256 ?? ""), "le paquet Windows doit avoir une empreinte agrégée");
-const expectedPlatforms = ["windows-x64", "macos-aarch64", "macos-x86_64", "linux-x64"];
+const expectedPlatforms = ["windows-x64", "macos-aarch64", "linux-x64"];
 expect(
   JSON.stringify(lock.platformSelections?.map((entry) => entry.platform)) === JSON.stringify(expectedPlatforms),
-  "les quatre runtimes OCR natifs doivent être déclarés explicitement",
+  "les trois runtimes OCR maintenus doivent être déclarés explicitement",
 );
 for (const platform of expectedPlatforms) {
   const selection = lock.platformSelections.find((entry) => entry.platform === platform);
@@ -40,7 +40,7 @@ for (const platform of expectedPlatforms) {
   expect(!/onnx|coreml|openvino|directml/i.test(selection?.provider ?? ""), `${platform}: accélérateur non validé`);
   expect(lock.platformBuildEnvironments?.[platform]?.python === "3.12.10", `${platform}: Python 3.12.10 requis`);
 }
-expect(lock.platformBuildEnvironments?.["macos-x86_64"]?.paddleSource === "locked-source-build", "macOS Intel doit compiler PaddlePaddle depuis la source verrouillée");
+expect(!lock.platformBuildEnvironments?.["macos-x86_64"], "macOS Intel ne doit plus avoir d’environnement OCR actif");
 const licenseInventory = JSON.parse(
   fs.readFileSync(path.join(root, "src-tauri", "ocr-runtime-licenses.json"), "utf8"),
 );
@@ -85,7 +85,7 @@ if (fs.existsSync(stagedRuntimeRoot)) {
   const allowedSets = [
     ["windows-x64.zip"],
     ["linux-x64.zip"],
-    ["macos-aarch64.zip", "macos-x86_64.zip"],
+    ["macos-aarch64.zip"],
   ];
   expect(stagedEntries.every((entry) => entry.isFile()), "les runtimes préparés doivent être des archives régulières");
   expect(allowedSets.some((set) => JSON.stringify(set) === JSON.stringify(names)), "le paquet ne doit contenir que le ou les runtimes de sa plateforme");

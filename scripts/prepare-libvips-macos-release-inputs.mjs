@@ -16,20 +16,14 @@ const assets = [
     archive: args.aarch64Archive,
     pattern: args.aarch64Asset ?? "libvips-macos-aarch64.tar.gz",
   },
-  {
-    arch: "x86_64",
-    envName: "LIBVIPS_MACOS_X86_64_SOURCE_DIR",
-    archive: args.x86_64Archive,
-    pattern: args.x86_64Asset ?? "libvips-macos-x86_64.tar.gz",
-  },
 ];
 
 const usesLocalArchives = assets.some((asset) => asset.archive);
 if (usesLocalArchives && !assets.every((asset) => asset.archive)) {
-  fail("Provide both --aarch64-archive and --x86_64-archive when using local libvips archives.");
+  fail("Provide --aarch64-archive when using a local libvips archive.");
 }
 if (!usesLocalArchives && (!tag || !repo)) {
-  fail("Missing --tag <release-tag> and --repo <owner/name>. For local files, use --aarch64-archive and --x86_64-archive.");
+  fail("Missing --tag <release-tag> and --repo <owner/name>. For local files, use --aarch64-archive.");
 }
 
 await fs.rm(outDir, { recursive: true, force: true });
@@ -121,9 +115,7 @@ function parseArgs(rawArgs) {
     else if (arg === "--repo") parsed.repo = rawArgs[++index];
     else if (arg === "--out-dir") parsed.outDir = rawArgs[++index];
     else if (arg === "--aarch64-asset") parsed.aarch64Asset = rawArgs[++index];
-    else if (arg === "--x86_64-asset") parsed.x86_64Asset = rawArgs[++index];
     else if (arg === "--aarch64-archive") parsed.aarch64Archive = rawArgs[++index];
-    else if (arg === "--x86_64-archive") parsed.x86_64Archive = rawArgs[++index];
     else fail(`Unknown argument: ${arg}`);
   }
   return parsed;

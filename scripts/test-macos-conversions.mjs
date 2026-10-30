@@ -6,14 +6,14 @@ import process from "node:process";
 const root = process.cwd();
 const binariesDir = path.join(root, "src-tauri", "binaries");
 const manifestPath = path.join(root, "src-tauri", "engines-manifest.json");
-const platform = "macos-universal";
+const platform = "macos-aarch64";
 const sidecarMarker = "Multi-Converter CI placeholder sidecar for Tauri compile checks only.";
-const requiredTriples = ["aarch64-apple-darwin", "x86_64-apple-darwin"];
+const requiredTriples = ["aarch64-apple-darwin"];
 const requiredSidecars = ["ffmpeg", "ffprobe"];
 const requiredAdvancedEngines = ["pdfium", "libreoffice", "pandoc", "libvips"];
 const failures = [];
 
-if (process.platform !== "darwin") {
+if (process.platform !== "darwin" || process.arch !== "arm64") {
   fail("Full macOS conversion validation must run on macOS. Use a real Mac or GitHub Actions macos-latest.");
 }
 
@@ -42,7 +42,7 @@ function validateSidecarInputs() {
     for (const triple of requiredTriples) {
       const filePath = path.join(binariesDir, `${stem}-${triple}`);
       validateExecutableInput(`${stem}-${triple}`, filePath);
-      validateArch(`${stem}-${triple}`, filePath, triple === "aarch64-apple-darwin" ? "arm64" : "x86_64");
+      validateArch(`${stem}-${triple}`, filePath, "arm64");
     }
   }
 }

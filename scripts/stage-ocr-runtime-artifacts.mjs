@@ -8,12 +8,12 @@ const root = process.cwd();
 const args = parseArgs(process.argv.slice(2));
 const target = args.platform;
 if (!target || !args.runtimeDir || !args.modelsDir) {
-  throw new Error("Utilisation: --platform macos-universal|linux-x64 --runtime-dir <dossier> --models-dir <dossier>");
+  throw new Error("Utilisation: --platform windows-x64|macos-aarch64|linux-x64 --runtime-dir <dossier> --models-dir <dossier>");
 }
 
-const expectedPlatforms = target === "macos-universal"
-  ? ["macos-aarch64", "macos-x86_64"]
-  : target === "linux-x64" ? ["linux-x64"] : null;
+const expectedPlatforms = ["windows-x64", "macos-aarch64", "linux-x64"].includes(target)
+  ? [target]
+  : null;
 if (!expectedPlatforms) throw new Error(`Cible OCR invalide: ${target}`);
 
 const runtimeSource = path.resolve(args.runtimeDir);

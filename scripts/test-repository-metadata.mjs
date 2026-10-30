@@ -65,12 +65,10 @@ for (const keyword of [
   "macos-converter",
   "macos-app",
   "macos-desktop-app",
-  "macos-universal",
+  "macos-apple-silicon",
   "macos-dmg",
   "mac-file-converter",
-  "universal-dmg",
   "apple-silicon",
-  "intel-mac",
   "linux",
   "linux-converter",
   "linux-app",
@@ -118,7 +116,7 @@ for (const topic of [
   "windows",
   "windows-file-converter",
   "macos",
-  "macos-universal",
+  "macos-apple-silicon",
   "apple-silicon",
   "linux",
   "linux-appimage",
@@ -148,22 +146,22 @@ assert.match(testingDocs, /Linux AppImage Build/, "testing docs must document th
 assert.match(testingDocs, /linux-x86_64/, "testing docs must document the Linux updater platform key");
 assert.match(testingDocs, /committed V1\.0\.6 evidence is complete[\s\S]*`releaseReady: true`/, "testing docs must describe the published V1.0.6 status accurately");
 assert.match(testingDocs, /V1\.0\.7[\s\S]*conversion and OCR/, "testing docs must require a new version-specific gate for V1.0.7");
-assert.match(testingDocs, /two-architecture `macOS Conversion Matrix`[\s\S]*Apple Silicon[\s\S]*Intel/, "testing docs must require macOS conversion evidence on both architectures");
+assert.match(testingDocs, /macOS Conversion Matrix[\s\S]*requires actual ARM FFmpeg/, "testing docs must require native ARM conversion evidence");
 assert.match(v107Plan, /file converter[\s\S]*PP-OCRv6_medium/, "V1.0.7 plan must preserve the conversion and local OCR scope");
 assert.match(v107Plan, /repository metadata is synchronized to `1\.0\.7`[\s\S]*version change is not a release-readiness claim/, "V1.0.7 plan must distinguish development metadata from release readiness");
 assert.match(v107Validation, /Overall gate:\s*\*\*blocked\*\*/, "V1.0.7 validation must not claim release readiness");
-assert.match(v107Ocr, /Windows implementation:\s*\*\*development checkpoint, real Tauri and extracted-package runtime exercised\*\*/, "OCR documentation must record the implemented Windows development boundary");
-assert.match(v107Ocr, /Windows NSIS build:\s*\*\*passed locally with compressed runtime resources\*\*/, "OCR documentation must record the verified local Windows build");
-assert.match(v107Ocr, /Windows packaged application smoke:\s*\*\*passed for PNG extraction, copy, cancellation and retry; complete installed matrix pending\*\*/, "OCR documentation must distinguish packaged smoke evidence from the installed matrix");
-assert.match(v107Ocr, /macOS universal and Linux x64 runtimes:\s*\*\*not built or host-tested\*\*/, "OCR documentation must keep untested platform claims blocked");
+assert.match(v107Ocr, /Windows implementation:\s*\*\*patched reference runtime built and packaged; smoke and full 40-case corpus passed\*\*/, "OCR documentation must record the verified Windows runtime boundary");
+assert.match(v107Ocr, /Windows NSIS build:\s*\*\*current audit candidate not built or installed-tested\*\*/, "OCR documentation must record the verified local Windows build");
+assert.match(v107Ocr, /Windows packaged application smoke:\s*\*\*previous checkpoint only; current application acceptance pending\*\*/, "OCR documentation must distinguish packaged smoke evidence from the installed matrix");
+assert.match(v107Ocr, /macOS Apple Silicon and Linux x64 runtimes:\s*\*\*not built or host-tested\*\*/, "OCR documentation must keep untested platform claims blocked");
 assert.match(v107Ocr, /PDF Flow[\s\S]*Image Flow And Clipboard/, "OCR documentation must cover both required user outcomes");
 assert.match(releaseNotesDraft, /Multi-Converter_1\.0\.5_linux-x64\.AppImage/, "release notes draft must name the versioned Linux AppImage");
 assert.match(releaseNotesDraft, /Linux automatic updates are enabled/, "release notes draft must mention enabled Linux automatic updates");
 assert.match(releaseNotesDraft, /Linux AppImage Build[\s\S]*Linux Conversion Matrix[\s\S]*Linux AppImage Verification/, "release notes draft must keep final Linux proof visible before publication");
 assert.match(releaseNotesDraft, /must not be published until the final downloaded Linux AppImage smoke test/i, "release notes draft must keep final Linux smoke proof visible before publication");
 assert.doesNotMatch(testingDocs, /strict gate is expected to fail until real macOS sidecars/i, "testing docs must not describe the current macOS conversion matrix as still waiting on staged engines");
-assert.match(macosChecklist, /workflow must fail if any required `macos-universal` advanced engine entry is missing/, "macOS checklist must describe missing engines as a failure condition, not as the current expected state");
-assert.match(macosChecklist, /Apple Silicon[\s\S]*Intel/, "macOS checklist must require final conversion validation on both macOS architectures");
+assert.match(macosChecklist, /No compile-only placeholders count as conversion evidence/, "Mac native gates must reject placeholder evidence");
+assert.match(macosChecklist, /aarch64-apple-darwin/, "Mac checklist must target ARM");
 assert.doesNotMatch(macosChecklist, /workflow is expected to fail until all required `macos-universal` advanced engine entries exist/i, "macOS checklist must not say the conversion matrix is still expected to fail");
 assert.match(secretLeakScript, /private test repository reference/, "secret leak scan must reject private test repository references");
 assert.match(secretLeakScript, /maintainer local Windows path/, "secret leak scan must reject maintainer-local Windows paths");

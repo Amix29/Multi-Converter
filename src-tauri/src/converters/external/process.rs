@@ -40,19 +40,24 @@ fn run_external_command_inner(
     progress: Option<ExternalCommandProgress<'_>>,
 ) -> Result<()> {
     configure_child_process(command);
-    let mut child = command
-        .stdin(Stdio::null())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()?;
+    let mut child = crate::process_support::ManagedChild::new(
+        command
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()?,
+    );
     let mut stdout_reader = child.stdout.take().map(drain_child_output);
     let mut stderr_reader = child.stderr.take().map(drain_child_output);
     let started = std::time::Instant::now();
-    let mut last_progress_emit = std::time::Instant::now();
-    let mut last_progress = progress
-        .as_ref()
-        .map(|progress| progress.start)
-        .unwrap_or(0);
+    if let Some(progress) = progress.as_ref() {
+        emit_progress(
+            progress.app,
+            progress.job_id,
+            progress.start,
+            progress.phase,
+        );
+    }
     let status = loop {
         match child.try_wait() {
             Ok(Some(status)) => break status,
@@ -78,27 +83,14 @@ fn run_external_command_inner(
                 "{label} ne répond pas pendant la conversion."
             )));
         }
-        if let Some(progress) = progress.as_ref()
-            && last_progress_emit.elapsed() >= Duration::from_millis(850)
-        {
-            let elapsed_ms = started.elapsed().as_millis().min(timeout.as_millis()) as u64;
-            let timeout_ms = timeout.as_millis().max(1) as u64;
-            let span = progress.max.saturating_sub(progress.start).max(1) as u64;
-            let estimated = progress
-                .start
-                .saturating_add(((elapsed_ms * span) / timeout_ms) as u8);
-            let next = estimated.max(last_progress).min(progress.max);
-            if next > last_progress {
-                last_progress = next;
-                emit_progress(progress.app, progress.job_id, next, progress.phase);
-            }
-            last_progress_emit = std::time::Instant::now();
-        }
         std::thread::sleep(Duration::from_millis(150));
     };
     let stdout = join_child_output(stdout_reader);
     let stderr = join_child_output(stderr_reader);
     if status.success() {
+        if let Some(progress) = progress.as_ref() {
+            emit_progress(progress.app, progress.job_id, progress.max, progress.phase);
+        }
         return Ok(());
     }
     let stderr = String::from_utf8_lossy(&stderr);

@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-30",
+  "sourceBase": "24303e4872a2d6798269e14e0dc0dfb4f4eabfc1",
+  "workBranch": "codex/converter-audit-apple-silicon",
+  "integrationBranch": "codex/test",
+  "publication": false,
+  "targets": [
+    "windows-x64",
+    "macos-aarch64",
+    "linux-x64"
+  ],
+  "npmApplication": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "npmSite": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "cargo": {
+    "vulnerabilityCount": 0,
+    "ignored": [],
+    "warnings": [
+      {
+        "kind": "unmaintained",
+        "package": "paste",
+        "version": "1.0.15",
+        "advisory": "RUSTSEC-2024-0436",
+        "title": "paste - no longer maintained"
+      },
+      {
+        "kind": "unmaintained",
+        "package": "proc-macro-error",
+        "version": "1.0.4",
+        "advisory": "RUSTSEC-2024-0370",
+        "title": "proc-macro-error is unmaintained"
+      },
+      {
+        "kind": "unmaintained",
+        "package": "rustybuzz",
+        "version": "0.20.1",
+        "advisory": "RUSTSEC-2026-0206",
+        "title": "`rustybuzz` is unmaintained"
+      },
+      {
+        "kind": "unmaintained",
+        "package": "ttf-parser",
+        "version": "0.25.1",
+        "advisory": "RUSTSEC-2026-0192",
+        "title": "`ttf-parser` is unmaintained"
+      },
+      {
+        "kind": "unmaintained",
+        "package": "zbus_names",
+        "version": "4.3.3",
+        "advisory": "RUSTSEC-2026-0371",
+        "title": "`zbus_names` is unmaintained"
+      },
+      {
+        "kind": "unmaintained",
+        "package": "zvariant",
+        "version": "5.13.0",
+        "advisory": "RUSTSEC-2026-0370",
+        "title": "`zvariant` is unmaintained"
+      },
+      {
+        "kind": "unmaintained",
+        "package": "zvariant_derive",
+        "version": "5.13.0",
+        "advisory": "RUSTSEC-2026-0372",
+        "title": "`zvariant_derive` is unmaintained"
+      },
+      {
+        "kind": "unsound",
+        "package": "glib",
+        "version": "0.18.5",
+        "advisory": "RUSTSEC-2024-0429",
+        "title": "Unsoundness in `Iterator` and `DoubleEndedIterator` impls for `glib::VariantStrIter`"
+      },
+      {
+        "kind": "yanked",
+        "package": "chacha20",
+        "version": "0.10.1"
+      },
+      {
+        "kind": "yanked",
+        "package": "clipboard-win",
+        "version": "5.4.1"
+      }
+    ]
+  },
+  "pdfiumWrapper": {
+    "vulnerabilityCount": 0,
+    "ignored": [],
+    "warnings": [
+      {
+        "kind": "unmaintained",
+        "package": "paste",
+        "version": "1.0.15",
+        "advisory": "RUSTSEC-2024-0436",
+        "title": "paste - no longer maintained"
+      },
+      {
+        "kind": "unmaintained",
+        "package": "ttf-parser",
+        "version": "0.25.1",
+        "advisory": "RUSTSEC-2026-0192",
+        "title": "`ttf-parser` is unmaintained"
+      },
+      {
+        "kind": "yanked",
+        "package": "chacha20",
+        "version": "0.10.1"
+      }
+    ]
+  },
+  "pythonAudits": {
+    "platforms": 3,
+    "knownVulnerabilities": 0
+  },
+  "rust": {
+    "unitTests": 171,
+    "ignoredTests": 11,
+    "nativeConversionGroups": 10,
+    "archiveExtraction": true,
+    "notes": "Ignored conversion groups and archive extraction exercised separately; Tokio 1.53.3 follow-up gate recorded in ledger."
+  },
+  "frontend": {
+    "unitTests": 47,
+    "browserPassed": 12,
+    "browserDeclaredExclusions": 10,
+    "mockRuntime": true
+  },
+  "ocr": {
+    "corpus": "ocr-corpus-windows.json",
+    "oneShotFrenchAccuracy": 1,
+    "oneShotFrenchMs": 54155
+  },
+  "nativeAcceptance": {
+    "installedWindows": false,
+    "macosAppleSilicon": false,
+    "linux": false
+  },
+  "overallReleaseGate": "blocked"
+}

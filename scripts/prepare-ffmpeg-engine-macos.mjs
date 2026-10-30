@@ -11,7 +11,7 @@ import { ffmpegVersionFromEnv } from "./lib/ffmpeg-version.mjs";
 const root = process.cwd();
 const downloads = path.join(root, "engine-sources", ".downloads");
 const extracts = path.join(root, "engine-sources", ".extracts");
-const platformRoot = path.join(root, "engine-sources", "macos-universal");
+const platformRoot = path.join(root, "engine-sources", "macos-aarch64");
 const userAgent = { "User-Agent": "Multi-Converter-Packager" };
 const expectedVersion = ffmpegVersionFromEnv("FFMPEG_MACOS_EXPECTED_VERSION", root);
 const archInputs = [
@@ -26,21 +26,10 @@ const archInputs = [
     ffprobeUrlEnv: "FFPROBE_MACOS_AARCH64_ARCHIVE_URL",
     ffprobeShaEnv: "FFPROBE_MACOS_AARCH64_ARCHIVE_SHA256",
   },
-  {
-    arch: "x86_64",
-    triple: "x86_64-apple-darwin",
-    lipoArch: "x86_64",
-    archiveEnv: "FFMPEG_MACOS_X86_64_ARCHIVE",
-    urlEnv: "FFMPEG_MACOS_X86_64_ARCHIVE_URL",
-    shaEnv: "FFMPEG_MACOS_X86_64_ARCHIVE_SHA256",
-    ffprobeArchiveEnv: "FFPROBE_MACOS_X86_64_ARCHIVE",
-    ffprobeUrlEnv: "FFPROBE_MACOS_X86_64_ARCHIVE_URL",
-    ffprobeShaEnv: "FFPROBE_MACOS_X86_64_ARCHIVE_SHA256",
-  },
 ];
 
-if (process.platform !== "darwin") {
-  throw new Error("macOS FFmpeg engine preparation must run on macOS so lipo can create universal sidecars.");
+if (process.platform !== "darwin" || process.arch !== "arm64") {
+  throw new Error("macOS FFmpeg preparation must run on Apple Silicon.");
 }
 
 requireCommand("xcrun", ["-find", "lipo"]);
@@ -97,12 +86,10 @@ for (const item of prepared) {
   await stageBinary("ffprobe", item.ffprobe, `bin/ffprobe-${item.triple}`);
 }
 
-await createUniversal("ffmpeg");
-await createUniversal("ffprobe");
 await stageNotices(prepared);
 
-await smokeTestVersion(path.join(platformRoot, "ffmpeg", "bin", "ffmpeg-universal-apple-darwin"), "ffmpeg");
-await smokeTestVersion(path.join(platformRoot, "ffprobe", "bin", "ffprobe-universal-apple-darwin"), "ffprobe");
+await smokeTestVersion(path.join(platformRoot, "ffmpeg", "bin", "ffmpeg-aarch64-apple-darwin"), "ffmpeg");
+await smokeTestVersion(path.join(platformRoot, "ffprobe", "bin", "ffprobe-aarch64-apple-darwin"), "ffprobe");
 
 console.log(`macOS FFmpeg/ffprobe ready for ${expectedVersion}.`);
 
@@ -198,17 +185,6 @@ async function stageBinary(engineId, source, relative) {
   await fs.chmod(target, 0o755);
 }
 
-async function createUniversal(stem) {
-  const engineRoot = path.join(platformRoot, stem);
-  const arm64 = path.join(engineRoot, "bin", `${stem}-aarch64-apple-darwin`);
-  const x64 = path.join(engineRoot, "bin", `${stem}-x86_64-apple-darwin`);
-  const universal = path.join(engineRoot, "bin", `${stem}-universal-apple-darwin`);
-  run("lipo", ["-create", arm64, x64, "-output", universal]);
-  await fs.chmod(universal, 0o755);
-  run("lipo", [universal, "-verify_arch", "arm64"]);
-  run("lipo", [universal, "-verify_arch", "x86_64"]);
-}
-
 async function stageNotices(items) {
   const license = process.env.FFMPEG_MACOS_LICENSE_FILE?.trim()
     ? path.resolve(process.env.FFMPEG_MACOS_LICENSE_FILE)
@@ -223,7 +199,7 @@ async function stageNotices(items) {
     ? path.resolve(process.env.FFMPEG_MACOS_NOTICES_FILE)
     : await findAny(extractDirs(items), ["README.txt", "README.md", "README", "RELEASE_NOTES", "NOTICE"]);
   const noticeText = [
-    "FFmpeg/ffprobe macOS universal package",
+    "FFmpeg/ffprobe macOS Apple Silicon package",
     ...items.flatMap((item) => [
       `${item.arch} ffmpeg source: ${publicSourceLabel(item.source.url ?? item.source.archivePath)}`,
       `${item.arch} ffprobe source: ${publicSourceLabel(item.ffprobeSource?.url ?? item.ffprobeSource?.archivePath ?? item.source.url ?? item.source.archivePath)}`,

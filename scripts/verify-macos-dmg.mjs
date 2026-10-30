@@ -9,10 +9,10 @@ const root = process.cwd();
 const args = parseArgs(process.argv.slice(2));
 const version = args.version ?? readPackageVersion();
 const dmgPath = args.dmg ? path.resolve(args.dmg) : fail("Missing --dmg <path>.");
-const expectedDmgName = `Multi-Converter_${version}_macos-universal.dmg`;
+const expectedDmgName = `Multi-Converter_${version}_macos-aarch64.dmg`;
 const expectedSidecarVersion = readRequiredFfmpegVersion(root);
 
-if (process.platform !== "darwin") {
+if (process.platform !== "darwin" || process.arch !== "arm64") {
   fail("macOS DMG verification must run on macOS. Use GitHub Actions macos-latest or a real Mac.");
 }
 if (!version.match(/^\d+\.\d+\.\d+$/)) {
@@ -49,7 +49,7 @@ try {
   const executableName = info.CFBundleExecutable || "Multi-Converter";
   const appExecutable = path.join(appPath, "Contents", "MacOS", executableName);
   assertExecutable(appExecutable, "app executable");
-  verifyUniversalBinary(appExecutable, "app executable");
+  verifyArm64Binary(appExecutable, "app executable");
   const ffmpeg = verifySidecar(appPath, "ffmpeg");
   const ffprobe = verifySidecar(appPath, "ffprobe");
   verifyBundledEngines(appPath);
@@ -70,7 +70,7 @@ function verifyOcrResources(appPath) {
   const lock = readJson(path.join(root, "src-tauri", "ocr-runtime-lock.json"), "Unable to read OCR runtime lock");
   const ocrRoot = path.join(appPath, "Contents", "Resources", "ocr");
   const runtimeRoot = path.join(ocrRoot, "runtime");
-  const expected = ["macos-aarch64.zip", "macos-x86_64.zip"];
+  const expected = ["macos-aarch64.zip"];
   const archives = fs.readdirSync(runtimeRoot, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith(".zip"))
     .map((entry) => entry.name)
@@ -104,9 +104,9 @@ function verifySidecar(appPath, stem) {
   if (!candidates.length) {
     fail(`Missing ${stem} sidecar in app bundle.`);
   }
-  const nonUniversal = candidates.find((candidate) => !hasArchitectures(candidate, "arm64", "x86_64"));
-  if (nonUniversal) {
-    fail(`${stem} sidecar is runtime-resolvable but not universal arm64 + x86_64: ${path.relative(appPath, nonUniversal)}`);
+  const invalid = candidates.find((candidate) => !hasArchitectures(candidate, "arm64"));
+  if (invalid) {
+    fail(`${stem} sidecar is runtime-resolvable but not Apple Silicon arm64: ${path.relative(appPath, invalid)}`);
   }
   const selected = candidates[0];
   assertExecutable(selected, `${stem} sidecar`);
@@ -114,16 +114,12 @@ function verifySidecar(appPath, stem) {
 }
 
 function sidecarRuntimeCandidates(appPath, stem) {
-  const binaryName = `${stem}-${process.arch === "arm64" ? "aarch64" : "x86_64"}-apple-darwin`;
-  const universalName = `${stem}-universal-apple-darwin`;
+  const binaryName = `${stem}-aarch64-apple-darwin`;
   const ordered = [
     path.join(appPath, "Contents", "MacOS", stem),
-    path.join(appPath, "Contents", "MacOS", universalName),
     path.join(appPath, "Contents", "MacOS", binaryName),
     path.join(appPath, "Contents", "Resources", stem),
-    path.join(appPath, "Contents", "Resources", universalName),
     path.join(appPath, "Contents", "Resources", binaryName),
-    path.join(appPath, "Contents", "Resources", "binaries", universalName),
     path.join(appPath, "Contents", "Resources", "binaries", binaryName),
   ];
   return ordered.filter((candidate, index, all) => (
@@ -152,8 +148,8 @@ function verifyBundledEngines(appPath) {
 
   for (const metadataPath of metadataFiles) {
     const metadata = readJson(metadataPath, `Unable to read bundled engine metadata: ${path.relative(appPath, metadataPath)}`);
-    if (metadata.platform !== "macos-universal") {
-      fail(`Bundled engine metadata targets ${metadata.platform ?? "<missing>"} instead of macos-universal: ${path.relative(appPath, metadataPath)}`);
+    if (metadata.platform !== "macos-aarch64") {
+      fail(`Bundled engine metadata targets ${metadata.platform ?? "<missing>"} instead of macos-aarch64: ${path.relative(appPath, metadataPath)}`);
     }
     if (!metadata.engineId || !metadata.version) {
       fail(`Bundled engine metadata is missing engineId or version: ${path.relative(appPath, metadataPath)}`);
@@ -177,9 +173,9 @@ function hasArchitectures(filePath, ...architectures) {
   return result.status === 0;
 }
 
-function verifyUniversalBinary(filePath, label) {
-  if (!hasArchitectures(filePath, "arm64", "x86_64")) {
-    fail(`${label} is not universal arm64 + x86_64: ${filePath}`);
+function verifyArm64Binary(filePath, label) {
+  if (!hasArchitectures(filePath, "arm64")) {
+    fail(`${label} is not Apple Silicon arm64: ${filePath}`);
   }
 }
 

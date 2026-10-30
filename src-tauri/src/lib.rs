@@ -1,3 +1,6 @@
+#[cfg(all(target_os = "macos", not(target_arch = "aarch64")))]
+compile_error!("Multi-Converter supports macOS on Apple Silicon (aarch64) only.");
+
 mod commands;
 mod converters;
 mod engine_archive;
@@ -22,8 +25,8 @@ pub fn run() {
             runtime_log::write("startup", "Multi-Converter starting");
             cleanup_stale_temp_output_folders();
             cleanup_stale_clipboard_folders();
-            if let Err(error) = engine_distribution::cleanup_stale_installing_dirs() {
-                runtime_log::write("cleanup", &format!("engine cleanup failed: {error}"));
+            if engine_distribution::cleanup_stale_installing_dirs().is_err() {
+                runtime_log::write("cleanup", "engine cleanup failed");
             }
             Ok(())
         })

@@ -42,7 +42,7 @@ assert.match(tauriSchema, /binary-name\{-target-triple\}/, "Tauri externalBin sc
 assert.equal(packageJson.scripts["test:macos:host"], "node scripts/test-macos-host.mjs", "macOS host test script must be exposed through npm");
 assert.equal(packageJson.scripts["test:macos:conversions"], "node scripts/test-macos-conversions.mjs", "macOS conversion test script must be exposed through npm");
 assert.equal(packageJson.scripts["verify:macos-dmg"], "node scripts/verify-macos-dmg.mjs", "macOS DMG verification script must be exposed through npm");
-assert.match(packageJson.scripts["tauri:build:macos"], /--target universal-apple-darwin/, "macOS build must target universal-apple-darwin");
+assert.match(packageJson.scripts["tauri:build:macos"], /--target aarch64-apple-darwin/, "macOS build must target aarch64-apple-darwin");
 assert.match(packageJson.scripts["tauri:build:macos"], /--bundles app,dmg/, "macOS build must produce both the app updater archive and the DMG installer");
 assert.match(packageJson.scripts["package:macos-engines"], /engine-packages\.macos\.config\.json/, "macOS engine packaging script must use the macOS engine config");
 assert.equal(packageJson.scripts["prepare:macos-local-engines"], "node scripts/prepare-macos-local-engines.mjs", "local macOS engine staging script must be exposed through npm");
@@ -58,7 +58,7 @@ assert.doesNotMatch(packageJson.scripts["prepare:macos-upstream-engines"], /prep
 assert.doesNotMatch(packageJson.scripts["prepare:macos-upstream-engines"], /prepare:libvips-engine:macos/, "macOS upstream preparation must not silently copy Homebrew-style libvips trees");
 assert.match(
   fs.readFileSync(path.join(root, "scripts", "run-tauri.mjs"), "utf8"),
-  /macOS universal DMG builds must run on macOS/,
+  /macOS Apple Silicon DMG builds must run on an Apple Silicon Mac/,
   "Tauri wrapper must refuse universal macOS DMG builds on non-macOS hosts",
 );
 assert.match(macosHostTest, /process\.platform !== "darwin"/, "macOS host validation must refuse non-macOS hosts");
@@ -75,9 +75,9 @@ for (const [scriptName, scriptText] of Object.entries({
 })) {
   assert.doesNotMatch(scriptText, /\[\s*"-verify_arch"/, `${scriptName} must pass the input file before lipo -verify_arch`);
 }
-assert.match(macosHostTest, /verifySidecarVersion\(universal, stem\)/, "macOS host validation must smoke-test universal sidecars");
+assert.match(macosHostTest, /verifySidecarVersion\(arm64, stem\)/, "macOS host validation must smoke-test universal sidecars");
 assert.match(macosHostTest, /from "\.\/lib\/ffmpeg-version\.mjs"/, "macOS host validation must read the canonical FFmpeg version from Rust");
-assert.match(macosHostTest, /MULTI_CONVERTER_ENGINE_PLATFORM:\s*"macos-universal"/, "macOS host validation must run bundled-engine validation as macos-universal");
+assert.match(macosHostTest, /MULTI_CONVERTER_ENGINE_PLATFORM:\s*"macos-aarch64"/, "macOS host validation must run bundled-engine validation as macos-aarch64");
 assert.match(macosConversionTest, /process\.platform !== "darwin"/, "macOS conversion validation must refuse non-macOS hosts");
 assert.match(macosConversionTest, /sidecarMarker = "Multi-Converter CI placeholder sidecar for Tauri compile checks only\."/,
   "macOS conversion validation must know the CI placeholder sidecar marker");
@@ -99,54 +99,54 @@ assert.doesNotMatch(macosConversionTest, /prepare-tauri-ci-sidecars/, "macOS con
 assert.match(macosConversionTest, /This gate is intentionally strict/, "macOS conversion validation failure must explain why strictness matters");
 assert.match(macosFfmpegPrepare, /process\.platform !== "darwin"/, "macOS FFmpeg preparation must refuse non-macOS hosts");
 assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_AARCH64_ARCHIVE_URL/, "macOS FFmpeg preparation must accept an Apple Silicon source URL");
-assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_X86_64_ARCHIVE_URL/, "macOS FFmpeg preparation must accept an Intel source URL");
+assert.doesNotMatch(macosFfmpegPrepare, /FFMPEG_MACOS_X86_64_ARCHIVE_URL/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256/, "macOS FFmpeg preparation must require a pinned Apple Silicon archive checksum");
-assert.match(macosFfmpegPrepare, /FFMPEG_MACOS_X86_64_ARCHIVE_SHA256/, "macOS FFmpeg preparation must require a pinned Intel archive checksum");
+assert.doesNotMatch(macosFfmpegPrepare, /FFMPEG_MACOS_X86_64_ARCHIVE_SHA256/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosFfmpegPrepare, /FFPROBE_MACOS_AARCH64_ARCHIVE_URL/, "macOS FFmpeg preparation must accept a separate Apple Silicon ffprobe archive URL");
-assert.match(macosFfmpegPrepare, /FFPROBE_MACOS_X86_64_ARCHIVE_URL/, "macOS FFmpeg preparation must accept a separate Intel ffprobe archive URL");
+assert.doesNotMatch(macosFfmpegPrepare, /FFPROBE_MACOS_X86_64_ARCHIVE_URL/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosFfmpegPrepare, /FFPROBE_MACOS_AARCH64_ARCHIVE_SHA256/, "macOS FFmpeg preparation must require a pinned Apple Silicon ffprobe checksum when ffprobe is separate");
-assert.match(macosFfmpegPrepare, /FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "macOS FFmpeg preparation must require a pinned Intel ffprobe checksum when ffprobe is separate");
+assert.doesNotMatch(macosFfmpegPrepare, /FFPROBE_MACOS_X86_64_ARCHIVE_SHA256/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosFfmpegPrepare, /readOptionalFfprobeSource/, "macOS FFmpeg preparation must support separate ffprobe archives");
 assert.match(macosFfmpegPrepare, /ffprobeExtractDir/, "macOS FFmpeg preparation must extract separate ffprobe archives independently");
 assert.match(macosFfmpegPrepare, /does not choose a third-party FFmpeg binary provider automatically/, "macOS FFmpeg preparation must not pick a third-party binary provider silently");
 assert.match(macosFfmpegPrepare, /from "\.\/lib\/ffmpeg-version\.mjs"/, "macOS FFmpeg preparation must default to the canonical FFmpeg version from Rust");
-assert.match(macosFfmpegPrepare, /lipo.*-create/s, "macOS FFmpeg preparation must create universal sidecars with lipo");
-assert.match(macosFfmpegPrepare, /ffmpeg-universal-apple-darwin/, "macOS FFmpeg preparation must stage the universal FFmpeg sidecar name used by Tauri");
-assert.match(macosFfmpegPrepare, /ffprobe-universal-apple-darwin/, "macOS FFmpeg preparation must stage the universal ffprobe sidecar name used by Tauri");
+assert.doesNotMatch(macosFfmpegPrepare, /lipo.*-create/s, "Apple Silicon sidecars must not synthesize universal binaries");
+assert.match(macosFfmpegPrepare, /ffmpeg-aarch64-apple-darwin/, "macOS FFmpeg preparation must stage the universal FFmpeg sidecar name used by Tauri");
+assert.match(macosFfmpegPrepare, /ffprobe-aarch64-apple-darwin/, "macOS FFmpeg preparation must stage the universal ffprobe sidecar name used by Tauri");
 assert.match(macosFfmpegPrepare, /smokeTestVersion\(.*"ffmpeg"/s, "macOS FFmpeg preparation must smoke-test FFmpeg");
 assert.match(macosFfmpegPrepare, /smokeTestVersion\(.*"ffprobe"/s, "macOS FFmpeg preparation must smoke-test ffprobe");
 assert.match(macosPdfiumPrepare, /process\.platform !== "darwin"/, "macOS PDFium preparation must refuse non-macOS hosts");
-assert.match(macosPdfiumPrepare, /lockedPdfiumPlatform\("macos-universal"/, "macOS PDFium preparation must use the centralized provenance lock");
+assert.match(macosPdfiumPrepare, /lockedPdfiumPlatform\("macos-aarch64"/, "macOS PDFium preparation must use the centralized provenance lock");
 assert.match(macosPdfiumPrepare, /downloadIfMissingVerified\(/, "macOS PDFium preparation must verify the locked archive before extraction");
 assert.match(macosPdfiumPrepare, /asset\.archiveName/, "macOS PDFium preparation must use the archive name from the provenance lock");
 assert.match(macosPdfiumPrepare, /asset\.sha256/, "macOS PDFium preparation must require the SHA-256 from the provenance lock");
 assert.match(macosPdfiumPrepare, /assertLockedLibrary\(dylib, asset\)/, "macOS PDFium preparation must verify the extracted library against the provenance lock");
 assert.match(macosPdfiumPrepare, /aarch64-apple-darwin/, "macOS PDFium wrapper must build for Apple Silicon");
-assert.match(macosPdfiumPrepare, /x86_64-apple-darwin/, "macOS PDFium wrapper must build for Intel");
-assert.match(macosPdfiumPrepare, /lipo.*-create/s, "macOS PDFium preparation must create a universal wrapper with lipo");
-assert.match(macosPdfiumPrepare, /pdfium-render-universal-apple-darwin/, "macOS PDFium preparation must stage the universal wrapper name used by the engine config");
+assert.doesNotMatch(macosPdfiumPrepare, /x86_64-apple-darwin/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
+assert.doesNotMatch(macosPdfiumPrepare, /lipo.*-create/s, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
+assert.match(macosPdfiumPrepare, /pdfium-render-aarch64-apple-darwin/, "macOS PDFium preparation must stage the universal wrapper name used by the engine config");
 assert.match(macosLibreOfficePrepare, /process\.platform !== "darwin"/, "macOS LibreOffice preparation must refuse non-macOS hosts");
 assert.match(macosLibreOfficePrepare, /LibreOffice_\$\{version\}_MacOS_aarch64\.dmg/, "macOS LibreOffice preparation must use the official Apple Silicon DMG name");
-assert.match(macosLibreOfficePrepare, /LibreOffice_\$\{version\}_MacOS_x86-64\.dmg/, "macOS LibreOffice preparation must use the official Intel DMG name");
+assert.doesNotMatch(macosLibreOfficePrepare, /LibreOffice_\$\{version\}_MacOS_x86-64\.dmg/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosLibreOfficePrepare, /LIBREOFFICE_MACOS_AARCH64_DMG_SHA256/, "macOS LibreOffice preparation must require the pinned Apple Silicon DMG checksum");
-assert.match(macosLibreOfficePrepare, /LIBREOFFICE_MACOS_X86_64_DMG_SHA256/, "macOS LibreOffice preparation must require the pinned Intel DMG checksum");
+assert.doesNotMatch(macosLibreOfficePrepare, /LIBREOFFICE_MACOS_X86_64_DMG_SHA256/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosLibreOfficePrepare, /hdiutil.*attach/s, "macOS LibreOffice preparation must mount official DMGs with hdiutil");
 assert.match(macosLibreOfficePrepare, /arch:\s+"aarch64"/, "macOS LibreOffice preparation must stage Apple Silicon app bundle input");
-assert.match(macosLibreOfficePrepare, /arch:\s+"x86_64"/, "macOS LibreOffice preparation must stage Intel app bundle input");
+assert.doesNotMatch(macosLibreOfficePrepare, /arch:\s+"x86_64"/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosLibreOfficePrepare, /path\.join\(sourceDir,\s+input\.arch,\s+"LibreOffice\.app"\)/, "macOS LibreOffice preparation must stage app bundles under the architecture directory");
 assert.match(macosLibreOfficePrepare, /--terminate_after_init/, "macOS LibreOffice preparation must smoke-test headless startup");
 assert.match(macosPandocPrepare, /process\.platform !== "darwin"/, "macOS Pandoc preparation must refuse non-macOS hosts");
 assert.match(macosPandocPrepare, /function githubApiHeaders\(\)/, "macOS Pandoc preparation must use authenticated GitHub API headers when a token is available");
 assert.match(macosPandocPrepare, /process\.env\.GH_TOKEN/, "macOS Pandoc preparation must read the GitHub Actions token from GH_TOKEN");
 assert.match(macosPandocPrepare, /arm64-macOS\\.zip/, "macOS Pandoc preparation must use the official Apple Silicon ZIP");
-assert.match(macosPandocPrepare, /x86_64-macOS\\.zip/, "macOS Pandoc preparation must use the official Intel ZIP");
+assert.doesNotMatch(macosPandocPrepare, /x86_64-macOS\\.zip/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosPandocPrepare, /PANDOC_MACOS_AARCH64_ARCHIVE_SHA256/, "macOS Pandoc preparation must require the pinned Apple Silicon archive checksum");
-assert.match(macosPandocPrepare, /PANDOC_MACOS_X86_64_ARCHIVE_SHA256/, "macOS Pandoc preparation must require the pinned Intel archive checksum");
-assert.match(macosPandocPrepare, /lipo.*-create/s, "macOS Pandoc preparation must create a universal binary with lipo");
-assert.match(macosPandocPrepare, /pandoc-universal-apple-darwin/, "macOS Pandoc preparation must stage the universal binary name used by the engine config");
+assert.doesNotMatch(macosPandocPrepare, /PANDOC_MACOS_X86_64_ARCHIVE_SHA256/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
+assert.doesNotMatch(macosPandocPrepare, /lipo.*-create/s, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
+assert.match(macosPandocPrepare, /pandoc-aarch64-apple-darwin/, "macOS Pandoc preparation must stage the universal binary name used by the engine config");
 assert.match(macosLibvipsPrepare, /process\.platform !== "darwin"/, "macOS libvips preparation must refuse non-macOS hosts");
 assert.match(macosLibvipsPrepare, /LIBVIPS_MACOS_AARCH64_SOURCE_DIR/, "macOS libvips preparation must require an Apple Silicon portable source tree");
-assert.match(macosLibvipsPrepare, /LIBVIPS_MACOS_X86_64_SOURCE_DIR/, "macOS libvips preparation must require an Intel portable source tree");
+assert.doesNotMatch(macosLibvipsPrepare, /LIBVIPS_MACOS_X86_64_SOURCE_DIR/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosLibvipsPrepare, /otool.*-L/s, "macOS libvips preparation must inspect dynamic library links");
 assert.match(macosLibvipsPrepare, /\/opt\/homebrew\//, "macOS libvips preparation must reject Homebrew absolute links");
 assert.match(macosLibvipsPrepare, /if \(value\.startsWith\("\/"\)\) return false/, "macOS libvips preparation must reject non-system absolute dynamic links");
@@ -156,7 +156,7 @@ assert.match(macosLibvipsRuntimeBuild, /spawnSync\("file", \["-b", filePath\]/, 
 assert.doesNotMatch(macosLibvipsRuntimeBuild, /spawnSync\("otool", \["-hv", filePath\]/, "macOS libvips runtime builder must not classify non-code library files through otool -hv");
 assert.match(macosLibvipsRuntimeBuild, /await fs\.symlink\(targetLink \|\| path\.basename\(real\), target\)/, "macOS libvips runtime builder must preserve internal Homebrew symlinks");
 assert.match(macosLibvipsInputPrepare, /--aarch64-archive/, "macOS libvips input preparation must accept local Apple Silicon archives");
-assert.match(macosLibvipsInputPrepare, /--x86_64-archive/, "macOS libvips input preparation must accept local Intel archives");
+assert.doesNotMatch(macosLibvipsInputPrepare, /--x86_64-archive/, "Apple Silicon packaging must exclude Intel inputs and universal synthesis");
 assert.match(macosLocalEnginesPrepare, /process\.platform !== "darwin"/, "local macOS engine staging must refuse non-macOS hosts");
 assert.match(macosLocalEnginesPrepare, /prepare:ffmpeg-engine:macos/, "local macOS engine staging must prepare real FFmpeg sidecars");
 assert.match(macosLocalEnginesPrepare, /prepare:macos-upstream-engines/, "local macOS engine staging must prepare upstream advanced engines");
@@ -164,7 +164,7 @@ assert.match(macosLocalEnginesPrepare, /prepare-libvips-macos-release-inputs\.mj
 assert.match(macosLocalEnginesPrepare, /package:macos-engines/, "local macOS engine staging must package macOS engine archives");
 assert.match(macosLocalEnginesPrepare, /src-tauri", "engines-manifest\.json"/, "local macOS engine staging must copy the generated manifest for local validation");
 assert.match(macosLocalEnginesPrepare, /engine\.mode === "advanced"/, "local macOS engine staging must write only advanced engines into the embedded manifest");
-assert.match(macosLocalEnginesPrepare, /Packaged manifest does not contain advanced macos-universal engine entries/, "local macOS engine staging must fail when no advanced macOS engines are present");
+assert.match(macosLocalEnginesPrepare, /Packaged manifest does not contain advanced macos-aarch64 engine entries/, "local macOS engine staging must fail when no advanced macOS engines are present");
 assert.match(macosLocalEnginesPrepare, /\.bundled-engine-cache/, "local macOS engine staging must seed the bundled engine cache");
 assert.match(macosLocalEnginesPrepare, /Restored src-tauri\/engines-manifest\.json after local macOS validation/, "local macOS engine staging must restore the committed manifest by default");
 assert.match(macosLocalEnginesPrepare, /--keep-generated-manifest/, "local macOS engine staging must require an explicit flag to keep the generated manifest");
@@ -180,11 +180,11 @@ assert.match(macosDmgVerify, /Contents", "MacOS"/, "macOS DMG verification must 
 assert.match(macosDmgVerify, /Contents", "Resources"/, "macOS DMG verification must check Contents/Resources for sidecars");
 assert.match(macosDmgVerify, /codesign.*--verify/s, "macOS DMG verification must verify the app signature");
 assert.match(macosDmgVerify, /lipo.*-verify_arch/s, "macOS DMG verification must verify universal binaries");
-assert.match(macosDmgVerify, /runtime-resolvable but not universal arm64 \+ x86_64/, "macOS DMG verification must reject decoy sidecars when an earlier runtime candidate is not universal");
+assert.match(macosDmgVerify, /runtime-resolvable but not Apple Silicon arm64/, "macOS DMG verification must reject a decoy before a valid sidecar");
 assert.match(macosDmgVerify, /codesign[\s\S]*verifySidecarVersion\(ffmpeg, "ffmpeg"\)/, "macOS DMG verification must verify code signature before executing sidecar smoke tests");
 assert.match(macosDmgVerify, /function verifyBundledEngines\(appPath\)/, "macOS DMG verification must inspect bundled engine resources");
 assert.match(macosDmgVerify, /Windows-only bundled engine resource found in macOS app bundle/, "macOS DMG verification must reject Windows-only engine files");
-assert.match(macosDmgVerify, /metadata\.platform !== "macos-universal"/, "macOS DMG verification must reject non-macOS engine metadata");
+assert.match(macosDmgVerify, /metadata\.platform !== "macos-aarch64"/, "macOS DMG verification must reject non-macOS engine metadata");
 assert.deepEqual(macosConfig.bundle.targets, ["app", "dmg"], "macOS release must build app and dmg bundles");
 assert.deepEqual(macosConfig.bundle.externalBin, tauriConfig.bundle.externalBin, "macOS release config must keep the same sidecar stems as the base config");
 assert.deepEqual(
@@ -202,7 +202,7 @@ assert.match(macosChecklist, /## Mac Handoff Readiness/, "macOS checklist must i
 assert.match(macosChecklist, /the only expected remaining work should be macOS-only work/, "macOS checklist must make the handoff boundary explicit");
 assert.match(macosChecklist, /npm run test:macos:conversions/, "macOS handoff must include the strict conversion matrix command");
 assert.match(macosChecklist, /npm run verify:macos-dmg/, "macOS handoff must include final DMG verification");
-assert.equal(macosEngineConfig.platform, "macos-universal", "macOS engine package config must target macos-universal");
+assert.equal(macosEngineConfig.platform, "macos-aarch64", "macOS engine package config must target macos-aarch64");
 assert.deepEqual(
   macosEngineConfig.engines.map((engine) => engine.engineId),
   ["ffmpeg", "ffprobe", "pdfium", "libreoffice", "pandoc", "libvips"],
@@ -210,8 +210,8 @@ assert.deepEqual(
 );
 
 for (const engine of macosEngineConfig.engines) {
-  assert.equal(engine.platform, "macos-universal", `${engine.engineId} must be declared for macos-universal`);
-  assert.match(engine.sourceDir, /^engine-sources\/macos-universal\//, `${engine.engineId} must use macOS staged engine sources`);
+  assert.equal(engine.platform, "macos-aarch64", `${engine.engineId} must be declared for macos-aarch64`);
+  assert.match(engine.sourceDir, /^engine-sources\/macos-aarch64\//, `${engine.engineId} must use macOS staged engine sources`);
   for (const relative of engine.binaryPaths) {
     assert.doesNotMatch(relative, /\.(exe|dll)$/i, `${engine.engineId} macOS binary path must not point to Windows files`);
   }
@@ -220,32 +220,31 @@ assert.deepEqual(
   macosEngineConfig.engines.find((engine) => engine.engineId === "libreoffice").binaryPaths,
   [
     "aarch64/LibreOffice.app/Contents/MacOS/soffice",
-    "x86_64/LibreOffice.app/Contents/MacOS/soffice",
   ],
   "LibreOffice macOS packaging must carry both architecture-specific app bundles in the universal engine pack",
 );
 assert.deepEqual(
   macosEngineConfig.engines.find((engine) => engine.engineId === "libvips").binaryPaths,
-  ["aarch64/bin/vips", "x86_64/bin/vips"],
+  ["aarch64/bin/vips"],
   "libvips macOS packaging must carry both architecture-specific binaries until a portable universal build is validated",
 );
 
 for (const name of ["ffmpeg", "ffprobe"]) {
-  for (const triple of ["aarch64-apple-darwin", "x86_64-apple-darwin", "universal-apple-darwin"]) {
+  for (const triple of ["aarch64-apple-darwin"]) {
     assert.ok(
-      prepareScript.includes(`${name}-${triple}`) || prepareScript.includes(`${name}-\${targetTriple}`) || prepareScript.includes("${stem}-universal-apple-darwin"),
+      prepareScript.includes(`${name}-${triple}`) || prepareScript.includes(`${name}-\${targetTriple}`) || prepareScript.includes("${stem}-aarch64-apple-darwin"),
       `${name}-${triple} is missing from macOS preparation`,
     );
     assert.ok(
-      validateScript.includes(`${name}-${triple}`) || validateScript.includes("${stem}-${targetTriple}") || validateScript.includes("${stem}-universal-apple-darwin"),
+      validateScript.includes(`${name}-${triple}`) || validateScript.includes('stem + "-aarch64-apple-darwin"'),
       `${name}-${triple} is missing from macOS validation`,
     );
     assert.match(macosChecklist, new RegExp(`${name}-${triple}`), `${name}-${triple} is missing from the macOS checklist`);
   }
 }
 
-assert.match(prepareScript, /spawnSync\("lipo", \["-create"/, "macOS preparation must create universal sidecars with lipo");
-assert.match(prepareScript, /macOS universal sidecars must be prepared and architecture-verified on macOS/, "macOS sidecar preparation must reject non-macOS universal reuse");
+assert.doesNotMatch(prepareScript, /spawnSync\("lipo", \["-create"/, "Apple Silicon sidecars must not synthesize universal binaries");
+assert.match(prepareScript, /macOS Apple Silicon sidecars must be verified on Apple Silicon/, "sidecar preparation requires an ARM Mac");
 assert.match(prepareScript, /function verifyDarwinArch\(filePath, arches\)/, "macOS sidecar preparation must verify non-native slices with lipo");
 assert.match(prepareScript, /async function pruneBundledEngines\(expectedEngines\)/, "macOS preparation must prune stale bundled engines before packaging");
 assert.match(prepareScript, /Refusing to remove path outside bundled engines/, "stale engine pruning must guard recursive removals");
@@ -256,13 +255,13 @@ assert.match(validateScript, /validateFile\(engine\.id,[\s\S]*executable:\s*plat
 assert.match(validateScript, /function validateFile\(id, filePath, options = \{\}\)/, "bundled engine validation must allow non-executable metadata, license and notice files");
 assert.match(validateScript, /function architectureScore\(filePath\)/, "bundled engine validation must score macOS executable candidates by architecture");
 assert.match(validateScript, /process\.arch === "arm64"/, "bundled engine validation must detect native Apple Silicon hosts");
-assert.match(validateScript, /hasX64[\s\S]*return 30/, "bundled engine validation must prefer native Intel binaries on Intel macOS runners");
+assert.match(validateScript, /platform === "macos-aarch64"/, "validation must recognize the retained Mac platform");
 assert.match(enginesRust, /fn universal_binary_name\(stem: &str\) -> String/, "runtime must resolve universal macOS sidecar names");
 assert.match(enginesRust, /resource_dir\.join\(&universal_binary_name\)/, "runtime must check bundled universal sidecars");
 assert.match(enginesRust, /resource_dir\.join\("binaries"\)\.join\(&universal_binary_name\)/, "runtime must check resource-directory universal sidecars");
 assert.match(enginesRust, /manifest_binaries_dir\.join\(&universal_binary_name\)/, "runtime must check source-tree universal sidecars for macOS dev and tests");
 assert.match(convertersRust, /fn sidecar_test_names\(stem: &str\) -> Vec<String>/, "conversion tests must resolve sidecars by platform");
-assert.match(convertersRust, /format!\("\{stem\}-universal-apple-darwin"\)/, "conversion tests must prefer universal macOS sidecars");
+assert.match(convertersRust, /format!\("\{stem\}-aarch64-apple-darwin"\)/, "conversion tests resolve native ARM sidecars");
 assert.match(convertersRust, /libopencore_amrnb/, "AMR conversion must use FFmpeg's libopencore AMR-NB encoder name");
 assert.match(packageScript, /platform !== "windows-x64" && engine\.binaryPaths\.includes\(relative\)/, "engine packaging must require executable bits for non-Windows binaries");
 assert.match(packageScript, /canCheckExecutableBits\(\)/, "engine packaging must gate executable-bit checks by host capability");
@@ -280,12 +279,12 @@ assert.match(packageScript, /fs\.symlink\(safeLinkTarget, target\)/, "engine pac
 assert.match(packageScript, /shouldSkipBrokenFrameworkHeaderSymlink/, "engine packaging may skip broken framework header symlinks without accepting broken runtime links");
 assert.match(packageScript, /if \(!isFrameworkLink\)[\s\S]*Lien symbolique casse refuse/, "engine packaging must still reject broken non-framework symbolic links");
 assert.match(packageScript, /\["-qry", archivePath, "\."\]/, "engine packaging must store Unix symbolic links in generated ZIP archives");
-assert.match(packageScript, /ffmpeg-8\.1\.1-macos-universal\.zip/, "engine packaging validation must include a macOS universal fixture");
+assert.match(packageScript, /ffmpeg-8\.1\.1-macos-aarch64\.zip/, "engine packaging validation must include a macOS universal fixture");
 assert.match(ffmpegVersionLibrary, /FFMPEG_REQUIRED_VERSION/, "Shared FFmpeg version helper must read the runtime version contract from Rust");
 
-const hasMacosAdvancedEngines = (enginesManifest.engines ?? []).some((engine) => engine.platform === "macos-universal" && engine.mode === "advanced");
+const hasMacosAdvancedEngines = (enginesManifest.engines ?? []).some((engine) => engine.platform === "macos-aarch64" && engine.mode === "advanced");
 if (!hasMacosAdvancedEngines) {
-  assert.match(readme, /Advanced macOS engines must not be advertised unless the release workflow stages reviewed `macos-universal` entries/, "README must warn that advanced macOS engine claims depend on staged and validated release inputs");
+  assert.match(readme, /Advanced macOS engines must not be advertised unless the release workflow stages reviewed `macos-aarch64` entries/, "README must warn that advanced macOS engine claims depend on staged and validated release inputs");
   assert.match(macosChecklist, /V1\.0\.6 established the published macOS baseline[\s\S]*V1\.0\.7 must restage and revalidate/, "macOS checklist must distinguish the published baseline from the V1.0.7 restaging gate");
   assert.match(thirdPartyEngines, /macOS release notes and user-facing docs must limit macOS conversion claims/, "third-party engine docs must prevent overclaiming macOS engine support");
 }

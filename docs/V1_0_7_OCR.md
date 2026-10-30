@@ -7,18 +7,30 @@ including editor-only OCR layers, was cancelled. Earlier editor references in
 this record are historical; the retained PDF flow extracts text for conversion.
 Runtime locks, packaged models and original-file protection are unchanged.
 
-## Status
+## Status — current audit implementation, 2026-10-30
 
 - Target release: **V1.0.7**
 - Current metadata: **1.0.7**
 - Selected model: **PP-OCRv6_medium**
-- Windows implementation: **development checkpoint, real Tauri and extracted-package runtime exercised**
-- Windows NSIS build: **passed locally with compressed runtime resources**
-- Windows packaged application smoke: **passed for PNG extraction, copy, cancellation and retry; complete installed matrix pending**
+- Windows implementation: **patched reference runtime built and packaged; smoke and full 40-case corpus passed**
+- Windows NSIS build: **current audit candidate not built or installed-tested**
+- Windows packaged application smoke: **previous checkpoint only; current application acceptance pending**
 - Current Windows correction fixture: **reviewed expected text matched exactly (100%)**
-- macOS universal and Linux x64 runtimes: **not built or host-tested**
+- macOS Apple Silicon and Linux x64 runtimes: **not built or host-tested**
 - Native ONNX candidate and accelerators: **not selected; official CPU runtime retained**
 - Privacy mode: **local only**
+
+Intel macOS is retired from V1.0.7. The previous Windows NSIS/Tauri receipts
+below are historical checkpoints, not validation of the current audit branch.
+The first rebuilt worker timed out on a scanned PDF. Explicitly bounding the
+detection longest side to 1536 pixels fixed that fixture; recognition keeps the
+original crops and all five reference models. The rebuilt packaged corpus passed
+40 cases: clean 100%, difficult mean 99.76%, median 54,823 ms, peak 666.7 MiB,
+861 network samples and zero observed remote connections. The scanned PDF passed
+at 100% in 107,331 ms; the mixed PDF passed at 100% in 121,580 ms. The separate
+French one-shot packaged smoke passed at 100% in 54,155 ms. No deadline or
+accuracy threshold was raised. Small-print/layout generalization and Mac/Linux
+runtime parity remain open. See V1_0_7_APPROVED_IMPLEMENTATION.md.
 
 Phase 3 implements the OCR contracts, Windows reference runtime, PDF hybrid
 extraction and image-text UI. The locally achievable Windows implementation
@@ -46,27 +58,29 @@ origin URLs and individual SHA-256 values are committed in the lock file.
 The prepared model artifact contains 21 files and 185,082,003 bytes with
 aggregate SHA-256
 `e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb`.
-The current Windows runtime contains 7,260 files and 660,098,904 bytes with
+The current Windows runtime contains 7,246 files and 660,643,156 bytes with
 aggregate SHA-256
-`b6ea96d25e8c43ffa09efe7b8b171b44d3a82049c7cd0662ce403e8399f10da4`.
+`d386f7923fbea6fe6efa407b2f00d3e99e31ee9778027a67ca32e6b14adf759c`.
 
 `prepare-ocr-models.mjs` validates official archive hashes and rejects unsafe
 tar paths. `build-ocr-reference-runtime.mjs` creates the pinned Windows
 reference sidecar. `prepare-ocr-runtime.mjs` writes per-file manifests and a
-236,434,900-byte optimal-compression ZIP. At first use, Rust extracts this ZIP
+236,811,152-byte optimal-compression ZIP, SHA-256
+`77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac`.
+Two consecutive packages matched exactly. At first use, Rust extracts this ZIP
 to the application-local data directory through a bounded path-safe reader,
 then verifies the manifests and every extracted file hash. Recognition never
 downloads models or selects a cloud fallback. Models remain separately
-packaged and the complete OCR resource tree occupies 421,522,838 bytes.
+packaged; their 21-file contents and hashes remain unchanged.
 
 `inventory-ocr-runtime-licenses.mjs` records the exact Python distribution
 metadata and every embedded license-file hash in
 `src-tauri/ocr-runtime-licenses.json`, tied to the runtime aggregate SHA-256.
-The current artifact contains 71 logical distributions and 105 embedded
-license files. All distributions declare license metadata, but
-`bce-python-sdk` is the single package without an embedded license file. This
-known exception is locked by `test:ocr` and still blocks public redistribution
-until the matching upstream license is reviewed and packaged.
+The current artifact inventory covers 71 distributions and 104 license files,
+with complete coverage including the bce-python-sdk supplemental license, and
+no unresolved metadata entry. The inventory
+and supply-chain audit pass for the rebuilt artifact. The dependency inputs and
+three hashed platform locks include the reviewed Python security updates.
 
 DirectML, CoreML and OpenVINO remain disabled. They may be selected only after
 the required CPU parity and median-speed gates pass on the locked corpus. The
@@ -319,8 +333,8 @@ remain pending.
 - Run the complete offline installed-NSIS behavior matrix. The local unsigned
   build, earlier PNG/copy/cancel/retry smoke and Phase 5 exact-candidate launch
   have passed; the clean-profile installed matrix has not.
-- Build and test one universal macOS runtime on Apple Silicon and Intel, then a
-  Linux x64 runtime and AppImage on real hosts.
+- Build and test the Apple Silicon macOS runtime and DMG, then the Linux x64
+  runtime and AppImage on real hosts.
 - Record output hashes, screenshots and all remaining host evidence in
   `V1_0_7_VALIDATION.md`.
 
@@ -396,28 +410,24 @@ The first installed cycle passed all 40 corpus cases with 100% clean mean,
 working set and zero observed remote connections across 615 samples. The
 second cycle repeated the packaged PDFium health checks after reinstall.
 
-## Phase 8 Platform Runtime Contract
+## Phase 8 Platform Runtime Contract — updated 2026-10-30
 
-The internal OCR lock now has explicit `macos-aarch64`, `macos-x86_64` and
-`linux-x64` entries while public OCR V1 contracts remain unchanged. All three
-select the official PaddlePaddle 3.3.1 CPU runtime with PaddleOCR/PaddleX 3.7.0,
-Python 3.12.10 and the same five locked `PP-OCRv6_medium` models. Apple Silicon
-and Linux use official wheels. Intel macOS must build the official Paddle tag
-at commit `7688495538f4d6c1893f084dd238a402e8f68ab6`; inability to build or
-match the corpus is blocking and cannot silently disable Intel OCR.
+The internal OCR lock contains windows-x64, macos-aarch64 and linux-x64.
+All select the official CPU runtime and shared locked PP-OCRv6_medium models.
+Intel macOS is retired; no source-built Intel Paddle worker, lock or pipeline
+belongs in the V1.0.7 release chain. Public OCR V1 behavior remains unchanged.
 
-`OCR Runtime Staging` produces private Actions artifacts only. It runs
-`paddle.utils.run_check()`, the worker smoke test, deterministic packaging and
-license inventory on each native runner. The macOS DMG stages both worker
-archives plus one shared model tree; the AppImage stages only Linux x64. The
-package verifiers reject a missing, foreign or modified runtime. Native corpus,
-package launch and connection-observation results remain pending until the
-Phase 8 workflows run on the exact checkpoint; Windows self-tests are not
-macOS/Linux evidence.
+OCR Runtime Staging builds each retained native worker, runs Paddle run_check,
+packages twice reproducibly, inventories licenses and tests the packaged runtime.
+The Mac DMG includes only the ARM archive and one shared model tree; Linux only
+Linux x64; Windows only Windows x64. Reject foreign or modified archives.
+Real native corpus, launch and final installed-package acceptance remain required;
+Windows self-tests are not Mac/Linux evidence. See the approved implementation
+ledger for the rebuilt Windows artifact and current corpus investigation.
 
-## Post-audit PDFium 0.4.0 state
+## Historical post-audit PDFium 0.4.0 checkpoint
 
-The structural PDF editor extends the wrapper to 0.4.0 without changing PDFium
+The now-cancelled structural PDF editor extended the wrapper to 0.4.0 without changing PDFium
 149.0.7825.0, the hybrid OCR thresholds, 300-DPI rendering or public OCR V1
 contracts. The local Windows wrapper and deterministic engine archive have been
 built and validated against their exact lock. The Cargo lock SHA-256 is

@@ -13,12 +13,16 @@ import {
   uniqueIntents,
 } from "../conversion/model";
 import type { ConversionIntent, FileItem } from "../types";
+import type { QualityProfile } from "../../lib/api";
+import { QualityProfileSelector, supportsQualityProfile } from "./QualityProfileSelector";
 
 export const FormatScreen = memo(function FormatScreen(props: {
   isActive: boolean;
   language: LanguageCode;
   files: FileItem[];
   isConverting: boolean;
+  qualityProfile: QualityProfile;
+  onQualityProfile(value: QualityProfile): void;
   onBack(): void;
   onChooseFileFormat(fileId: string, format: string): void;
   onApplyCompatibleFormat(fileId: string, format: string): void;
@@ -134,6 +138,12 @@ export const FormatScreen = memo(function FormatScreen(props: {
             {activeFile ? (
               <>
                 <div className="format-tools">
+                  {supportsQualityProfile(activeFile.selectedFormat, activeFile.sourceFormat) && (
+                    <QualityProfileSelector language={props.language} value={props.qualityProfile} onChange={props.onQualityProfile} />
+                  )}
+                  {selectedIntent && (
+                    <p className="selected-format-detail">{selectedIntent.target.engineLabel} · {selectedIntent.target.detail}</p>
+                  )}
                   <label className="search-box">
                     <span>{t(props.language, "format.filter")}</span>
                     <input value={query} placeholder={t(props.language, "format.searchPlaceholder")} onChange={(event) => setQuery(event.target.value)} />
@@ -202,6 +212,8 @@ const FormatRailButton = memo(function FormatRailButton(props: {
       className={`rail-button ${props.isActive ? "is-active" : ""} ${props.file.selectedFormat ? "is-done" : ""}`}
       type="button"
       disabled={!supported}
+      title={props.file.name}
+      aria-label={props.file.name}
       onClick={() => props.onActivate(props.file.id)}
     >
       <strong>{displayFileName(props.file)}</strong>

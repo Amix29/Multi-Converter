@@ -62,6 +62,21 @@ pub struct ImportedFileDescription {
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ImportBatchResult {
+    pub files: Vec<ImportedFileDescription>,
+    pub rejected: Vec<ImportRejection>,
+    pub truncated: bool,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImportRejection {
+    pub path: String,
+    pub message: String,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FileWarning {
     pub code: &'static str,
     pub severity: &'static str,
@@ -76,12 +91,37 @@ pub struct ConversionJob {
     pub target_format: String,
     pub output_dir: Option<String>,
     pub batch_concurrency: Option<usize>,
+    #[serde(default)]
+    pub quality_profile: QualityProfile,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum QualityProfile {
+    Compact,
+    #[default]
+    Balanced,
+    High,
 }
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConversionResult {
     pub output_path: String,
+    pub engine: String,
+    pub warnings: Vec<ConversionWarning>,
+    pub input_bytes: u64,
+    pub output_bytes: u64,
+    pub duration_ms: u64,
+    pub quality_profile: QualityProfile,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConversionWarning {
+    pub code: String,
+    pub message: String,
+    pub page_number: Option<u32>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -117,6 +157,12 @@ mod tests {
     fn conversion_result_and_progress_keep_camel_case_ipc_shape() {
         let result = serde_json::to_value(ConversionResult {
             output_path: "sortie.pdf".to_string(),
+            engine: "rust-text".to_string(),
+            warnings: vec![],
+            input_bytes: 100,
+            output_bytes: 200,
+            duration_ms: 42,
+            quality_profile: QualityProfile::Balanced,
         })
         .unwrap();
         let progress = serde_json::to_value(ProgressPayload {
@@ -126,7 +172,11 @@ mod tests {
         })
         .unwrap();
 
-        assert_eq!(result, serde_json::json!({ "outputPath": "sortie.pdf" }));
+        assert_eq!(
+            result,
+            serde_json::json!({ "outputPath": "sortie.pdf", "engine": "rust-text", "warnings": [],
+                "inputBytes": 100, "outputBytes": 200, "durationMs": 42, "qualityProfile": "balanced" })
+        );
         assert_eq!(
             progress,
             serde_json::json!({ "jobId": "job-1", "progress": 42, "phase": "Conversion" })

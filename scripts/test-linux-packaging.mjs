@@ -97,7 +97,7 @@ assert.match(validateScript, /linux-x64/, "Bundled engine validation must recogn
 assert.match(validateScript, /x86_64-unknown-linux-gnu/, "Bundled engine validation must require Linux x64 sidecars");
 assert.match(validateScript, /fichier Linux non-ELF/, "Bundled engine validation must reject non-ELF Linux sidecars even when smoke tests are skipped");
 assert.match(validateScript, /chemin binaire non-Linux dans le manifeste/, "Bundled engine validation must reject foreign binary paths in Linux advanced engine manifests");
-assert.match(validateScript, /platform !== "macos-universal" && platform !== "linux-x64"/, "Bundled engine validation must score Linux engine binaries by native architecture");
+assert.match(validateScript, /platform !== "macos-aarch64" && platform !== "linux-x64"/, "Bundled engine validation must score Linux engine binaries by native architecture");
 assert.match(validateScript, /strict release validation requires platform-specific advanced engines/, "Bundled engine validation must fail in strict mode when advanced engines are missing");
 assert.match(validateScript, /LD_LIBRARY_PATH/, "Bundled engine validation must smoke-test Linux portable engine libraries");
 assert.match(validateScript, /VIPS_MODULE_PATH/, "Bundled engine validation must smoke-test Linux libvips modules");

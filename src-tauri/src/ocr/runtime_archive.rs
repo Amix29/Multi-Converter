@@ -97,7 +97,10 @@ fn extract_archive(
         let mut entry = archive
             .by_index(index)
             .map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
-        if entry.name().contains('\\') || entry.name().contains('\0') {
+        let entry_name = entry
+            .name()
+            .map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
+        if entry_name.contains('\\') || entry_name.contains('\0') {
             return Err("OCR_RUNTIME_ARCHIVE:Nom non portable dans l’archive.".to_string());
         }
         let relative = entry

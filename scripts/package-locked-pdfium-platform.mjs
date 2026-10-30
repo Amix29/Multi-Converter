@@ -9,14 +9,14 @@ import { readPlatformProvenance } from "./lib/platform-provenance.mjs";
 const root = process.cwd();
 const args = parseArgs(process.argv.slice(2));
 const platform = args.platform;
-if (!new Set(["macos-universal", "linux-x64"]).has(platform) || !args.outputDir || !args.evidence) {
-  throw new Error("--platform macos-universal|linux-x64, --output-dir et --evidence sont requis.");
+if (!new Set(["macos-aarch64", "linux-x64"]).has(platform) || !args.outputDir || !args.evidence) {
+  throw new Error("--platform macos-aarch64|linux-x64, --output-dir et --evidence sont requis.");
 }
 
 const provenance = await readPlatformProvenance(root);
 const lockedPlatform = provenance.pdfium.platforms[platform];
 
-const configName = platform === "macos-universal"
+const configName = platform === "macos-aarch64"
   ? "engine-packages.macos.config.json" : "engine-packages.linux.config.json";
 const fullConfig = JSON.parse(await fs.readFile(path.join(root, "tools", configName), "utf8"));
 const pdfium = fullConfig.engines.find((entry) => entry.engineId === "pdfium");

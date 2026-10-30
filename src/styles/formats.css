@@ -1,6 +1,6 @@
 .format-screen {
   grid-template-columns: minmax(0, 1fr);
-  height: calc(100vh - 108px);
+  height: 100%;
   min-height: 0;
   overflow: hidden;
 }
@@ -164,8 +164,19 @@
 }
 
 .format-tools {
+  min-width: 0;
   display: grid;
   gap: 8px;
+}
+
+.quality-options { display: grid; gap: 4px; }
+.quality-options p,
+.selected-format-detail { margin: 0; color: var(--vlm-text-muted); font-size: 12px; line-height: 1.4; }
+.quality-selector { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.quality-selector > span { font-size: 13px; font-weight: 700; }
+.quality-selector select {
+  min-height: 44px; padding: 8px 12px; border: 1px solid var(--vlm-border);
+  border-radius: var(--vlm-radius-md); background: var(--vlm-surface); color: var(--vlm-text-strong);
 }
 
 .apply-compatible-button {

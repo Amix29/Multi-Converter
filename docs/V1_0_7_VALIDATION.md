@@ -1,5 +1,33 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-10-30 — Approved Audit Implementation In Progress
+
+Active work branch: `codex/converter-audit-apple-silicon`, base `24303e48`;
+integration target: `codex/test`. The maintainer approved the comprehensive
+audit and retired Intel macOS. Windows x64, Apple Silicon macOS and Linux x64
+remain the targets. See [current implementation and proof](V1_0_7_APPROVED_IMPLEMENTATION.md).
+The dated records below remain historical. **Overall gate: blocked**.
+
+Dependency fixes and ARM packaging contracts are implemented locally. The new
+Windows OCR runtime is reproducibly packaged with a complete 71-distribution/
+104-license-file inventory. The bounded-detector rebuild passed the full 40-case
+packaged corpus: clean 100%, difficult 99.76%, median 54,823 ms, peak 666.7 MiB.
+The previous scanned-PDF timeout is fixed without relaxing the 180-second limit;
+861 network samples observed zero remote connections. One-shot French smoke
+also passed at 100% in 54,155 ms.
+
+171 Rust unit tests, ten native conversion groups and real LibreOffice archive
+extraction passed. All eleven ignored native tests were exercised separately.
+Full canonical check, types, IPC, 47 frontend unit tests and 12 rendered browser
+tests passed (10 declared browser exclusions). Re-export, initial confirmation
+focus and no-overlap geometry were checked on the current interface.
+Tokio 1.53.3 corrects the Unix I/O-safety warning; final dependency-check reruns
+are recorded in the implementation ledger. Cargo informational warnings remain
+visible, including inherited Linux glib 0.18.5 unsoundness and maintenance/yank
+notices. Zero entries in Cargo's vulnerability category is not a clean warning set.
+The site full check passed. New native/installed Windows acceptance and fresh
+Mac/Linux host/package evidence remain pending. No release or push occurred.
+
 ## 2026-10-29 — Comprehensive Audit After Integration
 
 Current local integration: `codex/test`, `98726742`. The

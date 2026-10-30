@@ -271,7 +271,7 @@ async function runValidation() {
   const macosSource = path.join(root, "sources", "macos-ffmpeg");
   await fs.mkdir(path.join(macosSource, "bin"), { recursive: true });
   await fs.mkdir(path.join(macosSource, "licenses"), { recursive: true });
-  const macosBinary = path.join(macosSource, "bin", "ffmpeg-universal-apple-darwin");
+  const macosBinary = path.join(macosSource, "bin", "ffmpeg-aarch64-apple-darwin");
   await fs.writeFile(macosBinary, "fake macos ffmpeg\n");
   await fs.chmod(macosBinary, 0o755);
   await fs.writeFile(path.join(macosSource, "licenses", "LICENSE.txt"), "LGPL/GPL\n");
@@ -279,7 +279,7 @@ async function runValidation() {
   const macosConfig = {
     manifestVersion: 1,
     packageFormatVersion: 1,
-    platform: "macos-universal",
+    platform: "macos-aarch64",
     downloadBaseUrl: placeholderBaseUrl,
     engines: [
       {
@@ -287,10 +287,10 @@ async function runValidation() {
         displayName: "FFmpeg",
         mode: "base",
         version: "8.1.1",
-        platform: "macos-universal",
+        platform: "macos-aarch64",
         sourceDir: path.relative(repoRoot, macosSource),
-        outputArchiveName: "ffmpeg-8.1.1-macos-universal.zip",
-        binaryPaths: ["bin/ffmpeg-universal-apple-darwin"],
+        outputArchiveName: "ffmpeg-8.1.1-macos-aarch64.zip",
+        binaryPaths: ["bin/ffmpeg-aarch64-apple-darwin"],
         healthCheck: "ffmpeg-audio",
         licenseName: "LGPL/GPL selon build",
         licenseUrl: null,
@@ -302,18 +302,18 @@ async function runValidation() {
     ]
   };
   await packageFromConfig(macosConfig, {
-    configPath: "validation-macos-universal",
-    outputDir: path.join(root, "macos-universal"),
+    configPath: "validation-macos-aarch64",
+    outputDir: path.join(root, "macos-aarch64"),
     releaseBaseUrl: `${placeholderBaseUrl}/`,
     clean: true
   });
-  const macosManifest = await readJson(path.join(root, "macos-universal", "engines-manifest.json"));
-  if (macosManifest.engines?.[0]?.platform !== "macos-universal") {
+  const macosManifest = await readJson(path.join(root, "macos-aarch64", "engines-manifest.json"));
+  if (macosManifest.engines?.[0]?.platform !== "macos-aarch64") {
     throw new Error("Plateforme macOS invalide dans le manifeste de validation");
   }
   const macosNonExecutableSource = path.join(root, "sources", "macos-non-executable");
   await fs.cp(macosSource, macosNonExecutableSource, { recursive: true, force: true });
-  await fs.chmod(path.join(macosNonExecutableSource, "bin", "ffmpeg-universal-apple-darwin"), 0o644);
+  await fs.chmod(path.join(macosNonExecutableSource, "bin", "ffmpeg-aarch64-apple-darwin"), 0o644);
   const macosNonExecutable = structuredClone(macosConfig);
   macosNonExecutable.engines[0].sourceDir = path.relative(repoRoot, macosNonExecutableSource);
   if (canCheckExecutableBits()) {

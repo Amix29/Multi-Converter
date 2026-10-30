@@ -9,7 +9,7 @@ import { publicSourceLabel } from "./download-integrity.mjs";
 
 export function hostEnginePlatform() {
   if (process.platform === "win32" && process.arch === "x64") return "windows-x64";
-  if (process.platform === "darwin") return "macos-universal";
+  if (process.platform === "darwin" && process.arch === "arm64") return "macos-aarch64";
   if (process.platform === "linux" && process.arch === "x64") return "linux-x64";
   return "unsupported";
 }
@@ -244,7 +244,7 @@ export function createBundledEngineHelpers({ root, platform, ffmpegVersion }) {
 
   function hostEnginePlatform() {
     if (process.platform === "win32" && process.arch === "x64") return "windows-x64";
-    if (process.platform === "darwin") return "macos-universal";
+    if (process.platform === "darwin" && process.arch === "arm64") return "macos-aarch64";
     if (process.platform === "linux" && process.arch === "x64") return "linux-x64";
     return "unsupported";
   }
@@ -271,27 +271,27 @@ export function createBundledEngineHelpers({ root, platform, ffmpegVersion }) {
       ];
     }
 
-    if (targetPlatform === "macos-universal") {
+    if (targetPlatform === "macos-aarch64") {
       const nativeTriple = nativeDarwinTriple();
-      return ["aarch64-apple-darwin", "x86_64-apple-darwin"].flatMap((targetTriple) => [
+      return ["aarch64-apple-darwin"].flatMap((targetTriple) => [
         {
           id: "ffmpeg",
           fileName: `ffmpeg-${targetTriple}`,
           smoke: process.platform === "darwin" && targetTriple === nativeTriple,
-          lipoArch: targetTriple === "aarch64-apple-darwin" ? "arm64" : "x86_64",
+          lipoArch: "arm64",
           localCandidates: [
             path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffmpeg", ffmpegVersion, "bin", `ffmpeg-${targetTriple}`),
-            path.join(root, "engine-sources", "macos-universal", "ffmpeg", "bin", `ffmpeg-${targetTriple}`),
+            path.join(root, "engine-sources", "macos-aarch64", "ffmpeg", "bin", `ffmpeg-${targetTriple}`),
           ],
         },
         {
           id: "ffprobe",
           fileName: `ffprobe-${targetTriple}`,
           smoke: process.platform === "darwin" && targetTriple === nativeTriple,
-          lipoArch: targetTriple === "aarch64-apple-darwin" ? "arm64" : "x86_64",
+          lipoArch: "arm64",
           localCandidates: [
             path.join(process.env.HOME ?? "", "Library", "Application Support", "Multi-Converter", "tool-env", "ffprobe", ffmpegVersion, "bin", `ffprobe-${targetTriple}`),
-            path.join(root, "engine-sources", "macos-universal", "ffprobe", "bin", `ffprobe-${targetTriple}`),
+            path.join(root, "engine-sources", "macos-aarch64", "ffprobe", "bin", `ffprobe-${targetTriple}`),
           ],
         },
       ]);
@@ -322,7 +322,7 @@ export function createBundledEngineHelpers({ root, platform, ffmpegVersion }) {
   }
 
   function nativeDarwinTriple() {
-    return process.arch === "arm64" ? "aarch64-apple-darwin" : "x86_64-apple-darwin";
+    return "aarch64-apple-darwin";
   }
 
   async function ensureEngineExecutables(rootDir, engine) {

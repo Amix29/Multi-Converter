@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
-const repo = 'C:/Users/ryadb/Développement/LATELIER_IA/projets/multi-converter';
+const repo = path.resolve(__dirname, '../../..');
 const { chromium } = require(path.join(repo, 'node_modules/playwright'));
 const output = __dirname;
 const preview = path.join(output, 'preview');

@@ -15,9 +15,5 @@ pub(super) fn binary_name_for(stem: &str, os: &str, arch: &str) -> String {
 }
 
 pub(super) fn universal_binary_name_for(stem: &str, os: &str, arch: &str) -> String {
-    if os == "macos" {
-        format!("{stem}-universal-apple-darwin")
-    } else {
-        binary_name_for(stem, os, arch)
-    }
+    binary_name_for(stem, os, arch)
 }

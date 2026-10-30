@@ -156,10 +156,10 @@ fn log_export_copy_error(source: &Path, output: &Path, error: &io::Error) {
     runtime_log::write(
         "export",
         &format!(
-            "copy failed from {} to {}: {}",
+            "copy failed from {} to {}: {:?}",
             runtime_log::path(source),
             runtime_log::path(output),
-            error
+            error.kind()
         ),
     );
 }

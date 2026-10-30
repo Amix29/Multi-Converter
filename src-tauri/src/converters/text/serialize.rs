@@ -168,15 +168,18 @@ pub(in crate::converters) fn to_html(content: &str, source_format: &str) -> Stri
     )
 }
 
-pub(in crate::converters) fn to_csv(content: &str, source_format: &str) -> String {
-    if source_format == "csv" {
-        return content.to_string();
+pub(in crate::converters) fn to_csv(content: &str, source_format: &str) -> Result<String> {
+    if source_format == "json" {
+        return super::tabular::json_to_csv(content);
     }
-    content
+    if source_format == "csv" {
+        return Ok(content.to_string());
+    }
+    Ok(content
         .lines()
         .map(|line| format!("\"{}\"", line.replace('"', "\"\"")))
         .collect::<Vec<_>>()
-        .join("\n")
+        .join("\n"))
 }
 
 pub(in crate::converters) fn write_utf8_csv(output_path: &Path, content: &str) -> Result<()> {
@@ -223,7 +226,7 @@ pub(in crate::converters) fn to_json(content: &str, source_format: &str) -> Resu
     }
     if source_format == "csv" {
         let mut reader = csv::ReaderBuilder::new()
-            .flexible(true)
+            .flexible(false)
             .from_reader(content.as_bytes());
         let headers = reader
             .headers()?
@@ -238,6 +241,10 @@ pub(in crate::converters) fn to_json(content: &str, source_format: &str) -> Resu
                 }
             })
             .collect::<Vec<_>>();
+        let unique: std::collections::HashSet<_> = headers.iter().collect();
+        if unique.len() != headers.len() {
+            return Err(ConvertError::Message("CSV: noms de colonnes dupliqués ; conversion JSON refusée pour préserver les données.".to_string()));
+        }
         let mut rows = Vec::new();
         for record in reader.records() {
             let record = record?;
@@ -248,7 +255,7 @@ pub(in crate::converters) fn to_json(content: &str, source_format: &str) -> Resu
                         .get(index)
                         .cloned()
                         .unwrap_or_else(|| format!("col{}", index + 1)),
-                    serde_json::Value::String(cell.trim().to_string()),
+                    serde_json::Value::String(cell.to_string()),
                 );
             }
             rows.push(serde_json::Value::Object(object));

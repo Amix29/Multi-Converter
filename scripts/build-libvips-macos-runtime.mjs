@@ -13,12 +13,12 @@ const recordsByTarget = new Map();
 const targetByRealSource = new Map();
 const targetNames = new Map();
 
-if (process.platform !== "darwin") {
+if (process.platform !== "darwin" || process.arch !== "arm64") {
   throw new Error("macOS libvips runtime packaging must run on macOS.");
 }
 
 const arch = normalizeArch(args.arch ?? hostArch());
-const lipoArch = arch === "aarch64" ? "arm64" : "x86_64";
+const lipoArch = "arm64";
 const outputDir = path.resolve(args.outputDir ?? path.join(root, "dist-libvips-macos"));
 const runtimeDir = path.resolve(args.runtimeDir ?? path.join(outputDir, `runtime-${arch}`));
 const archivePath = path.resolve(args.archive ?? path.join(outputDir, `libvips-macos-${arch}.tar.gz`));
@@ -98,7 +98,6 @@ function parseArgs(rawArgs) {
 
 function normalizeArch(value) {
   if (value === "arm64" || value === "aarch64") return "aarch64";
-  if (value === "x64" || value === "x86_64") return "x86_64";
   throw new Error(`Unsupported macOS architecture: ${value}`);
 }
 

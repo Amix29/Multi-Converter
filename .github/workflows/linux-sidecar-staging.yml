@@ -57,9 +57,9 @@ jobs:
       FFPROBE_LINUX_X64_BINARY_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_binary_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_LINUX_X64_BINARY_SHA256 || '' }}
       OUTPUT_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.output_release_tag || '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
@@ -96,7 +96,7 @@ jobs:
       - name: Prepare Linux sidecar release assets
         run: npm run prepare:linux-sidecar-release-assets -- --out-dir "$RUNNER_TEMP/mc-linux-sidecar-assets"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: linux-sidecar-assets
           path: ${{ runner.temp }}/mc-linux-sidecar-assets

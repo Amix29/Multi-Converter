@@ -30,9 +30,9 @@ assertSourceVersion(sourceUpdaterSig, "source macOS updater signature");
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 
-const versionedDmg = `Multi-Converter_${version}_macos-universal.dmg`;
-const stableDmg = "Multi-Converter_macos-universal.dmg";
-const updaterArchive = `Multi-Converter_${version}_macos-universal.app.tar.gz`;
+const versionedDmg = `Multi-Converter_${version}_macos-aarch64.dmg`;
+const stableDmg = "Multi-Converter_macos-aarch64.dmg";
+const updaterArchive = `Multi-Converter_${version}_macos-aarch64.app.tar.gz`;
 const updaterSignature = `${updaterArchive}.sig`;
 
 copyFile(sourceDmg, path.join(outDir, versionedDmg));
@@ -61,9 +61,9 @@ function defaultMacosBundleRoots() {
 function defaultBundleRoots() {
   const targetDir = path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(root, "src-tauri", "target"));
   return [
-    path.join(targetDir, "universal-apple-darwin", "release", "bundle"),
+    path.join(targetDir, "aarch64-apple-darwin", "release", "bundle"),
     path.join(targetDir, "release", "bundle"),
-    path.join(root, "src-tauri", "target", "universal-apple-darwin", "release", "bundle"),
+    path.join(root, "src-tauri", "target", "aarch64-apple-darwin", "release", "bundle"),
     path.join(root, "src-tauri", "target", "release", "bundle"),
   ];
 }

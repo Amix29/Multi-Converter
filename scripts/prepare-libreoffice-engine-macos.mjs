@@ -12,7 +12,7 @@ import {
 const root = process.cwd();
 const version = process.env.LIBREOFFICE_VERSION ?? "26.2.3";
 const downloadsDir = path.join(root, "engine-sources", ".downloads");
-const sourceDir = path.join(root, "engine-sources", "macos-universal", "libreoffice");
+const sourceDir = path.join(root, "engine-sources", "macos-aarch64", "libreoffice");
 const workDir = path.join(os.tmpdir(), "mc-libreoffice-macos");
 const userAgent = { "User-Agent": "Multi-Converter-Packager" };
 const inputs = [
@@ -23,16 +23,9 @@ const inputs = [
       ?? `https://download.documentfoundation.org/libreoffice/stable/${version}/mac/aarch64/LibreOffice_${version}_MacOS_aarch64.dmg`,
     shaEnv: "LIBREOFFICE_MACOS_AARCH64_DMG_SHA256",
   },
-  {
-    arch: "x86_64",
-    fileName: `LibreOffice_${version}_MacOS_x86-64.dmg`,
-    url: process.env.LIBREOFFICE_MAC_X86_64_DMG_URL
-      ?? `https://download.documentfoundation.org/libreoffice/stable/${version}/mac/x86_64/LibreOffice_${version}_MacOS_x86-64.dmg`,
-    shaEnv: "LIBREOFFICE_MACOS_X86_64_DMG_SHA256",
-  },
 ];
 
-if (process.platform !== "darwin") {
+if (process.platform !== "darwin" || process.arch !== "arm64") {
   throw new Error("macOS LibreOffice engine preparation must run on macOS so hdiutil can mount the official DMGs.");
 }
 

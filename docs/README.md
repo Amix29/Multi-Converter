@@ -6,7 +6,7 @@
 - Platforms: Windows x64, universal macOS and Linux x64
 - Repository surfaces: desktop application, static marketing site and branding kit
 - Development release: **V1.0.7**
-- Local integration branch: **`codex/test`**; cleanup developed on **`codex/remove-file-editor`**; V1.0.7 remains unpublished and its release gate is open
+- Local integration target: **`codex/test`**; active audit implementation branch: **`codex/converter-audit-apple-silicon`**; V1.0.7 remains unpublished and its release gate is open
 - V1.0.7 objectives:
   - local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images.
 
@@ -23,6 +23,7 @@ no product fixes were applied by this audit. Raw evidence is in
 
 | Document | Status | Purpose |
 | --- | --- | --- |
+| [`V1_0_7_APPROVED_IMPLEMENTATION.md`](V1_0_7_APPROVED_IMPLEMENTATION.md) | Active, implementation/validation in progress | Approved audit changes, Apple Silicon decision, current checks and remaining work |
 | [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md) | Active source of truth | Complete V1.0.7 scope, sequencing and release gates |
 | [`V1_0_7_POST_AUDIT.md`](V1_0_7_POST_AUDIT.md) | Active, validation in progress | Six-lot correction implementation and proof limits |
 | [`V1_0_7_VALIDATION.md`](V1_0_7_VALIDATION.md) | Active, overall gate blocked | Current conversion, OCR and platform release ledger |

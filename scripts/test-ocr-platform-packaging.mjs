@@ -4,12 +4,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { hostOcrPlatform } from "./lib/ocr-runtime-archive.mjs";
 
 const root = process.cwd();
 const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "mc-ocr-package-test-"));
-const platform = process.platform === "win32" ? "windows-x64"
-  : process.platform === "darwin" ? (process.arch === "arm64" ? "macos-aarch64" : "macos-x86_64")
-    : "linux-x64";
+const platform = hostOcrPlatform();
 const source = path.join(temporary, "source");
 const first = path.join(temporary, "first");
 const second = path.join(temporary, "second");

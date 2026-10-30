@@ -1,10 +1,8 @@
 import { memo } from "react";
-import { t, type LanguageCode } from "../../i18n";
-import { clamp, displayFileName } from "../conversion/model";
+import { t, translateBackendMessage, type LanguageCode } from "../../i18n";
+import { clamp, displayFileName, formatBytes } from "../conversion/model";
 import { useVirtualWindow } from "../conversion/useVirtualWindow";
 import { statusLabelKeys, type FileItem } from "../types";
-
-const jobRowHeight = 92;
 
 export const VirtualizedJobList = memo(function VirtualizedJobList(props: {
   files: FileItem[];
@@ -15,11 +13,12 @@ export const VirtualizedJobList = memo(function VirtualizedJobList(props: {
   resetKey: string;
   onRetryFile(fileId: string): void;
 }) {
+  const jobRowHeight = props.files.some((file) => file.error || file.result?.warnings?.length) ? 176 : 120;
   const { onScroll, viewportRef, windowState } = useVirtualWindow({
     itemCount: props.files.length,
     rowHeight: jobRowHeight,
     isActive: props.isActive,
-    resetKey: props.resetKey,
+    resetKey: `${props.resetKey}:${jobRowHeight}`,
   });
   const visibleFiles = props.files.slice(windowState.startIndex, windowState.endIndex);
 
@@ -45,6 +44,7 @@ export const VirtualizedJobList = memo(function VirtualizedJobList(props: {
               position={windowState.startIndex + visibleIndex}
               total={props.files.length}
               offset={windowState.offsetTop + visibleIndex * jobRowHeight}
+              rowHeight={jobRowHeight}
               onRetryFile={props.onRetryFile}
             />
           ))}
@@ -62,6 +62,7 @@ const JobRow = memo(function JobRow(props: {
   position: number;
   total: number;
   offset: number;
+  rowHeight: number;
   onRetryFile(fileId: string): void;
 }) {
   const fileProgress = props.file.status === "done"
@@ -74,12 +75,21 @@ const JobRow = memo(function JobRow(props: {
       className="job-row"
       aria-posinset={props.position + 1}
       aria-setsize={props.total}
-      style={{ transform: `translateY(${props.offset}px)` }}
+      style={{ transform: `translateY(${props.offset}px)`, height: props.rowHeight - 8 }}
     >
       <div className="job-main">
         <strong title={props.file.name}>{displayFileName(props.file)}</strong>
         <span>→ {(props.file.convertedFormat || props.file.selectedFormat || "").toUpperCase()}</span>
       </div>
+      {props.file.result && (
+        <p className="job-summary">
+          {props.file.result.engine}
+          {props.file.result.inputBytes !== undefined && props.file.result.outputBytes !== undefined
+            ? ` · ${formatBytes(props.file.result.inputBytes, props.language)} → ${formatBytes(props.file.result.outputBytes, props.language)}` : ""}
+          {props.file.result.durationMs !== undefined
+            ? ` · ${(props.file.result.durationMs / 1000).toLocaleString(props.language, { maximumFractionDigits: 1 })} s` : ""}
+        </p>
+      )}
       <div className="job-state-actions">
         <em className={`job-state ${props.file.status === "done" ? "is-done" : ""} ${props.file.status === "error" ? "is-error" : ""}`}>
           {t(props.language, statusLabelKeys[props.file.status])}
@@ -95,6 +105,22 @@ const JobRow = memo(function JobRow(props: {
           </button>
         )}
       </div>
+      {props.file.error && (
+        <p className="job-error" tabIndex={0} title={translateBackendMessage(props.language, props.file.error)}>
+          {translateBackendMessage(props.language, props.file.error)}
+        </p>
+      )}
+      {Boolean(props.file.result?.warnings?.length) && (
+        <p className="job-warning" tabIndex={0}>
+          {props.file.result?.warnings?.map((warning) => {
+            if (warning.code === "integrated-text-fallback") return t(props.language, "fidelity.textFallback");
+            if (warning.code === "single-column-table") return t(props.language, "fidelity.singleColumn");
+            if (warning.code === "text-layout") return t(props.language, "fidelity.textLayout");
+            if (warning.code === "media-primary-streams") return t(props.language, "fidelity.primaryStreams");
+            return translateBackendMessage(props.language, warning.message);
+          }).join(" · ")}
+        </p>
+      )}
       <div className="file-progress-line">
         <div
           className="progress-track"

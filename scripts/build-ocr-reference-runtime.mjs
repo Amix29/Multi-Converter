@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -25,7 +24,6 @@ if (args.install) {
   run("uv", [
     "pip", "install", "--python", python, "--require-hashes", "--only-binary", ":all:", "-r", requirements,
   ]);
-  if (platform === "macos-x86_64") await installSourceBuiltPaddle(python, provenance);
 }
 await assertFile(python, "environnement Python OCR verrouillé (utilisez --install pour le préparer)");
 run(python, ["-c", "import paddle; paddle.utils.run_check(); assert paddle.__version__ == '3.3.1'"]);
@@ -39,13 +37,6 @@ run(python, [
   "--specpath", buildRoot, path.join(root, "tools", "ocr-runtime", "worker.py"),
 ]);
 await materializeRuntimeLinks(path.join(buildRoot, "dist", "ocr-worker"));
-if (platform === "macos-x86_64") {
-  const sourceLicenses = path.join(path.dirname(path.resolve(args.paddleWheel)), "paddle-source-licenses");
-  await fs.cp(sourceLicenses, path.join(buildRoot, "dist", "ocr-worker", "_licenses", "paddle-source"), {
-    recursive: true,
-    force: true,
-  });
-}
 
 const sitePackages = commandOutput(python, ["-c", "import sysconfig; print(sysconfig.get_paths()['purelib'])"]);
 const internal = path.join(buildRoot, "dist", "ocr-worker", "_internal");
@@ -75,7 +66,6 @@ function parseArgs(values) {
     const value = values[index];
     if (value === "--platform") parsed.platform = values[++index];
     else if (value === "--install") parsed.install = true;
-    else if (value === "--paddle-wheel") parsed.paddleWheel = values[++index];
     else throw new Error(`Argument de build OCR inconnu: ${value}`);
   }
   return parsed;
@@ -84,29 +74,12 @@ function parseArgs(values) {
 function hostPlatform() {
   if (process.platform === "win32" && process.arch === "x64") return "windows-x64";
   if (process.platform === "darwin" && process.arch === "arm64") return "macos-aarch64";
-  if (process.platform === "darwin" && process.arch === "x64") return "macos-x86_64";
   if (process.platform === "linux" && process.arch === "x64") return "linux-x64";
   throw new Error(`Plateforme OCR non prise en charge: ${process.platform}/${process.arch}.`);
 }
 
 function assertHost(platform) {
   if (platform !== hostPlatform()) throw new Error(`${platform} doit être construit sur son hôte natif.`);
-}
-
-async function installSourceBuiltPaddle(python, provenance) {
-  if (!args.paddleWheel) throw new Error("--paddle-wheel est obligatoire pour macOS Intel.");
-  const wheel = path.resolve(args.paddleWheel);
-  await assertFile(wheel, "wheel PaddlePaddle Intel compilée depuis la source");
-  const digest = createHash("sha256").update(await fs.readFile(wheel)).digest("hex");
-  const sidecar = `${wheel}.sha256`;
-  const expected = (await fs.readFile(sidecar, "utf8")).trim().split(/\s+/u)[0]?.toLowerCase();
-  if (!/^[a-f0-9]{64}$/u.test(expected ?? "") || digest !== expected) {
-    throw new Error("La wheel PaddlePaddle Intel ne correspond pas à son empreinte de build.");
-  }
-  if (provenance.ocr.paddlepaddle.platforms[platform].sourceCommit !== provenance.ocr.paddlepaddle.source.commit) {
-    throw new Error("La provenance PaddlePaddle Intel est incohérente.");
-  }
-  run("uv", ["pip", "install", "--python", python, "--no-deps", wheel]);
 }
 
 function run(command, commandArgs) {

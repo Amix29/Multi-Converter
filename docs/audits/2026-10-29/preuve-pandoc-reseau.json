@@ -1,9 +1,9 @@
 {
-  "engine": "C:/Users/ryadb/Développement/LATELIER_IA/projets/multi-converter/src-tauri/bundled-engines/pandoc/compatible/bin/pandoc.exe",
+  "engine": "<checkout>/src-tauri/bundled-engines/pandoc/compatible/bin/pandoc.exe",
   "args": [
-    "C:\\Users\\ryadb\\.codex\\visualizations\\2026\\10\\29\\01a18989-8184-7e40-a442-fdcad3fead68\\audit-complet\\fixture-image-distante.md",
+    "<audit-output>/fixture-image-distante.md",
     "-o",
-    "C:\\Users\\ryadb\\.codex\\visualizations\\2026\\10\\29\\01a18989-8184-7e40-a442-fdcad3fead68\\audit-complet\\fixture-image-distante.docx"
+    "<audit-output>/fixture-image-distante.docx"
   ],
   "exitCode": 0,
   "requests": [
@@ -13,5 +13,6 @@
     }
   ],
   "stderr": "",
-  "outputExists": true
+  "outputExists": true,
+  "pathRedaction": "Local account paths redacted on 2026-10-30; measured results unchanged."
 }

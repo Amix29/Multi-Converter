@@ -44,38 +44,12 @@ on:
         required: false
         default: ""
         type: string
-      ffmpeg_x86_64_archive_url:
-        description: "Maintainer-approved Intel FFmpeg or combined FFmpeg/ffprobe archive URL"
-        required: true
-        type: string
-      ffmpeg_x86_64_archive_sha256:
-        description: "SHA-256 for the Intel FFmpeg or combined FFmpeg/ffprobe archive"
-        required: true
-        type: string
-      ffprobe_x86_64_archive_url:
-        description: "Optional maintainer-approved Intel FFprobe archive URL when FFprobe is separate"
-        required: false
-        default: ""
-        type: string
-      ffprobe_x86_64_archive_sha256:
-        description: "SHA-256 for the separate Intel FFprobe archive"
-        required: false
-        default: ""
-        type: string
       libreoffice_macos_aarch64_dmg_sha256:
         description: "SHA-256 for the official Apple Silicon LibreOffice DMG"
         required: true
         type: string
-      libreoffice_macos_x86_64_dmg_sha256:
-        description: "SHA-256 for the official Intel LibreOffice DMG"
-        required: true
-        type: string
       pandoc_macos_aarch64_archive_sha256:
         description: "SHA-256 for the official Apple Silicon Pandoc ZIP"
-        required: true
-        type: string
-      pandoc_macos_x86_64_archive_sha256:
-        description: "SHA-256 for the official Intel Pandoc ZIP"
         required: true
         type: string
       libvips_release_tag:
@@ -93,12 +67,6 @@ on:
         required: true
         default: "libvips-macos-aarch64.tar.gz"
         type: string
-      libvips_x86_64_asset:
-        description: "Intel libvips portable archive asset name"
-        required: true
-        default: "libvips-macos-x86_64.tar.gz"
-        type: string
-
 permissions:
   actions: read
   contents: write
@@ -117,40 +85,33 @@ jobs:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      MULTI_CONVERTER_ENGINE_PLATFORM: macos-universal
+      MULTI_CONVERTER_ENGINE_PLATFORM: macos-aarch64
       FFMPEG_MACOS_AARCH64_ARCHIVE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_aarch64_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_MACOS_AARCH64_ARCHIVE_URL || '' }}
       FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_aarch64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256 || '' }}
       FFPROBE_MACOS_AARCH64_ARCHIVE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_aarch64_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_MACOS_AARCH64_ARCHIVE_URL || '' }}
       FFPROBE_MACOS_AARCH64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_aarch64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_MACOS_AARCH64_ARCHIVE_SHA256 || '' }}
-      FFMPEG_MACOS_X86_64_ARCHIVE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_x86_64_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_MACOS_X86_64_ARCHIVE_URL || '' }}
-      FFMPEG_MACOS_X86_64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffmpeg_x86_64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFMPEG_MACOS_X86_64_ARCHIVE_SHA256 || '' }}
-      FFPROBE_MACOS_X86_64_ARCHIVE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_x86_64_archive_url || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_MACOS_X86_64_ARCHIVE_URL || '' }}
-      FFPROBE_MACOS_X86_64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.ffprobe_x86_64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_FFPROBE_MACOS_X86_64_ARCHIVE_SHA256 || '' }}
       LIBREOFFICE_MACOS_AARCH64_DMG_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_macos_aarch64_dmg_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_MACOS_AARCH64_DMG_SHA256 || '' }}
-      LIBREOFFICE_MACOS_X86_64_DMG_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.libreoffice_macos_x86_64_dmg_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_LIBREOFFICE_MACOS_X86_64_DMG_SHA256 || '' }}
       PANDOC_MACOS_AARCH64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pandoc_macos_aarch64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PANDOC_MACOS_AARCH64_ARCHIVE_SHA256 || '' }}
-      PANDOC_MACOS_X86_64_ARCHIVE_SHA256: ${{ github.event_name == 'workflow_dispatch' && inputs.pandoc_macos_x86_64_archive_sha256 || github.event_name != 'workflow_dispatch' && vars.MC_PANDOC_MACOS_X86_64_ARCHIVE_SHA256 || '' }}
       LIBVIPS_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.libvips_release_tag || github.event_name != 'workflow_dispatch' && vars.MC_LIBVIPS_MACOS_RELEASE_TAG || '' }}
       LIBVIPS_RUNTIME_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.libvips_runtime_run_id || github.event_name != 'workflow_dispatch' && vars.MC_LIBVIPS_MACOS_RUNTIME_RUN_ID || '' }}
       LIBVIPS_AARCH64_ASSET: ${{ github.event_name == 'workflow_dispatch' && inputs.libvips_aarch64_asset || github.event_name != 'workflow_dispatch' && vars.MC_LIBVIPS_MACOS_AARCH64_ASSET || 'libvips-macos-aarch64.tar.gz' }}
-      LIBVIPS_X86_64_ASSET: ${{ github.event_name == 'workflow_dispatch' && inputs.libvips_x86_64_asset || github.event_name != 'workflow_dispatch' && vars.MC_LIBVIPS_MACOS_X86_64_ASSET || 'libvips-macos-x86_64.tar.gz' }}
       OUTPUT_RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.output_release_tag || '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
           components: rustfmt, clippy
-          targets: aarch64-apple-darwin,x86_64-apple-darwin
+          targets: aarch64-apple-darwin
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cargo/registry
@@ -240,21 +201,16 @@ jobs:
               exit 1
             fi
             artifact_dir="$RUNNER_TEMP/mc-libvips-runtime-artifacts"
-            mkdir -p "$artifact_dir/aarch64" "$artifact_dir/x86_64"
+            mkdir -p "$artifact_dir/aarch64"
             gh run download "$LIBVIPS_RUNTIME_RUN_ID" --repo "$GITHUB_REPOSITORY" --name libvips-macos-aarch64 --dir "$artifact_dir/aarch64"
-            gh run download "$LIBVIPS_RUNTIME_RUN_ID" --repo "$GITHUB_REPOSITORY" --name libvips-macos-x86_64 --dir "$artifact_dir/x86_64"
             aarch64_archive="$(find "$artifact_dir/aarch64" -type f -name 'libvips-macos-aarch64.tar.gz' -print -quit)"
-            x86_64_archive="$(find "$artifact_dir/x86_64" -type f -name 'libvips-macos-x86_64.tar.gz' -print -quit)"
             test -n "$aarch64_archive"
-            test -n "$x86_64_archive"
             npm run prepare:libvips-macos-release-inputs -- \
-              --aarch64-archive "$aarch64_archive" \
-              --x86_64-archive "$x86_64_archive"
+              --aarch64-archive "$aarch64_archive"
           else
             npm run prepare:libvips-macos-release-inputs -- --tag "$LIBVIPS_RELEASE_TAG" \
               --repo "$GITHUB_REPOSITORY" \
-              --aarch64-asset "$LIBVIPS_AARCH64_ASSET" \
-              --x86_64-asset "$LIBVIPS_X86_64_ASSET"
+              --aarch64-asset "$LIBVIPS_AARCH64_ASSET"
           fi
 
       - name: Prepare libvips
@@ -276,12 +232,8 @@ jobs:
           mkdir -p "$RUNNER_TEMP/mc-macos-engine-assets"
           cp dist-engines-macos/*.zip "$RUNNER_TEMP/mc-macos-engine-assets/"
           cp dist-engines-macos/engines-manifest.json "$RUNNER_TEMP/mc-macos-engine-assets/"
-          cp engine-sources/macos-universal/ffmpeg/bin/ffmpeg-aarch64-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
-          cp engine-sources/macos-universal/ffmpeg/bin/ffmpeg-x86_64-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
-          cp engine-sources/macos-universal/ffmpeg/bin/ffmpeg-universal-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
-          cp engine-sources/macos-universal/ffprobe/bin/ffprobe-aarch64-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
-          cp engine-sources/macos-universal/ffprobe/bin/ffprobe-x86_64-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
-          cp engine-sources/macos-universal/ffprobe/bin/ffprobe-universal-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
+          cp engine-sources/macos-aarch64/ffmpeg/bin/ffmpeg-aarch64-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
+          cp engine-sources/macos-aarch64/ffprobe/bin/ffprobe-aarch64-apple-darwin "$RUNNER_TEMP/mc-macos-engine-assets/"
           (
             cd "$RUNNER_TEMP/mc-macos-engine-assets"
             for asset in ffmpeg-*-apple-darwin ffprobe-*-apple-darwin; do
@@ -289,7 +241,7 @@ jobs:
             done
           )
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: macos-engine-assets
           path: ${{ runner.temp }}/mc-macos-engine-assets

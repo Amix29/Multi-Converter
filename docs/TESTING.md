@@ -26,12 +26,14 @@ That command intentionally refuses non-Windows hosts and runs:
 ```powershell
 npm audit --omit=dev
 npm audit
+npm run audit:python
 npm run prepare:bundled-engines
 npm run check
 npm run test:ui:preview
 npm run fmt:rust:check
 npm run clippy:rust
 npm run audit:rust
+npm run audit:ocr-runtime
 npm run validate:engines
 npm run test:rust
 npm run test:conversions
@@ -44,13 +46,21 @@ npm run build
 npm run tauri:build
 ```
 
-These 18 steps include both production-only and complete installed dependency
+These 20 steps include production-only, complete npm, Python and OCR supply-chain
 audits. `npm run check` contains the unit, source-contract, production-config
 and secret-leak checks; the separate Playwright step then exercises the
 compiled frontend in Chromium. During a long local run, the wrapper writes
 progress to `tmp/windows-ci-gate-status.json`. If a terminal session times out
 while `tauri:build` or NSIS is still running, inspect that file and the running
 processes before starting another full gate.
+
+The Cargo test/lint wrapper omits staging packaged resources into its temporary
+target directory. Conversion tests execute the real source-staged binaries;
+production Tauri builds still copy the full configured resources. This avoids
+duplicating large assets for Rust checks without substituting for installer tests.
+`test:conversions` also runs a local HTTP control against FFmpeg/ffprobe: the
+unrestricted control must fetch a segment, while the production protocol whitelist
+must reject it with zero HTTP requests and unchanged source bytes.
 
 ### Installed Windows native evidence
 
@@ -395,136 +405,60 @@ V1.0.7 packages for those platforms.
 
 ## macOS Code Checks
 
-macOS Rust checks and host validation must run on macOS. Do not treat a failed Windows cross-check as a product failure when it fails before Multi-Converter code on a Darwin-only C/Objective-C dependency.
+From V1.0.7, macOS supports Apple Silicon only. Windows x64 and Linux x64 remain
+supported. Historical V1.0.6 universal evidence and filenames remain unchanged.
+The current work/evidence ledger is V1_0_7_APPROVED_IMPLEMENTATION.md.
 
-`npm run test:macos-packaging` is a static contract test and may run on any OS. `npm run test:macos:host` is different: it must run on a real macOS host or a GitHub Actions `macos-latest` runner, and it intentionally fails on Windows and Linux.
+npm run test:macos-packaging and npm run test:github-workflows are static
+contracts runnable on Windows. They never establish native Mac readiness.
+The Build workflow checks aarch64-apple-darwin and runs host unit tests on
+macos-latest. Rust is pinned to 1.96.0. The regular quality jobs also run for
+codex/test pushes without MC_ENABLE_CODEX_TEST_BUILD opt-in. Docs-only pushes
+still skip full builds. Build/release checkouts keep lfs: false.
 
-When GitHub Actions minutes are unavailable and no real Mac is connected, keep using the static contract checks only:
-
-```bash
-npm run test:macos-packaging
-npm run test:github-workflows
-```
-
-Those checks prove the gates are still strict. They do not prove that macOS conversions work.
-
-The GitHub `Build` workflow runs a `macOS code check` job on `macos-latest` for both:
-
-- `aarch64-apple-darwin`
-- `x86_64-apple-darwin`
-
-Pushes that modify only Markdown/docs files skip the full `Build` workflow to conserve GitHub Actions minutes. Pushes to the persistent `codex/test` branch also skip the expensive `Build` jobs unless the repository variable `MC_ENABLE_CODEX_TEST_BUILD` is set to `1`; use that variable or `workflow_dispatch` when a maintainer intentionally wants the full build from the test branch.
-
-All `Build` and `Release` jobs check out with `lfs: false`. Platform sidecars and advanced engines must come from the verified preparation or staging paths used by each job; a release gate must not depend on the repository Git LFS budget.
-
-That job intentionally runs code and contract checks that do not require unreleased local engine binaries:
-
-```bash
-npm run validate:embedded-manifest
-npm run validate:i18n
-npm run typecheck
-npm run test:release-notes
-npm run test:macos-packaging
-npm run test:github-workflows
-npm run test:release-assets
-npm run test:bundled-engines-platform
-npm run test:ui-layout
-npm run test:repository-metadata
-npm run test:run-tauri
-npm run fmt:rust:check
-node scripts/prepare-tauri-ci-sidecars.mjs --target <darwin-target>
-node scripts/cargo-test-temp.mjs check --manifest-path src-tauri/Cargo.toml --target <darwin-target>
-node scripts/cargo-test-temp.mjs clippy --manifest-path src-tauri/Cargo.toml --target <darwin-target> --all-targets -- -D warnings
-```
-
-`prepare-tauri-ci-sidecars.mjs` is compile-only CI scaffolding. It creates small placeholder sidecar files and an empty bundled-engine resource directory so the Tauri build script can evaluate `externalBin` and resources during `cargo check`, `cargo clippy` and native unit tests. It must not be used for DMG packaging or conversion validation.
-
-The same workflow also runs a separate `macOS host unit tests` job on `macos-latest`:
-
-```bash
-node scripts/prepare-tauri-ci-sidecars.mjs --target host
-npm run test:rust
-npm run test:pdfium-wrapper:compile
-npm run clippy:pdfium-wrapper
-```
-
-This job proves the Rust unit tests run on a real macOS runner and that the PDFium wrapper compiles and lints there. It intentionally does not run the PDFium wrapper runtime tests until a macOS PDFium library is staged.
+Compile-only sidecar placeholders are allowed in code/unit jobs and forbidden
+in native conversion and packaging gates. Run npm run fmt:rust:check, native
+check/Clippy, frontend typechecks and static contracts before the host gate.
 
 ## macOS Conversion Matrix
 
-Do not claim that all macOS conversions work from the `macOS code check` or `macOS host unit tests` jobs. Those jobs are compile/unit gates only.
+The macOS Conversion Matrix workflow runs on Apple Silicon (macos-latest),
+requires actual ARM FFmpeg/ffprobe and reviewed macos-aarch64 advanced engines,
+rejects placeholders, checks checksums and binary architectures, prepares
+bundled engines and runs npm run test:macos:host, PDFium runtime tests and
+npm run test:conversions. A missing engine makes this gate fail.
 
-Full macOS conversion validation is the manual `macOS Conversion Matrix` workflow. It runs as a two-architecture matrix on Apple Silicon (`macos-latest`) and Intel (`macos-15-intel`), refuses CI placeholder sidecars, requires real Apple Silicon and Intel FFmpeg/ffprobe sidecars, requires `macos-universal` manifest entries for PDFium, LibreOffice, Pandoc and libvips, prepares the bundled engines, runs real macOS host validation, runs the PDFium wrapper runtime tests with a macOS PDFium library, and then runs:
+Use reviewed SHA-256 inputs for ARM FFmpeg/ffprobe, LibreOffice and Pandoc;
+PDFium comes from the locked native ARM upstream archive and Rust wrapper.
+macOS libvips Runtime builds one portable ARM runtime, validates dynamic links
+and smoke-tests native execution. No Intel input, lipo synthesis or Rosetta
+fallback belongs in the new chain.
 
-```bash
-npm run test:macos:conversions
-```
+npm run prepare:macos-local-engines can prepare and package those inputs. It
+restores the embedded manifest unless --keep-generated-manifest is intentional.
+Only a real ARM Mac can run npm run test:macos:conversions.
 
-That script ultimately runs:
-
-```bash
-npm run prepare:bundled-engines
-npm run test:macos:host
-npm run test:pdfium-wrapper
-npm run test:conversions
-```
-
-Historical v1.0.5 two-architecture `macOS Conversion Matrix` evidence is recorded in `docs/V1_0_5_VALIDATION.md`. V1.0.6 superseded that evidence and is the current public baseline. Rerun the two-architecture matrix after any conversion, sidecar, engine, manifest, OCR or packaging change before making a new macOS conversion claim. If the real macOS stack is missing or incomplete, this gate must fail instead of allowing release notes or status updates to say that all macOS conversions were tested.
-
-Use `npm run prepare:ffmpeg-engine:macos` only with maintainer-approved Apple Silicon and Intel archives plus SHA-256 checksums. A source may be one combined archive containing both `ffmpeg` and `ffprobe`, or separate `FFMPEG_MACOS_*` and `FFPROBE_MACOS_*` archives with separate SHA-256 values. `npm run prepare:macos-upstream-engines` also requires pinned checksums for PDFium, LibreOffice and Pandoc through `PDFIUM_MACOS_UNIVERSAL_ARCHIVE_SHA256`, `LIBREOFFICE_MACOS_AARCH64_DMG_SHA256`, `LIBREOFFICE_MACOS_X86_64_DMG_SHA256`, `PANDOC_MACOS_AARCH64_ARCHIVE_SHA256` and `PANDOC_MACOS_X86_64_ARCHIVE_SHA256`. Use `npm run prepare:libvips-engine:macos` only with two already-portable libvips runtime trees. These scripts are strict packaging gates; they are not CI placeholders and should fail when the inputs are missing, unpinned or still linked to machine-local package manager paths.
-
-The `macOS libvips Runtime` workflow builds native Homebrew-derived libvips runtime archives on Apple Silicon and Intel runners, rewrites their dynamic links to portable `@rpath` links, smoke-tests the native `vips copy` path, and uploads the two archives as GitHub Actions artifacts. On the persistent `codex/test` branch it is also push-runnable when the workflow or runtime builder changes and the `MC_ENABLE_MACOS_LIBVIPS_RUNTIME` repository variable is set to `1`, so libvips portability can be tested before those workflow files are merged to `main`. Leave that variable disabled for ordinary docs/status/package-metadata changes to avoid spending macOS runner minutes. Its `arch` input can retry one architecture, but complete macOS validation still requires both archives.
-
-Do not set `output_release_tag` unless a maintainer intentionally wants a public prerelease tag to receive those runtime archives. Prefer passing the successful `macOS libvips Runtime` run ID as `libvips_runtime_run_id` to `macOS Engine Staging`; that keeps the handoff inside GitHub Actions artifacts. When a reviewed test release tag is used instead, pass it as `libvips_release_tag` for the engine staging workflow after reviewing dependency licenses.
-
-When GitHub Actions minutes are unavailable, use a real Mac or self-hosted macOS runner instead. After collecting both libvips runtime archives and both FFmpeg archives/checksums, run local staging on macOS:
-
-```bash
-npm run prepare:macos-local-engines -- \
-  --libvips-aarch64-archive /path/to/libvips-macos-aarch64.tar.gz \
-  --libvips-x86_64-archive /path/to/libvips-macos-x86_64.tar.gz \
-  --host-check
-```
-
-This command prepares FFmpeg/ffprobe from the configured `FFMPEG_MACOS_*` archive variables, prepares PDFium/LibreOffice/Pandoc from upstream sources after verifying the required SHA-256 values, extracts the two local libvips archives, packages `macos-universal` engine ZIPs, temporarily stages an embedded manifest containing only advanced macOS engines for local validation, seeds `engine-sources/.bundled-engine-cache` with every generated macOS archive, runs `npm run prepare:bundled-engines`, then restores the committed `src-tauri/engines-manifest.json` by default. Add `--conversions` only on a real Mac that should run the full conversion matrix. Use `--keep-generated-manifest` only when a maintainer explicitly wants to review and commit the exact advanced engine set; do not commit generated engine archives or bundled engine outputs without approval.
-
-For GitHub Actions validation with staged release inputs, upload real sidecars to the tag passed as `sidecar_release_tag`, and upload `engines-manifest.json` plus the referenced macOS engine ZIPs to the tag passed as `engine_release_tag`. The workflows download those assets with `gh release download`, verify their SHA-256 checksums, write only advanced macOS engines into the embedded manifest, then seed `engine-sources/.bundled-engine-cache` so release assets can be tested without relying on public unauthenticated download URLs.
-
-The `macOS Engine Staging` workflow can produce those staged assets as a GitHub Actions artifact without creating a release. On `codex/test`, it is also push-runnable when the repository variable `MC_ENABLE_MACOS_ENGINE_STAGING` is set to `1`; push runs read the explicit FFmpeg/ffprobe URLs, SHA-256 values, upstream PDFium/LibreOffice/Pandoc SHA-256 values and libvips source from `MC_*` repository variables. The manual workflow can still publish to a public test release when `output_release_tag` is intentionally provided. It always requires explicit FFmpeg archive URLs/checksums, upstream engine checksums and either a libvips runtime run ID or a libvips release tag; it does not select FFmpeg sources automatically.
-
-Before building a DMG on macOS, also run:
-
-```bash
-npm run test:macos:host
-```
-
-That host-only check verifies Xcode Command Line Tools, `lipo`, both Darwin Rust targets, executable permissions, Apple Silicon/Intel/universal FFmpeg and ffprobe sidecar architectures, the universal sidecars' `-version` smoke tests, and bundled-engine validation for `macos-universal`.
-
-`npm run tauri:build:macos` intentionally refuses Windows/Linux hosts before invoking Tauri. A universal DMG must be built on macOS, with staged macOS sidecars and engines.
-
-After building the final DMG on macOS, run:
-
-```bash
-npm run verify:macos-dmg -- --version X.Y.Z --dmg path/to/Multi-Converter_X.Y.Z_macos-universal.dmg
-```
-
-That DMG verification also runs only on macOS. It mounts the DMG, checks `Multi-Converter.app`, verifies the app version, confirms the app executable and FFmpeg/ffprobe sidecars are universal `arm64 + x86_64` binaries, smoke-tests the bundled sidecars with `-version`, rejects stale Windows-only bundled engine resources, rejects bundled engine metadata that is not `macos-universal`, and runs `codesign --verify --deep --strict`.
+Historical two-architecture macOS Conversion Matrix receipts for V1.0.5/1.0.6
+are retained as dated evidence; they do not validate the current ARM packages.
+See RELEASE_CHECKLIST_MACOS.md for exact native input and acceptance steps.
 
 ## macOS DMG Validation
 
-A macOS release is not ready from code checks alone. The release DMG must be built and tested on macOS using `docs/RELEASE_CHECKLIST_MACOS.md`.
+The committed V1.0.6 evidence is complete in its historical ledger, with
+`releaseReady: true` for that published baseline only. A new V1.0.7 conversion
+and OCR gate is required; previous receipts do not validate current changes.
 
-For the published V1.0.6 baseline, run:
+Build npm run tauri:build:macos on Apple Silicon with target aarch64-apple-darwin.
+The final user installer is Multi-Converter_X.Y.Z_macos-aarch64.dmg, plus the
+identical stable alias Multi-Converter_macos-aarch64.dmg. The updater archive
+is Multi-Converter_X.Y.Z_macos-aarch64.app.tar.gz with a real .sig, using only
+darwin-aarch64 in latest.json. Intel/universal updater entries must be rejected.
 
-```bash
-npm run status:v1.0.6
-```
-
-The command writes `tmp/v1.0.6-status.json`. The committed V1.0.6 evidence is complete and the status should report `releaseReady: true`.
-
-The V1.0.5 status command and `docs/V1_0_5_VALIDATION.md` are retained only for historical reproducibility. In its then-current preparation state, `releaseReady` remained false until the old clean-Mac and Linux AppImage receipts were recorded; that statement is not the current product status.
-
-For V1.0.7, create a version-specific status command and validation document only after the conversion and OCR implementations expose real, testable gates. That future gate must require the conversion matrix, packaged `PP-OCRv6_medium` fixtures, platform packaging, manual host tests and final security evidence. Do not reuse the V1.0.6 success as V1.0.7 proof.
+Run npm run verify:macos-dmg against the exact final downloaded DMG. Verify app
+structure, signature, native arm64 binaries, versions and all bundled resources.
+Then run native installed-package conversion/OCR and the clean-Mac Gatekeeper
+first-launch/second-launch protocol. Ad-hoc signing and Tauri updater signatures
+do not establish Apple Developer ID signing or notarization.
 
 ## Linux x64
 
@@ -630,9 +564,9 @@ The Linux public installer is the x64 AppImage. Release assets must use:
 
 `latest.json` must include the Tauri updater platform key `linux-x86_64` pointing to the versioned AppImage and using the exact signature content from `Multi-Converter_X.Y.Z_linux-x64.AppImage.sig`.
 
-The manual GitHub `macOS DMG Build` workflow builds and verifies the universal DMG on Apple Silicon (`macos-latest`), uploads the release-named artifact, then downloads and verifies that same artifact on Intel (`macos-15-intel`). Use it for test-repository validation before copying the verified artifact into a public release.
+The macOS DMG Build workflow builds and verifies the Apple Silicon DMG on macos-latest and uploads the exact release-named artifact. Native user acceptance remains required before public release.
 
-When the GitHub `Release` workflow is started with `include_macos=true`, it runs `macOS DMG verification` jobs on Apple Silicon (`macos-latest`) and Intel (`macos-15-intel`) before the Windows release job republishes the final asset set. If either macOS DMG verification fails, the release publication job does not run.
+When Release is started with include_macos=true, macOS DMG verification runs on Apple Silicon before publication. A failed native verification blocks the release job.
 
 The GitHub `Release` workflow first runs a lightweight `release-preflight` job before allocating release runners. For every release, it validates the GitHub release body through `scripts/validate-release-notes.mjs`, the same shared rules used by release asset validation. For Windows-only runs, it rejects accidental macOS DMG and Linux AppImage mentions. For Linux runs, it requires the versioned Linux x64 AppImage name, enabled Linux automatic-update wording and positive Linux AppImage verification wording before publication.
 
@@ -724,7 +658,7 @@ npm run test:linux:native -- --package "<AppImage>" --run-id "<id>"
 Their `--self-test` modes validate only the harness contract and may run on
 Windows. Real evidence must come from the package extracted from the DMG or the
 exact AppImage on its native runner. `OCR Runtime Staging` builds the official
-CPU workers for Apple Silicon, Intel and Linux. The historical Phase 8 package
+CPU workers for Windows x64, Apple Silicon and Linux x64. The historical Phase 8 package
 used PDFium 149.0.7825.0 with wrapper 0.3.0. The post-audit staging workflow
 builds wrapper 0.4.0 with Rust 1.96.0 and the committed Cargo lock, runs the
 runtime tests and strict Clippy, and emits package evidence separately from the
@@ -733,7 +667,7 @@ engine asset. Its macOS and Linux package measurements remain
 values or estimates. Downstream workflows verify the staging workflow name,
 success conclusion and exact head commit before use.
 
-The macOS conversion and DMG workflows require both OCR architectures and one
+The macOS conversion and DMG workflows require the ARM OCR archive and one
 shared model copy. The Linux AppImage workflow requires only Linux x64. They
 run the OCR corpus with active-network process observation, package verification
 and two launch smokes. Internal Phase 8 artifacts intentionally omit public

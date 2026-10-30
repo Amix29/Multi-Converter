@@ -35,11 +35,11 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
 
@@ -88,18 +88,16 @@ jobs:
         include:
           - arch_label: Apple Silicon
             runner: macos-latest
-          - arch_label: Intel
-            runner: macos-15-intel
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
@@ -118,8 +116,8 @@ jobs:
         run: |
           version="${{ steps.version.outputs.version }}"
           tag="${{ steps.version.outputs.tag }}"
-          macos_dmg_name="Multi-Converter_${version}_macos-universal.dmg"
-          macos_updater_name="Multi-Converter_${version}_macos-universal.app.tar.gz"
+          macos_dmg_name="Multi-Converter_${version}_macos-aarch64.dmg"
+          macos_updater_name="Multi-Converter_${version}_macos-aarch64.app.tar.gz"
           macos_updater_sig_name="${macos_updater_name}.sig"
           macos_dmg_dir="$RUNNER_TEMP/mc-release-macos-dmg"
           rm -rf "$macos_dmg_dir"
@@ -157,16 +155,16 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
 
       - id: version
         shell: bash
@@ -220,20 +218,20 @@ jobs:
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
           components: rustfmt, clippy
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.cargo/registry
@@ -242,7 +240,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-registry-release-
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: src-tauri/bundled-engines
           key: ${{ runner.os }}-bundled-engines-${{ hashFiles('src-tauri/engines-manifest.json') }}
@@ -250,7 +248,7 @@ jobs:
             ${{ runner.os }}-bundled-engines-
 
       - id: cargo-audit-cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.cargo/bin/cargo-audit.exe
           key: ${{ runner.os }}-cargo-audit-bin-v1
@@ -334,8 +332,8 @@ jobs:
           $platform = "windows"
 
           if ($includeMacos) {
-            $macosDmgName = "Multi-Converter_${version}_macos-universal.dmg"
-            $macosUpdaterName = "Multi-Converter_${version}_macos-universal.app.tar.gz"
+            $macosDmgName = "Multi-Converter_${version}_macos-aarch64.dmg"
+            $macosUpdaterName = "Multi-Converter_${version}_macos-aarch64.app.tar.gz"
             $macosUpdaterSigName = "$macosUpdaterName.sig"
             $macosDmgDir = Join-Path $env:RUNNER_TEMP "mc-release-macos-dmg"
             Remove-Item -LiteralPath $macosDmgDir -Recurse -Force -ErrorAction SilentlyContinue
@@ -459,10 +457,10 @@ jobs:
             "Multi-Converter_windows-x64_setup.exe"
           )
           if ($platform -eq "all") {
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
-            $expectedAssets += "Multi-Converter_macos-universal.dmg"
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz"
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz.sig"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.dmg"
+            $expectedAssets += "Multi-Converter_macos-aarch64.dmg"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.app.tar.gz"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.app.tar.gz.sig"
           }
           if ($platform -eq "windows-linux" -or $platform -eq "desktop") {
             $expectedAssets += "Multi-Converter_${version}_linux-x64.AppImage"
@@ -471,10 +469,10 @@ jobs:
             $expectedAssets += "Multi-Converter_linux-x64.AppImage"
           }
           if ($platform -eq "desktop") {
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
-            $expectedAssets += "Multi-Converter_macos-universal.dmg"
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz"
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz.sig"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.dmg"
+            $expectedAssets += "Multi-Converter_macos-aarch64.dmg"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.app.tar.gz"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.app.tar.gz.sig"
           }
 
           gh release edit $tag --repo $env:GITHUB_REPOSITORY --title "Multi-Converter $tag" --latest
@@ -506,10 +504,10 @@ jobs:
             "Multi-Converter_windows-x64_setup.exe"
           )
           if ($platform -eq "all") {
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
-            $expectedAssets += "Multi-Converter_macos-universal.dmg"
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz"
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz.sig"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.dmg"
+            $expectedAssets += "Multi-Converter_macos-aarch64.dmg"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.app.tar.gz"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.app.tar.gz.sig"
           }
           if ($platform -eq "windows-linux" -or $platform -eq "desktop") {
             $expectedAssets += "Multi-Converter_${version}_linux-x64.AppImage"
@@ -518,10 +516,10 @@ jobs:
             $expectedAssets += "Multi-Converter_linux-x64.AppImage"
           }
           if ($platform -eq "desktop") {
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.dmg"
-            $expectedAssets += "Multi-Converter_macos-universal.dmg"
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz"
-            $expectedAssets += "Multi-Converter_${version}_macos-universal.app.tar.gz.sig"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.dmg"
+            $expectedAssets += "Multi-Converter_macos-aarch64.dmg"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.app.tar.gz"
+            $expectedAssets += "Multi-Converter_${version}_macos-aarch64.app.tar.gz.sig"
           }
           $expectedAssets = $expectedAssets | Sort-Object
           $actualAssets = @(gh release view $tag --repo $env:GITHUB_REPOSITORY --json assets --jq ".assets[].name" | Sort-Object)
