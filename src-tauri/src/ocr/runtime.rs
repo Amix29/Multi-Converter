@@ -19,6 +19,19 @@ pub(super) const STARTUP_TIMEOUT: std::time::Duration = if cfg!(target_os = "mac
     std::time::Duration::from_secs(30)
 };
 
+pub(super) fn configure_worker_environment(command: &mut std::process::Command) {
+    // Match the OpenMP/BLAS bounds used by the native OCR memory measurements.
+    let threads = std::thread::available_parallelism()
+        .map(usize::from)
+        .unwrap_or(1)
+        .clamp(1, 4)
+        .to_string();
+    command
+        .env("OMP_NUM_THREADS", &threads)
+        .env("MKL_NUM_THREADS", &threads)
+        .env("OPENBLAS_NUM_THREADS", "1");
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct RuntimeLock {

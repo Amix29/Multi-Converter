@@ -440,3 +440,14 @@ also runs on extracted Mac OCR archives before inference.
 
 Portable synthetic probe scripts and exact layout PNGs are preserved under
 `audits/2026-10-30/reproduce/`; their README states prerequisites and evidence limits.
+
+The native worker launch now applies the same OpenMP/MKL bounds as the host
+measurements (up to four available CPUs) and one OpenBLAS thread. A regression
+checks that unbounded command settings cannot override those values. These are
+library environment bounds, not a claim that every predictor thread is controlled.
+
+A same-payload Windows NSIS comparison measured zlib at 999,609,888 bytes and
+LZMA at 950,990,375 bytes: a 4.86% reduction. LZMA took 1,105,020 ms (18 min 25 s).
+The zlib default is retained given the limited size gain and measured LZMA cost;
+no installed extraction-speed comparison is claimed. The receipt is
+`audits/2026-10-30/windows-nsis-compression-comparison.json`.

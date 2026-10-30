@@ -300,6 +300,7 @@ fn start_worker(
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
+    runtime::configure_worker_environment(&mut command);
     configure_runtime_library_path(&mut command, runtime)?;
     #[cfg(windows)]
     {

@@ -1,6 +1,25 @@
 use super::*;
 
 #[test]
+fn worker_blas_environment_overrides_unbounded_command_settings() {
+    let mut command = std::process::Command::new("worker-must-not-run");
+    command
+        .env("OMP_NUM_THREADS", "9999")
+        .env("OPENBLAS_NUM_THREADS", "9999");
+    configure_worker_environment(&mut command);
+    let values: std::collections::HashMap<_, _> = command
+        .get_envs()
+        .filter_map(|(key, value)| {
+            value.map(|value| (key.to_string_lossy(), value.to_string_lossy()))
+        })
+        .collect();
+    let threads = values["OMP_NUM_THREADS"].parse::<usize>().unwrap();
+    assert!((1..=4).contains(&threads));
+    assert_eq!(values["MKL_NUM_THREADS"], values["OMP_NUM_THREADS"]);
+    assert_eq!(values["OPENBLAS_NUM_THREADS"], "1");
+}
+
+#[test]
 #[ignore = "requires the actual prepared host OCR archive and locked models"]
 fn prepared_ocr_archive_extracts_and_verifies_every_resource() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("ocr-resources");
