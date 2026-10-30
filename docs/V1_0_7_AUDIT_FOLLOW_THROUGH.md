@@ -125,6 +125,12 @@ read-only Git object alternates to avoid copying 12 GiB of repository history;
 source files, index, npm dependencies and build outputs reside on Linux.
 The first Linux CI attempt stopped at release-asset tests before application
 compilation; it is recorded as failed, not as a native application gate pass.
+With coherent Cargo/rustc, application `cargo check` passed on Linux. The next
+gate stop was an unused mutable test vector specific to Linux. Platform entries
+now live in a cfg-qualified immutable array, preserving all unsafe-path cases.
+The same review found Windows drive-absolute strings could otherwise parse as
+relative paths on Unix; both slash forms are now explicitly rejected, while
+ordinary Unix colons and reserved-looking basenames remain supported.
 
 ## Remaining authorized work
 

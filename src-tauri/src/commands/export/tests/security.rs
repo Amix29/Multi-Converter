@@ -2,19 +2,24 @@ use super::*;
 
 #[test]
 fn relative_path_parser_rejects_escape_and_ambiguous_components() {
-    let mut unsafe_paths = vec![
+    let unsafe_paths = [
         "",
         "/absolute.txt",
         "\\absolute.txt",
         "C:\\absolute.txt",
+        "C:/absolute.txt",
         "../escape.txt",
         "root/../escape.txt",
         "root//file.txt",
         "root/./file.txt",
         "root/file.txt/",
+        #[cfg(target_os = "windows")]
+        "root/trailing. ",
+        #[cfg(target_os = "windows")]
+        "root/CON.txt",
+        #[cfg(target_os = "windows")]
+        "root/report:2026.txt",
     ];
-    #[cfg(target_os = "windows")]
-    unsafe_paths.extend(["root/trailing. ", "root/CON.txt", "root/report:2026.txt"]);
     for value in unsafe_paths {
         assert!(
             ParsedRelativePath::parse(value, Some("root-a")).is_err(),
