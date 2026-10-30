@@ -278,7 +278,7 @@ fn start_worker(
     ensure_not_canceled(canceled)?;
     let resource_lease = crate::converters::resources::reserve(
         crate::converters::resources::ResourceClass::Ocr,
-        768 * 1024 * 1024,
+        crate::converters::resources::OCR_RESERVATION_BYTES,
         || canceled.load(Ordering::SeqCst),
     )
     .map_err(|error| {

@@ -16,12 +16,16 @@ Runtime locks, packaged models and original-file protection are unchanged.
 - Windows NSIS build: **local b766134f candidate built; updater signature verified; installed acceptance pending**
 - Windows packaged application smoke: **previous checkpoint only; current application acceptance pending**
 - Current Windows correction fixture: **reviewed expected text matched exactly (100%)**
-- macOS Apple Silicon and Linux x64 runtimes: **not built or host-tested**
+- Linux x64: **official runtime built and packaged reproducibly; direct 40-case corpus passed and isolated extracted-archive four-case probe passed**
+- macOS Apple Silicon runtime: **not built or host-tested; available Mac lacks build space**
 - Native ONNX candidate and accelerators: **not selected; official CPU runtime retained**
 - Privacy mode: **local only**
 
 Intel macOS is retired from V1.0.7. The previous Windows NSIS/Tauri receipts
 below are historical checkpoints, not validation of the current audit branch.
+Current Linux measurements, runtime selection, license inventory and evidence
+limits are in [the follow-through handoff](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
+The extracted-worker tests do not establish installed Linux application behavior.
 The first rebuilt worker timed out on a scanned PDF. Explicitly bounding the
 detection longest side to 1536 pixels fixed that fixture; recognition keeps the
 original crops and all five reference models. The rebuilt packaged corpus passed

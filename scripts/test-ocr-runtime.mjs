@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath } from "./lib/ocr-runtime-archive.mjs";
+import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath, ocrRuntimeLibraryEnvironment } from "./lib/ocr-runtime-archive.mjs";
 
 const root = process.cwd();
 const platform = hostOcrPlatform();
@@ -55,7 +55,7 @@ async function renderFixture(target, text) {
 
 function recognize(workerPath, modelsPath, inputPath, outputPath) {
   return new Promise((resolve, reject) => {
-    const libraryEnvironment = runtimeLibraryEnvironment(workerPath);
+    const libraryEnvironment = ocrRuntimeLibraryEnvironment(workerPath);
     const child = spawn(workerPath, ["--serve", "--models", modelsPath, "--provider", "cpu"], {
       windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"],
@@ -113,11 +113,6 @@ function recognize(workerPath, modelsPath, inputPath, outputPath) {
       else reject(new Error(`Le runtime OCR s’est arrêté (${code}): ${stderr}`));
     });
   });
-}
-
-function runtimeLibraryEnvironment(workerPath) {
-  const paddleLibraries = path.join(path.dirname(workerPath), "_internal", "paddle", "libs");
-  return process.platform === "linux" ? { LD_LIBRARY_PATH: paddleLibraries } : {};
 }
 
 function assertNoNetworkSockets(pid) {

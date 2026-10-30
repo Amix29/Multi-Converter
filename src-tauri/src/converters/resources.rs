@@ -4,8 +4,14 @@ use std::sync::{Arc, Condvar};
 
 const MIB: u64 = 1024 * 1024;
 const TOTAL_BYTES: u64 = 2048 * MIB;
+// The native Linux corpus sampled ~1040 MiB; Windows sampled ~667 MiB.
+pub(crate) const OCR_RESERVATION_BYTES: u64 = if cfg!(target_os = "linux") {
+    1152 * MIB
+} else {
+    768 * MIB
+};
 // Leave room for the retained OCR worker even when it is idle.
-const MAX_RESERVATION_BYTES: u64 = TOTAL_BYTES - 768 * MIB;
+const MAX_RESERVATION_BYTES: u64 = TOTAL_BYTES - OCR_RESERVATION_BYTES;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ResourceClass {
@@ -78,7 +84,12 @@ fn reserve_from(
     bytes: u64,
     cancelled: impl Fn() -> bool,
 ) -> Result<ResourceLease> {
-    if bytes > MAX_RESERVATION_BYTES {
+    let maximum = if class == ResourceClass::Ocr {
+        OCR_RESERVATION_BYTES
+    } else {
+        MAX_RESERVATION_BYTES
+    };
+    if bytes > maximum {
         return Err(ConvertError::Message(
             "Ce traitement dépasse le budget mémoire du lot. Choisissez une image moins grande."
                 .to_string(),
@@ -157,17 +168,28 @@ mod tests {
     #[test]
     fn cancellation_unblocks_waiters_and_drop_returns_capacity() {
         let pool = Arc::new(Pool::default());
-        let first = reserve_from(pool.clone(), ResourceClass::Ocr, 768 * MIB, || false).unwrap();
+        let first = reserve_from(
+            pool.clone(),
+            ResourceClass::Ocr,
+            OCR_RESERVATION_BYTES,
+            || false,
+        )
+        .unwrap();
         let cancelled = Arc::new(AtomicBool::new(false));
         let flag = cancelled.clone();
         let waiting_pool = pool.clone();
         let (entered, waiting) = mpsc::sync_channel(1);
         let (finished, completion) = mpsc::channel();
         let worker = std::thread::spawn(move || {
-            let result = reserve_from(waiting_pool, ResourceClass::Ocr, 768 * MIB, || {
-                let _ = entered.try_send(());
-                flag.load(Ordering::SeqCst)
-            })
+            let result = reserve_from(
+                waiting_pool,
+                ResourceClass::Ocr,
+                OCR_RESERVATION_BYTES,
+                || {
+                    let _ = entered.try_send(());
+                    flag.load(Ordering::SeqCst)
+                },
+            )
             .is_err();
             finished.send(()).unwrap();
             result
@@ -180,8 +202,14 @@ mod tests {
         cancelled.store(true, Ordering::SeqCst);
         assert!(worker.join().unwrap());
         drop(first);
-        let next = reserve_from(pool.clone(), ResourceClass::Ocr, 768 * MIB, || false).unwrap();
-        assert_eq!(pool.usage.lock().unwrap().bytes, 768 * MIB);
+        let next = reserve_from(
+            pool.clone(),
+            ResourceClass::Ocr,
+            OCR_RESERVATION_BYTES,
+            || false,
+        )
+        .unwrap();
+        assert_eq!(pool.usage.lock().unwrap().bytes, OCR_RESERVATION_BYTES);
         drop(next);
         assert_eq!(pool.usage.lock().unwrap().bytes, 0);
     }
@@ -189,7 +217,13 @@ mod tests {
     #[test]
     fn retained_ocr_worker_never_permanently_blocks_a_maximum_image() {
         let pool = Arc::new(Pool::default());
-        let _ocr = reserve_from(pool.clone(), ResourceClass::Ocr, 768 * MIB, || false).unwrap();
+        let _ocr = reserve_from(
+            pool.clone(),
+            ResourceClass::Ocr,
+            OCR_RESERVATION_BYTES,
+            || false,
+        )
+        .unwrap();
         let _image = reserve_from(
             pool.clone(),
             ResourceClass::Image,

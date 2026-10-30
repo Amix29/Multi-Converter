@@ -152,7 +152,7 @@ export async function createZip(sourceDir, archivePath, options = {}) {
         encoding: "utf8",
         stdio: ["pipe", "pipe", "pipe"],
       });
-      if (result.status !== 0) throw new Error(`Creation ZIP impossible: ${result.stderr || result.stdout}`);
+      if (result.status !== 0) throw new Error(`Creation ZIP impossible: ${result.error?.message || result.stderr || result.stdout || "zip failed without output"}`);
       return;
     }
     await fs.rm(archivePath, { force: true });
@@ -162,7 +162,7 @@ export async function createZip(sourceDir, archivePath, options = {}) {
       stdio: ["ignore", "pipe", "pipe"],
     });
     if (result.status !== 0) {
-      throw new Error(`Creation ZIP impossible: ${result.stderr || result.stdout}`);
+      throw new Error(`Creation ZIP impossible: ${result.error?.message || result.stderr || result.stdout || "zip failed without output"}`);
     }
     return;
   }

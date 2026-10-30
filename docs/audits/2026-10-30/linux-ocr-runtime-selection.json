@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "platform": "linux-x64",
+  "executable": "runtime/linux-x64/ocr-worker",
+  "runtime": "official",
+  "provider": "cpu",
+  "artifact": {
+    "fileCount": 5750,
+    "totalBytes": 1482506739,
+    "aggregateSha256": "8b53953e8bc8ffa7c32fbe5b450dae3df15d98daf2aab2f833efde16f7ad6d47"
+  },
+  "archive": {
+    "bytes": 471941365,
+    "sha256": "7693f56b05aec6ba4633872d479eb847566922ffc9432b7366eed6d68c321710"
+  }
+}

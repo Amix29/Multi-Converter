@@ -193,9 +193,29 @@ The first direct-runtime corpus run used a Linux user/network namespace; its
 control confirmed outbound network unavailable (errno 101). All seven clean
 language groups scored 100%; the run then exposed incorrect non-Windows FFmpeg
 sidecar names in the test runner at scanned-PDF cropping. It is recorded as a
-failed corpus run, not a complete Linux OCR pass. Correction/rerun is pending.
+failed corpus run. After correcting target-qualified FFmpeg/PDFium sidecar names,
+the direct runtime passed all 40 cases: clean 100%, difficult 99.76%, median
+7,729 ms, sampled main-process peak 1,039.7 MiB; 137 socket samples found no
+connections in the isolated namespace. These timings apply to this WSL host and
+thread settings, not a universal Windows/Linux speed comparison.
+Receipt: [direct corpus](audits/2026-10-30/linux-ocr-corpus-direct.json).
 
-## Remaining authorized work
+The extracted archive then passed four cases (French, native/scanned/mixed PDF)
+with the original build directory temporarily moved out of its expected location,
+library search restricted to the extracted worker, and the same network isolation.
+All four scored 100%; 49 socket samples observed no connections. The original
+build directory was restored. This is packaged-worker evidence, not installed-app
+acceptance. [Archive probe](audits/2026-10-30/linux-ocr-corpus-packaged.json),
+[selection](audits/2026-10-30/linux-ocr-runtime-selection.json),
+[license inventory](audits/2026-10-30/linux-ocr-runtime-licenses.json).
+
+Linux OCR admission now reserves 1,152 MiB in response to the measured RSS;
+Windows keeps its measured 768 MiB reservation. The 2 GiB pool remains unchanged.
+Maximum non-OCR reservations leave room for the retained platform worker, and
+the OCR reservation uses its own maximum, avoiding a permanent capacity wait.
+This remains admission accounting, not an OS RSS cap. Native Linux tests and
+denied-warning Clippy passed on the SVG/report/resource changes; exact totals
+are recorded in the latest validation entry.
 
 ## Explicit batch report
 

@@ -7,6 +7,12 @@ export function ocrRuntimeArchivePath(root, platform) {
   return path.join(root, "src-tauri", "ocr-resources", "runtime", `${platform}.zip`);
 }
 
+export function ocrRuntimeLibraryEnvironment(workerPath) {
+  if (process.platform !== "linux") return {};
+  const internal = path.join(path.dirname(workerPath), "_internal");
+  return { LD_LIBRARY_PATH: [path.join(internal, "paddle", "libs"), internal].join(path.delimiter) };
+}
+
 export function hostOcrPlatform() {
   if (process.platform === "win32" && process.arch === "x64") return "windows-x64";
   if (process.platform === "darwin" && process.arch === "arm64") return "macos-aarch64";

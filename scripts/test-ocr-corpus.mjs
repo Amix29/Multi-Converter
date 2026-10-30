@@ -6,7 +6,8 @@ import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import readline from "node:readline";
-import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath } from "./lib/ocr-runtime-archive.mjs";
+import { nativeSidecarName } from "./lib/host-sidecar.mjs";
+import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath, ocrRuntimeLibraryEnvironment } from "./lib/ocr-runtime-archive.mjs";
 
 const root = process.cwd();
 const platform = hostOcrPlatform();
@@ -66,10 +67,12 @@ try {
     directExecutable: directExecutable ? path.relative(root, directExecutable).replaceAll("\\", "/") : null,
     runtimeExtractionMs: extractionMs,
     runtimeInitializationMs: worker.initializationMs,
-    peakWorkerWorkingSetBytes: Math.max(0, ...results.map(({ workerWorkingSetBytes }) => workerWorkingSetBytes ?? 0)),
+    peakWorkerWorkingSetBytes: results.some(({ workerWorkingSetBytes }) => workerWorkingSetBytes !== null)
+      ? Math.max(...results.map(({ workerWorkingSetBytes }) => workerWorkingSetBytes ?? 0)) : null,
+    memoryMeasurement: "Maximum of sampled main-process RSS/working-set values; child processes excluded.",
     medianRecognitionMs: median(measured.map(({ elapsedMs }) => elapsedMs)),
-    cleanMean: mean(clean.map(({ accuracy }) => accuracy)),
-    difficultMean: mean(difficult.map(({ accuracy }) => accuracy)),
+    cleanMean: clean.length ? mean(clean.map(({ accuracy }) => accuracy)) : null,
+    difficultMean: difficult.length ? mean(difficult.map(({ accuracy }) => accuracy)) : null,
     networkSamples: worker.network.samples,
     observedWorkerConnections: worker.network.connections,
     results,
@@ -81,7 +84,7 @@ try {
   }
   if (failures.length) throw new Error(`Corpus OCR insuffisant:\n- ${failures.join("\n- ")}`);
   console.log(
-    `OCR ${partial ? "corpus probe" : "corpus"} passed: ${selectedCases.length} cases, clean mean ${(report.cleanMean * 100).toFixed(2)} %, difficult mean ${(report.difficultMean * 100).toFixed(2)} %, median ${report.medianRecognitionMs} ms, peak ${formatBytes(report.peakWorkerWorkingSetBytes)} (${platform}, CPU).`,
+    `OCR ${partial ? "corpus probe" : "corpus"} passed: ${selectedCases.length} cases, clean mean ${formatAccuracy(report.cleanMean)}, difficult mean ${formatAccuracy(report.difficultMean)}, median ${report.medianRecognitionMs} ms, peak ${formatBytes(report.peakWorkerWorkingSetBytes)} (${platform}, CPU).`,
   );
   console.log(`OCR worker network observation: ${worker.network.samples} samples, 0 remote connections.`);
   for (const result of results) {
@@ -189,7 +192,7 @@ async function startWorker(workerPath, modelsPath) {
   const child = spawn(workerPath, ["--serve", "--models", modelsPath, "--provider", "cpu"], {
     windowsHide: true,
     stdio: ["pipe", "pipe", "pipe"],
-    env: { ...process.env, HF_HUB_OFFLINE: "1", PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "true", NO_PROXY: "*" },
+    env: { ...process.env, ...ocrRuntimeLibraryEnvironment(workerPath), HF_HUB_OFFLINE: "1", PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "true", NO_PROXY: "*" },
   });
   const network = monitorNetwork(child.pid);
   let stderr = "";
@@ -274,7 +277,7 @@ async function nextMessage(lines, timeoutMs) {
 }
 
 async function pdfiumExecutable() {
-  const name = process.platform === "win32" ? "pdfium-render-x86_64-pc-windows-msvc.exe" : "pdfium-render";
+  const name = nativeSidecarName("pdfium-render");
   const candidate = process.env.MULTI_CONVERTER_TEST_PDFIUM_RENDER
     ?? path.join(root, "src-tauri", "bundled-engines", "pdfium", "compatible", "bin", name);
   await assertFile(candidate, "exécutable PDFium préparé");
@@ -317,11 +320,20 @@ function cropLightPageBorder(input, output) {
 }
 
 function bundledSidecar(name) {
-  const suffix = process.platform === "win32" ? "-x86_64-pc-windows-msvc.exe" : "";
-  return path.join(root, "src-tauri", "binaries", `${name}${suffix}`);
+  return path.join(root, "src-tauri", "binaries", nativeSidecarName(name));
 }
 
 async function workingSet(pid) {
+  if (process.platform === "linux") {
+    const status = await fs.readFile(`/proc/${pid}/status`, "utf8").catch(() => "");
+    const kib = status.match(/^VmRSS:\s+(\d+)\s+kB$/mu)?.[1];
+    return kib ? Number(kib) * 1024 : null;
+  }
+  if (process.platform === "darwin") {
+    const probe = spawnSync("ps", ["-o", "rss=", "-p", String(pid)], { encoding: "utf8" });
+    const kib = Number(probe.stdout?.trim());
+    return probe.status === 0 && kib > 0 ? kib * 1024 : null;
+  }
   if (process.platform !== "win32") return null;
   const probe = spawnSync("powershell", ["-NoProfile", "-Command", `(Get-Process -Id ${pid} -ErrorAction Stop).WorkingSet64`], { encoding: "utf8", windowsHide: true });
   const value = Number(probe.stdout.trim());
@@ -361,7 +373,12 @@ function median(values) {
 }
 
 function formatBytes(value) {
+  if (value === null) return "unavailable";
   return `${(value / 1024 / 1024).toFixed(1)} MiB`;
+}
+
+function formatAccuracy(value) {
+  return value === null ? "not evaluated" : `${(value * 100).toFixed(2)} %`;
 }
 
 function logResult(result) {

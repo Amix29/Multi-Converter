@@ -5,16 +5,13 @@ import fs from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import { nativeSidecarName } from './lib/host-sidecar.mjs';
 
 const root = process.cwd();
 const policy = await fs.readFile(path.join(root, 'src-tauri/src/converters/media/streams.rs'), 'utf8');
 const protocols = policy.match(/const INPUT_PROTOCOLS: &str = "([^"]+)"/u)?.[1];
 assert.equal(protocols, 'file,pipe', 'Review protocol changes before allowing network input');
-const target = process.platform === 'win32' ? 'x86_64-pc-windows-msvc.exe'
-  : process.platform === 'darwin' && process.arch === 'arm64' ? 'aarch64-apple-darwin'
-  : process.platform === 'linux' && process.arch === 'x64' ? 'x86_64-unknown-linux-gnu' : null;
-assert.ok(target, 'Run media privacy checks on a supported native host');
-const binary = (name) => path.join(root, 'src-tauri', 'binaries', `${name}-${target}`);
+const binary = (name) => path.join(root, 'src-tauri', 'binaries', nativeSidecarName(name));
 const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'mc-media-offline-'));
 const requests = [];
 let server;

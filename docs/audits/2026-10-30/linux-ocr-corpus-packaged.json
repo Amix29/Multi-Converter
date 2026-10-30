@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "platform": "linux-x64",
+  "runtimeArchiveSha256": "7693f56b05aec6ba4633872d479eb847566922ffc9432b7366eed6d68c321710",
+  "directExecutable": null,
+  "runtimeExtractionMs": 13297,
+  "runtimeInitializationMs": 6565,
+  "peakWorkerWorkingSetBytes": 1058922496,
+  "memoryMeasurement": "Maximum of sampled main-process RSS/working-set values; child processes excluded.",
+  "medianRecognitionMs": 14491,
+  "cleanMean": 1,
+  "difficultMean": null,
+  "networkSamples": 49,
+  "observedWorkerConnections": [],
+  "results": [
+    {
+      "id": "clean-fr-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 15593,
+      "workerWorkingSetBytes": 790560768,
+      "actual": "multi converter protège vos fichiers locaux"
+    },
+    {
+      "id": "pdf-native",
+      "kind": "pdf-hybrid",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 790560768,
+      "actual": "native pdf text remains directly extractable"
+    },
+    {
+      "id": "pdf-scanned",
+      "kind": "pdf-hybrid",
+      "accuracy": 1,
+      "elapsedMs": 14491,
+      "workerWorkingSetBytes": 1030983680,
+      "actual": "multi converter protège vos fichiers locaux édition précise et conversion rapide document numéro 2026 avec accents français"
+    },
+    {
+      "id": "pdf-mixed-multipage",
+      "kind": "pdf-hybrid",
+      "accuracy": 1,
+      "elapsedMs": 11575,
+      "workerWorkingSetBytes": 1058922496,
+      "actual": "mixed pdf native first page multi converter protège vos fichiers locaux édition précise et conversion rapide document numéro 2026 avec accents français"
+    }
+  ]
+}
