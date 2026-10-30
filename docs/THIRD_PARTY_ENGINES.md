@@ -41,7 +41,7 @@ are not selected without parity evidence.
 
 This engine remains an unreleased development resource and is not yet approved
 for public redistribution. `src-tauri/ocr-runtime-licenses.json` inventories
-71 logical Python distributions and 106 license files, including their hashes,
+71 logical Python distributions and 104 license files, including their hashes,
 and ties them to the locked runtime aggregate. All 71 distributions now have
 license coverage. `bce-python-sdk` 0.9.76 is covered by the canonical
 Apache-2.0 text plus exact wheel/source hashes in
@@ -52,7 +52,7 @@ still required before public packaging. The top-level Apache-2.0 licenses for
 PaddleOCR, PaddleX and PaddlePaddle are necessary but not sufficient.
 
 The model artifact is 185,082,003 installed bytes. The current Windows runtime
-is 660,098,904 installed bytes and its verified package archive is 236,434,900
+is 660,643,156 installed bytes and its verified package archive is 236,811,152
 bytes. Per-file manifests and aggregate hashes are recorded in the OCR
 contract. Compression changes neither the runtime contents nor its licensing
 obligations. Linux and Apple Silicon official OCR artifacts have since been built

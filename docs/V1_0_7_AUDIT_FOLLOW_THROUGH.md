@@ -5,14 +5,17 @@
 The maintainer requested all remaining locally achievable audit work and continuous
 documentation updates. The isolated work branch is `codex/audit-follow-through`,
 based on `41459c23`. Local integration remains `codex/test`; `main` and remote
-branches are untouched. V1.0.7 is unpublished. The earlier Windows installer
-is tied to application source `b766134f` and does not contain this new lot.
-Application source through `d828ad3f` is now locally integrated on `codex/test`.
-The final canonical check passed, as did 191 Windows Rust units (12 opt-in
-exclusions), all 11 real conversion groups, HTTP protocol checks and Clippy.
-Linux passes 198 units and Clippy. Frontend units pass 56 tests, i18n covers
-404 keys, and the existing browser suite passes 12 / 10 declared exclusions.
-No push occurred. New Linux/Mac candidate builds target this source snapshot.
+branches are untouched. V1.0.7 is unpublished. Application source through
+`8b510138` is locally integrated on `codex/test`; it includes authenticated OCR
+manifests, deterministic row order, measured Mac memory/thread settings, macOS 15
+policy and packaged project notices. The canonical check passes. Windows passes
+194 Rust units, Linux/Mac 201 each (13 opt-in exclusions), all eleven real
+conversion groups and HTTP controls on every host, plus denied-warning Clippy.
+Actual Rust extraction/hash verification passes on all three prepared OCR archives.
+Frontend units pass 56 tests and i18n covers 404 keys. The unchanged frontend's
+existing browser suite passed 12 / 10 declared exclusions plus manual report/
+recovery checks. Current local NSIS/AppImage/DMG candidates all use `8b510138`.
+Their receipts are below; installed/native GUI and public release gates remain open.
 
 ## First follow-through lot
 
@@ -87,7 +90,7 @@ rate-control policies, not universal speed/quality parity. Automatic Mac GPU
 selection is not enabled from this result. Source bytes stayed unchanged.
 Receipt: [macos-video-quality.json](audits/2026-10-30/macos-video-quality.json).
 
-## Current checks
+## First-lot checks (historical checkpoint)
 
 - Rust: 178 unit tests passed; 12 opt-in tests excluded from that count.
 - Native conversions: 11 groups passed, including all copied packet payloads,
@@ -105,7 +108,7 @@ Receipt: [macos-video-quality.json](audits/2026-10-30/macos-video-quality.json).
 - All three Rust lock audits passed without advisory exceptions; existing
   informational maintenance/yanked/GTK warnings remain visible.
 
-## Linux preparation in progress
+## Early Linux preparation checkpoint
 
 Ubuntu 24.04 x64 is available through WSL, with native Rust/rustfmt/Clippy 1.96.0.
 It initially lacked native Node and Tauri development libraries; Windows npm
@@ -280,7 +283,7 @@ installed native restart. Contracts now expose 24 commands / two events.
 Screenshots: [banner](audits/2026-10-30/recovery-banner-375.png),
 [setting](audits/2026-10-30/recovery-settings-375.png).
 
-## Native package construction in progress
+## Early native package construction checkpoint
 
 Linux is building an unsigned local AppImage from `d828ad3f`, with the verified
 real engines and reproducible OCR archive. The local-only configuration uses
@@ -321,17 +324,25 @@ and earlier signed libvips probe copy are not current-application proof.
 
 ## Remaining authorized work
 
-- Complete native Linux and Apple Silicon package construction and inspection;
-  Apple Silicon worker inference is pending in the temporary RAM workspace.
-- Expanded OCR small-print/layout and cold/warm measurements; document fidelity,
-  external-reference/macro fixtures and final package notices.
-- Target-size estimates and additional practical folder/batch features, evaluated
-  against measured behavior. Recovery and batch reports are implemented above.
-- Installed Windows GUI/offline/cancel/restart/picker/drop acceptance; current
-  Mac/Linux final downloaded-package and clean-host acceptance.
-- Inherited GTK/Rust maintenance/unsoundness warning triage and final canonical
-  audits/packages on the final source. Signing/notarization/publication are
-  separate; no release or remote push is authorized by this continuation.
+- Installed GUI/offline/cancel/restart/picker/drop acceptance and the current
+  66-scenario manifest. Windows Computer Use requires the absent `node_repl` tool;
+  the connected Mac tools expose terminal/filesystem operations, not GUI control.
+  Browser previews and native CLI checks do not replace those interactions.
+- Clean-host acceptance on macOS 15 and the Linux Ubuntu 22.04 CI baseline;
+  available native hosts were macOS 26.6.2 and Ubuntu 24.04. No remote CI was run.
+- Semantic OCR column/table order, representative real-document corpus, controlled
+  uncontended cold/warm measurements and actual macro-execution/fidelity fixtures.
+  Passing synthetic small-print, structural Office and external-field probes are
+  recorded with their limits. Do not replace column order with a table-breaking
+  heuristic without representative validation.
+- Calibrated target-size features and further practical folder/batch proposals;
+  recovery and explicit local batch reports are implemented. These remain backlog,
+  not implied by passing the source or packaging checks.
+- The inherited GTK unsoundness/maintenance warnings and separately locked wrapper
+  yanked dependency remain visible after triage; no advisory is suppressed.
+- Final third-party redistribution/source-offer review, signing/notarization,
+  updater signatures and exact published-asset validation. No push/publication is
+  authorized by this continuation; all new candidates remain local and unsigned.
 
 ## Native packaging and OCR startup checkpoint
 
@@ -467,12 +478,47 @@ The actual Windows archive and all models passed the strengthened verifier in
 140.13 s: 7,246 runtime files / 660,643,156 bytes, plus 21 model files /
 185,082,003 bytes and the correct host architecture. The earlier runtime ZIPs
 remain byte-identical; this corrects application verification, not the model or
-worker content. Native Linux/Mac verification and the final package rebuilds
-must use this correction before those candidates are considered current.
+worker content. Native Linux/Mac verification and all final package rebuilds also
+use this correction. Their actual archives and models pass the strengthened
+verifier; Linux's explicit archive check took 44.69 s.
 
 Direct Mac bundle inspection also found that the project's root LICENSE and
 NOTICE were absent from application resources. Shared Tauri resource mappings
 now ship them as `licenses/LICENSE.txt` and `licenses/NOTICE.txt` on all three
 platforms. This does not claim completion of final third-party redistribution
-review. The previous Mac DMG image-creation helper stalled after producing an
-incomplete image; it must not be relabelled as a current package.
+review. One intermediate Mac image creation was unusually slow (18 min 48 s
+including checks) but eventually completed and passed verification. No termination
+was sent because the owned process had already exited. The final candidate was
+built independently using native HFS+ UDZO layout NONE and passed image checks.
+
+## Current local candidates — application source 8b510138
+
+| Platform | Bytes | SHA-256 | Receipt |
+| --- | ---: | --- | --- |
+| Windows NSIS | 999,631,584 | `eee1bc685164e6e53b5c5900131f5dfa10adc0f90c789e7cc27f54aa2eb75fd7` | [Windows](audits/2026-10-30/windows-nsis-build-8b510138.json) |
+| Linux AppImage | 1,176,459,768 | `795330fcf46cb3c34d7a98f78945bcb5028412d5424e885a1d16c0787e2d016a` | [Linux](audits/2026-10-30/linux-appimage-build-8b510138.json) |
+| Apple Silicon DMG | 912,946,631 | `cdbe9362ebc17ff338cfa7013f4168c4fa599cd5f9822787bbfc7fd93f431c5b` | [Mac](audits/2026-10-30/macos-dmg-build-8b510138.json) |
+
+All payloads are preserved on Windows in the audit task worktree's
+`tmp/local-audit-8b510138/`. Use `git worktree list` to locate the
+`codex/audit-follow-through` checkout; generated payloads are not versioned.
+Each host's project LICENSE/NOTICE and OCR runtime were checked. Windows has no
+Authenticode or updater signature; the Mac app passes deep strict ad-hoc signature
+verification, has an arm64 main executable and declares macOS 15.0. Its DMG passes
+native checksum verification. Ad-hoc signing is not Apple Developer signing or
+notarization. The Linux build host was Ubuntu 24.04, not the CI 22.04 baseline.
+Linux/Mac package manifests use local unpublished engine candidates and official
+staged OCR locks; they are not public-release metadata.
+
+Latest Mac archive corpus: all 40 cases passed, clean/difficult means 100%, median
+2,339 ms, extraction 7,222 ms, initialization 46,634 ms, 83 network samples and
+zero observed connections under denied networking. Process RSS remains null in
+that harness; use the separate measured `time -l` receipt above. Full native
+attempts and their boundaries are retained in
+[the Mac proof](audits/2026-10-30/macos-native-proof-8b510138.json).
+
+The owned Mac RAM workspace was detached after preserving the final DMG, native
+receipts and exact effective engine/OCR metadata on Windows: 34,359,738,368 bytes
+(32 GiB) released. Only early synthetic probes/bootstrap files remain in the
+owned private temporary parent; the installed application and real home profile
+were not modified. See [the cleanup receipt](audits/2026-10-30/macos-temporary-workspace-cleanup.json).

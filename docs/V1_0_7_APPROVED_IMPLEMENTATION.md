@@ -14,7 +14,7 @@ No release, publication or remote push is authorized by implementation approval.
 ## Work and integration
 
 - Current work branch: codex/audit-follow-through.
-- Current integrated application source: d828ad3f on local codex/test. Earlier implementation/source below remains historical.
+- Current integrated application source: 8b510138 on local codex/test. Matching local NSIS/AppImage/DMG candidates and receipts exist; installed acceptance remains pending. Earlier checkpoints below remain historical.
 - Dedicated ordinary Git worktree under the task writable directory. The app's
   managed tool rejected the stale source path. The real base checkout was then
   fast-forwarded only after the complete staged source checks passed.
@@ -238,17 +238,22 @@ These command-line proofs do not replace installed native UI acceptance.
 
 ## Remaining approved work
 
-- Extend OCR beyond the passing fixed corpus (small print, wider layouts and
-  representative real documents); benchmark cold/warm and Mac/Linux parity.
-- Extend real LibreOffice external-reference/macro and Office fidelity fixtures.
-  Local Pandoc embedding, libvips orientation/matte and media protocol fixtures pass.
-- Wider media track/remux support, ICC/metadata and image frame/page policy, global
-  decoded-pixel memory and
-  concurrency budgets, recovery/retention and practical batch/folder improvements.
-- Review final package notices and perform installed Windows conversion/OCR/
-  offline/cancel/restart/picker/drop acceptance on the built candidate.
-- Build actual ARM Mac and Linux packages on their systems; native conversion/OCR,
-  final downloaded package and clean-host acceptance remain mandatory.
+- Use [the follow-through ledger](V1_0_7_AUDIT_FOLLOW_THROUGH.md) for current
+  evidence and the remaining acceptance gates. The chronology above records
+  earlier checkpoints; application source 8b510138 now has matching local
+  Windows NSIS, Linux AppImage and Apple Silicon DMG candidates.
+- Extend OCR beyond the passing fixed corpus: representative small print and
+  mixed layouts, semantic column order and uncontended cold/warm measurements.
+  All three hosts pass native conversions and archive/model integrity checks;
+  this does not establish clean macOS 15 or Ubuntu 22.04 acceptance.
+- Extend LibreOffice macro-execution and visual Office fidelity fixtures. Actual
+  Linux external-reference and structural multilingual document probes pass.
+- Complete installed conversion/OCR/offline/cancel/restart/picker/drop acceptance
+  on all three systems, plus final downloaded-package and clean-host validation.
+- Calibrate target-size conversion and evaluate further folder/batch workflows.
+  Explicit remux, ICC/depth/frame policies, memory admission and opt-in plan
+  recovery are implemented; their native/UI evidence limits remain in the ledger.
+- Review final third-party package notices and redistribution/source-offer duties.
 - Keep signing, updater signatures, notarization and publication separate. No push
   or release is implied by implementation or by passing local checks.
 - Triage the inherited GTK informational unsoundness and maintained replacements

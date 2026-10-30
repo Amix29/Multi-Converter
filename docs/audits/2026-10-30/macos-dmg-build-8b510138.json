@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "platform": "macos-aarch64",
+  "sourceCommit": "8b51013846ea07e655cc9cc8b8f5b96037581597",
+  "name": "Multi-Converter_1.0.7_macos-aarch64-local.dmg",
+  "bytes": 912946631,
+  "sha256": "cdbe9362ebc17ff338cfa7013f4168c4fa599cd5f9822787bbfc7fd93f431c5b",
+  "updaterSigned": false,
+  "appleSigned": false,
+  "notarized": false,
+  "packaging": "Tauri app plus hdiutil CLI DMG; no Finder automation",
+  "projectLicenseSha256": "e0eedba615d5cd1b986afb6c5b3a4b1ae33713e7e9dc74d19daec5e3221f9d2e",
+  "projectNoticeSha256": "b16f12ea39d1e688d4e8489eee2af367a016ae81b623bbd4152b8d757150bac2",
+  "adHocSignatureVerified": true,
+  "dmgIntegrityVerified": true,
+  "minimumMacOS": "15.0",
+  "mainArchitectures": "arm64",
+  "runtimeArchiveSha256": "27856062d3e9cea9973a64f730dcb19156a9e7a36ec26165203445fe962f7d58",
+  "imageLayout": "HFS+ UDZO, layout NONE; confirmed by native hdiutil help",
+  "installedUiAcceptance": false,
+  "published": false,
+  "payloadMetadata": {
+    "enginesManifestSha256": "4f44c57b19d8cc2a4b93004fd73bf016efdb8f6c9bcdf3818da05a0adcbfb89e",
+    "ocrRuntimeLockSha256": "cd99b0678590201e8bf9d01ffa5cf6ec3cd5a46caf1ec806f084bcff0daab1dc",
+    "origin": "Local unpublished engine candidates and staged official OCR; no public release readiness"
+  }
+}

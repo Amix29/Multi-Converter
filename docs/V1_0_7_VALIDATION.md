@@ -2,18 +2,25 @@
 
 ## 2026-10-30 — Latest local continuation
 
-Work remains on `codex/audit-follow-through`; `codex/test` is the local integration
-branch. New source includes private intermediates, SVG isolation, verified local
-batch reports and opt-in 24-hour source-plan recovery. Native contracts: 24 commands
-/ two events. Linux passes 198 Rust units and denied-warning Clippy; real engine
-validation passed 11 conversion groups plus media offline protocols. Its official
-OCR runtime was packaged reproducibly, with complete license inventory; the direct
-40-case corpus and isolated extracted-archive four-case probe passed. Current
-browser checks passed 12 tests with 10 declared exclusions, plus manual report/
-recovery checks at 375/1440 px. The final Windows canonical gate passed, with
-191 Rust units, all 11 real conversion groups, media protocol checks and Clippy.
-Source `d828ad3f` is locally integrated on `codex/test`. Native package builds are
-in progress. See [exact source/artifact boundaries and receipts](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
+Application source `8b510138` is locally integrated on `codex/test`; the work branch
+is `codex/audit-follow-through`. It includes private intermediates, SVG isolation,
+local batch reports, opt-in 24-hour recovery, authenticated OCR manifests and
+stable row ordering. Native contracts remain 24 commands / two events. The final
+canonical check passes, with 194 Windows Rust units and 201 each on Linux/Mac
+(13 opt-in exclusions). Every host passes all 11 real conversion groups, media
+HTTP controls and denied-warning Clippy. Actual prepared OCR archives/models pass
+the strengthened Rust hash verifier on all three hosts.
+
+Native Mac OCR passes all 40 cases at 100% clean/difficult means under denied
+networking. Native Linux's direct 40-case corpus and extracted-archive four-case
+probe also pass. Matching local Windows NSIS, Linux AppImage and Mac DMG candidates
+are built and preserved on Windows with hashes and project notices checked. Mac
+deep ad-hoc signature/image checks pass; its minimum is macOS 15 on arm64. These
+are local candidates, not Apple Developer/notarized or signed-updater releases.
+Source tests pass 56 frontend units and 404 translated keys. Existing browser proof
+for the unchanged frontend is 12 passed / 10 declared exclusions, plus manual
+report/recovery checks at 375/1440 px. See
+[source/artifact receipts and remaining work](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
 **Overall release gate remains blocked**; no new current installer acceptance is
 claimed. Older sections below remain historical checkpoints.
 

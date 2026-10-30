@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "platform": "macos-aarch64",
+  "sourceCommit": "8b51013846ea07e655cc9cc8b8f5b96037581597",
+  "ownedRamDetached": true,
+  "bytesReleased": 34359738368,
+  "mountPoint": "/private/tmp/multi-converter-audit.0iOMg3/ram-work",
+  "remainingFiles": "Only early synthetic probes/bootstrap files under the owned private tmp parent; no installed app or real home profile modified",
+  "importantArtifactsPreservedOnWindows": true
+}

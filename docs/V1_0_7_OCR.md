@@ -13,11 +13,11 @@ Runtime locks, packaged models and original-file protection are unchanged.
 - Current metadata: **1.0.7**
 - Selected model: **PP-OCRv6_medium**
 - Windows implementation: **patched reference runtime built and packaged; smoke and full 40-case corpus passed**
-- Windows NSIS build: **local b766134f candidate built; updater signature verified; installed acceptance pending**
+- Windows NSIS build: **local 8b510138 candidate built; unsigned; installed acceptance pending**
 - Windows packaged application smoke: **previous checkpoint only; current application acceptance pending**
 - Current Windows correction fixture: **reviewed expected text matched exactly (100%)**
 - Linux x64: **official runtime built and packaged reproducibly; direct 40-case corpus passed and isolated extracted-archive four-case probe passed**
-- macOS Apple Silicon runtime: **official runtime built and packaged reproducibly; license inventory passed; worker startup and application acceptance pending**
+- macOS Apple Silicon runtime: **official runtime built and packaged reproducibly; license inventory and full 40-case corpus passed; installed application acceptance pending**
 - Native ONNX candidate and accelerators: **not selected; official CPU runtime retained**
 - Privacy mode: **local only**
 

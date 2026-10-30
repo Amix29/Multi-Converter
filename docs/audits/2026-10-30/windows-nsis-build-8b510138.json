@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "platform": "windows-x64",
+  "sourceCommit": "8b51013846ea07e655cc9cc8b8f5b96037581597",
+  "bytes": 999631584,
+  "sha256": "eee1bc685164e6e53b5c5900131f5dfa10adc0f90c789e7cc27f54aa2eb75fd7",
+  "proof": "Tauri NSIS local build and staged resource inspection; zlib compression",
+  "updaterSigned": false,
+  "authenticodeStatus": "NotSigned",
+  "published": false,
+  "installedUiAcceptance": false,
+  "runtimeArchiveSha256": "77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac",
+  "projectLicenseSha256": "e0eedba615d5cd1b986afb6c5b3a4b1ae33713e7e9dc74d19daec5e3221f9d2e",
+  "projectNoticeSha256": "b16f12ea39d1e688d4e8489eee2af367a016ae81b623bbd4152b8d757150bac2"
+}

@@ -1,0 +1,449 @@
+{
+  "schemaVersion": 1,
+  "platform": "macos-aarch64",
+  "sourceCommit": "8b51013846ea07e655cc9cc8b8f5b96037581597",
+  "sourceArchiveSha256": "77c448e10d580921ab1268896ecd69c434c8e43568286a50ef227cdb64b7958d",
+  "ramRoot": "/private/tmp/multi-converter-audit.0iOMg3/ram-work",
+  "device": "/dev/disk13",
+  "osVersion": "26.6.2",
+  "installedUiAcceptance": false,
+  "published": false,
+  "nodeArchiveSha256": "1f5ac075be50bed4780ea3be19a007fda95ea4d527d28d76d0b91de47d915115",
+  "uvArchiveSha256": "1f921d491ba5ffeea774eb04d6681ecee379101341cbb1500394993b541bf3f4",
+  "rustupInitSha256": "f7c7e11eb2e07f006e532a8aaac77b32f4527d305ac386c0c633ca6133d35ca9",
+  "status": "passed",
+  "previousAttempts": [
+    {
+      "id": "temporary-toolchain",
+      "status": "pass",
+      "durationMs": 21231
+    },
+    {
+      "id": "native-source-checks",
+      "status": "fail",
+      "error": "Command failed (1): ['node', 'scripts/prepare-tauri-ci-sidecars.mjs', '--target']",
+      "durationMs": 80
+    },
+    {
+      "id": "real-native-engines",
+      "status": "fail",
+      "error": "Command failed (1): ['npm', 'run', 'test:macos:conversions']",
+      "durationMs": 238359
+    },
+    {
+      "id": "official-ocr-runtime",
+      "status": "pass",
+      "durationMs": 231391
+    },
+    {
+      "id": "refresh-source-and-stage-real-sidecars",
+      "status": "pass",
+      "durationMs": 41070
+    },
+    {
+      "id": "native-source-checks-retry",
+      "status": "pass",
+      "durationMs": 104669
+    },
+    {
+      "id": "real-native-engines-retry",
+      "status": "pass",
+      "durationMs": 60882
+    },
+    {
+      "id": "packaged-ocr-corpus-network-denied",
+      "status": "fail",
+      "error": "Command failed (1): ['/usr/bin/sandbox-exec', '-p', '(version 1) (allow default) (deny network*)']",
+      "durationMs": 35418
+    },
+    {
+      "id": "local-application-and-dmg",
+      "status": "fail",
+      "error": "Command failed (1): ['node', 'scripts/run-tauri.mjs', 'build']",
+      "durationMs": 264394
+    }
+  ],
+  "previousSnapshots": [
+    {
+      "sourceCommit": "d406e3e1bbe1926f0be07a76e25d32a29b125db6",
+      "stages": [
+        {
+          "id": "refresh-source-and-stage-real-sidecars",
+          "status": "pass",
+          "durationMs": 160244
+        },
+        {
+          "id": "native-source-checks-retry",
+          "status": "pass",
+          "durationMs": 73117
+        },
+        {
+          "id": "real-native-engines-retry",
+          "status": "pass",
+          "durationMs": 40535
+        },
+        {
+          "id": "packaged-ocr-corpus-network-denied",
+          "status": "pass",
+          "durationMs": 89185
+        },
+        {
+          "id": "minimum-os-inspection",
+          "status": "pass",
+          "durationMs": 46187
+        },
+        {
+          "id": "local-application-and-dmg",
+          "status": "fail",
+          "error": "Command failed (1): ['node', 'scripts/run-tauri.mjs', 'build']",
+          "durationMs": 35593
+        }
+      ],
+      "status": "partial"
+    },
+    {
+      "sourceCommit": "c5a6d5abe980d3ed09b20ad2fb066f5b71d9901e",
+      "stages": [
+        {
+          "id": "refresh-source-and-stage-real-sidecars",
+          "status": "fail",
+          "error": "Command failed (1): ['node', 'scripts/validate-bundled-engines.mjs']",
+          "durationMs": 32832
+        }
+      ],
+      "status": "partial"
+    },
+    {
+      "sourceCommit": "8b36571ae35555ee65b876d8a9f12c73da084bf2",
+      "stages": [
+        {
+          "id": "refresh-source-and-stage-real-sidecars",
+          "status": "pass",
+          "durationMs": 61554
+        },
+        {
+          "id": "native-source-checks-retry",
+          "status": "pass",
+          "durationMs": 68066
+        },
+        {
+          "id": "real-native-engines-retry",
+          "status": "pass",
+          "durationMs": 44108
+        },
+        {
+          "id": "packaged-ocr-corpus-network-denied",
+          "status": "pass",
+          "durationMs": 94601
+        },
+        {
+          "id": "minimum-os-inspection",
+          "status": "pass",
+          "durationMs": 44805
+        },
+        {
+          "id": "local-application-and-dmg",
+          "status": "pass",
+          "durationMs": 279848
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "sourceCommit": "c1cdff76b68ccdf8cfd379ac646933555ead142a",
+      "stages": [
+        {
+          "id": "refresh-source-and-stage-real-sidecars",
+          "status": "pass",
+          "durationMs": 34935
+        },
+        {
+          "id": "native-source-checks-retry",
+          "status": "pass",
+          "durationMs": 64573
+        },
+        {
+          "id": "real-native-engines-retry",
+          "status": "pass",
+          "durationMs": 46974
+        },
+        {
+          "id": "packaged-ocr-corpus-network-denied",
+          "status": "pass",
+          "durationMs": 91271
+        },
+        {
+          "id": "minimum-os-inspection",
+          "status": "pass",
+          "durationMs": 44154
+        },
+        {
+          "id": "local-application-and-dmg",
+          "status": "pass",
+          "durationMs": 1128375
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "memoryProbe": {
+    "method": "macOS /usr/bin/time -l maximum resident set size for sandboxed worker; sequential unique image fixtures, no GUI",
+    "peakBytes": 1853849600,
+    "uniqueImageCount": 12,
+    "runtimeInitializationMs": 4544,
+    "elapsedMs": 29254,
+    "exitCode": 0,
+    "networkDenied": true
+  },
+  "stages": [
+    {
+      "id": "refresh-source-and-stage-real-sidecars",
+      "status": "pass",
+      "durationMs": 38630
+    },
+    {
+      "id": "native-source-checks-retry",
+      "status": "pass",
+      "durationMs": 66095
+    },
+    {
+      "id": "real-native-engines-retry",
+      "status": "pass",
+      "durationMs": 31847
+    },
+    {
+      "id": "packaged-ocr-corpus-network-denied",
+      "status": "pass",
+      "durationMs": 92378
+    },
+    {
+      "id": "minimum-os-inspection",
+      "status": "pass",
+      "durationMs": 44605
+    },
+    {
+      "id": "local-application-and-dmg",
+      "status": "pass",
+      "durationMs": 338837
+    }
+  ],
+  "previousArtifacts": [
+    {
+      "sourceCommit": "c1cdff76b68ccdf8cfd379ac646933555ead142a",
+      "name": "Multi-Converter_1.0.7_macos-aarch64-local.dmg",
+      "bytes": 913145967,
+      "sha256": "a20a638073d313cbf3889a441778795fefef26ebcdb3c37fb211eb871457fd98",
+      "updaterSigned": false,
+      "appleSigned": false,
+      "notarized": false,
+      "packaging": "Tauri app plus hdiutil CLI DMG; no Finder automation",
+      "adHocSignatureVerified": true,
+      "dmgIntegrityVerified": true,
+      "minimumMacOS": "15.0",
+      "mainArchitectures": "arm64",
+      "runtimeArchiveSha256": "27856062d3e9cea9973a64f730dcb19156a9e7a36ec26165203445fe962f7d58"
+    }
+  ],
+  "minimumOSInspection": {
+    "counts": {
+      "arm64": 671,
+      "foreignMachO": 0
+    },
+    "maximumDeclaredMinimum": [
+      15,
+      0,
+      0
+    ],
+    "limitingFiles": [
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/bin/vips",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libaec.0.1.7.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libaom.3.14.1.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libarchive.13.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libassuan.9.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libb2.1.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libbrotlicommon.1.2.0.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libbrotlidec.1.2.0.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libbrotlienc.1.2.0.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libcairo-gobject.2.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libcairo.2.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libcfitsio.4.6.4.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libcgif.0.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libdatrie.1.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libde265.0.2.1.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libdeflate.0.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libdicom.1.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libexif.12.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libfftw3.3.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      },
+      {
+        "path": "src-tauri/bundled-engines/libvips/compatible/aarch64/lib/libfontconfig.1.dylib",
+        "minimum": [
+          15,
+          0,
+          0
+        ]
+      }
+    ],
+    "proof": "static Mach-O load commands; not an earlier macOS host test"
+  },
+  "temporaryFreeBytesBeforePackaging": 6661124096,
+  "imageLayout": "HFS+ UDZO, layout NONE; confirmed by native hdiutil help",
+  "artifact": {
+    "name": "Multi-Converter_1.0.7_macos-aarch64-local.dmg",
+    "bytes": 912946631,
+    "sha256": "cdbe9362ebc17ff338cfa7013f4168c4fa599cd5f9822787bbfc7fd93f431c5b",
+    "updaterSigned": false,
+    "appleSigned": false,
+    "notarized": false,
+    "packaging": "Tauri app plus hdiutil CLI DMG; no Finder automation",
+    "projectLicenseSha256": "e0eedba615d5cd1b986afb6c5b3a4b1ae33713e7e9dc74d19daec5e3221f9d2e",
+    "projectNoticeSha256": "b16f12ea39d1e688d4e8489eee2af367a016ae81b623bbd4152b8d757150bac2",
+    "adHocSignatureVerified": true,
+    "dmgIntegrityVerified": true,
+    "minimumMacOS": "15.0",
+    "mainArchitectures": "arm64",
+    "runtimeArchiveSha256": "27856062d3e9cea9973a64f730dcb19156a9e7a36ec26165203445fe962f7d58"
+  },
+  "payloadMetadata": {
+    "enginesManifestSha256": "4f44c57b19d8cc2a4b93004fd73bf016efdb8f6c9bcdf3818da05a0adcbfb89e",
+    "ocrRuntimeLockSha256": "cd99b0678590201e8bf9d01ffa5cf6ec3cd5a46caf1ec806f084bcff0daab1dc",
+    "origin": "Local unpublished engine candidates and staged official OCR; no public release readiness"
+  },
+  "temporaryFreeBytesAfterPackaging": 3934793728,
+  "effectiveMetadataFiles": {
+    "engines-manifest.json": "{\n  \"manifestVersion\": 1,\n  \"generatedAt\": \"2026-10-30T18:44:03.194Z\",\n  \"engines\": [\n    {\n      \"id\": \"pdfium\",\n      \"displayName\": \"PDFium\",\n      \"mode\": \"advanced\",\n      \"version\": \"compatible\",\n      \"platform\": \"macos-aarch64\",\n      \"archiveType\": \"zip\",\n      \"downloadUrl\": \"https://example.invalid/local-audit/pdfium-compatible-macos-aarch64.zip\",\n      \"sha256\": \"b84a5724492291a8dbd519c777554a190c670aac791ac23d3c6a51297141e098\",\n      \"compressedSizeBytes\": 5746076,\n      \"installedSizeBytes\": 14726101,\n      \"binaryPaths\": [\n        \"bin/libpdfium.dylib\",\n        \"bin/pdfium-render-aarch64-apple-darwin\"\n      ],\n      \"healthCheck\": \"pdfium-render\",\n      \"licenseName\": \"BSD-3-Clause\",\n      \"licenseUrl\": \"https://github.com/bblanchon/pdfium-binaries\",\n      \"noticeFiles\": [\n        \"licenses/THIRD_PARTY_NOTICES.txt\"\n      ],\n      \"required\": true,\n      \"dependencies\": []\n    },\n    {\n      \"id\": \"libreoffice\",\n      \"displayName\": \"LibreOffice headless\",\n      \"mode\": \"advanced\",\n      \"version\": \"compatible\",\n      \"platform\": \"macos-aarch64\",\n      \"archiveType\": \"zip\",\n      \"downloadUrl\": \"https://example.invalid/local-audit/libreoffice-compatible-macos-aarch64.zip\",\n      \"sha256\": \"ce12ce9a4b4c1ec9f73d77f277106840e8ed7f6923e719fa66f0e7038ecf458f\",\n      \"compressedSizeBytes\": 329985516,\n      \"installedSizeBytes\": 816966274,\n      \"binaryPaths\": [\n        \"aarch64/LibreOffice.app/Contents/MacOS/soffice\"\n      ],\n      \"healthCheck\": \"libreoffice-headless\",\n      \"licenseName\": \"MPL-2.0\",\n      \"licenseUrl\": \"https://www.libreoffice.org/about-us/licenses/\",\n      \"noticeFiles\": [\n        \"licenses/THIRD_PARTY_NOTICES.txt\"\n      ],\n      \"required\": true,\n      \"dependencies\": []\n    },\n    {\n      \"id\": \"pandoc\",\n      \"displayName\": \"Pandoc\",\n      \"mode\": \"advanced\",\n      \"version\": \"compatible\",\n      \"platform\": \"macos-aarch64\",\n      \"archiveType\": \"zip\",\n      \"downloadUrl\": \"https://example.invalid/local-audit/pandoc-compatible-macos-aarch64.zip\",\n      \"sha256\": \"bdd283e5df5338a9e80cc22c47722dff495895c79ba1ef63f5774b0b63163d51\",\n      \"compressedSizeBytes\": 41422377,\n      \"installedSizeBytes\": 188573814,\n      \"binaryPaths\": [\n        \"bin/pandoc-aarch64-apple-darwin\"\n      ],\n      \"healthCheck\": \"pandoc-md-html\",\n      \"licenseName\": \"GPL-2.0-or-later\",\n      \"licenseUrl\": \"https://github.com/jgm/pandoc/blob/main/COPYRIGHT\",\n      \"noticeFiles\": [\n        \"licenses/THIRD_PARTY_NOTICES.txt\"\n      ],\n      \"required\": true,\n      \"dependencies\": []\n    },\n    {\n      \"id\": \"libvips\",\n      \"displayName\": \"libvips\",\n      \"mode\": \"advanced\",\n      \"version\": \"compatible\",\n      \"platform\": \"macos-aarch64\",\n      \"archiveType\": \"zip\",\n      \"downloadUrl\": \"https://example.invalid/local-audit/libvips-compatible-macos-aarch64.zip\",\n      \"sha256\": \"ce7cac37eacf762d4539be94d7c25427e34d0bff085295e62716c73c7382dc9c\",\n      \"compressedSizeBytes\": 25711982,\n      \"installedSizeBytes\": 73345993,\n      \"binaryPaths\": [\n        \"aarch64/bin/vips\"\n      ],\n      \"healthCheck\": \"libvips-image\",\n      \"licenseName\": \"LGPL-2.1-or-later\",\n      \"licenseUrl\": \"https://github.com/libvips/libvips/blob/master/LICENSE\",\n      \"noticeFiles\": [\n        \"licenses/THIRD_PARTY_NOTICES.txt\"\n      ],\n      \"required\": true,\n      \"dependencies\": []\n    }\n  ]\n}\n",
+    "ocr-runtime-lock.json": "{\n  \"schemaVersion\": 2,\n  \"model\": \"PP-OCRv6_medium\",\n  \"versions\": {\n    \"paddlepaddle\": \"3.3.1\",\n    \"paddleocr\": \"3.7.0\",\n    \"paddlex\": \"3.7.0\",\n    \"onnxruntime\": \"1.26.0\"\n  },\n  \"buildEnvironment\": {\n    \"python\": \"3.12.10\",\n    \"uv\": \"0.11.21\",\n    \"requirements\": \"tools/ocr-runtime/requirements-windows-x64.lock.txt\",\n    \"requirementsSha256\": \"bb4f0031b90bd68cc44c5e888c23212148602cfe80708ddc8e3ea956aa98246a\"\n  },\n  \"platformBuildEnvironments\": {\n    \"windows-x64\": {\n      \"python\": \"3.12.10\",\n      \"uv\": \"0.11.21\",\n      \"requirements\": \"tools/ocr-runtime/requirements-windows-x64.lock.txt\"\n    },\n    \"macos-aarch64\": {\n      \"python\": \"3.12.10\",\n      \"uv\": \"0.11.21\",\n      \"requirements\": \"tools/ocr-runtime/requirements-macos-aarch64.lock.txt\",\n      \"paddleSource\": \"official-wheel\"\n    },\n    \"linux-x64\": {\n      \"python\": \"3.12.10\",\n      \"uv\": \"0.11.21\",\n      \"requirements\": \"tools/ocr-runtime/requirements-linux-x64.lock.txt\",\n      \"paddleSource\": \"official-wheel\"\n    }\n  },\n  \"languages\": [\n    \"fr\",\n    \"en\",\n    \"es\",\n    \"de\",\n    \"it\",\n    \"pt\",\n    \"ja\"\n  ],\n  \"modelArtifact\": {\n    \"fileCount\": 21,\n    \"totalBytes\": 185082003,\n    \"aggregateSha256\": \"e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb\"\n  },\n  \"platformSelections\": [\n    {\n      \"platform\": \"windows-x64\",\n      \"runtime\": \"official\",\n      \"provider\": \"cpu\",\n      \"fallbackProvider\": \"cpu\",\n      \"providerFallbackReason\": \"DirectML reste d\u00e9sactiv\u00e9 jusqu'\u00e0 validation de parit\u00e9 et de gain sur le corpus verrouill\u00e9.\",\n      \"executable\": \"runtime/windows-x64/ocr-worker.exe\",\n      \"artifact\": {\n        \"fileCount\": 7246,\n        \"totalBytes\": 660643156,\n        \"aggregateSha256\": \"d386f7923fbea6fe6efa407b2f00d3e99e31ee9778027a67ca32e6b14adf759c\"\n      },\n      \"archive\": {\n        \"bytes\": 236811152,\n        \"sha256\": \"77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac\"\n      }\n    },\n    {\n      \"platform\": \"macos-aarch64\",\n      \"runtime\": \"official\",\n      \"provider\": \"cpu\",\n      \"fallbackProvider\": \"cpu\",\n      \"providerFallbackReason\": \"CoreML reste d\u00e9sactiv\u00e9 jusqu'\u00e0 validation de parit\u00e9 et de gain sur Apple Silicon.\",\n      \"executable\": \"runtime/macos-aarch64/ocr-worker\",\n      \"artifact\": {\n        \"fileCount\": 5796,\n        \"totalBytes\": 847557178,\n        \"aggregateSha256\": \"e072b3c4cb2d59537efbb8a1669a0d17a399ad24e15ce0f318e8e9b2c77b8672\"\n      },\n      \"archive\": {\n        \"bytes\": 278062692,\n        \"sha256\": \"27856062d3e9cea9973a64f730dcb19156a9e7a36ec26165203445fe962f7d58\"\n      }\n    },\n    {\n      \"platform\": \"linux-x64\",\n      \"runtime\": \"official\",\n      \"provider\": \"cpu\",\n      \"fallbackProvider\": \"cpu\",\n      \"providerFallbackReason\": \"OpenVINO reste d\u00e9sactiv\u00e9 jusqu'\u00e0 validation de parit\u00e9 et de gain sur Linux Intel.\",\n      \"executable\": \"runtime/linux-x64/ocr-worker\"\n    }\n  ],\n  \"models\": [\n    {\n      \"id\": \"document-orientation\",\n      \"file\": \"PP-LCNet_x1_0_doc_ori_infer.tar\",\n      \"url\": \"https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-LCNet_x1_0_doc_ori_infer.tar\",\n      \"sha256\": \"282337df5c41f7cdf8dacd5acf71fddfdc10218399f4b318463c17f4eae96c97\",\n      \"license\": \"Apache-2.0\"\n    },\n    {\n      \"id\": \"document-unwarping\",\n      \"file\": \"UVDoc_infer.tar\",\n      \"url\": \"https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/UVDoc_infer.tar\",\n      \"sha256\": \"15d79c6bcbf738b7e132eedff6ed57c7e834c73cbc140a1fff8fd8ab9c2a35b9\",\n      \"license\": \"Apache-2.0\"\n    },\n    {\n      \"id\": \"textline-orientation\",\n      \"file\": \"PP-LCNet_x1_0_textline_ori_infer.tar\",\n      \"url\": \"https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-LCNet_x1_0_textline_ori_infer.tar\",\n      \"sha256\": \"6171f69605215a85624d650e9079fa45f7c3eaf944296181bcc5395bf3ddc7f6\",\n      \"license\": \"Apache-2.0\"\n    },\n    {\n      \"id\": \"text-detection\",\n      \"file\": \"PP-OCRv6_medium_det_infer.tar\",\n      \"url\": \"https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv6_medium_det_infer.tar\",\n      \"sha256\": \"144d0621e059566e5086e228829171591c144c2deb07b2dad4962214fbabfcf7\",\n      \"license\": \"Apache-2.0\"\n    },\n    {\n      \"id\": \"text-recognition\",\n      \"file\": \"PP-OCRv6_medium_rec_infer.tar\",\n      \"url\": \"https://paddle-model-ecology.bj.bcebos.com/paddlex/official_inference_model/paddle3.0.0/PP-OCRv6_medium_rec_infer.tar\",\n      \"sha256\": \"4eecc1c6a4623765042e6fc15446da0da110b7d875b6b72b2d351d2b2dbd4da6\",\n      \"license\": \"Apache-2.0\"\n    }\n  ]\n}\n"
+  }
+}
