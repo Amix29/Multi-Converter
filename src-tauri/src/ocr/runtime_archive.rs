@@ -136,6 +136,22 @@ fn extract_archive(
     Ok(())
 }
 
+#[cfg(test)]
+pub(super) fn extract_prepared_for_test(
+    archive: &Path,
+    destination: &Path,
+    expected: ArchiveExpectation<'_>,
+) -> Result<(), String> {
+    extract_archive(
+        archive,
+        destination,
+        expected.file_count,
+        expected.total_bytes,
+        &AtomicBool::new(false),
+        &mut |_| {},
+    )
+}
+
 fn copy_with_cancellation(
     source: &mut impl Read,
     destination: &mut impl Write,

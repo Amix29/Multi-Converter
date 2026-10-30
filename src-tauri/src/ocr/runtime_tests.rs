@@ -1,6 +1,62 @@
 use super::*;
 
 #[test]
+#[ignore = "requires the actual prepared host OCR archive and locked models"]
+fn prepared_ocr_archive_extracts_and_verifies_every_resource() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("ocr-resources");
+    let lock = parse_lock().unwrap();
+    let selected = selection(&lock).unwrap();
+    let expected = selected
+        .artifact
+        .as_ref()
+        .expect("host runtime must be locked");
+    let archive = runtime_archive::archive_path(&root, &selected.platform);
+    assert!(archive.is_file(), "host runtime archive must be prepared");
+    let staging = crate::private_temp::builder("mc-ocr-archive-proof-")
+        .tempdir()
+        .unwrap();
+    runtime_archive::extract_prepared_for_test(
+        &archive,
+        staging.path(),
+        runtime_archive::ArchiveExpectation {
+            aggregate_sha256: &expected.aggregate_sha256,
+            file_count: expected.file_count,
+            total_bytes: expected.total_bytes,
+        },
+    )
+    .unwrap();
+    let executable = Path::new(&selected.executable).file_name().unwrap();
+    let runtime = ResolvedRuntime {
+        executable: staging.path().join(executable),
+        models_dir: root.join("models"),
+        provider: selected.provider.clone(),
+    };
+    let mut stages = std::collections::HashSet::new();
+    verify_resources(
+        &runtime,
+        &selected,
+        &lock.model_artifact,
+        &AtomicBool::new(false),
+        &mut |stage, percent| {
+            if percent == 100 {
+                stages.insert(stage);
+            }
+        },
+    )
+    .unwrap();
+    assert!(stages.contains("verifying-runtime"));
+    assert!(stages.contains("verifying-models"));
+    println!(
+        "Verified {}: {} runtime files / {} bytes, {} model files / {} bytes, correct host architecture",
+        selected.platform,
+        expected.file_count,
+        expected.total_bytes,
+        lock.model_artifact.file_count,
+        lock.model_artifact.total_bytes
+    );
+}
+
+#[test]
 fn content_verification_detects_a_modified_resource() {
     let temp = tempfile::tempdir().unwrap();
     let payload = temp.path().join("worker.bin");

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "startup-diagnostic",
+  "platform": "macos-aarch64",
+  "cases": [
+    {
+      "networkDenied": true,
+      "stdout": "{\"type\": \"ready\", \"schemaVersion\": 1}\n",
+      "stderr": "\u001b[32mCreating model: ('PP-LCNet_x1_0_doc_ori', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/document-orientation', None)\u001b[0m\npaddle/utils/cpp_extension/extension_utils.py:712: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md\n  warnings.warn(warning_message)\nWARNING: OMP_NUM_THREADS set to 4, not 1. The computation speed will not be optimized if you use data parallel. It will fail if this PaddlePaddle binary is compiled with OpenBlas since OpenBlas does not support multi-threads.\nPLEASE USE OMP_NUM_THREADS WISELY.\n\u001b[32mCreating model: ('UVDoc', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/document-unwarping', None)\u001b[0m\n\u001b[32mCreating model: ('PP-LCNet_x1_0_textline_ori', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/textline-orientation', None)\u001b[0m\n\u001b[32mCreating model: ('PP-OCRv6_medium_det', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/text-detection', None)\u001b[0m\n\u001b[32mCreating model: ('PP-OCRv6_medium_rec', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/text-recognition', None)\u001b[0m\n",
+      "readyMs": 36408,
+      "exitCode": -9,
+      "elapsedMs": 41584
+    },
+    {
+      "networkDenied": false,
+      "stdout": "{\"type\": \"ready\", \"schemaVersion\": 1}\n",
+      "stderr": "\u001b[32mCreating model: ('PP-LCNet_x1_0_doc_ori', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/document-orientation', None)\u001b[0m\npaddle/utils/cpp_extension/extension_utils.py:712: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md\n  warnings.warn(warning_message)\nWARNING: OMP_NUM_THREADS set to 4, not 1. The computation speed will not be optimized if you use data parallel. It will fail if this PaddlePaddle binary is compiled with OpenBlas since OpenBlas does not support multi-threads.\nPLEASE USE OMP_NUM_THREADS WISELY.\n\u001b[32mCreating model: ('UVDoc', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/document-unwarping', None)\u001b[0m\n\u001b[32mCreating model: ('PP-LCNet_x1_0_textline_ori', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/textline-orientation', None)\u001b[0m\n\u001b[32mCreating model: ('PP-OCRv6_medium_det', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/text-detection', None)\u001b[0m\n\u001b[32mCreating model: ('PP-OCRv6_medium_rec', '/private/tmp/multi-converter-audit.0iOMg3/ram-work/source/src-tauri/ocr-resources/models/text-recognition', None)\u001b[0m\n",
+      "readyMs": 1466,
+      "exitCode": -9,
+      "elapsedMs": 6519
+    }
+  ],
+  "productionStartupLimitMs": 30000
+}

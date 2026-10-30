@@ -55,8 +55,14 @@ The model artifact is 185,082,003 installed bytes. The current Windows runtime
 is 660,098,904 installed bytes and its verified package archive is 236,434,900
 bytes. Per-file manifests and aggregate hashes are recorded in the OCR
 contract. Compression changes neither the runtime contents nor its licensing
-obligations. No macOS or Linux OCR artifact has been prepared, so no platform
-claim or notice set exists for those targets.
+obligations. Linux and Apple Silicon official OCR artifacts have since been built
+and packaged reproducibly. Their matching selection and license inventories are
+recorded in `docs/audits/2026-10-30/`; Linux covers 71 distributions / 103 license
+files and Apple Silicon 72 distributions / 104 license files. All distributions
+have license coverage and neither inventory has unresolved metadata. These are
+local engineering receipts, not public redistribution approval or installed
+application acceptance. See `V1_0_7_AUDIT_FOLLOW_THROUGH.md` for current inference
+and package evidence.
 
 The Windows package also reuses the exact verified LibreOffice release archive
 from the bundled-engine cache instead of presenting its 1.5 GB expanded tree

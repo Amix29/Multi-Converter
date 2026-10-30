@@ -209,6 +209,7 @@ jobs:
             libssl-dev \
             libxdo-dev \
             librsvg2-dev \
+            libfbclient2 \
             build-essential \
             pkg-config \
             patchelf

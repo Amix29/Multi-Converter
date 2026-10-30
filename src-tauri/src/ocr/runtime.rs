@@ -11,6 +11,14 @@ use tauri::{AppHandle, Manager};
 
 const RUNTIME_LOCK: &str = include_str!("../../ocr-runtime-lock.json");
 
+// Native Apple Silicon cold initialization measured 36.4 s; warm startup 1.5 s.
+// The supervisor keeps checking cancellation throughout this bounded wait.
+pub(super) const STARTUP_TIMEOUT: std::time::Duration = if cfg!(target_os = "macos") {
+    std::time::Duration::from_secs(90)
+} else {
+    std::time::Duration::from_secs(30)
+};
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct RuntimeLock {

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "platform": "linux-x64",
+  "sourceCommit": "ef94503e25421e5b8cc60f691e551d3c0a2e48bd",
+  "version": "1.0.7",
+  "proof": "local unsigned AppImage build and resource inspection",
+  "bytes": 1176226296,
+  "sha256": "969288445b703bfd41fa9afb9d24ec1d6a367ad8d167aaa3b387c2fa2fa56c2f",
+  "runtimeArchiveSha256": "7693f56b05aec6ba4633872d479eb847566922ffc9432b7366eed6d68c321710",
+  "ffmpeg": "ffmpeg version n8.1.1-13-g83e8541aa6-20260613 Copyright (c) 2000-2026 the FFmpeg developers",
+  "updaterSigned": false,
+  "published": false,
+  "installedUiAcceptance": false,
+  "engineManifestOrigin": "local unpublished candidates using example.invalid"
+}

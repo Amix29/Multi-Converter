@@ -332,3 +332,46 @@ and earlier signed libvips probe copy are not current-application proof.
 - Inherited GTK/Rust maintenance/unsoundness warning triage and final canonical
   audits/packages on the final source. Signing/notarization/publication are
   separate; no release or remote push is authorized by this continuation.
+
+## Native packaging and OCR startup checkpoint
+
+The `ef94503e` Linux AppImage is built and copied back: 1,176,226,296 bytes,
+SHA-256 `969288445b703bfd41fa9afb9d24ec1d6a367ad8d167aaa3b387c2fa2fa56c2f`.
+Its embedded OCR ZIP matches the reproducible archive and the extracted FFmpeg
+reports 8.1.1. It is unsigned, uses local unpublished engine metadata and has no
+installed GUI acceptance. The build required `libfbclient2` for LibreOffice's
+Firebird component; both Linux build workflows and the setup documentation now
+include that build dependency. Receipt: `audits/2026-10-30/linux-appimage-build-ef94503e.json`.
+
+Apple Silicon passed source checks, Clippy, the seven PDFium CLI tests, all eleven
+native conversion groups and the media HTTP isolation control. The first OCR
+archive run failed at the unchanged 30-second startup deadline. A diagnostic then
+measured a valid ready message at 36,408 ms under denied networking and 1,466 ms
+on the subsequent warm launch. The native Mac startup deadline is now 90 seconds;
+Windows/Linux retain 30 seconds, recognition retains 180 seconds, and cancellation
+is still checked every 50 ms. The corpus harness uses the same platform deadline
+and includes bounded stderr in startup failures. The native Mac rerun is pending.
+The first application compiled but bundling failed while clearing xattrs; this
+is not a DMG success. The original attempts remain in the receipts.
+
+An opt-in Rust integration test now extracts the actual prepared host OCR archive
+with the production extractor, verifies every runtime/model hash and checks host
+architecture. Windows passed in 219.30 s. This tests deployment integrity and
+does not replace inference or installed application acceptance.
+
+Package notice review found obsolete editor/Tiptap/ProseMirror/DOMPurify/docx.js
+claims and an obsolete PDF editing-wrapper description in `NOTICE`. Those claims
+are removed; retained conversion/OCR dependencies and platform license inventories
+are described. No old user documents or drafts are removed.
+
+All three Rust audits passed with informational warnings retained. The application
+lock now replaces yanked `chacha20 0.10.1` with `0.10.2` and `clipboard-win 5.4.1`
+with `5.4.3`. The PDFium wrapper's separately hashed, reproducible lock remains
+unchanged: changing it also requires rebuilding and relocking every candidate,
+not merely changing its recorded hash. Its yanked warning remains visible.
+`glib 0.18.5` inherits RUSTSEC-2024-0429 through GTK3/Wry; the upstream fix is in
+glib >=0.20 and cannot be substituted across GTK3's 0.18 API by a lockfile update.
+No direct `VariantStrIter`/`iter_str` application use was found; this does not prove
+absence of transitive reachability. That advisory remains open, without ignores.
+Sources: [RustSec](https://rustsec.org/advisories/RUSTSEC-2024-0429),
+[upstream correction](https://github.com/gtk-rs/gtk-rs-core/pull/1343).

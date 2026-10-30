@@ -153,7 +153,15 @@ assert.match(v107Validation, /Overall gate:\s*\*\*blocked\*\*/, "V1.0.7 validati
 assert.match(v107Ocr, /Windows implementation:\s*\*\*patched reference runtime built and packaged; smoke and full 40-case corpus passed\*\*/, "OCR documentation must record the verified Windows runtime boundary");
 assert.match(v107Ocr, /Windows NSIS build:\s*\*\*local [a-f0-9]+ candidate built; updater signature verified; installed acceptance pending\*\*/, "OCR documentation must distinguish the verified package from pending installed acceptance");
 assert.match(v107Ocr, /Windows packaged application smoke:\s*\*\*previous checkpoint only; current application acceptance pending\*\*/, "OCR documentation must distinguish packaged smoke evidence from the installed matrix");
-assert.match(v107Ocr, /macOS Apple Silicon runtime:\s*\*\*not built or host-tested/, "OCR documentation must keep untested Apple Silicon claims blocked");
+assert.match(v107Ocr, /macOS Apple Silicon runtime:\s*\*\*official runtime built and packaged reproducibly; license inventory passed; worker startup and application acceptance pending/, "Mac OCR packaging must remain distinct from worker and installed application acceptance");
+const macSelection = JSON.parse(fs.readFileSync(path.join(root, "docs", "audits", "2026-10-30", "macos-ocr-runtime-selection.json"), "utf8"));
+const macLicenses = JSON.parse(fs.readFileSync(path.join(root, "docs", "audits", "2026-10-30", "macos-ocr-runtime-licenses.json"), "utf8"));
+assert.equal(macSelection.platform, "macos-aarch64");
+assert.ok(macSelection.artifact.fileCount > 0);
+assert.match(macSelection.archive.sha256, /^[a-f0-9]{64}$/);
+assert.equal(macLicenses.runtimeAggregateSha256, macSelection.artifact.aggregateSha256);
+assert.deepEqual(macLicenses.packagesWithoutLicenseFiles, []);
+assert.deepEqual(macLicenses.unresolvedMetadata, []);
 assert.match(v107Ocr, /Linux x64:\s*\*\*official runtime built and packaged reproducibly; direct 40-case corpus passed and isolated extracted-archive four-case probe passed/, "Linux OCR documentation must distinguish native worker proof from installed application acceptance");
 const linuxOcrProof = JSON.parse(fs.readFileSync(path.join(root, "docs", "audits", "2026-10-30", "linux-ocr-corpus-direct.json"), "utf8"));
 const linuxArchiveProof = JSON.parse(fs.readFileSync(path.join(root, "docs", "audits", "2026-10-30", "linux-ocr-corpus-packaged.json"), "utf8"));

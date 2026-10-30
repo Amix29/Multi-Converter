@@ -199,8 +199,11 @@ async function startWorker(workerPath, modelsPath) {
   child.stderr.on("data", (chunk) => { stderr = `${stderr}${chunk}`.slice(-8_000); });
   const lines = readline.createInterface({ input: child.stdout })[Symbol.asyncIterator]();
   let ready;
-  try { ready = await nextMessage(lines, 30_000); }
-  catch (error) { network.stop(); child.kill(); throw error; }
+  try { ready = await nextMessage(lines, process.platform === "darwin" ? 90_000 : 30_000); }
+  catch (error) {
+    network.stop(); child.kill();
+    throw new Error(`${error.message}; worker exit=${child.exitCode}; stderr=${stderr}`);
+  }
   if (ready.type !== "ready") throw new Error(`Message initial OCR inattendu: ${JSON.stringify(ready)}`);
   return {
     pid: child.pid,

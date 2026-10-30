@@ -11,7 +11,6 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
 
-const STARTUP_TIMEOUT: Duration = Duration::from_secs(30);
 const PAGE_TIMEOUT: Duration = Duration::from_secs(180);
 const STDERR_TAIL_BYTES: usize = 8 * 1024;
 
@@ -349,7 +348,7 @@ fn start_worker(
             terminate_child(&mut child);
             return Err(error);
         }
-        if ready_started.elapsed() > STARTUP_TIMEOUT {
+        if ready_started.elapsed() > runtime::STARTUP_TIMEOUT {
             let error = worker_runtime_error(
                 "OCR_RUNTIME_START_TIMEOUT",
                 "Le moteur OCR n’a pas démarré en 30 secondes.",

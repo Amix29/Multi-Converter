@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "platform": "macos-aarch64",
+  "executable": "runtime/macos-aarch64/ocr-worker",
+  "runtime": "official",
+  "provider": "cpu",
+  "artifact": {
+    "fileCount": 5796,
+    "totalBytes": 847557178,
+    "aggregateSha256": "e072b3c4cb2d59537efbb8a1669a0d17a399ad24e15ce0f318e8e9b2c77b8672"
+  },
+  "archive": {
+    "bytes": 278062692,
+    "sha256": "27856062d3e9cea9973a64f730dcb19156a9e7a36ec26165203445fe962f7d58"
+  }
+}

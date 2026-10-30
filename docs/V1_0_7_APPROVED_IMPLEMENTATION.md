@@ -227,10 +227,12 @@ staging of the exact locked candidate passed; a fresh remote CI execution has
 not occurred. The 22-step dry run records skips and is not a green CI claim.
 Rust auditing now covers all three Cargo.lock files and aggregates failures.
 
-Native UI acceptance is currently blocked by environment access: connected remote
-devices are offline and the local computer-use skill requires node_repl, which
-is absent from the available tools. These Windows installed interactions and
-Mac/Linux host tests must not be replaced with browser mocks.
+Native UI acceptance remains pending because the local computer-use skill
+requires node_repl, which is absent from the available tools. Remote Desktop
+Commander now reaches an Apple Silicon Mac: source checks, native conversions
+and temporary package/OCR work are recorded in the follow-through ledger.
+Linux source, conversion and OCR checks pass and a local AppImage has been built.
+These command-line proofs do not replace installed native UI acceptance.
 
 ## Remaining approved work
 

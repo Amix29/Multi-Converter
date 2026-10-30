@@ -477,7 +477,7 @@ That gate intentionally uses compile-only Tauri sidecar placeholders and must no
 On Ubuntu hosts, install the Linux build dependencies first:
 
 ```bash
-sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev libdbus-1-dev libssl-dev libxdo-dev librsvg2-dev build-essential pkg-config patchelf
+sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev libdbus-1-dev libssl-dev libxdo-dev librsvg2-dev libfbclient2 build-essential pkg-config patchelf
 ```
 
 Then run the Linux environment preflight:

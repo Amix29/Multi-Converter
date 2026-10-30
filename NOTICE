@@ -27,45 +27,26 @@ or any other third-party engine bundled or distributed for Multi-Converter.
 See docs/THIRD_PARTY_ENGINES.md for the V1 engine notice checklist and
 redistribution warnings.
 
-The document editor includes Tiptap and ProseMirror open-source packages.
-Editor toolbar icons use lucide-react 1.52.0 under ISC, with Feather-derived
-icons under MIT. The full upstream notice is distributed with the frontend
-at third-party/lucide/LICENSE.txt; the exact npm artifact is pinned in
-package-lock.json. These vector icons are bundled locally.
+The PDFium conversion/OCR wrapper uses pdfium-render 0.9.1 under
+MIT OR Apache-2.0 and lopdf 0.42.0 under MIT. It provides bounded PDF page
+inspection, text extraction and rendering for conversion and OCR. Each crate
+retains its own license. Document/PDF editors and their frontend dependencies
+are no longer included in V1.0.7.
 
-Tiptap is distributed under the MIT License. Multi-Converter does not include
-Tiptap Pro packages or depend on Tiptap Cloud. The applicable package license
-texts are retained in the installed dependency distribution and source tree.
-
-HTML imports and pastes in the document editor are sanitized with DOMPurify
-3.4.12, distributed under the MPL-2.0 OR Apache-2.0 license. The installed npm
-package contains both `LICENSE` and `LICENSE-MPL`; the exact package version,
-registry artifact and integrity hash are pinned in `package-lock.json`.
-
-Direct DOCX generation in the document editor uses docx.js 9.7.1, distributed
-under the MIT License. The generator is loaded locally only when a DOCX write
-is requested; it does not download fonts or document resources. The exact npm
-artifact and integrity hash are pinned in `package-lock.json`, and the package
-license text is retained at `public/third-party/docx/LICENSE.txt` and copied to
-the packaged frontend as `third-party/docx/LICENSE.txt`.
-
-The PDFium editing wrapper uses pdfium-render 0.9.1 under MIT OR Apache-2.0
-and lopdf 0.42.0 under MIT. lopdf is used only for bounded structural
-inspection of inactive PDF dictionaries and for the explicit creation of a
-separate unsigned editable copy; it never executes JavaScript, launch actions,
-XFA, 3D or media content. Each crate retains its own license.
-
-The bounded OpenDocument parser uses quick-xml 0.41.0 under the MIT License.
-Standalone HTML export uses base64 0.22.1 under the MIT OR Apache-2.0 License
-to embed local editor assets without exposing file-system paths. The applicable
-license texts are retained in the Cargo dependency source distribution.
+The native conversion application uses base64 0.22.1 under MIT OR Apache-2.0
+and roxmltree 0.21.1 under MIT OR Apache-2.0. Exact dependency versions and
+checksums are pinned in the Cargo locks; upstream license texts remain in the
+corresponding dependency source distributions.
 
 The unreleased V1.0.7 development build includes a local official
 PP-OCRv6_medium runtime composed from PaddlePaddle 3.3.1, PaddleOCR 3.7.0 and
-PaddleX 3.7.0. Its 71 Python distributions retain their own licenses. Exact
+PaddleX 3.7.0. Its Python distributions retain their own licenses. Exact
 versions, artifact hashes and license-file hashes are recorded in
 `tools/ocr-runtime/requirements-windows-x64.lock.txt` and
-`src-tauri/ocr-runtime-licenses.json`.
+`src-tauri/ocr-runtime-licenses.json`. Native Linux and Apple Silicon inventory
+receipts are in `docs/audits/2026-10-30/*-ocr-runtime-licenses.json`; each packaged
+runtime includes its matching inventory and license files. Platform inventories
+differ and must not be substituted for one another.
 
 `bce-python-sdk` 0.9.76 declares Apache License 2.0 but its exact wheel and
 source archive contain no license file. Multi-Converter packages the canonical

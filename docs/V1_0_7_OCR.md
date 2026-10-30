@@ -17,7 +17,7 @@ Runtime locks, packaged models and original-file protection are unchanged.
 - Windows packaged application smoke: **previous checkpoint only; current application acceptance pending**
 - Current Windows correction fixture: **reviewed expected text matched exactly (100%)**
 - Linux x64: **official runtime built and packaged reproducibly; direct 40-case corpus passed and isolated extracted-archive four-case probe passed**
-- macOS Apple Silicon runtime: **not built or host-tested; available Mac lacks build space**
+- macOS Apple Silicon runtime: **official runtime built and packaged reproducibly; license inventory passed; worker startup and application acceptance pending**
 - Native ONNX candidate and accelerators: **not selected; official CPU runtime retained**
 - Privacy mode: **local only**
 
@@ -203,7 +203,7 @@ clear permission.
 - decoded image: 120 megapixels and 32,768 pixels per side;
 - PDF: 2,000 pages;
 - normalized text: 64 MiB;
-- worker startup: 30 seconds;
+- worker startup: 30 seconds on Windows/Linux, 90 seconds on Apple Silicon;
 - recognition: 180 seconds per page;
 - remote URLs, corrupted files, wrong real types and password-protected PDFs
   are rejected;
