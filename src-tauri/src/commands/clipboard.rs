@@ -31,8 +31,7 @@ pub(crate) async fn save_clipboard_files(files: Vec<ClipboardFile>) -> CommandRe
 }
 
 fn save_clipboard_files_to_temp(files: &[ClipboardFile]) -> CommandResult<Vec<String>> {
-    let directory = tempfile::Builder::new()
-        .prefix(CLIPBOARD_TEMP_PREFIX)
+    let directory = crate::private_temp::builder(CLIPBOARD_TEMP_PREFIX)
         .tempdir()
         .map_err(|error| error.to_string())?;
     let paths = save_clipboard_files_to_directory(files, directory.path())?;

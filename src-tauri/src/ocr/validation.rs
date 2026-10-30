@@ -51,8 +51,7 @@ pub(super) fn prepare_image(path: &str) -> Result<PreparedImage, String> {
     let (width, height) = image.dimensions();
     validate_dimensions(width, height)?;
 
-    let temp = tempfile::Builder::new()
-        .prefix("multi-converter-ocr-image-")
+    let temp = crate::private_temp::builder("multi-converter-ocr-image-")
         .tempdir()
         .map_err(|error| error.to_string())?;
     let normalized = temp.path().join("input.png");

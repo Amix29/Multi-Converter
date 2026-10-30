@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{Read, Write};
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{AppHandle, Manager};
 
@@ -44,8 +44,7 @@ pub(super) fn ensure_extracted(
         return Ok(target);
     }
 
-    let staging = tempfile::Builder::new()
-        .prefix(".extracting-")
+    let staging = crate::private_temp::builder(".extracting-")
         .tempdir_in(&cache_root)
         .map_err(|error| format!("OCR_RUNTIME_CACHE:{error}"))?;
     extract_archive(
@@ -97,22 +96,8 @@ fn extract_archive(
         let mut entry = archive
             .by_index(index)
             .map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
-        let entry_name = entry
-            .name()
-            .map_err(|error| format!("OCR_RUNTIME_ARCHIVE:{error}"))?;
-        if entry_name.contains('\\') || entry_name.contains('\0') {
-            return Err("OCR_RUNTIME_ARCHIVE:Nom non portable dans l’archive.".to_string());
-        }
-        let relative = entry
-            .enclosed_name()
-            .ok_or_else(|| "OCR_RUNTIME_ARCHIVE:Chemin dangereux dans l’archive.".to_string())?
-            .to_path_buf();
-        if relative
-            .components()
-            .any(|component| !matches!(component, Component::Normal(_)))
-        {
-            return Err("OCR_RUNTIME_ARCHIVE:Chemin non portable dans l’archive.".to_string());
-        }
+        let relative = crate::path_safety::archive_relative(entry.name_raw(), entry.is_dir())
+            .ok_or_else(|| "OCR_RUNTIME_ARCHIVE:Nom non portable dans l’archive.".to_string())?;
         let identity = relative.to_string_lossy().to_lowercase();
         if !seen_paths.insert(identity) {
             return Err("OCR_RUNTIME_ARCHIVE:Chemin dupliqué dans l’archive.".to_string());

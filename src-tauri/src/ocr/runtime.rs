@@ -4,7 +4,7 @@ use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::fs::{self, File};
 use std::io::Read;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, OnceLock};
 use tauri::{AppHandle, Manager};
@@ -374,15 +374,8 @@ fn verify_content_manifest(
 }
 
 fn safe_relative_path(value: &str) -> Result<PathBuf, String> {
-    let path = Path::new(value);
-    if path.is_absolute()
-        || path
-            .components()
-            .any(|component| !matches!(component, Component::Normal(_)))
-    {
-        return Err("OCR_RUNTIME_UNVERIFIED:Chemin de ressource OCR dangereux.".to_string());
-    }
-    Ok(path.to_path_buf())
+    crate::path_safety::resource_relative(value)
+        .ok_or_else(|| "OCR_RUNTIME_UNVERIFIED:Chemin de ressource OCR dangereux.".to_string())
 }
 
 fn count_regular_files(

@@ -19,7 +19,7 @@ impl ParsedRelativePath {
             || value.len() > MAX_RELATIVE_PATH_BYTES
             || value.starts_with(['/', '\\'])
             || Path::new(value).is_absolute()
-            || is_windows_absolute(value)
+            || crate::path_safety::windows_absolute(value)
         {
             return Err("Chemin relatif d'export non valide.".to_string());
         }
@@ -49,14 +49,6 @@ impl ParsedRelativePath {
     pub(super) fn normalized(&self) -> String {
         self.components.join("/")
     }
-}
-
-fn is_windows_absolute(value: &str) -> bool {
-    let bytes = value.as_bytes();
-    bytes.len() >= 3
-        && bytes[0].is_ascii_alphabetic()
-        && bytes[1] == b':'
-        && matches!(bytes[2], b'/' | b'\\')
 }
 
 fn validate_root_id(value: &str) -> CommandResult<()> {

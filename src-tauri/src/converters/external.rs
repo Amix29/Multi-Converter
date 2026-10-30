@@ -22,21 +22,16 @@ pub(in crate::converters) fn convert_with_libreoffice(
     target_format: &str,
 ) -> Result<()> {
     let source_input = absolute_engine_input(input_path)?;
-    let input_staging = tempfile::Builder::new()
-        .prefix("multi-converter-office-input-")
-        .tempdir()?;
+    let input_staging = crate::private_temp::builder("multi-converter-office-input-").tempdir()?;
     let engine_input = offline_input::prepare(app, job_id, &source_input, input_staging.path())?;
     let soffice = libreoffice_conversion_launcher(&engine_path(app, "libreoffice")?);
     let out_dir = output_path
         .parent()
         .ok_or_else(|| ConvertError::Message("Dossier de sortie invalide.".to_string()))?;
-    let profile_dir = tempfile::Builder::new()
-        .prefix("multi-converter-lo-")
-        .tempdir()?;
+    let profile_dir = crate::private_temp::builder("multi-converter-lo-").tempdir()?;
     libreoffice_profile::prepare(profile_dir.path())?;
-    let engine_output_dir = tempfile::Builder::new()
-        .prefix(".multi-converter-lo-output-")
-        .tempdir_in(out_dir)?;
+    let engine_output_dir =
+        crate::private_temp::builder(".multi-converter-lo-output-").tempdir_in(out_dir)?;
     emit_progress(app, job_id, 24, "Conversion LibreOffice");
     let filter = match target_format {
         "txt" => "txt:Text",
@@ -111,9 +106,7 @@ pub(in crate::converters) fn convert_with_pandoc(
 ) -> Result<()> {
     let engine_input = absolute_engine_input(input_path)?;
     let pandoc = engine_path(app, "pandoc")?;
-    let staging = tempfile::Builder::new()
-        .prefix("multi-converter-document-")
-        .tempdir()?;
+    let staging = crate::private_temp::builder("multi-converter-document-").tempdir()?;
     let prepared_input = prepare_pandoc_input(app, job_id, &pandoc, &engine_input, staging.path())?;
     emit_progress(app, job_id, 24, "Conversion Pandoc");
     run_external_command_with_progress(
@@ -203,9 +196,7 @@ pub(in crate::converters) fn convert_with_pdfium(
     let pdfium = engine_path(app, "pdfium")?;
     emit_progress(app, job_id, 24, "Rendu PDFium");
     let format = if target_format == "jpg" { "jpg" } else { "png" };
-    let render_dir = tempfile::Builder::new()
-        .prefix("multi-converter-pdf-pages-")
-        .tempdir()?;
+    let render_dir = crate::private_temp::builder("multi-converter-pdf-pages-").tempdir()?;
     let render_result = run_external_command_with_progress(
         engine_command(&pdfium)
             .arg("--render-all")
@@ -275,9 +266,7 @@ pub(in crate::converters) fn convert_with_libvips(
 ) -> Result<()> {
     let engine_input = absolute_engine_input(input_path)?;
     let vips = engine_path(app, "libvips")?;
-    let staging = tempfile::Builder::new()
-        .prefix("multi-converter-image-")
-        .tempdir()?;
+    let staging = crate::private_temp::builder("multi-converter-image-").tempdir()?;
     let normalized = staging.path().join("oriented.v");
     let threads = std::thread::available_parallelism()
         .map(|value| value.get())

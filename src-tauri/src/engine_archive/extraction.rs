@@ -1,7 +1,8 @@
 use sha2::{Digest, Sha256};
+use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{self, Read};
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 
 const MAX_ARCHIVE_ENTRIES: usize = 50_000;
 
@@ -17,17 +18,13 @@ pub(super) fn extract_archive(
     }
     let byte_limit = expected_bytes.saturating_add(32 * 1024 * 1024);
     let mut extracted_bytes = 0u64;
+    let mut seen_paths = HashSet::new();
     for index in 0..archive.len() {
         let mut entry = archive.by_index(index).map_err(|error| error.to_string())?;
-        let relative = entry
-            .enclosed_name()
-            .ok_or_else(|| "Chemin dangereux dans l’archive moteur.".to_string())?
-            .to_path_buf();
-        if relative
-            .components()
-            .any(|component| !matches!(component, Component::Normal(_)))
-        {
-            return Err("Chemin non portable dans l’archive moteur.".to_string());
+        let relative = crate::path_safety::archive_relative(entry.name_raw(), entry.is_dir())
+            .ok_or_else(|| "Chemin de moteur dangereux.".to_string())?;
+        if !seen_paths.insert(relative.to_string_lossy().to_lowercase()) {
+            return Err("Chemin dupliqué dans l’archive moteur.".to_string());
         }
         if entry
             .unix_mode()
@@ -63,15 +60,8 @@ pub(super) fn extract_archive(
 }
 
 pub(super) fn safe_relative(value: &str) -> Result<PathBuf, String> {
-    let path = Path::new(value);
-    if path.is_absolute()
-        || path
-            .components()
-            .any(|component| !matches!(component, Component::Normal(_)))
-    {
-        return Err("Chemin de moteur dangereux.".to_string());
-    }
-    Ok(path.to_path_buf())
+    crate::path_safety::resource_relative(value)
+        .ok_or_else(|| "Chemin de moteur dangereux.".to_string())
 }
 
 pub(super) fn assert_under(path: &Path, root: &Path) -> Result<(), String> {

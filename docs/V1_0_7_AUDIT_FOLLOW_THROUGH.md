@@ -132,6 +132,28 @@ The same review found Windows drive-absolute strings could otherwise parse as
 relative paths on Unix; both slash forms are now explicitly rejected, while
 ordinary Unix colons and reserved-looking basenames remain supported.
 
+The next native Linux run reached Rust unit execution: 180 passed and two failed.
+The failures exposed temporary-directory mode 0755 instead of the required 0700,
+and a Windows-drive path accepted by the OCR manifest validator on Unix.
+The correction introduces one private temporary-directory builder across
+conversion, clipboard, Office/PDF/OCR intermediates and engine staging, plus
+shared portable resource-path checks for OCR/motor manifests and archives.
+The native Linux CI gate now passes in full: environment/toolchain, application
+check, denied-warning Clippy, 185 Rust units (12 opt-in exclusions), PDFium wrapper
+compile and wrapper Clippy. It uses declared CI sidecar placeholders and proves
+source/build behavior, not real conversions or an installed Linux package.
+The real prepared Windows LibreOffice archive extraction also passed (104 s).
+Its historical ZIP uses backslash entry names; archive validation normalizes both
+separator forms before rejecting escapes, drive roots and duplicate destinations.
+OCR/resource manifest paths remain strictly portable forward-slash names.
+`SECURITY.md` now reflects conversion/OCR scope and private intermediates.
+
+The published Linux V1.0.6 AppImage (541,088,248 bytes, SHA-256
+`aa743940ed29e7426877f82b54e951681697906a5c1750dca8aee5b973093fce`)
+and its signature were downloaded and verified against GitHub asset digests
+and the configured updater public key before extraction. These baseline engines
+are test/build inputs; they do not certify a newly built 1.0.7 AppImage.
+
 ## Remaining authorized work
 
 - Native Linux source/build/package/engine/OCR validation as available; current

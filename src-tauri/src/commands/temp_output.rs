@@ -9,8 +9,7 @@ use std::{
 
 #[tauri::command]
 pub(crate) fn create_temp_output_folder() -> CommandResult<String> {
-    let path = tempfile::Builder::new()
-        .prefix("multi-converter-")
+    let path = crate::private_temp::builder("multi-converter-")
         .tempdir()
         .map_err(|error| error.to_string())?
         .keep();

@@ -54,8 +54,7 @@ pub(super) fn recognize_pdf(
         OcrProgressV1::document(job_id, 3, "inspecting", None, None),
     );
     let pdfium = converters::engine_path(app, "pdfium").map_err(|error| error.to_string())?;
-    let temporary = tempfile::Builder::new()
-        .prefix("multi-converter-ocr-pdf-")
+    let temporary = crate::private_temp::builder("multi-converter-ocr-pdf-")
         .tempdir()
         .map_err(|error| error.to_string())?;
     let inspection_path = temporary.path().join("inspection.json");

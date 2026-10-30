@@ -6,7 +6,10 @@ Multi-Converter currently supports the latest public V1.0.6 release on Windows x
 
 Security fixes are prioritized for the latest tagged release and the default branch.
 
-V1.0.7 is an unreleased development version. Its Tiptap editor and future `PP-OCRv6_medium` integration are not covered by a public compatibility claim until their platform gates pass.
+V1.0.7 is an unreleased conversion and local OCR development version. File editors
+and editor drafts have been removed. Its supported build targets are Windows x64,
+Linux x64 and macOS Apple Silicon; historical public macOS assets remain universal.
+Development checks do not establish installed-package compatibility.
 
 ## Reporting a Vulnerability
 
@@ -30,10 +33,8 @@ In scope:
 - command execution risks around conversion engines;
 - malformed files causing excessive memory, CPU, disk, or process use;
 - insecure engine download, verification, or installation behavior.
-- editor draft or asset access that escapes the local document directory;
-- persisted editor images that bypass the validated `mc-asset://` storage contract;
-- document imports that bypass the bounded ODT parser or enable external XML entities;
-- future OCR behavior that uploads files or recognized text, downloads an unverified model, exposes temporary page images, or fails to enforce resource limits.
+- document conversion that reads resources outside the allowed source directory or enables external XML entities;
+- OCR behavior that uploads files or recognized text, downloads an unverified model, exposes temporary page images, or fails to enforce resource limits;
 - marketing-site build inputs, public files, generated metadata and deployment workflow.
 
 Out of scope:
@@ -42,14 +43,22 @@ Out of scope:
 - unsupported operating systems or unverified development builds;
 - issues requiring local administrator compromise before launching the app.
 
+## Local intermediates
+
+Conversion, clipboard, Office/PDF/OCR and engine-extraction temporary directories
+use one private directory builder. On Unix their permissions are explicitly 0700,
+independent of the process umask. Source files remain outside these directories;
+converted results awaiting export have a separate lifecycle. OCR and engine
+resource names must be relative on every host, including rejecting Windows drive
+prefixes when validation runs on Unix.
+
 ## Marketing Site Dependency Status
 
-As of 2026-07-30, the site pins Next.js `16.2.12`, PostCSS `8.5.25` and
-Sharp `0.35.3`. The npm override `sharp: "$sharp"` forces Next.js to reuse the
+The site pins its dependency versions in `site/package.json` and `site/package-lock.json`.
+The npm override `sharp: "$sharp"` forces Next.js to reuse the
 reviewed direct Sharp version instead of installing an older optional copy.
 
-The installed production dependency audit reports zero known vulnerabilities.
-Keep that evidence current by running:
+Dependency audit results are point-in-time evidence. Refresh them with:
 
 ```bash
 npm run site:check

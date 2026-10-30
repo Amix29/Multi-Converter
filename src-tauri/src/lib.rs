@@ -7,6 +7,8 @@ mod engine_archive;
 mod engine_distribution;
 mod engines;
 mod ocr;
+mod path_safety;
+mod private_temp;
 mod process_support;
 mod registry;
 mod runtime_log;

@@ -46,8 +46,7 @@ pub(crate) fn ensure_extracted(
         assert_under(&target, &root)?;
         fs::remove_dir_all(&target).map_err(|error| error.to_string())?;
     }
-    let staging = tempfile::Builder::new()
-        .prefix(".extracting-")
+    let staging = crate::private_temp::builder(".extracting-")
         .tempdir_in(target.parent().unwrap_or(&root))
         .map_err(|error| error.to_string())?;
     extract_archive(&archive, staging.path(), engine.installed_size_bytes)?;

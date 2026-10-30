@@ -153,8 +153,7 @@ impl OcrState {
         emit(app, OcrProgressV1::image(job_id, 12, "preparing-image"));
         let prepared = validation::prepare_image(source)?;
         ensure_not_canceled(&canceled)?;
-        let temp = tempfile::Builder::new()
-            .prefix("multi-converter-ocr-job-")
+        let temp = crate::private_temp::builder("multi-converter-ocr-job-")
             .tempdir()
             .map_err(|error| error.to_string())?;
         let output = temp.path().join("result.json");
