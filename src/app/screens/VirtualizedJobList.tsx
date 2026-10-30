@@ -2,6 +2,7 @@ import { memo } from "react";
 import { t, translateBackendMessage, type LanguageCode } from "../../i18n";
 import { clamp, displayFileName, formatBytes } from "../conversion/model";
 import { useVirtualWindow } from "../conversion/useVirtualWindow";
+import { resultWarningText } from "../conversion/resultWarnings";
 import { statusLabelKeys, type FileItem } from "../types";
 
 export const VirtualizedJobList = memo(function VirtualizedJobList(props: {
@@ -112,13 +113,7 @@ const JobRow = memo(function JobRow(props: {
       )}
       {Boolean(props.file.result?.warnings?.length) && (
         <p className="job-warning" tabIndex={0}>
-          {props.file.result?.warnings?.map((warning) => {
-            if (warning.code === "integrated-text-fallback") return t(props.language, "fidelity.textFallback");
-            if (warning.code === "single-column-table") return t(props.language, "fidelity.singleColumn");
-            if (warning.code === "text-layout") return t(props.language, "fidelity.textLayout");
-            if (warning.code === "media-primary-streams") return t(props.language, "fidelity.primaryStreams");
-            return translateBackendMessage(props.language, warning.message);
-          }).join(" · ")}
+          {props.file.result?.warnings?.map((warning) => resultWarningText(props.language, warning)).join(" · ")}
         </p>
       )}
       <div className="file-progress-line">

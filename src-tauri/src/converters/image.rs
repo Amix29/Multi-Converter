@@ -1,5 +1,7 @@
 use super::*;
 
+#[path = "image/fidelity.rs"]
+pub(super) mod fidelity;
 #[cfg(test)]
 #[path = "image/fidelity_tests.rs"]
 mod fidelity_tests;
@@ -11,15 +13,16 @@ pub(in crate::converters) fn convert_image(
     output_path: &Path,
     target_format: &str,
     quality: QualityProfile,
-) -> Result<()> {
+) -> Result<Vec<ConversionWarning>> {
     ensure_integrated_memory_budget(input_path, "image")?;
     emit_progress(app, job_id, 18, "Lecture de l'image");
-    let image = read_integrated_image(input_path)?;
+    let (image, profile, has_exif) = read_integrated_image_with_profile(input_path)?;
+    let warnings = fidelity::output_warnings(&image, target_format, profile.as_deref(), has_exif);
 
     emit_progress(app, job_id, 52, "Encodage de l'image");
-    write_integrated_image_with_quality(output_path, image, target_format, quality)?;
+    write_image_with_profile(output_path, image, target_format, quality, profile)?;
     emit_progress(app, job_id, 88, "Finalisation");
-    Ok(())
+    Ok(warnings)
 }
 
 pub(in crate::converters) fn uses_integrated_image_pipeline(engine_id: &str) -> bool {
@@ -29,12 +32,18 @@ pub(in crate::converters) fn uses_integrated_image_pipeline(engine_id: &str) -> 
 pub(in crate::converters) fn read_integrated_image(
     input_path: &Path,
 ) -> Result<::image::DynamicImage> {
+    Ok(read_integrated_image_with_profile(input_path)?.0)
+}
+
+fn read_integrated_image_with_profile(
+    input_path: &Path,
+) -> Result<(::image::DynamicImage, Option<Vec<u8>>, bool)> {
     if input_path
         .extension()
         .and_then(OsStr::to_str)
         .is_some_and(|extension| extension.eq_ignore_ascii_case("svg"))
     {
-        read_svg_image(input_path)
+        Ok((read_svg_image(input_path)?, None, false))
     } else {
         let reader = image::ImageReader::open(input_path)?.with_guessed_format()?;
         let (width, height) = reader.into_dimensions()?;
@@ -44,11 +53,19 @@ pub(in crate::converters) fn read_integrated_image(
         let mut limits = image::Limits::default();
         limits.max_alloc = Some(256 * 1024 * 1024);
         reader.limits(limits);
+        let tiff_profile = if reader.format() == Some(ImageFormat::Tiff) {
+            fidelity::tiff_profile(input_path)?
+        } else {
+            None
+        };
         let mut decoder = reader.into_decoder()?;
+        let has_exif = decoder.exif_metadata()?.is_some();
+        let profile = tiff_profile.or(decoder.icc_profile()?);
+        fidelity::check_profile(profile.as_deref())?;
         let orientation = decoder.orientation()?;
         let mut image = ::image::DynamicImage::from_decoder(decoder)?;
         image.apply_orientation(orientation);
-        Ok(image)
+        Ok((image, profile, has_exif))
     }
 }
 
@@ -61,15 +78,29 @@ pub(in crate::converters) fn write_integrated_image(
     write_integrated_image_with_quality(output_path, image, target_format, QualityProfile::Balanced)
 }
 
+#[cfg(test)]
 fn write_integrated_image_with_quality(
     output_path: &Path,
     image: ::image::DynamicImage,
     target_format: &str,
     quality: QualityProfile,
 ) -> Result<()> {
+    write_image_with_profile(output_path, image, target_format, quality, None)
+}
+
+fn write_image_with_profile(
+    output_path: &Path,
+    image: ::image::DynamicImage,
+    target_format: &str,
+    quality: QualityProfile,
+    profile: Option<Vec<u8>>,
+) -> Result<()> {
     if target_format == "ico" {
         write_windows_ico(output_path, image)?;
     } else if target_format == "jpg" {
+        let grayscale = profile
+            .as_deref()
+            .is_some_and(|value| value.get(16..20) == Some(b"GRAY"));
         let mut rgba = image.into_rgba8();
         for pixel in rgba.pixels_mut() {
             let alpha = u16::from(pixel[3]);
@@ -78,12 +109,19 @@ fn write_integrated_image_with_quality(
             }
             pixel[3] = 255;
         }
-        let rgb = ::image::DynamicImage::ImageRgba8(rgba).into_rgb8();
-        ::image::codecs::jpeg::JpegEncoder::new_with_quality(
+        let pixels = ::image::DynamicImage::ImageRgba8(rgba);
+        let pixels = if grayscale {
+            ::image::DynamicImage::ImageLuma8(pixels.into_luma8())
+        } else {
+            ::image::DynamicImage::ImageRgb8(pixels.into_rgb8())
+        };
+        let encoder = ::image::codecs::jpeg::JpegEncoder::new_with_quality(
             File::create(output_path)?,
             quality.jpeg_quality(),
-        )
-        .encode_image(&::image::DynamicImage::ImageRgb8(rgb))?;
+        );
+        fidelity::encode_with_profile(pixels, encoder, profile)?;
+    } else if matches!(target_format, "png" | "webp" | "tiff") {
+        fidelity::encode_profiled_target(output_path, image, target_format, profile)?;
     } else {
         let format = image_format_for_target(target_format)?;
         image.write_to(&mut File::create(output_path)?, format)?;

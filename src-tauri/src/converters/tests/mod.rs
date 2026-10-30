@@ -4,6 +4,7 @@ mod archive_limits;
 mod behavior;
 mod documents;
 mod matrices;
+mod remux;
 
 use behavior::one_frame_gif;
 use documents::{

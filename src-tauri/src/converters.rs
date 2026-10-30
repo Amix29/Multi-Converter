@@ -39,6 +39,7 @@ mod media;
 mod orchestrator;
 mod output;
 mod quality;
+pub(crate) mod resources;
 mod text;
 
 #[cfg(test)]
@@ -62,7 +63,7 @@ pub(crate) use cancellation::{ActiveConversion, begin_conversion};
 pub use contracts::{
     ConversionJob, ConversionResult, ConversionWarning, ConvertError, FileDescription, FileWarning,
     ImportBatchResult, ImportOriginKind, ImportOriginV1, ImportRejection, ImportedFileDescription,
-    ProgressPayload, QualityProfile, Result,
+    MediaMode, ProgressPayload, QualityProfile, Result,
 };
 pub use describe::describe_file_with_app;
 pub(crate) use orchestrator::convert_registered;

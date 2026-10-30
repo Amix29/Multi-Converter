@@ -1,5 +1,18 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-10-30 — Audit Follow-Through
+
+Current isolated work: `codex/audit-follow-through`, baseline `41459c23`.
+See [the continuously updated handoff](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
+The new lot adds explicit per-file stream copy, image ICC/frame/depth policy,
+native resource reservations and fixes narrow-window layout. Rust 178 units,
+11 native conversion groups and denied-warning Clippy passed. The final canonical
+check, 50 frontend units and the existing 12-test browser suite passed (10 declared
+project exclusions). Four real Mac engine probe groups passed
+using the existing V1.0.5 bundle and a temporary libvips copy whose signatures
+were corrected using the new helper. This is not current 1.0.7 package/OCR proof.
+Linux WSL build preparation is in progress. Release remains blocked.
+
 ## 2026-10-30 — Approved Audit Implementation In Progress
 
 Source commit `b766134f` is locally integrated on `codex/test`; work branch:

@@ -1,5 +1,20 @@
 # Multi-Converter Decisions
 
+## 2026-10-30 — Continue The Approved Audit On Available Native Hosts
+
+Continue on `codex/audit-follow-through` from `41459c23`, preserving the converter/
+OCR scope and Apple Silicon-only future Mac policy. Explicit stream copy must
+preserve every supported track or fail; it cannot silently re-encode. Integrated
+image conversions must expose profile/depth/metadata loss and reject silently
+flattened multi-image inputs. Native resource reservations are conservative
+admission estimates, not a promise of an OS-level RSS cap.
+
+Use the authorized Mac only for bounded temporary work; copy durable evidence
+back to the project. Its existing application is historical, so engine probes
+cannot certify the new application. Ubuntu WSL uses native tools and a separate
+Linux checkout, never Windows node_modules. Follow V1_0_7_AUDIT_FOLLOW_THROUGH.md
+for checks, artifacts and the remaining authorized work.
+
 ## 2026-10-30 — Audit Approved; Apple Silicon macOS Only
 
 The maintainer approved the comprehensive conversion/OCR audit recommendations,

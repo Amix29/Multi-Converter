@@ -377,5 +377,18 @@
   "fidelity.singleColumn": "Le texte est exporté dans une seule colonne. Les tableaux ne sont pas reconstitués.",
   "fidelity.textLayout": "La sortie conserve le texte et une structure simplifiée. La mise en page, les tableaux et les images ne sont pas reproduits fidèlement.",
   "common.loading": "Chargement…",
-  "fidelity.primaryStreams": "Première piste audio et première piste vidéo uniquement. Les pistes supplémentaires, sous-titres et pièces jointes sont exclus."
+  "fidelity.primaryStreams": "Première piste audio et première piste vidéo uniquement. Les pistes supplémentaires, sous-titres et pièces jointes sont exclus.",
+  "media.mode": "Traitement de cette vidéo",
+  "media.convert": "Réencoder",
+  "media.copy": "Copier les flux",
+  "media.convertDetail": "Les pistes principales sont réencodées selon le profil de qualité.",
+  "media.copyDetail": "Sans recompression : toutes les pistes et les chapitres sont conservés. Une piste incompatible bloque la conversion ; aucun repli automatique.",
+  "media.copyPhase": "Copie des flux sans recompression",
+  "fidelity.profileLoss": "Le format de sortie ne conserve pas le profil ICC ; les couleurs peuvent changer.",
+  "fidelity.depthLoss": "La profondeur est réduite à 8 bits par composante.",
+  "fidelity.exifLoss": "L’orientation est appliquée. Les autres données EXIF, dont la résolution et la localisation éventuelle, ne sont pas recopiées.",
+  "error.copyUnsupported": "Une piste est incompatible avec ce conteneur. Choisissez MKV ou Réencoder. Aucune piste n’a été supprimée et aucun réencodage automatique n’a eu lieu.",
+  "error.multipleImages": "Ce fichier contient plusieurs images, pages ou une animation. La conversion est arrêtée pour éviter de ne garder que la première image.",
+  "error.colorProfile": "Le moteur intégré ne peut pas préserver ce profil couleur. Utilisez une conversion avec gestion des couleurs dédiée.",
+  "error.resourceBudget": "Ce traitement dépasse le budget mémoire du lot. Choisissez une image moins grande."
 }

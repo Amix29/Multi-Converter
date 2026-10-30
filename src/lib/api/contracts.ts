@@ -64,9 +64,11 @@ export interface ConversionJob {
   outputDir: string;
   batchConcurrency?: number;
   qualityProfile?: QualityProfile;
+  mediaMode?: MediaMode;
 }
 
 export type QualityProfile = "compact" | "balanced" | "high";
+export type MediaMode = "convert" | "copy";
 
 export interface ConversionResult {
   outputPath: string;
@@ -76,6 +78,7 @@ export interface ConversionResult {
   outputBytes?: number;
   durationMs?: number;
   qualityProfile?: QualityProfile;
+  mediaMode?: MediaMode;
 }
 
 export interface ProgressPayload {

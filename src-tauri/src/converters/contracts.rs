@@ -93,6 +93,16 @@ pub struct ConversionJob {
     pub batch_concurrency: Option<usize>,
     #[serde(default)]
     pub quality_profile: QualityProfile,
+    #[serde(default)]
+    pub media_mode: MediaMode,
+}
+
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum MediaMode {
+    #[default]
+    Convert,
+    Copy,
 }
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
@@ -114,6 +124,7 @@ pub struct ConversionResult {
     pub output_bytes: u64,
     pub duration_ms: u64,
     pub quality_profile: QualityProfile,
+    pub media_mode: MediaMode,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -163,6 +174,7 @@ mod tests {
             output_bytes: 200,
             duration_ms: 42,
             quality_profile: QualityProfile::Balanced,
+            media_mode: MediaMode::Convert,
         })
         .unwrap();
         let progress = serde_json::to_value(ProgressPayload {
@@ -175,7 +187,7 @@ mod tests {
         assert_eq!(
             result,
             serde_json::json!({ "outputPath": "sortie.pdf", "engine": "rust-text", "warnings": [],
-                "inputBytes": 100, "outputBytes": 200, "durationMs": 42, "qualityProfile": "balanced" })
+                "inputBytes": 100, "outputBytes": 200, "durationMs": 42, "qualityProfile": "balanced", "mediaMode": "convert" })
         );
         assert_eq!(
             progress,

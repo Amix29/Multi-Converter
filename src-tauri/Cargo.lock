@@ -2790,6 +2790,7 @@ dependencies = [
  "tauri-plugin-updater",
  "tempfile",
  "thiserror 2.0.18",
+ "tiff",
  "time",
  "unicode-normalization",
  "uuid",

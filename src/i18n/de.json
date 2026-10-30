@@ -377,5 +377,18 @@
   "fidelity.singleColumn": "Der Text wird in eine Spalte exportiert. Tabellen werden nicht rekonstruiert.",
   "fidelity.textLayout": "Die Ausgabe enthält Text und eine vereinfachte Struktur. Layout, Tabellen und Bilder werden nicht originalgetreu wiedergegeben.",
   "common.loading": "Wird geladen…",
-  "fidelity.primaryStreams": "Nur die erste Audio- und Videospur bleibt erhalten. Weitere Spuren, Untertitel und Anhänge werden ausgeschlossen."
+  "fidelity.primaryStreams": "Nur die erste Audio- und Videospur bleibt erhalten. Weitere Spuren, Untertitel und Anhänge werden ausgeschlossen.",
+  "media.mode": "Dieses Video verarbeiten",
+  "media.convert": "Neu kodieren",
+  "media.copy": "Streams kopieren",
+  "media.convertDetail": "Die Hauptspuren werden mit dem Qualitätsprofil neu kodiert.",
+  "media.copyDetail": "Ohne Neukomprimierung: Alle Spuren und Kapitel bleiben erhalten. Eine inkompatible Spur stoppt die Konvertierung; es gibt keinen automatischen Rückfall.",
+  "media.copyPhase": "Streams ohne Neukomprimierung kopieren",
+  "fidelity.profileLoss": "Das Ausgabeformat erhält das ICC-Profil nicht; Farben können sich ändern.",
+  "fidelity.depthLoss": "Die Farbtiefe wird auf 8 Bit pro Komponente reduziert.",
+  "fidelity.exifLoss": "Die Ausrichtung wird angewendet. Andere EXIF-Daten einschließlich Auflösung und Standort werden nicht kopiert.",
+  "error.copyUnsupported": "Eine Spur ist mit diesem Container inkompatibel. Wählen Sie MKV oder Neu kodieren. Es wurde keine Spur entfernt und nichts automatisch neu kodiert.",
+  "error.multipleImages": "Die Datei enthält mehrere Bilder, Seiten oder eine Animation. Die Konvertierung stoppt, damit nicht nur das erste Bild erhalten bleibt.",
+  "error.colorProfile": "Die integrierte Engine kann dieses Farbprofil nicht erhalten. Nutzen Sie eine Konvertierung mit Farbmanagement.",
+  "error.resourceBudget": "Dieser Vorgang überschreitet das Speicherbudget des Stapels. Wählen Sie ein kleineres Bild."
 }

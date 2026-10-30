@@ -1,4 +1,4 @@
-import type { ConversionResult, FileDescription, TargetFormat } from "../lib/api";
+import type { ConversionResult, FileDescription, MediaMode, TargetFormat } from "../lib/api";
 import type { TranslationKey } from "../i18n";
 
 export type Step = 1 | 2 | 3;
@@ -15,6 +15,7 @@ export interface FileItem extends FileDescription {
   id: string;
   jobId: string;
   selectedFormat: string | null;
+  mediaMode?: MediaMode;
   progress: number;
   phase: string;
   status: Status;

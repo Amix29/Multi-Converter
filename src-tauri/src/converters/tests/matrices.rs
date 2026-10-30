@@ -1,17 +1,13 @@
 use super::*;
 
-#[test]
-#[ignore = "full conversion matrix is run by npm run test:conversions"]
-fn conversion_matrix_primary_stream_policy_is_explicit() {
-    let directory = tempfile::tempdir().unwrap();
-    let subtitle = directory.path().join("captions.srt");
+pub(super) fn multilingual_source(directory: &Path) -> PathBuf {
+    let subtitle = directory.join("captions.srt");
     fs::write(
         &subtitle,
         "1\n00:00:00,000 --> 00:00:00,300\nSubtitle fixture\n",
     )
     .unwrap();
-    let input = directory.path().join("multilingual.mkv");
-    let output = directory.path().join("primary.mp4");
+    let input = directory.join("multilingual.mkv");
     let mut args = owned_args(&[
         "-y",
         "-v",
@@ -31,6 +27,15 @@ fn conversion_matrix_primary_stream_policy_is_explicit() {
         "-i",
     ]);
     args.push(subtitle.to_string_lossy().to_string());
+    let chapters = directory.join("chapters.txt");
+    fs::write(
+        &chapters,
+        ";FFMETADATA1\n[CHAPTER]\nTIMEBASE=1/1000\nSTART=0\nEND=300\ntitle=Chapter fixture\n",
+    )
+    .unwrap();
+    args.extend(owned_args(&["-f", "ffmetadata", "-i"]));
+    args.push(chapters.to_string_lossy().to_string());
+    args.extend(owned_args(&["-map_chapters", "4"]));
     args.extend(owned_args(&[
         "-map",
         "0:v",
@@ -53,10 +58,34 @@ fn conversion_matrix_primary_stream_policy_is_explicit() {
     ]));
     args.push(input.to_string_lossy().to_string());
     run_ffmpeg_args(&args, "multilingual source");
+    input
+}
+
+#[test]
+#[ignore = "full conversion matrix is run by npm run test:conversions"]
+fn conversion_matrix_primary_stream_policy_is_explicit() {
+    let directory = tempfile::tempdir().unwrap();
+    let input = multilingual_source(directory.path());
+    let output = directory.path().join("primary.mp4");
     assert_eq!(probe_streams(&input).len(), 4);
     run_ffmpeg_conversion(&input, &output, cpu_video_args("mp4").unwrap());
     let streams = probe_streams(&output);
-    assert_eq!(streams.len(), 2);
+    // MP4 represents the preserved chapter as a generated data stream.
+    assert_eq!(streams.len(), 3);
+    assert_eq!(
+        streams
+            .iter()
+            .filter(|stream| stream["codec_type"] == "video")
+            .count(),
+        1
+    );
+    assert_eq!(
+        streams
+            .iter()
+            .filter(|stream| stream["codec_type"] == "data")
+            .count(),
+        1
+    );
     assert_eq!(
         streams
             .iter()
@@ -378,7 +407,11 @@ fn generate_video_fixture(path: &Path, source_format: &str) {
     );
 }
 
-fn run_ffmpeg_conversion<T: AsRef<str>>(input: &Path, output: &Path, codec_args: Vec<T>) {
+pub(super) fn run_ffmpeg_conversion<T: AsRef<str>>(
+    input: &Path,
+    output: &Path,
+    codec_args: Vec<T>,
+) {
     let mut args = vec![
         "-y".to_string(),
         "-hide_banner".to_string(),
@@ -447,7 +480,7 @@ fn ffmpeg_test_path() -> PathBuf {
     sidecar_test_path("ffmpeg", "FFmpeg")
 }
 
-fn ffprobe_test_path() -> PathBuf {
+pub(super) fn ffprobe_test_path() -> PathBuf {
     sidecar_test_path("ffprobe", "ffprobe")
 }
 

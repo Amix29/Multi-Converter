@@ -162,6 +162,7 @@ export function useConversionWorkflow(options: {
             outputDir: targetOutputDir,
             batchConcurrency: concurrency,
             qualityProfile,
+            mediaMode: file.mediaMode ?? "convert",
           });
           options.setFiles((items) => items.map((item) => item.id === file.id
             ? { ...item, result, convertedFormat: file.selectedFormat, progress: 100, phase: "phase.done", status: "done", error: null }

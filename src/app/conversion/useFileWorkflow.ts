@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
-import { api, type FileDescription } from "../../lib/api";
+import { api, type FileDescription, type MediaMode } from "../../lib/api";
+import { updateMediaMode } from "./mediaOptions";
 import { translateBackendMessage, type LanguageCode } from "../../i18n";
 import type { FileItem, ImportFeedback, NoticeTone, Step } from "../types";
 import {
@@ -242,6 +243,9 @@ export function useFileWorkflow(options: {
       ? updateFileSelection(file, format)
       : file));
   }, []);
+  const applyMediaMode = useCallback((fileId: string, mode: MediaMode) => {
+    setFiles((items) => items.map((file) => file.id === fileId ? updateMediaMode(file, mode) : file));
+  }, []);
   const applyCompatibleFormat = useCallback((sourceFileId: string, format: string) => {
     setFiles((items) => items.map((file) => file.id !== sourceFileId
       && targetForFormat(file, format)
@@ -254,6 +258,7 @@ export function useFileWorkflow(options: {
     addPickedFiles,
     applyCompatibleFormat,
     applyFileFormat,
+    applyMediaMode,
     files,
     handleHtmlDrop,
     importFeedback,

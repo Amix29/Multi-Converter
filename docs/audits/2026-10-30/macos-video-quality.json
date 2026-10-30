@@ -1,0 +1,22 @@
+{
+  "fixture": "synthetic-testsrc2-1080p30-4s",
+  "sourceSha256": "6993b0153989b3a322e2afe85ad6e60c526b6b17e3e87c8ffbeb286d4d95c507",
+  "runs": [
+    {
+      "encoder": "libx264",
+      "durationMs": 193,
+      "available": true,
+      "bytes": 2835286,
+      "ssim": "SSIM Y:0.980638 (17.130456) U:0.977013 (16.385199) V:0.979173 (16.813747) All:0.979790 (16.944245)"
+    },
+    {
+      "encoder": "h264_videotoolbox",
+      "durationMs": 627,
+      "available": true,
+      "bytes": 3995992,
+      "ssim": "SSIM Y:0.982276 (17.514432) U:0.978228 (16.621024) V:0.979928 (16.974009) All:0.981210 (17.260750)"
+    }
+  ],
+  "scope": "one synthetic host fixture; no universal quality/speed parity",
+  "sourceUnchanged": true
+}

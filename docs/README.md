@@ -24,6 +24,7 @@ no product fixes were applied by this audit. Raw evidence is in
 | Document | Status | Purpose |
 | --- | --- | --- |
 | [`V1_0_7_APPROVED_IMPLEMENTATION.md`](V1_0_7_APPROVED_IMPLEMENTATION.md) | Active, implementation/validation in progress | Approved audit changes, Apple Silicon decision, current checks and remaining work |
+| [`V1_0_7_AUDIT_FOLLOW_THROUGH.md`](V1_0_7_AUDIT_FOLLOW_THROUGH.md) | Active continuation | Stream copy, image fidelity/resource budgets, real Mac probes, Linux preparation and remaining audit work |
 | [`V1_0_7_PLAN.md`](V1_0_7_PLAN.md) | Active source of truth | Complete V1.0.7 scope, sequencing and release gates |
 | [`V1_0_7_POST_AUDIT.md`](V1_0_7_POST_AUDIT.md) | Active, validation in progress | Six-lot correction implementation and proof limits |
 | [`V1_0_7_VALIDATION.md`](V1_0_7_VALIDATION.md) | Active, overall gate blocked | Current conversion, OCR and platform release ledger |

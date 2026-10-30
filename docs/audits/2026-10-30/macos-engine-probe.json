@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "platform": "macos-aarch64",
+  "osVersion": "26.6.2",
+  "proof": "existing-bundle-engine-fixtures",
+  "notProven": [
+    "current-1.0.7-application",
+    "OCR",
+    "DMG",
+    "installed-UI"
+  ],
+  "cases": [
+    {
+      "id": "media.copy-multilingual-subtitles",
+      "status": "pass",
+      "detail": {
+        "streams": 4,
+        "packetPayloadsIdentical": true,
+        "sourceUnchanged": true
+      },
+      "durationMs": 66
+    },
+    {
+      "id": "media.local-protocol-restriction",
+      "status": "pass",
+      "detail": {
+        "controlHttpRequests": 1,
+        "restrictedHttpRequests": 0
+      },
+      "durationMs": 534
+    },
+    {
+      "id": "image.orientation-white-matte",
+      "status": "pass",
+      "detail": {
+        "orientation": "32x16",
+        "whiteMatte": true,
+        "sourceUnchanged": true
+      },
+      "durationMs": 43620
+    },
+    {
+      "id": "document.pandoc-office-basic",
+      "status": "pass",
+      "detail": {
+        "pandocOdtWithFrenchTable": true,
+        "libreofficePdfBytes": 46154,
+        "privateTemporaryProfile": true
+      },
+      "durationMs": 10236
+    }
+  ],
+  "engines": {
+    "ffmpeg": {
+      "version": "ffmpeg version 8.1.1-https://www.martin-riedl.de Copyright (c) 2000-2026 the FFmpeg developers",
+      "sha256": "6a1b411f95e5a1b68fc121edcf0ed397bdcc3a4b905da7fa61ef1e8c914950ea"
+    },
+    "ffprobe": {
+      "version": "ffprobe version 8.1.1-https://www.martin-riedl.de Copyright (c) 2007-2026 the FFmpeg developers",
+      "sha256": "e102672331ea6436a0ec36acb2fe3508311939802d6f5e02a288339f2726be91"
+    },
+    "libvips": {
+      "version": "vips-8.18.3"
+    },
+    "pandoc": {
+      "version": "pandoc 3.10"
+    }
+  },
+  "existingBundleVersion": "1.0.5",
+  "mediaSourceSha256": "6728b789dcbd710b04d0a28d15c93d093d3bf5275f4ad9d658647c4cc55aef73",
+  "temporaryAdHocCopy": {
+    "files": 104,
+    "bytes": 73722599
+  }
+}

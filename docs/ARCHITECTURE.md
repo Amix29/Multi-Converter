@@ -54,7 +54,7 @@ Tauri invoke handlers
 ```
 
 `src-tauri/src/lib.rs` is the composition root: it registers application state,
-plugins and the existing 35 commands, but does not implement conversion or
+plugins and the existing 19 commands, but does not implement conversion or
 OCR behavior. The command modules translate Tauri inputs into domain calls;
 domain modules remain directly unit-testable without a WebView. Existing facade
 files retain their module paths and public contracts while delegating to focused
@@ -66,6 +66,15 @@ stderr capture, timeout handling, portable Linux environment setup and process
 tree termination. OCR keeps its persistent JSON-lines supervisor separate
 because its model lifecycle, progress protocol and cancellation semantics are
 different.
+
+The audit follow-through adds a shared native admission pool in
+`converters/resources.rs`. Its cancellation-aware RAII reservations coordinate
+image/document/media operations and the retained OCR worker. The documented
+2 GiB reservation budget is an estimate, not an OS memory limit.
+`converters/media/remux.rs` owns fail-closed stream-copy compatibility separately
+from re-encoding profiles. Image ICC/frame/depth policy lives in
+`converters/image/fidelity.rs`. See `V1_0_7_AUDIT_FOLLOW_THROUGH.md` for proof
+and explicit limits.
 
 `converters/output.rs` owns same-directory staging and no-replace publication
 for conversion results. `commands/export.rs` separately reserves user-facing

@@ -283,6 +283,7 @@ export default function App() {
         onApplyCompatibleFormat={fileWorkflow.applyCompatibleFormat}
         qualityProfile={conversionWorkflow.qualityProfile}
         onQualityProfile={conversionWorkflow.setQualityProfile}
+        onMediaMode={fileWorkflow.applyMediaMode}
         onStart={startConversion}
       />
       <ProgressScreen

@@ -77,6 +77,12 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
         builtin_engine,
     );
     let batch_concurrency = job.batch_concurrency.unwrap_or(1).max(1);
+    if job.media_mode == MediaMode::Copy && (engine.id != "ffmpeg" || target.category_id != "video")
+    {
+        return Err(ConvertError::Message(
+            "La copie des flux est réservée aux conteneurs vidéo compatibles.".to_string(),
+        ));
+    }
     let output_extension = get_targets_for_extension(&extension)
         .into_iter()
         .find(|item| item.format == target.id)
@@ -88,10 +94,18 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
     let output_path = staged_output.path().to_path_buf();
 
     emit_progress(app, &job.id, 4, "Préparation");
+    let _resource_lease =
+        resources::for_conversion(&input_path, &engine.id, target.category_id, &job.id)?;
     check_cancelled(&job.id)?;
 
     let mut warnings = Vec::new();
+    if source_format.category_id == "images" && target.category_id == "images" {
+        image_conversion::fidelity::ensure_single_image(&input_path)?;
+    }
     match engine.id.as_str() {
+        "ffmpeg" if job.media_mode == MediaMode::Copy => {
+            media::copy_streams(app, &job.id, &input_path, &output_path, target.id)?;
+        }
         "ffmpeg" => {
             warnings = media::source_warnings(app, &input_path, target.category_id == "video")?;
             if target.category_id == "video" {
@@ -116,14 +130,16 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
                 )?;
             }
         }
-        engine_id if uses_integrated_image_pipeline(engine_id) => convert_image(
-            app,
-            &job.id,
-            &input_path,
-            &output_path,
-            target.id,
-            job.quality_profile,
-        )?,
+        engine_id if uses_integrated_image_pipeline(engine_id) => {
+            warnings = convert_image(
+                app,
+                &job.id,
+                &input_path,
+                &output_path,
+                target.id,
+                job.quality_profile,
+            )?
+        }
         "rust-text" | "pdf-extract" | "text" => {
             warnings = convert_text_document(
                 app,
@@ -198,7 +214,9 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
     emit_progress(app, &job.id, 100, "Terminé");
     Ok(ConversionResult {
         output_path: output_path.to_string_lossy().to_string(),
-        engine: if warnings
+        engine: if job.media_mode == MediaMode::Copy {
+            "ffmpeg-copy".to_string()
+        } else if warnings
             .iter()
             .any(|warning| warning.code == "integrated-text-fallback")
         {
@@ -211,6 +229,7 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
         output_bytes,
         duration_ms: started.elapsed().as_millis().try_into().unwrap_or(u64::MAX),
         quality_profile: job.quality_profile,
+        media_mode: job.media_mode,
     })
 }
 

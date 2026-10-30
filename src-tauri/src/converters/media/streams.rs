@@ -11,6 +11,10 @@ pub(in crate::converters) fn source_warnings(
     input: &Path,
     video: bool,
 ) -> Result<Vec<ConversionWarning>> {
+    inspect(&probe(app, input)?, video)
+}
+
+pub(super) fn probe(app: &AppHandle, input: &Path) -> Result<Value> {
     let ffprobe = engines::resolve_tool(Some(app), "ffprobe").ok_or_else(|| {
         ConvertError::Message("ffprobe est requis pour vérifier les pistes du média.".to_string())
     })?;
@@ -22,7 +26,7 @@ pub(in crate::converters) fn source_warnings(
             "-protocol_whitelist",
             INPUT_PROTOCOLS,
             "-show_entries",
-            "stream=codec_type,color_transfer:stream_disposition=attached_pic",
+            "stream=index,codec_name,codec_type,color_transfer:stream_disposition=attached_pic",
             "-of",
             "json",
         ])
@@ -35,7 +39,7 @@ pub(in crate::converters) fn source_warnings(
             "Le média ne peut pas être analysé par ffprobe.".to_string(),
         ));
     }
-    inspect(&serde_json::from_slice(&output.stdout)?, video)
+    Ok(serde_json::from_slice(&output.stdout)?)
 }
 
 fn inspect(probe: &Value, video: bool) -> Result<Vec<ConversionWarning>> {

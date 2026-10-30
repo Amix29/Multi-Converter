@@ -377,5 +377,18 @@
   "fidelity.singleColumn": "Text is exported into one column. Tables are not reconstructed.",
   "fidelity.textLayout": "The output keeps text and a simplified structure. Layout, tables and images are not faithfully reproduced.",
   "common.loading": "Loading…",
-  "fidelity.primaryStreams": "Only the first audio and video streams are kept. Additional tracks, subtitles and attachments are excluded."
+  "fidelity.primaryStreams": "Only the first audio and video streams are kept. Additional tracks, subtitles and attachments are excluded.",
+  "media.mode": "Process this video",
+  "media.convert": "Re-encode",
+  "media.copy": "Copy streams",
+  "media.convertDetail": "Primary tracks are re-encoded using the quality profile.",
+  "media.copyDetail": "No recompression: all tracks and chapters are retained. An incompatible track stops conversion; there is no automatic fallback.",
+  "media.copyPhase": "Copying streams without recompression",
+  "fidelity.profileLoss": "The output format does not retain the ICC profile; colors may change.",
+  "fidelity.depthLoss": "Color depth is reduced to 8 bits per component.",
+  "fidelity.exifLoss": "Orientation is applied. Other EXIF data, including resolution and any location, is not copied.",
+  "error.copyUnsupported": "A track is incompatible with this container. Choose MKV or Re-encode. No track was removed and no automatic re-encoding took place.",
+  "error.multipleImages": "This file contains multiple images, pages or animation. Conversion stops to avoid retaining only the first image.",
+  "error.colorProfile": "The integrated engine cannot preserve this color profile. Use a dedicated color-managed conversion.",
+  "error.resourceBudget": "This operation exceeds the batch memory budget. Choose a smaller image."
 }

@@ -90,6 +90,7 @@ const categoryKeyByValue: Record<string, TranslationKey> = {
 };
 
 const phaseKeyByValue: Record<string, TranslationKey> = {
+  "copie des flux sans recompression": "media.copyPhase",
   analyse: "progressPhase.mediaAnalysis",
   préparation: "progressPhase.preparation",
   "analyse du média": "progressPhase.mediaAnalysis",
@@ -134,6 +135,10 @@ export function translateBackendMessage(language: LanguageCode, message: string)
   const value = message.trim();
   if (!value) return value;
   if (value in dictionaries[language]) return t(language, value as TranslationKey);
+  if (value.startsWith("Une piste (")) return t(language, "error.copyUnsupported");
+  if (value.startsWith("Ce fichier contient plusieurs images")) return t(language, "error.multipleImages");
+  if (value.startsWith("Ce profil couleur ne peut pas")) return t(language, "error.colorProfile");
+  if (value.startsWith("Ce traitement dépasse le budget mémoire")) return t(language, "error.resourceBudget");
 
   if (
     value.includes("Fichier de sortie introuvable") ||

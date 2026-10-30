@@ -284,7 +284,7 @@ pub(in crate::converters) fn convert_with_libvips(
         .unwrap_or(2)
         .checked_div(batch_concurrency.max(1))
         .unwrap_or(1)
-        .max(1)
+        .clamp(1, 8)
         .to_string();
     emit_progress(app, job_id, 24, "Conversion libvips");
     run_external_command_with_progress(

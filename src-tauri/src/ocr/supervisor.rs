@@ -23,10 +23,17 @@ struct ActiveJob {
 }
 
 struct WorkerProcess {
+    _resource_lease: crate::converters::resources::ResourceLease,
     child: Child,
     stdin: ChildStdin,
     messages: Receiver<WorkerMessage>,
     stderr_tail: Arc<Mutex<Vec<u8>>>,
+}
+
+impl Drop for WorkerProcess {
+    fn drop(&mut self) {
+        terminate_child(&mut self.child);
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -270,6 +277,18 @@ fn start_worker(
     mut on_spawn: impl FnMut(u32),
 ) -> Result<WorkerProcess, String> {
     ensure_not_canceled(canceled)?;
+    let resource_lease = crate::converters::resources::reserve(
+        crate::converters::resources::ResourceClass::Ocr,
+        768 * 1024 * 1024,
+        || canceled.load(Ordering::SeqCst),
+    )
+    .map_err(|error| {
+        if canceled.load(Ordering::SeqCst) {
+            "OCR_CANCELLED:L’OCR a été annulé.".to_string()
+        } else {
+            format!("OCR_RESOURCE:{error}")
+        }
+    })?;
     let mut command = Command::new(&runtime.executable);
     command
         .arg("--serve")
@@ -371,6 +390,7 @@ fn start_worker(
         }
     }
     Ok(WorkerProcess {
+        _resource_lease: resource_lease,
         child,
         stdin,
         messages,

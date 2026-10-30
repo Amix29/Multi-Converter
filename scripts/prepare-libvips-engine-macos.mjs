@@ -3,6 +3,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 import { publicSourceLabel } from "./lib/download-integrity.mjs";
+import { verifyMachOSignatures } from "./lib/macos-code-signature.mjs";
 
 const root = process.cwd();
 const sourceDir = path.join(root, "engine-sources", "macos-aarch64", "libvips");
@@ -76,6 +77,7 @@ async function verifyPortableLinks(targetRoot, arch) {
       stdio: ["ignore", "pipe", "pipe"],
     });
     if (result.status !== 0) continue;
+    verifyMachOSignatures([filePath]);
     for (const dependency of parseOtoolDependencies(result.stdout)) {
       if (isAllowedDependency(dependency)) continue;
       throw new Error([

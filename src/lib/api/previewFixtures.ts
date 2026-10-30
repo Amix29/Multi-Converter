@@ -34,8 +34,11 @@ const textTargets = [
 ];
 
 export function makePreviewFile(name: string, extension: string, size: number): FileDescription {
-  const categoryId = extension === ".mp4" ? "video" : extension === ".png" ? "images" : "documents";
-  const category = categoryId === "video" ? "Vidéo" : categoryId === "images" ? "Image" : "Texte & Documents";
+  const normalizedExtension = extension.toLowerCase();
+  const categoryId = [".mp4", ".mov", ".mkv", ".webm", ".avi"].includes(normalizedExtension) ? "video"
+    : [".png", ".jpg", ".jpeg", ".webp", ".tiff", ".bmp", ".svg", ".gif", ".ico"].includes(normalizedExtension) ? "images"
+    : [".wav", ".mp3", ".m4a", ".flac", ".ogg", ".opus"].includes(normalizedExtension) ? "audio" : "documents";
+  const category = categoryId === "video" ? "Vidéo" : categoryId === "images" ? "Image" : categoryId === "audio" ? "Audio" : "Texte & Documents";
   return {
     path: `${PREVIEW_ROOT}\\Desktop\\${name}`,
     name,
@@ -48,7 +51,7 @@ export function makePreviewFile(name: string, extension: string, size: number): 
     size,
     modifiedAt: new Date().toISOString(),
     warnings: [],
-    targets: previewTargetsForExtension(extension),
+    targets: previewTargetsForExtension(normalizedExtension),
   };
 }
 
@@ -58,9 +61,9 @@ export function previewExtension(name: string): string {
 }
 
 function previewTargetsForExtension(extension: string): TargetFormat[] {
-  if ([".png", ".jpg", ".jpeg", ".webp"].includes(extension)) return imageTargets;
-  if ([".txt", ".md"].includes(extension)) return textTargets;
-  if ([".mp4", ".mov", ".mkv"].includes(extension)) return videoTargets;
+  if ([".png", ".jpg", ".jpeg", ".webp", ".tiff", ".bmp", ".svg", ".gif", ".ico"].includes(extension)) return imageTargets;
+  if ([".txt", ".md", ".pdf", ".docx", ".odt", ".html", ".csv", ".json"].includes(extension)) return textTargets;
+  if ([".mp4", ".mov", ".mkv", ".webm", ".avi"].includes(extension)) return videoTargets;
   return audioTargets;
 }
 

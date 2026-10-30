@@ -377,5 +377,18 @@
   "fidelity.singleColumn": "El texto se exporta en una sola columna. No se reconstruyen las tablas.",
   "fidelity.textLayout": "La salida conserva el texto y una estructura simplificada. El diseño, las tablas y las imágenes no se reproducen fielmente.",
   "common.loading": "Cargando…",
-  "fidelity.primaryStreams": "Solo se conservan la primera pista de audio y de vídeo. Se excluyen pistas adicionales, subtítulos y adjuntos."
+  "fidelity.primaryStreams": "Solo se conservan la primera pista de audio y de vídeo. Se excluyen pistas adicionales, subtítulos y adjuntos.",
+  "media.mode": "Procesar este vídeo",
+  "media.convert": "Recodificar",
+  "media.copy": "Copiar pistas",
+  "media.convertDetail": "Las pistas principales se recodifican con el perfil de calidad.",
+  "media.copyDetail": "Sin recompresión: se conservan todas las pistas y capítulos. Una pista incompatible detiene la conversión; no hay alternativa automática.",
+  "media.copyPhase": "Copiando pistas sin recompresión",
+  "fidelity.profileLoss": "El formato de salida no conserva el perfil ICC; los colores pueden cambiar.",
+  "fidelity.depthLoss": "La profundidad se reduce a 8 bits por componente.",
+  "fidelity.exifLoss": "Se aplica la orientación. No se copian los demás datos EXIF, incluida la resolución y la ubicación.",
+  "error.copyUnsupported": "Una pista es incompatible con este contenedor. Elija MKV o Recodificar. No se eliminó ninguna pista ni se recodificó automáticamente.",
+  "error.multipleImages": "El archivo contiene varias imágenes, páginas o animación. La conversión se detiene para evitar conservar solo la primera imagen.",
+  "error.colorProfile": "El motor integrado no puede conservar este perfil de color. Utilice una conversión con gestión del color.",
+  "error.resourceBudget": "Esta operación supera el presupuesto de memoria del lote. Elija una imagen más pequeña."
 }

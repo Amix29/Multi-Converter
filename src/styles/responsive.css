@@ -43,6 +43,14 @@
 
   .format-workspace {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    overflow: visible;
+  }
+
+  .format-choice-board {
+    height: auto;
+    grid-template-rows: auto auto auto;
+    overflow: visible;
   }
 
   .format-screen.is-active {
@@ -58,7 +66,7 @@
 
   .rail-scroll {
     display: block;
-    height: min(320px, 36dvh);
+    height: min(320px, 36dvh, var(--format-rail-height, 320px));
     max-height: 320px;
     overflow: auto;
     padding: 2px 2px 12px;
@@ -66,6 +74,15 @@
 
   .format-picker {
     overflow: visible;
+    grid-template-rows: auto auto auto;
+  }
+
+  .format-screen .screen-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: var(--vlm-canvas);
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 
   .rail-button { min-width: 0; }
@@ -177,15 +194,14 @@
   }
 
   .rail-button {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-      "name"
-      "meta"
-      "format";
+      "name format"
+      "meta format";
   }
 
   .rail-format {
-    justify-self: start;
+    justify-self: end;
   }
 
   .format-results {

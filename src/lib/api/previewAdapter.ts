@@ -50,6 +50,7 @@ export function createPreviewApi(): MultiConverterApi {
         `${PREVIEW_ROOT}\\Videos\\Enregistrement de l'écran 2025-11-19 190508 version très longue pour vérifier le découpage.mp4`,
         `${PREVIEW_ROOT}\\Audio\\Capture audio réunion client avec un nom beaucoup trop long.wav`,
       ];
+      if (previewParams.get("mockMediaFiles") === "1") return paths.slice(3, 5);
       if (previewParams.get("mockOcrImage") === "1") return paths.slice(1, 2);
       if (previewParams.get("mockUnsupportedFiles") === "1") {
         return [...paths.slice(0, 2), `${PREVIEW_ROOT}\\Documents\\archive.non-supported`];
@@ -84,7 +85,10 @@ export function createPreviewApi(): MultiConverterApi {
       const files = paths.map((filePath) => {
         const name = filePath.split(/[\\/]/).pop() || "fichier.mp4";
         const extension = previewExtension(name);
-        const description = makePreviewFile(name, extension, 42865012);
+        const size = [".mp4", ".mov", ".mkv"].includes(extension) ? 42_865_012
+          : [".png", ".jpg", ".webp"].includes(extension) ? 1_536_000
+          : [".wav", ".mp3", ".flac"].includes(extension) ? 8_192_000 : 2_048;
+        const description = makePreviewFile(name, extension, size);
         return previewParams.get("mockUnsupportedFiles") === "1" && name.endsWith(".non-supported")
           ? { ...description, category: "Inconnu", categoryId: "unknown", targets: [] }
           : description;
@@ -113,6 +117,9 @@ export function createPreviewApi(): MultiConverterApi {
       }
       return {
         outputPath: `${job.outputDir}\\${job.id}\\resultat.${job.targetFormat}`,
+        mediaMode: job.mediaMode ?? "convert",
+        engine: job.mediaMode === "copy" ? "ffmpeg-copy" : "preview",
+        qualityProfile: job.qualityProfile,
       };
     },
     async cancelConversion(jobId) {

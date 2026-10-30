@@ -42,6 +42,7 @@ export function updateFileSelection(file: FileItem, format: string): FileItem {
   return {
     ...file,
     selectedFormat: format,
+    mediaMode: format === file.selectedFormat ? file.mediaMode : "convert",
     progress: isCached ? 100 : 0,
     phase: isCached ? "phase.done" : "phase.waiting",
     status: isCached ? "done" : "ready",

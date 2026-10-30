@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
+import { adHocSignMachO } from "./lib/macos-code-signature.mjs";
 
 const root = process.cwd();
 const args = parseArgs(process.argv.slice(2));
@@ -70,6 +71,11 @@ for (let index = 0; index < dependencyQueue.length; index += 1) {
 }
 
 await rewriteMachOLinks();
+const signedFiles = [];
+for (const record of recordsByTarget.values()) {
+  if (await isMachO(record.target)) signedFiles.push(record.target);
+}
+adHocSignMachO(signedFiles);
 await verifyRuntime();
 await stageLicenseAndNotices();
 await smokeTest();

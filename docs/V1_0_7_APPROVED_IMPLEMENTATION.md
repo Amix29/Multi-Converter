@@ -22,6 +22,42 @@ No release, publication or remote push is authorized by implementation approval.
 
 ## Implementation progress
 
+Current continuation: [audit follow-through](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
+It records the new work after baseline `41459c23`, current Mac access and Linux
+preparation. Earlier evidence below stays tied to its source/artifact.
+
+### Follow-through started — 2026-10-30
+
+The maintainer requested completion of all locally achievable audit work, with
+continuous handoff updates. Work continues on `codex/audit-follow-through`,
+from integrated `41459c23`, in the same isolated worktree. The application is
+still unreleased. New source work invalidates the previous installer's status
+as a final candidate; it remains a receipt for application source `b766134f`.
+
+The authorized Apple Silicon Mac is online. Its existing app is V1.0.5, Node 22
+(project requires 24), and only about 4 GiB of disk is free. No toolchain,
+OCR/model installation or full application build has been attempted there.
+All task files are under an owned `/private/tmp/multi-converter-audit.*`
+directory; durable receipts are copied back into this repository.
+Initial real bundled FFmpeg/ffprobe fixtures passed four-stream multilingual
+copy with identical packet payload hashes, and the local HTTP control/restricted
+protocol fixture (one control request; zero restricted requests).
+Existing libvips exited with signal 9: its rewritten Mach-O signatures were
+invalid. The source runtime builder now ad-hoc signs the completed portable
+files after install-name changes and verifies signatures before smoke/archive;
+preparation rejects invalid incoming signatures. The same signing helper
+successfully signed and verified 104 files in a 73,722,599-byte temporary copy
+on the Mac; the installed application was not modified. On that copy,
+libvips 8.18.3 orientation/white-matte fixtures passed. Existing Pandoc 3.10
+and LibreOffice produced ODT with French text/table and a 46,154-byte PDF
+using an isolated temporary profile. All four probe groups pass; receipt:
+`docs/audits/2026-10-30/macos-engine-probe.json`.
+These are existing-engine probes, not current 1.0.7 host/package acceptance.
+
+In progress: explicit per-file video stream copy, global native resource
+reservations, image fidelity/frame policy and expanded reproducible fixtures.
+No new feature is marked delivered until its relevant checks have run.
+
 | Lot | Scope | State |
 | --- | --- | --- |
 | A | Dependency fixes, Apple Silicon build/OCR policy, hashed locks and provenance | Implemented locally; platform package/host evidence pending |

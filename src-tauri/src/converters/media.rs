@@ -1,7 +1,9 @@
 use super::*;
 
+pub(super) mod remux;
 mod runner;
 mod streams;
+pub(super) use remux::copy_streams;
 pub(super) use streams::{INPUT_PROTOCOLS, source_warnings};
 
 #[cfg(test)]
@@ -25,11 +27,7 @@ pub(in crate::converters) fn ffmpeg_threads(batch_concurrency: usize) -> String 
     let cores = std::thread::available_parallelism()
         .map(|value| value.get())
         .unwrap_or(2);
-    if batch_concurrency <= 1 {
-        "0".to_string()
-    } else {
-        std::cmp::max(1, cores / batch_concurrency).to_string()
-    }
+    (cores / batch_concurrency.max(2)).clamp(1, 8).to_string()
 }
 
 pub(in crate::converters) fn x264_preset() -> &'static str {

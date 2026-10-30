@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { t, translateCategory, type LanguageCode } from "../../i18n";
 import { stablePartitionBySupport } from "../conversion/largeListModel";
 import { useVirtualWindow } from "../conversion/useVirtualWindow";
@@ -13,8 +13,10 @@ import {
   uniqueIntents,
 } from "../conversion/model";
 import type { ConversionIntent, FileItem } from "../types";
-import type { QualityProfile } from "../../lib/api";
+import type { MediaMode, QualityProfile } from "../../lib/api";
 import { QualityProfileSelector, supportsQualityProfile } from "./QualityProfileSelector";
+import { MediaModeSelector } from "./MediaModeSelector";
+import { supportsStreamCopy } from "../conversion/mediaOptions";
 
 export const FormatScreen = memo(function FormatScreen(props: {
   isActive: boolean;
@@ -23,6 +25,7 @@ export const FormatScreen = memo(function FormatScreen(props: {
   isConverting: boolean;
   qualityProfile: QualityProfile;
   onQualityProfile(value: QualityProfile): void;
+  onMediaMode(fileId: string, value: MediaMode): void;
   onBack(): void;
   onChooseFileFormat(fileId: string, format: string): void;
   onApplyCompatibleFormat(fileId: string, format: string): void;
@@ -113,6 +116,7 @@ export const FormatScreen = memo(function FormatScreen(props: {
               className="rail-scroll"
               data-testid="virtual-format-rail"
               data-total-count={orderedFiles.length}
+              style={{ "--format-rail-height": `${windowState.totalHeight}px` } as CSSProperties}
               onScroll={onScroll}
             >
               <div className="virtual-format-rail-content" style={{ height: `${windowState.totalHeight}px` }}>
@@ -138,7 +142,10 @@ export const FormatScreen = memo(function FormatScreen(props: {
             {activeFile ? (
               <>
                 <div className="format-tools">
-                  {supportsQualityProfile(activeFile.selectedFormat, activeFile.sourceFormat) && (
+                  {supportsStreamCopy(activeFile) && (
+                    <MediaModeSelector language={props.language} value={activeFile.mediaMode ?? "convert"} onChange={(value) => props.onMediaMode(activeFile.id, value)} />
+                  )}
+                  {activeFile.mediaMode !== "copy" && supportsQualityProfile(activeFile.selectedFormat, activeFile.sourceFormat) && (
                     <QualityProfileSelector language={props.language} value={props.qualityProfile} onChange={props.onQualityProfile} />
                   )}
                   {selectedIntent && (
