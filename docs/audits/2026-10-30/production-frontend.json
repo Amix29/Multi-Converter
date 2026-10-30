@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-30T13:14:22.524Z",
+  "generatedAt": "2026-10-30T13:58:20.366Z",
   "budgets": {
     "frontendRawBytes": 1095149,
     "initialChunkBytes": 211600,
@@ -21,8 +21,8 @@
     "largestChunkBytes": 189544
   },
   "windowsExecutable": {
-    "exists": false,
-    "bytes": null,
-    "path": null
+    "exists": true,
+    "bytes": 25664512,
+    "path": "src-tauri/target/release/multi-converter.exe"
   }
 }

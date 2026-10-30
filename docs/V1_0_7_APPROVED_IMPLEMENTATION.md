@@ -12,11 +12,13 @@ No release, publication or remote push is authorized by implementation approval.
 ## Work and integration
 
 - Work branch: codex/converter-audit-apple-silicon.
-- Integration target: local codex/test; base 24303e48 (audit docs after 98726742).
+- Integrated source: b766134f on local codex/test; base 24303e48 (audit docs after 98726742).
 - Dedicated ordinary Git worktree under the task writable directory. The app's
-  managed tool rejected the stale source path; the base checkout is untouched.
+  managed tool rejected the stale source path. The real base checkout was then
+  fast-forwarded only after the complete staged source checks passed.
 - Native assets were copied for tests; their presence does not establish host proof.
-- Integration remains pending until current source/lockfile checks pass.
+- Application dependencies and the exact tested Windows OCR resources were
+  synchronized into the real checkout. No push or publication occurred.
 
 ## Implementation progress
 
@@ -25,9 +27,9 @@ No release, publication or remote push is authorized by implementation approval.
 | A | Dependency fixes, Apple Silicon build/OCR policy, hashed locks and provenance | Implemented locally; platform package/host evidence pending |
 | B | Private document resources, warnings, CSV integrity, partial import | Implemented; remaining native privacy/fidelity fixtures pending |
 | C | Layout/errors, update semantics, guarded session exit/reset, re-export | Implemented; partial browser proof, native close/installed acceptance pending |
-| D | Image orientation/matte, bounded stderr, process supervision, OCR rebuild | Implemented; regression/performance validation in progress |
+| D | Image orientation/matte, bounded stderr, process supervision, OCR rebuild | Windows regression/native corpus passed; wider host/fidelity gates open |
 | E | Contextual quality profiles, actual result metrics, diagnostics | Implemented; measured engine/profile parity and wider optimization backlog open |
-| F | Complete canonical gates, final native packages, licenses and release handoff | In progress; no release readiness claim |
+| F | Complete canonical gates, final native packages, licenses and release handoff | Source gates and local Windows NSIS built; installed/platform acceptance blocked |
 
 The original audit is dated evidence. Recommendations for remux, wider track policy,
 resource budgets, recovery/history, target-size estimates, manifests and optional
@@ -89,12 +91,13 @@ merely because a first implementation lot exists.
   SHAs recorded in tools/workflow-action-lock.json; contract checks reject drift.
   PDFium checks retain source/lock/native-library checks and now
   reuse Cargo dependency cache instead of deleting it after every invocation.
-- Test/lint Cargo commands omit copying packaged resources into their target;
+- Check/test/lint Cargo commands omit copying packaged resources into their target;
   conversion tests still execute the real staged source engines. Production Tauri
   builds keep the complete resources and separate packaging checks remain required.
 - Settings and OCR dialogs load when opened. Production bundle measurement:
   534,762 raw frontend bytes; 400,652 bytes in the complete initial JS preload
-  graph (entry 88,560 bytes). No current Windows executable size claim.
+  graph (entry 88,560 bytes). Built Windows executable: 25,664,512 bytes, within
+  the unchanged 28,070,784-byte budget.
 - The post-export summary no longer collapses under its text when a notice is
   visible. Its count has the intended compact typography; the list can shrink
   to one row and the panel scrolls when necessary. A rendered geometry regression
@@ -152,8 +155,8 @@ The Tokio 1.53.3 update also passed 171 Rust tests, ten conversion groups and
 all-target Clippy; runtime corpus receipts stay tied to the unchanged OCR archive.
 Earlier frontend unit suite: 47 passed; typecheck/import IPC checks passed.
 Current static UI layout, Mac/Windows/Linux asset and workflow contracts pass.
-The complete canonical check passed; a final staged-tree pass follows the last
-security and layout changes.
+The final staged-tree canonical check passed after the Tokio, layout, workflow
+and lock-generator changes. Production frontend budgets passed too.
 
 Browser preview demonstrated reset confirmation with initial focus on Stay,
 retaining results on Stay, and export controls still available after export.
@@ -167,23 +170,40 @@ The native libvips fixture confirms white JPEG matte and EXIF orientation with
 unchanged source bytes. FFmpeg/ffprobe HTTP-enabled control and restricted runs
 confirm the shared production whitelist blocks the request; this is no claim that
 the default HLS demuxer was vulnerable before the explicit restriction.
-No current installed Windows candidate, Mac/Linux host receipt, final release
-asset set or public publication has been established. A local source pass never
-substitutes for those platform gates.
+An actual private-profile LibreOffice ODT-to-PDF conversion also succeeded;
+the bundled PDFium reader found the exact French marker and accents.
+A local Windows NSIS candidate was built from application source b766134f:
+999,341,675 bytes, SHA-256
+`a0b05822d4a15be5db3eac6f653554ee65c8436793485b85a32cacc385a416e0`.
+Its updater signature verifies against the configured public key; Authenticode
+status is NotSigned. The verified copy is under the real checkout's
+`tmp/local-audit-b766134f/`. See the committed windows-candidate.json receipt.
+The candidate has not been installed or GUI-tested. Mac/Linux host receipts,
+a final multiplatform asset set and publication remain open.
+
+The Windows gate now has 22 steps: build/package the locked PDFium candidate,
+then explicitly stage it before validation. The quality runner is Windows 2025
+and its cache includes the PDFium source/lock fingerprint. Contracts and explicit
+staging of the exact locked candidate passed; a fresh remote CI execution has
+not occurred. The 22-step dry run records skips and is not a green CI claim.
+Rust auditing now covers all three Cargo.lock files and aggregates failures.
+
+Native UI acceptance is currently blocked by environment access: connected remote
+devices are offline and the local computer-use skill requires node_repl, which
+is absent from the available tools. These Windows installed interactions and
+Mac/Linux host tests must not be replaced with browser mocks.
 
 ## Remaining approved work
 
-- Finish current lint/unit/type/i18n/structure, full canonical check and production
-  build; rerun conversions/PDFium/privacy fixtures and final browser regressions.
 - Extend OCR beyond the passing fixed corpus (small print, wider layouts and
   representative real documents); benchmark cold/warm and Mac/Linux parity.
-- Verify LibreOffice external-reference/macro policies and complete local image
-  embedding/native protocol fixtures. Keep source hashes unchanged.
+- Extend real LibreOffice external-reference/macro and Office fidelity fixtures.
+  Local Pandoc embedding, libvips orientation/matte and media protocol fixtures pass.
 - Wider media track/remux support, ICC/metadata and image frame/page policy, global
   decoded-pixel memory and
   concurrency budgets, recovery/retention and practical batch/folder improvements.
-- Review final license notices and package the exact Windows candidate; installed
-  conversion/OCR/offline/cancel/restart/picker/drop acceptance remains mandatory.
+- Review final package notices and perform installed Windows conversion/OCR/
+  offline/cancel/restart/picker/drop acceptance on the built candidate.
 - Build actual ARM Mac and Linux packages on their systems; native conversion/OCR,
   final downloaded package and clean-host acceptance remain mandatory.
 - Keep signing, updater signatures, notarization and publication separate. No push

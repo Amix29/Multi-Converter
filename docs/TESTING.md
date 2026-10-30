@@ -27,7 +27,9 @@ That command intentionally refuses non-Windows hosts and runs:
 npm audit --omit=dev
 npm audit
 npm run audit:python
-npm run prepare:bundled-engines
+npm run prepare:pdfium-engine
+npm run package:pdfium-engine
+npm run prepare:bundled-engines -- --asset-dir dist-engines-advanced
 npm run check
 npm run test:ui:preview
 npm run fmt:rust:check
@@ -46,7 +48,7 @@ npm run build
 npm run tauri:build
 ```
 
-These 20 steps include production-only, complete npm, Python and OCR supply-chain
+These 22 steps include production-only, complete npm, Python and OCR supply-chain
 audits. `npm run check` contains the unit, source-contract, production-config
 and secret-leak checks; the separate Playwright step then exercises the
 compiled frontend in Chromium. During a long local run, the wrapper writes
@@ -54,7 +56,7 @@ progress to `tmp/windows-ci-gate-status.json`. If a terminal session times out
 while `tauri:build` or NSIS is still running, inspect that file and the running
 processes before starting another full gate.
 
-The Cargo test/lint wrapper omits staging packaged resources into its temporary
+The Cargo check/test/lint wrapper omits staging packaged resources into its temporary
 target directory. Conversion tests execute the real source-staged binaries;
 production Tauri builds still copy the full configured resources. This avoids
 duplicating large assets for Rust checks without substituting for installer tests.

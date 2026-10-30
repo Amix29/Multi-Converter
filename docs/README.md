@@ -6,7 +6,7 @@
 - Platforms: Windows x64, universal macOS and Linux x64
 - Repository surfaces: desktop application, static marketing site and branding kit
 - Development release: **V1.0.7**
-- Local integration target: **`codex/test`**; active audit implementation branch: **`codex/converter-audit-apple-silicon`**; V1.0.7 remains unpublished and its release gate is open
+- Local integration: **`codex/test`**, source commit **`b766134f`**; audit work branch: **`codex/converter-audit-apple-silicon`**; V1.0.7 remains unpublished and its release gate is open
 - V1.0.7 objectives:
   - local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images.
 

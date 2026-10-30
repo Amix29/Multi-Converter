@@ -18,7 +18,7 @@ concurrency:
 jobs:
   quality-gate:
     name: Windows x64 quality gate
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 120
     env:
       CARGO_TERM_COLOR: always
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: src-tauri/bundled-engines
-          key: ${{ runner.os }}-bundled-engines-${{ hashFiles('src-tauri/engines-manifest.json') }}
+          key: ${{ runner.os }}-bundled-engines-${{ hashFiles('src-tauri/engines-manifest.json', 'tools/pdfium-windows-x64.lock.json', 'tools/pdfium-render-wrapper/**') }}
           restore-keys: |
             ${{ runner.os }}-bundled-engines-
 

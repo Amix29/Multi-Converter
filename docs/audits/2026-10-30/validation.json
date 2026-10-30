@@ -132,7 +132,7 @@
     "ignoredTests": 11,
     "nativeConversionGroups": 10,
     "archiveExtraction": true,
-    "notes": "Ignored conversion groups and archive extraction exercised separately; Tokio 1.53.3 follow-up gate recorded in ledger."
+    "notes": "Tokio 1.53.3 passed 171 unit tests, ten native conversion groups, the HTTP fixture and all-target Clippy. The unchanged ZIP extractor also passed real LibreOffice archive extraction."
   },
   "frontend": {
     "unitTests": 47,
@@ -148,7 +148,24 @@
   "nativeAcceptance": {
     "installedWindows": false,
     "macosAppleSilicon": false,
-    "linux": false
+    "linux": false,
+    "reason": "Remote devices offline; computer-use requires node_repl, which is not available in this session."
   },
-  "overallReleaseGate": "blocked"
+  "overallReleaseGate": "blocked",
+  "implementationCommit": "b766134fea874e6ce6554c625e38ff1b5b87aef9",
+  "canonicalCheck": "passed",
+  "libreofficeLocalPdf": {
+    "passed": true,
+    "expectedFrenchText": true,
+    "verificationEngine": "bundled PDFium"
+  },
+  "windowsCandidate": "windows-candidate.json",
+  "rustAuditedGraphs": 3,
+  "windowsCiGate": {
+    "steps": 22,
+    "pdfiumCandidateStaging": "explicit, locked",
+    "runner": "windows-2025",
+    "dryRun": true,
+    "remoteExecuted": false
+  }
 }

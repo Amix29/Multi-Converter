@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 
 export function assertWindowsCiContracts({ packageJson, buildWorkflow, windowsBuildJob, windowsCiGateScript }) {
   assert.equal(
     packageJson.scripts["audit:rust"],
-    "cargo audit --file src-tauri/Cargo.lock",
+    "node scripts/audit-rust-locks.mjs",
     "Rust audit must not hide dependency advisories",
   );
+  const rustAudit = fs.readFileSync(new URL("../audit-rust-locks.mjs", import.meta.url), "utf8");
+  for (const lock of ["src-tauri/Cargo.lock", "tools/pdfium-render-wrapper/Cargo.lock", "tools/updater-signature-verifier/Cargo.lock"]) assert.ok(rustAudit.includes(lock), `Rust audit must cover ${lock}`);
+  assert.doesNotMatch(rustAudit, /--ignore|--no-fetch/, "Rust audit must not suppress advisories or stale the database");
   assert.equal(
     packageJson.scripts["test:ui:preview"],
     "npm run build:frontend:preview && playwright test",
@@ -52,7 +56,8 @@ export function assertWindowsCiContracts({ packageJson, buildWorkflow, windowsBu
     /\["npm", \["audit", "--omit=dev"\]\],\s*\["npm", \["audit"\]\],/,
     "Windows CI validation wrapper must run production and complete npm audits in that order",
   );
-  assert.match(windowsCiGateScript, /\["npm", \["run", "prepare:bundled-engines"\]\]/, "Windows CI validation wrapper must prepare Windows bundled engines before validation");
+  assert.match(windowsBuildJob, /runs-on:\s+windows-2025/, "PDFium must use the reviewed Windows build image");
+  assert.match(windowsCiGateScript, /\["npm", \["run", "prepare:pdfium-engine"\]\],[\s\S]*\["npm", \["run", "package:pdfium-engine"\]\],[\s\S]*\["npm", \["run", "prepare:bundled-engines", "--", "--asset-dir", "dist-engines-advanced"\]\]/, "Windows CI must build and stage the locked PDFium candidate before validation on a fresh checkout");
   assert.match(
     windowsCiGateScript,
     /\["npm", \["run", "check"\]\],\s*\["npm", \["run", "test:ui:preview"\]\],/,

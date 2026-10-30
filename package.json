@@ -117,7 +117,7 @@
     "build:ocr-runtime:candidate:windows": "node scripts/build-ocr-targeted-runtime.mjs",
     "prepare:installer-assets": "node scripts/generate-installer-assets.mjs",
     "package:base-engines": "node scripts/package-base-engines.mjs",
-    "audit:rust": "cargo audit --file src-tauri/Cargo.lock",
+    "audit:rust": "node scripts/audit-rust-locks.mjs",
     "prepare:ffmpeg-engine:macos": "node scripts/prepare-ffmpeg-engine-macos.mjs",
     "prepare:pdfium-engine": "node scripts/prepare-pdfium-engine.mjs",
     "prepare:pdfium-engine:macos": "node scripts/prepare-pdfium-engine-macos.mjs",

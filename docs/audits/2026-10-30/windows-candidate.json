@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-30T14:03:18.201Z",
+  "applicationSourceCommit": "b766134fea874e6ce6554c625e38ff1b5b87aef9",
+  "platform": "windows-x64",
+  "version": "1.0.7",
+  "installerRelativePath": "tmp/local-audit-b766134f/Multi-Converter_1.0.7_x64-setup.exe",
+  "installerBytes": 999341675,
+  "installerSha256": "a0b05822d4a15be5db3eac6f653554ee65c8436793485b85a32cacc385a416e0",
+  "executableBytes": 25664512,
+  "executableSha256": "44ed8dcc757371201587e9ecee0b1764fe67ddccd55d36e2c7609dcc193d4a66",
+  "authenticodeStatus": "NotSigned",
+  "updaterSignatureVerified": true,
+  "verificationKey": "src-tauri/tauri.conf.json plugins.updater.pubkey",
+  "ocrRuntimeSha256": "77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac",
+  "modelAggregateSha256": "e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb",
+  "applicationInstalled": false,
+  "nativeGuiAcceptance": false,
+  "publication": false,
+  "note": "Local maintainer candidate with locked unpublished PDFium 0.4; no public engine manifest or updater feed was published."
+}

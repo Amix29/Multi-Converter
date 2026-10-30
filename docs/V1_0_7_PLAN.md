@@ -5,7 +5,7 @@
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
 - Last documentation review: **2026-10-30**.
 - Release status: **not ready**.
-- Local implementation branch: `codex/converter-audit-apple-silicon`, based on `codex/test`.
+- Local implementation source: `b766134f`, integrated on `codex/test`; work branch `codex/converter-audit-apple-silicon`.
 - `codex/test` remains the persistent integration/CI validation branch; `main` is the public stable branch.
 
 The maintainer cancelled document and PDF editing on 2026-10-29. Multi-Converter

@@ -10,10 +10,10 @@ const env = {
   CARGO_TARGET_DIR: process.env.CARGO_TARGET_DIR ?? path.join(os.tmpdir(), targetName),
 };
 // Unit/conversion tests resolve the real engines from the source staging tree;
-// Clippy does not execute them. Neither command packages an app. Avoid copying
+// check and Clippy do not execute them. These commands never package an app. Avoid copying
 // hundreds of MB into their target directory. Actual Tauri builds retain the
 // complete production resources; asset and packaging gates validate that config.
-if (args[0] === "clippy" || args[0] === "test") {
+if (["clippy", "test", "check"].includes(args[0])) {
   const config = JSON.parse(env.TAURI_CONFIG ?? "{}");
   env.TAURI_CONFIG = JSON.stringify({
     ...config,

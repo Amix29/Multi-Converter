@@ -2,8 +2,8 @@
 
 ## 2026-10-30 — Approved Audit Implementation In Progress
 
-Active work branch: `codex/converter-audit-apple-silicon`, base `24303e48`;
-integration target: `codex/test`. The maintainer approved the comprehensive
+Source commit `b766134f` is locally integrated on `codex/test`; work branch:
+`codex/converter-audit-apple-silicon`, base `24303e48`. The maintainer approved the comprehensive
 audit and retired Intel macOS. Windows x64, Apple Silicon macOS and Linux x64
 remain the targets. See [current implementation and proof](V1_0_7_APPROVED_IMPLEMENTATION.md).
 The dated records below remain historical. **Overall gate: blocked**.
@@ -27,6 +27,11 @@ visible, including inherited Linux glib 0.18.5 unsoundness and maintenance/yank
 notices. Zero entries in Cargo's vulnerability category is not a clean warning set.
 The site full check passed. New native/installed Windows acceptance and fresh
 Mac/Linux host/package evidence remain pending. No release or push occurred.
+The local Windows candidate was built from application source `b766134f`;
+its 999,341,675-byte installer is NotSigned for Authenticode, and its updater
+signature verifies. This is packaging evidence, not installed acceptance.
+The Windows 22-step gate now stages its locked PDFium candidate explicitly;
+its dry-run output is a skipped-command record, not a remote CI pass.
 
 ## 2026-10-29 — Comprehensive Audit After Integration
 

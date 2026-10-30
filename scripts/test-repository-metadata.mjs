@@ -151,7 +151,7 @@ assert.match(v107Plan, /file converter[\s\S]*PP-OCRv6_medium/, "V1.0.7 plan must
 assert.match(v107Plan, /repository metadata is synchronized to `1\.0\.7`[\s\S]*version change is not a release-readiness claim/, "V1.0.7 plan must distinguish development metadata from release readiness");
 assert.match(v107Validation, /Overall gate:\s*\*\*blocked\*\*/, "V1.0.7 validation must not claim release readiness");
 assert.match(v107Ocr, /Windows implementation:\s*\*\*patched reference runtime built and packaged; smoke and full 40-case corpus passed\*\*/, "OCR documentation must record the verified Windows runtime boundary");
-assert.match(v107Ocr, /Windows NSIS build:\s*\*\*current audit candidate not built or installed-tested\*\*/, "OCR documentation must record the verified local Windows build");
+assert.match(v107Ocr, /Windows NSIS build:\s*\*\*local [a-f0-9]+ candidate built; updater signature verified; installed acceptance pending\*\*/, "OCR documentation must distinguish the verified package from pending installed acceptance");
 assert.match(v107Ocr, /Windows packaged application smoke:\s*\*\*previous checkpoint only; current application acceptance pending\*\*/, "OCR documentation must distinguish packaged smoke evidence from the installed matrix");
 assert.match(v107Ocr, /macOS Apple Silicon and Linux x64 runtimes:\s*\*\*not built or host-tested\*\*/, "OCR documentation must keep untested platform claims blocked");
 assert.match(v107Ocr, /PDF Flow[\s\S]*Image Flow And Clipboard/, "OCR documentation must cover both required user outcomes");
