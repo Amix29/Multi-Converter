@@ -197,6 +197,36 @@ failed corpus run, not a complete Linux OCR pass. Correction/rerun is pending.
 
 ## Remaining authorized work
 
+## Explicit batch report
+
+The output screen offers an explicit local JSON report export for completed lots,
+including lots with errors. Its privacy caption states that filenames, settings
+and output fingerprints are included; full paths and file contents are excluded.
+The native command validates every successful output against the current managed
+batch, streams SHA-256 and byte counts, and exports through the existing
+no-overwrite transaction. Schema/profile-schema/app versions and UTC epoch seconds
+are recorded. Raw errors, OCR text and source paths are never report fields.
+Copy mode has no recompression profile. Failed/canceled/not-run entries have no
+output fingerprint. The report does not mark converted files as exported.
+
+A cancellation received during initial temporary-folder creation is also retained:
+the cancellation flag is initialized before the first batch await, rather than
+being reset after that await.
+
+Windows validation: 187 Rust units passed (12 opt-in exclusions), all-target
+Clippy with denied warnings passed, frontend types and 53 units passed for the
+report lot, and i18n covers 395 keys in six languages. Three native report tests
+cover real known hashes, foreign-batch refusal, failed lots and repeat exports
+without overwrites. Manual Chromium verified successful/mixed lots at 375 and
+1440 px, no horizontal overflow, a clickable report action and conversion outputs
+still unexported after report export. Screenshots:
+[375 px](audits/2026-10-30/batch-report-375.png),
+[mixed desktop lot](audits/2026-10-30/batch-report-1440.png).
+Contracts now expose 20 commands and two events. The screenshots use preview data;
+real filesystem behavior is covered by native tests, not by the preview receipt.
+
+## Remaining authorized work
+
 - Native Linux source/build/package/engine/OCR validation as available; current
   Apple Silicon build/package and OCR evidence still need adequate build space.
 - Expanded OCR small-print/layout and cold/warm measurements; document fidelity,

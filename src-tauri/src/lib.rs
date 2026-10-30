@@ -52,6 +52,7 @@ pub fn run() {
             open_external_url,
             export_to_downloads,
             export_to_folder,
+            export_batch_report,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Multi-Converter");

@@ -33,6 +33,7 @@ export const ProgressScreen = memo(function ProgressScreen(props: {
   onBackToSettings(): void;
   onExportDownloads(): void;
   onExportFolder(): void;
+  onExportReport(): void;
   onRevealFolder(): void;
   onRetryFile(fileId: string): void;
   onRetryFailed(): void;
@@ -140,6 +141,14 @@ export const ProgressScreen = memo(function ProgressScreen(props: {
             </div>
           )}
         </footer>
+        {!props.isConverting && convertibles.some((file) => file.jobId) && !props.isTempOutputCleaned && (
+          <div className="batch-report-action">
+            <button className="ghost-button" type="button" disabled={props.isExporting} onClick={props.onExportReport} aria-describedby="batch-report-privacy">
+              {t(props.language, "progress.report")}
+            </button>
+            <p id="batch-report-privacy">{t(props.language, "progress.reportPrivacy")}</p>
+          </div>
+        )}
       </section>
     </section>
   );

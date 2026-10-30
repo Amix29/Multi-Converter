@@ -1,4 +1,7 @@
 {
+  "progress.report": "Esporta rapporto del lotto",
+  "progress.reportPrivacy": "Rapporto locale con nomi, impostazioni e impronte dei risultati. Nessun percorso completo o contenuto dei file.",
+  "notice.reportSaved": "Rapporto del lotto esportato.",
   "quality.title": "Profilo di qualità del gruppo",
   "quality.compact": "Compatto",
   "quality.balanced": "Bilanciato (consigliato)",

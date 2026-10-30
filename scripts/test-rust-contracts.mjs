@@ -32,6 +32,7 @@ assert.deepEqual(commands, [
   "open_external_url",
   "export_to_downloads",
   "export_to_folder",
+  "export_batch_report",
 ]);
 
 function rustFilesUnder(directory) {
@@ -125,6 +126,7 @@ const expectedSignatures = new Map([
   ["open_external_url", "fn open_external_url(url:String)->CommandResult<bool>"],
   ["export_to_downloads", "fn export_to_downloads(file_paths:Vec<String>,output_dir:Option<String>,entries:Option<Vec<ExportEntryV1>>)->CommandResult<ExportResult>"],
   ["export_to_folder", "fn export_to_folder(file_paths:Vec<String>,destination_dir:String,output_dir:Option<String>,entries:Option<Vec<ExportEntryV1>>)->CommandResult<ExportResult>"],
+  ["export_batch_report", "async fn export_batch_report(output_dir:String,destination_dir:String,rows:Vec<BatchReportRow>)->CommandResult<ExportResult>"],
 ]);
 
 assert.deepEqual(

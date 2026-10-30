@@ -54,7 +54,7 @@ Tauri invoke handlers
 ```
 
 `src-tauri/src/lib.rs` is the composition root: it registers application state,
-plugins and the existing 19 commands, but does not implement conversion or
+plugins and the existing 20 commands, but does not implement conversion or
 OCR behavior. The command modules translate Tauri inputs into domain calls;
 domain modules remain directly unit-testable without a WebView. Existing facade
 files retain their module paths and public contracts while delegating to focused
@@ -165,12 +165,19 @@ is limited to frontend development.
 
 ## Conversion-Only Scope (2026-10-29)
 
-The application exposes 19 native commands for conversion, OCR, export, onboarding
+The application exposes 20 native commands for conversion, OCR, export, onboarding
 and external links, with `convert-progress` and `ocr-progress` events. Neither
 frontend adapters nor the Tauri invoke handler expose document/PDF editing.
 The former editor-only Office bridge and font-enumeration modules are removed;
 the generic document conversion path retains LibreOffice and Pandoc.
 Old local drafts remain untouched. Legacy saved mode preferences are ignored.
+
+Batch report export runs its hashing and filesystem work off the async executor.
+It validates outputs against the current managed batch, records their actual
+SHA-256/size, and uses the same no-overwrite export transaction. Reports contain
+basenames and bounded status/settings/warning codes; absolute paths, file bodies,
+OCR text and raw errors are excluded. Exporting a report does not mark outputs
+as safely exported or change their cleanup lifecycle.
 
 The PDFium source wrapper accepts conversion/OCR commands only. Existing packaged
 binaries and provenance fingerprints are not rewritten by this cleanup; the

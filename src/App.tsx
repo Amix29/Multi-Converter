@@ -301,6 +301,7 @@ export default function App() {
         onBackToSettings={showOutputSettings}
         onExportDownloads={exportDownloads}
         onExportFolder={exportFolder}
+        onExportReport={conversionWorkflow.exportBatchReport}
         onRevealFolder={revealFolder}
         onRetryFile={retryFile}
         onRetryFailed={retryFailed}

@@ -1,4 +1,7 @@
 {
+  "progress.report": "Export batch report",
+  "progress.reportPrivacy": "Local report with names, settings and output hashes. No full paths or file contents.",
+  "notice.reportSaved": "Batch report exported.",
   "quality.title": "Batch quality profile",
   "quality.compact": "Compact",
   "quality.balanced": "Balanced (recommended)",

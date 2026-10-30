@@ -8,7 +8,9 @@ use std::{
 
 mod copy;
 mod paths;
+mod report;
 mod source;
+pub(crate) use report::export_batch_report;
 
 use copy::{copy_export_file, copy_export_file_exact};
 use paths::{

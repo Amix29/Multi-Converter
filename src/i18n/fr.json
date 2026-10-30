@@ -1,4 +1,7 @@
 {
+  "progress.report": "Exporter le bilan du lot",
+  "progress.reportPrivacy": "Bilan local avec noms, réglages et empreintes des sorties. Aucun chemin complet ni contenu de fichier.",
+  "notice.reportSaved": "Bilan du lot exporté.",
   "quality.title": "Profil de qualité du lot",
   "quality.compact": "Compact",
   "quality.balanced": "Équilibré (recommandé)",

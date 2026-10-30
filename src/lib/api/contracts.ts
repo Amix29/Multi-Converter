@@ -93,6 +93,19 @@ export interface ExportResult {
   destinationCreated: boolean;
 }
 
+export interface BatchReportRow {
+  sourceName: string;
+  targetFormat: string;
+  status: "done" | "error" | "canceled" | "notRun";
+  engine: string | null;
+  qualityProfile: QualityProfile | null;
+  mediaMode: MediaMode | null;
+  inputBytes: number;
+  durationMs: number | null;
+  warningCodes: string[];
+  outputPath: string | null;
+}
+
 export interface ExportEntryV1 {
   outputPath: string;
   relativePath: string;
@@ -212,6 +225,7 @@ export interface MultiConverterApi {
   cleanupTempOutputFolder(folder: string): Promise<boolean>;
   exportToDownloads(filePaths: string[], outputDir?: string | null, entries?: ExportEntryV1[] | null): Promise<ExportResult>;
   exportToFolder(filePaths: string[], destinationDir: string, outputDir?: string | null, entries?: ExportEntryV1[] | null): Promise<ExportResult>;
+  exportBatchReport(outputDir: string, destinationDir: string, rows: BatchReportRow[]): Promise<ExportResult>;
   describePaths(paths: string[]): Promise<ImportBatchResult>;
   saveClipboardFiles(files: ClipboardFileInput[]): Promise<string[]>;
   convert(job: ConversionJob): Promise<ConversionResult>;

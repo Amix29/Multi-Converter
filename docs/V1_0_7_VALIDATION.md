@@ -11,7 +11,12 @@ check, 50 frontend units and the existing 12-test browser suite passed (10 decla
 project exclusions). Four real Mac engine probe groups passed
 using the existing V1.0.5 bundle and a temporary libvips copy whose signatures
 were corrected using the new helper. This is not current 1.0.7 package/OCR proof.
-Linux WSL build preparation is in progress. Release remains blocked.
+Later follow-through: Linux CI passed (185 Rust units) and real Linux conversions
+passed all 11 groups plus media protocol checks. A Linux OCR runtime was built
+and packaged reproducibly with complete license inventory; its corpus is still
+being validated. Windows SVG isolation and batch report additions pass 187 Rust
+units and Clippy. Report UI was exercised at 375/1440 px on successful/mixed lots.
+The current native interface has 20 commands / 2 events. Release remains blocked.
 
 ## 2026-10-30 — Approved Audit Implementation In Progress
 

@@ -1,4 +1,7 @@
 {
+  "progress.report": "Stapelbericht exportieren",
+  "progress.reportPrivacy": "Lokaler Bericht mit Namen, Einstellungen und Ausgabeprüfsummen. Keine vollständigen Pfade oder Dateiinhalte.",
+  "notice.reportSaved": "Stapelbericht exportiert.",
   "quality.title": "Qualitätsprofil für den Stapel",
   "quality.compact": "Kompakt",
   "quality.balanced": "Ausgewogen (empfohlen)",

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 
 import { api, createExportEntries, type ExportEntryV1, type ExportResult, type QualityProfile } from "../../lib/api";
 import { t, translateBackendMessage, type LanguageCode } from "../../i18n";
 import type { ExportKind, FileItem, NoticeTone, Step } from "../types";
+import { batchReportRows } from "./batchReport";
 import {
   conversionConcurrency,
   exportNoticeMessage,
@@ -113,6 +114,8 @@ export function useConversionWorkflow(options: {
   async function withBatchLock(action: () => Promise<void>) {
     if (batchLocked.current) return;
     batchLocked.current = true;
+    cancellationRequested.current = false;
+    setIsCancelling(false);
     setIsConverting(true);
     const completion = action();
     batchCompletion.current = completion;
@@ -134,8 +137,6 @@ export function useConversionWorkflow(options: {
     setIsTempOutputCleaned(false);
     setExportResult(null);
     setIsConverting(true);
-    setIsCancelling(false);
-    cancellationRequested.current = false;
     options.setStep(3);
     const concurrency = conversionConcurrency(jobs);
     const replacedPaths = new Set(jobs.flatMap((job) => job.result?.outputPath ? [job.result.outputPath] : []));
@@ -251,6 +252,22 @@ export function useConversionWorkflow(options: {
     }
   }
 
+  async function exportBatchReport() {
+    if (!outputDir || isConverting || isExporting || isTempOutputCleaned) return;
+    setIsExporting(true);
+    try {
+      const destination = await api.pickOutputFolder();
+      if (!destination) {
+        options.showNotice("info", t(options.language, "notice.exportCancelled"));
+        return;
+      }
+      await api.exportBatchReport(outputDir, destination, batchReportRows(options.files));
+      options.showNotice("success", t(options.language, "notice.reportSaved"));
+    } catch (error) {
+      options.showNotice("error", translateBackendMessage(options.language, error instanceof Error ? error.message : String(error || "")));
+    } finally { setIsExporting(false); }
+  }
+
   return {
     hasUnexportedResults: options.files.some((file) => file.result?.outputPath && !exportedPaths.has(file.result.outputPath)),
     async cancelAndWait() {
@@ -262,6 +279,7 @@ export function useConversionWorkflow(options: {
     exportResult,
     exportResults,
     exportResultsToFolder,
+    exportBatchReport,
     isCancelling,
     isConverting,
     isExporting,

@@ -66,6 +66,9 @@ export function createPreviewApi(): MultiConverterApi {
     async cleanupTempOutputFolder() {
       return true;
     },
+    async exportBatchReport(_outputDir, destinationDir) {
+      return { destinationDir, files: [`${destinationDir}/conversion-report.json`], destinationCreated: false };
+    },
     async exportToDownloads(filePaths, _outputDir, entries) {
       const destinationDir = `${PREVIEW_ROOT}\\Downloads\\Conversion`;
       return {

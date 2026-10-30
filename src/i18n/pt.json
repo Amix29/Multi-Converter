@@ -1,4 +1,7 @@
 {
+  "progress.report": "Exportar relatório do lote",
+  "progress.reportPrivacy": "Relatório local com nomes, definições e impressões das saídas. Sem caminhos completos nem conteúdo dos ficheiros.",
+  "notice.reportSaved": "Relatório do lote exportado.",
   "quality.title": "Perfil de qualidade do lote",
   "quality.compact": "Compacto",
   "quality.balanced": "Equilibrado (recomendado)",
