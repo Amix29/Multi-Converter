@@ -7,7 +7,7 @@ mod office_resources;
 mod offline_input;
 mod output;
 mod process;
-mod resources;
+pub(super) mod resources;
 
 pub(in crate::converters) use output::{move_external_output, path_to_file_url};
 pub(crate) use process::{

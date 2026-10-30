@@ -52,6 +52,12 @@ converted results awaiting export have a separate lifecycle. OCR and engine
 resource names must be relative on every host, including rejecting Windows drive
 prefixes when validation runs on Unix.
 
+SVG rendering preflights UTF-8 XML with DTD disabled, a 16 MiB input limit and
+100,000 XML nodes. Linked raster images must resolve inside the SVG source
+directory, including after symlink resolution; network and nested SVG image
+resources are refused. Embedded and sibling PNG/JPEG/GIF/WebP images share
+compressed-byte and decoded-pixel budgets before the renderer receives them.
+
 ## Marketing Site Dependency Status
 
 The site pins its dependency versions in `site/package.json` and `site/package-lock.json`.

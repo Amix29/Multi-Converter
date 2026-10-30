@@ -5,6 +5,11 @@ pub(super) mod fidelity;
 #[cfg(test)]
 #[path = "image/fidelity_tests.rs"]
 mod fidelity_tests;
+#[path = "image/svg_resources.rs"]
+mod svg_resources;
+#[cfg(test)]
+#[path = "image/svg_security_tests.rs"]
+mod svg_security_tests;
 
 pub(in crate::converters) fn convert_image(
     app: &AppHandle,
@@ -212,10 +217,7 @@ pub(in crate::converters) fn write_windows_ico(
 
 pub(in crate::converters) fn read_svg_image(input_path: &Path) -> Result<::image::DynamicImage> {
     ensure_integrated_memory_budget(input_path, "SVG")?;
-    let data = fs::read(input_path)?;
-    let options = resvg::usvg::Options::default();
-    let tree = resvg::usvg::Tree::from_data(&data, &options)
-        .map_err(|error| ConvertError::Message(format!("SVG illisible: {error}")))?;
+    let tree = svg_resources::parse(input_path)?;
     let size = tree.size().to_int_size();
     ensure_image_dimensions(size.width(), size.height(), "SVG")?;
     // tiny-skia plus the owned RGBA image coexist during this copy.

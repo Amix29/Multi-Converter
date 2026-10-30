@@ -45,7 +45,7 @@ fn embed_images(value: &mut Value, root: &Path, total: &mut usize) -> Result<()>
     Ok(())
 }
 
-fn resource_bytes(target: &str, root: &Path) -> Result<Vec<u8>> {
+pub(in crate::converters) fn resource_bytes(target: &str, root: &Path) -> Result<Vec<u8>> {
     if let Some(data) = target.strip_prefix("data:") {
         let (header, encoded) = data
             .split_once(',')

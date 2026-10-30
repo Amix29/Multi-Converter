@@ -156,6 +156,23 @@ are test/build inputs; they do not certify a newly built 1.0.7 AppImage.
 
 ## Remaining authorized work
 
+## SVG resource correction
+
+A new synthetic regression failed before the fix: converting a SVG referencing
+an absolute raster path outside its directory did not reject the resource.
+The usvg default resolver permits local file reads; it does not make HTTP requests.
+The integrated renderer now preflights bounded UTF-8 XML (16 MiB, 100,000 nodes,
+DTD disabled), resolves sibling raster resources within the canonical source
+directory, and rejects remote, missing and nested SVG image resources explicitly.
+PNG/JPEG/GIF/WebP resources are checked for dimensions and aggregate encoded-byte
+(64 MiB) / decoded-pixel (32 Mi pixels) budgets before rendering. Encoded data
+URIs and percent-encoded sibling names retain their pixels in the regression.
+SVGZ under a `.svg` name is refused before the unbounded upstream decompressor.
+Windows now passes 184 Rust units (12 opt-in exclusions) and all-target Clippy
+with denied warnings; Linux SVG-specific execution is still pending.
+
+## Remaining authorized work
+
 - Native Linux source/build/package/engine/OCR validation as available; current
   Apple Silicon build/package and OCR evidence still need adequate build space.
 - Expanded OCR small-print/layout and cold/warm measurements; document fidelity,
