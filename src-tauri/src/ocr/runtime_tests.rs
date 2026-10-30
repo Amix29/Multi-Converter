@@ -82,13 +82,17 @@ fn content_verification_detects_a_modified_resource() {
     fs::write(&payload, b"trusted").unwrap();
     let canceled = AtomicBool::new(false);
     let digest = sha256(&payload, &canceled).unwrap();
+    let aggregate = format!(
+        "{:x}",
+        Sha256::digest(format!("worker.bin\0{}\0{}\n", 7, digest))
+    );
     let manifest_path = temp.path().join("runtime-manifest.json");
     fs::write(
         &manifest_path,
         serde_json::json!({
             "fileCount": 1,
             "totalBytes": 7,
-            "aggregateSha256": "locked",
+            "aggregateSha256": aggregate,
             "files": [{ "path": "worker.bin", "bytes": 7, "sha256": digest }]
         })
         .to_string(),
@@ -97,7 +101,7 @@ fn content_verification_detects_a_modified_resource() {
     let expected = ArtifactLock {
         file_count: 1,
         total_bytes: 7,
-        aggregate_sha256: "locked".to_string(),
+        aggregate_sha256: aggregate,
     };
     verify_content_manifest(
         temp.path(),
@@ -121,6 +125,37 @@ fn content_verification_detects_a_modified_resource() {
 }
 
 #[test]
+fn changing_a_resource_and_its_manifest_cannot_keep_the_embedded_lock() {
+    let temp = tempfile::tempdir().unwrap();
+    let payload = temp.path().join("worker.bin");
+    fs::write(&payload, b"trusted").unwrap();
+    let canceled = AtomicBool::new(false);
+    let digest = sha256(&payload, &canceled).unwrap();
+    let aggregate = format!(
+        "{:x}",
+        Sha256::digest(format!("worker.bin\0{}\0{}\n", 7, digest))
+    );
+    let expected = ArtifactLock {
+        file_count: 1,
+        total_bytes: 7,
+        aggregate_sha256: aggregate.clone(),
+    };
+    let mut manifest = serde_json::json!({
+        "fileCount": 1, "totalBytes": 7, "aggregateSha256": aggregate,
+        "files": [{"path": "worker.bin", "bytes": 7, "sha256": digest}]
+    });
+    let path = temp.path().join("runtime-manifest.json");
+    fs::write(&path, manifest.to_string()).unwrap();
+    verify_content_manifest(temp.path(), &path, &expected, &canceled, &mut |_| {}).unwrap();
+    fs::write(&payload, b"altered").unwrap();
+    manifest["files"][0]["sha256"] = sha256(&payload, &canceled).unwrap().into();
+    fs::write(&path, manifest.to_string()).unwrap();
+    assert!(
+        verify_content_manifest(temp.path(), &path, &expected, &canceled, &mut |_| {}).is_err()
+    );
+}
+
+#[test]
 fn content_verification_honors_cancellation_between_files() {
     let temp = tempfile::tempdir().unwrap();
     let canceled = AtomicBool::new(false);
@@ -128,16 +163,25 @@ fn content_verification_honors_cancellation_between_files() {
     let second = temp.path().join("second.bin");
     fs::write(&first, b"first").unwrap();
     fs::write(&second, b"second").unwrap();
+    let first_hash = sha256(&first, &canceled).unwrap();
+    let second_hash = sha256(&second, &canceled).unwrap();
+    let aggregate = format!(
+        "{:x}",
+        Sha256::digest(format!(
+            "first.bin\0{}\0{}\nsecond.bin\0{}\0{}\n",
+            5, first_hash, 6, second_hash
+        ))
+    );
     let manifest_path = temp.path().join("runtime-manifest.json");
     fs::write(
         &manifest_path,
         serde_json::json!({
             "fileCount": 2,
             "totalBytes": 11,
-            "aggregateSha256": "locked",
+            "aggregateSha256": aggregate,
             "files": [
-                { "path": "first.bin", "bytes": 5, "sha256": sha256(&first, &canceled).unwrap() },
-                { "path": "second.bin", "bytes": 6, "sha256": sha256(&second, &canceled).unwrap() }
+                { "path": "first.bin", "bytes": 5, "sha256": first_hash },
+                { "path": "second.bin", "bytes": 6, "sha256": second_hash }
             ]
         })
         .to_string(),
@@ -146,7 +190,7 @@ fn content_verification_honors_cancellation_between_files() {
     let expected = ArtifactLock {
         file_count: 2,
         total_bytes: 11,
-        aggregate_sha256: "locked".to_string(),
+        aggregate_sha256: aggregate,
     };
     let error = verify_content_manifest(
         temp.path(),

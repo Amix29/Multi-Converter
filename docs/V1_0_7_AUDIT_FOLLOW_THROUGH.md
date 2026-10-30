@@ -451,3 +451,21 @@ LZMA at 950,990,375 bytes: a 4.86% reduction. LZMA took 1,105,020 ms (18 min 25 
 The zlib default is retained given the limited size gain and measured LZMA cost;
 no installed extraction-speed comparison is claimed. The receipt is
 `audits/2026-10-30/windows-nsis-compression-comparison.json`.
+
+## OCR manifest integrity correction
+
+A red regression reproduced an integrity weakness: changing a runtime file and
+its manifest's per-file hash while retaining the old claimed aggregate passed
+verification. The verifier now recomputes the canonical `path NUL bytes NUL sha256
+LF` list and its byte sum against the executable's embedded lock before reading
+the payload files. Both runtime and model manifests use this shared verifier.
+Manifest reads are bounded to 16 MiB + one sentinel byte before parsing, rather
+than checking the size after an unbounded read. The forged-manifest regression
+now passes, as do the existing modified-resource and cancellation cases.
+
+The actual Windows archive and all models passed the strengthened verifier in
+140.13 s: 7,246 runtime files / 660,643,156 bytes, plus 21 model files /
+185,082,003 bytes and the correct host architecture. The earlier runtime ZIPs
+remain byte-identical; this corrects application verification, not the model or
+worker content. Native Linux/Mac verification and the final package rebuilds
+must use this correction before those candidates are considered current.

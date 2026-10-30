@@ -10,6 +10,7 @@ use std::sync::{Mutex, OnceLock};
 use tauri::{AppHandle, Manager};
 
 const RUNTIME_LOCK: &str = include_str!("../../ocr-runtime-lock.json");
+const MAX_MANIFEST_BYTES: u64 = 16 * 1024 * 1024;
 
 // Native Apple Silicon cold initialization measured 36.4 s; warm startup 1.5 s.
 // The supervisor keeps checking cancellation throughout this bounded wait.
@@ -344,10 +345,14 @@ fn verify_content_manifest(
     progress: &mut dyn FnMut(u8),
 ) -> Result<(), String> {
     ensure_not_canceled(canceled)?;
-    let bytes =
-        fs::read(manifest_path).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
+    let mut bytes = Vec::new();
+    File::open(manifest_path)
+        .map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?
+        .take(MAX_MANIFEST_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
     ensure_not_canceled(canceled)?;
-    if bytes.len() > 16 * 1024 * 1024 {
+    if bytes.len() as u64 > MAX_MANIFEST_BYTES {
         return Err("OCR_RUNTIME_UNVERIFIED:Manifeste OCR trop volumineux.".to_string());
     }
     let manifest: ContentManifest = serde_json::from_slice(&bytes)
@@ -361,6 +366,22 @@ fn verify_content_manifest(
             "OCR_RUNTIME_UNVERIFIED:Le contenu OCR ne correspond pas au verrou embarqué."
                 .to_string(),
         );
+    }
+    let mut aggregate = Sha256::new();
+    let mut listed_bytes = 0u64;
+    for entry in &manifest.files {
+        ensure_not_canceled(canceled)?;
+        safe_relative_path(&entry.path)?;
+        listed_bytes = listed_bytes.saturating_add(entry.bytes);
+        aggregate.update(format!(
+            "{}\0{}\0{}\n",
+            entry.path, entry.bytes, entry.sha256
+        ));
+    }
+    if listed_bytes != expected.total_bytes
+        || format!("{:x}", aggregate.finalize()) != expected.aggregate_sha256
+    {
+        return Err("OCR_RUNTIME_UNVERIFIED:Le manifeste OCR a été modifié.".to_string());
     }
     let actual_count = count_regular_files(root, manifest_path, canceled)?;
     if actual_count != manifest.file_count {

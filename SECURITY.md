@@ -11,6 +11,13 @@ and editor drafts have been removed. Its supported build targets are Windows x64
 Linux x64 and macOS Apple Silicon; historical public macOS assets remain universal.
 Development checks do not establish installed-package compatibility.
 
+OCR resource verification recomputes the canonical path/size/SHA-256 list against
+the lock embedded in the executable, then checks the actual files. A changed
+payload and changed local manifest cannot authenticate themselves by retaining
+the old claimed aggregate. Manifest input is limited to 16 MiB before parsing.
+This is startup resource integrity checking, not isolation from an actor already
+able to modify the running application or control the local user account.
+
 ## Reporting a Vulnerability
 
 Do not post exploit details, crafted files, secrets, crash dumps with personal data, or private engine/archive URLs in a public GitHub issue.
