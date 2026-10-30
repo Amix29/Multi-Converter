@@ -39,7 +39,9 @@ no product fixes were applied by this audit. Raw evidence is in
 ## Project Architecture
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) defines the desktop, site, branding,
-  conversion, OCR and Atelier IA boundaries.
+  conversion, OCR and standalone repository boundaries.
+- [`LOCAL_WORKSPACE.md`](LOCAL_WORKSPACE.md) records the standalone location,
+  preserved worktrees and relocation checks.
 - [`SECURITY.md`](SECURITY.md) documents the local desktop threat model, the
   conversion/OCR boundaries and the enforced Tauri CSP. Repository
   vulnerability reporting remains in [`../SECURITY.md`](../SECURITY.md).
@@ -52,11 +54,9 @@ no product fixes were applied by this audit. Raw evidence is in
 
 ## Rule Hierarchy
 
-- The Atelier rules in [`../../../AGENTS.md`](../../../AGENTS.md), its indexed
-  rules and [`../../../Stack.md`](../../../Stack.md) are authoritative.
-- Project rules contain only Multi-Converter-specific additions.
-- A duplicated or conflicting project rule must be removed in favor of the
-  Atelier rule.
+- Repository [`AGENTS.md`](../AGENTS.md) and `.agents/rules/` are authoritative.
+- Development rules and design references are maintained locally.
+  Historical integration decisions and audit context remain historical records.
 
 ## Release Documentation
 

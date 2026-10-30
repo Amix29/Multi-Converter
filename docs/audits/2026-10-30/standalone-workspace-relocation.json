@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-30",
+  "baselineCommit": "ee3b70f86152f671598ff290b353fbeb19769b62",
+  "existingCheckoutsPreserved": 6,
+  "relocatedHistoricalWorktrees": 3,
+  "preservedModifiedOrUntrackedFiles": 66,
+  "gitRefsUnchangedDuringMove": true,
+  "remoteUnchanged": true,
+  "originalRootAbsent": true,
+  "originalRootEmpty": false,
+  "activeSharedSkillJunctionRemoved": true,
+  "finalCandidatesVerified": [
+    {
+      "name": "Multi-Converter_1.0.7_x64-setup.exe",
+      "sha256": "eee1bc685164e6e53b5c5900131f5dfa10adc0f90c789e7cc27f54aa2eb75fd7"
+    },
+    {
+      "name": "Multi-Converter_1.0.7_linux-x64-local.AppImage",
+      "sha256": "795330fcf46cb3c34d7a98f78945bcb5028412d5424e885a1d16c0787e2d016a"
+    },
+    {
+      "name": "Multi-Converter_1.0.7_macos-aarch64-local.dmg",
+      "sha256": "cdbe9362ebc17ff338cfa7013f4168c4fa599cd5f9822787bbfc7fd93f431c5b"
+    }
+  ],
+  "userApplicationDataMoved": false,
+  "published": false,
+  "otherPortalProjectsUnchanged": true,
+  "formerPortalEntryRemoved": true,
+  "productionRegistryAndCatalogueRoutePassed": true,
+  "checkedLocalDocumentationLinks": 120,
+  "missingOrExternalLocalDocumentationLinks": 0,
+  "canonicalCheckWorktreePassed": true,
+  "canonicalCheckPrimaryCheckoutPassed": true,
+  "productionFrontendBuildPrimaryCheckoutPassed": true,
+  "formerWorkspaceNameAbsentFromDocumentation": true
+}

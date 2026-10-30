@@ -13,7 +13,7 @@ No release, publication or remote push is authorized by implementation approval.
 
 ## Work and integration
 
-- Current work branch: codex/audit-follow-through.
+- Current workspace maintenance branch: codex/standalone-relocation; see [local workspace](LOCAL_WORKSPACE.md).
 - Current integrated application source: 8b510138 on local codex/test. Matching local NSIS/AppImage/DMG candidates and receipts exist; installed acceptance remains pending. Earlier checkpoints below remain historical.
 - Dedicated ordinary Git worktree under the task writable directory. The app's
   managed tool rejected the stale source path. The real base checkout was then
@@ -28,13 +28,14 @@ Current continuation: [audit follow-through](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
 It records work after baseline `41459c23`: stream copy, image fidelity, resource
 admission, private intermediates, SVG isolation, local reports, opt-in recovery,
 Linux native conversion/OCR proof and current native package construction.
-The Mac build now uses a temporary RAM workspace. Earlier evidence below stays
+The Mac build used a temporary RAM workspace, now detached after the final
+candidate and receipts were preserved on Windows. Earlier evidence below stays
 tied to its source/artifact.
 
 ### Follow-through started — 2026-10-30
 
 The maintainer requested completion of all locally achievable audit work, with
-continuous handoff updates. Work continues on `codex/audit-follow-through`,
+continuous handoff updates. This audit lot used `codex/audit-follow-through`,
 from integrated `41459c23`, in the same isolated worktree. The application is
 still unreleased. New source work invalidates the previous installer's status
 as a final candidate; it remains a receipt for application source `b766134f`.

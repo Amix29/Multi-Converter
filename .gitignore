@@ -27,6 +27,7 @@ dist-engines/
 dist-engines-*/
 
 # Local test and automation artifacts
+.worktrees/
 test-results/
 playwright-report/
 output/

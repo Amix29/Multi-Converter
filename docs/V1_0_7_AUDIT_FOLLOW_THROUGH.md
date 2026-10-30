@@ -3,7 +3,7 @@
 ## Handoff
 
 The maintainer requested all remaining locally achievable audit work and continuous
-documentation updates. The isolated work branch is `codex/audit-follow-through`,
+documentation updates. The audit used isolated branch `codex/audit-follow-through`,
 based on `41459c23`. Local integration remains `codex/test`; `main` and remote
 branches are untouched. V1.0.7 is unpublished. Application source through
 `8b510138` is locally integrated on `codex/test`; it includes authenticated OCR
@@ -499,9 +499,9 @@ built independently using native HFS+ UDZO layout NONE and passed image checks.
 | Linux AppImage | 1,176,459,768 | `795330fcf46cb3c34d7a98f78945bcb5028412d5424e885a1d16c0787e2d016a` | [Linux](audits/2026-10-30/linux-appimage-build-8b510138.json) |
 | Apple Silicon DMG | 912,946,631 | `cdbe9362ebc17ff338cfa7013f4168c4fa599cd5f9822787bbfc7fd93f431c5b` | [Mac](audits/2026-10-30/macos-dmg-build-8b510138.json) |
 
-All payloads are preserved on Windows in the audit task worktree's
-`tmp/local-audit-8b510138/`. Use `git worktree list` to locate the
-`codex/audit-follow-through` checkout; generated payloads are not versioned.
+All payloads are preserved on Windows in the standalone primary checkout's
+`tmp/local-audit-8b510138/`; generated payloads are not versioned. See
+[`LOCAL_WORKSPACE.md`](LOCAL_WORKSPACE.md) for workspace and worktree recovery.
 Each host's project LICENSE/NOTICE and OCR runtime were checked. Windows has no
 Authenticode or updater signature; the Mac app passes deep strict ad-hoc signature
 verification, has an arm64 main executable and declares macOS 15.0. Its DMG passes
@@ -522,3 +522,41 @@ receipts and exact effective engine/OCR metadata on Windows: 34,359,738,368 byte
 (32 GiB) released. Only early synthetic probes/bootstrap files remain in the
 owned private temporary parent; the installed application and real home profile
 were not modified. See [the cleanup receipt](audits/2026-10-30/macos-temporary-workspace-cleanup.json).
+
+## Standalone workspace relocation — 2026-10-30
+
+The complete primary checkout now lives at
+`%USERPROFILE%\Développement\Multi-Converter` on `codex/test`.
+Maintenance uses `codex/standalone-relocation`, based on `ee3b70f8`.
+Repository-owned rules retain the applicable stack, Git, documentation,
+privacy/security, Vellum Paper, accessibility and source-size requirements.
+The documentation is self-contained and previous workspace-brand references
+have been removed, including from historical reports.
+
+All six existing checkouts retain their HEAD, branch and tracked/untracked
+state after the physical move; all 66 modified/untracked historical source
+files were individually SHA-256 checked. Three historical worktrees now live
+under the primary checkout's ignored `.worktrees/`; the two external checkouts
+keep their locations with repaired Git links. Missing historical worktree
+records were not pruned. Git refs and the origin remote were unchanged during
+the move. The old root no longer exists; its emptied directory was preserved
+with the pre-existing empty destination in ignored relocation backups.
+
+The three final candidates were moved to the primary checkout's
+`tmp/local-audit-8b510138/` and their sizes/SHA-256 values match the original
+receipts. The former portal entry was removed while preserving both other
+project objects and their existing local formatting. The obsolete shared-skill
+junction was archived outside the repository. Eight verified source-site
+diagnostic helper processes were closed to release Windows directory locks.
+Installed application data and preferences were not moved. See
+[the relocation receipt](audits/2026-10-30/standalone-workspace-relocation.json)
+and [`LOCAL_WORKSPACE.md`](LOCAL_WORKSPACE.md).
+
+Final relocation validation passes: `npm run check` in both maintenance and
+primary checkouts, `npm run build:frontend` from the new root, the staged
+secret-leak scan, all 120 local links in changed documentation and
+`git diff --check`. Current tracked documentation contains no former workspace
+name. The real former portal registry loads without schema warnings; its
+catalogue route returns HTTP 200 without the removed entry. No persistent
+portal server was running, so that route was verified by Fastify injection.
+These are relocation/source checks, not a new installed-app acceptance claim.

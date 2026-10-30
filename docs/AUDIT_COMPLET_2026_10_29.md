@@ -10,13 +10,13 @@ Le périmètre demandé reste **conversion de documents, images, audio et vidéo
 
 | Élément | État vérifié |
 | --- | --- |
-| Dépôt indépendant | `<Atelier>/projets/multi-converter` (chemin du compte local masqué le 30 octobre) |
+| Dépôt indépendant | `<ancien-espace>/projets/multi-converter` au moment de l'audit ; emplacement actuel dans `LOCAL_WORKSPACE.md` |
 | Branche locale | `codex/test` |
 | Révision | `98726742 — Remove document and PDF editors while retaining conversion OCR` |
 | Version de développement | 1.0.7, non publiée |
 | Référence publiée documentée | V1.0.6 ; les captures simulées n’indiquent pas une publication réelle |
 | Système de cet audit | Windows ; Chromium pour l’interface, binaires locaux pour les tests de moteurs |
-| Documents de contexte | AGENTS/règles et Stack de l’Atelier, AGENTS/règles du projet, PLAN, VALIDATION, OCR, ARCHITECTURE, documentation de tests et de distribution |
+| Documents de contexte | AGENTS et règles de développement, PLAN, VALIDATION, OCR, ARCHITECTURE, documentation de tests et de distribution |
 | Compétences utilisées | better, product-design:audit, security-best-practices |
 | Modification du produit | Aucune correction appliquée pendant cet audit ; rapport et preuves uniquement |
 

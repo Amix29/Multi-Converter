@@ -1,19 +1,15 @@
 # Multi-Converter Architecture
 
-## Atelier Integration
+## Standalone Repository
 
-The global workspace boundaries are defined by
-[`../../../AGENTS.md`](../../../AGENTS.md) and its architecture rule. Multi-Converter
-adds only one integration detail: the portal launches the installed desktop
-application through its validated registry entry.
+Multi-Converter is a standalone repository. Its own
+[`AGENTS.md`](../AGENTS.md), `.agents/rules/` and documentation govern the
+application, site and brand sources. Development rules, design tokens and build
+configuration are maintained within this repository.
 
-```text
-atelier/config/projects.json
-  -> validated installed Multi-Converter executable
-  -> independent Tauri desktop application
-```
-
-No additional runtime, localhost server or source-code bridge is required.
+The installed application remains independent of the source checkout. Moving
+the repository does not move user application data, preferences or OCR caches.
+See [`LOCAL_WORKSPACE.md`](LOCAL_WORKSPACE.md) for workspace and worktree recovery.
 
 ## Repository Areas
 
@@ -38,7 +34,7 @@ application does not load the marketing site at runtime.
 | Local application data | Application preferences and verified OCR runtime caches |
 
 The existing application does not need a new framework, database or local web
-server for its Atelier integration.
+server for standalone development.
 
 ## Rust Backend Boundaries
 
@@ -251,11 +247,12 @@ installed engine keeps the existing `bundled-engines/pdfium/compatible` path;
 the conversion and OCR domains therefore retain their public contracts and
 hybrid page-selection policy.
 
-Phase 8 extends that boundary to `macos-universal` and `linux-x64`. A single
+Phase 8 extends that boundary to macOS and `linux-x64`. A single
 platform provenance lock fixes PDFium, PaddlePaddle, Python and the approved
-V1.0.6 engine staging inputs. The universal macOS package carries two official
-CPU worker archives (`arm64` and `x86_64`) but one shared model tree; Linux
-carries only its x86_64 worker. Rust selects the worker from the process OS and
+V1.0.6 engine staging inputs. The current macOS target is Apple Silicon on
+macOS 15 and later, with one arm64 CPU worker archive; Linux carries its x86_64
+worker. Universal/Intel Mac packages remain historical V1.0.6 records. Rust
+selects the worker from the process OS and
 architecture, validates the archive hash and every extracted file, then checks
 the Mach-O, ELF or PE machine type before launch. Foreign runtimes, duplicate
 archive entries, links, traversal and missing executable permissions fail
@@ -264,18 +261,18 @@ closed. CoreML, OpenVINO and the native ONNX candidate remain unselected.
 The post-audit wrapper is 0.4.0 while PDFium stays at 149.0.7825.0. Its Windows
 package has a reproducible local fingerprint but remains unpublished, so the
 committed historical 0.3.0 engine manifest is not a post-audit candidate.
-macOS universal and Linux x64 package records fail closed as
-`pending-native-rebuild` with unset measurements until native runners rebuild
-and validate them.
+Current local Windows, Apple Silicon and Linux candidates use application
+source `8b510138`; native checks and their receipts are recorded in
+[`V1_0_7_AUDIT_FOLLOW_THROUGH.md`](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
+Local package proof does not establish installed acceptance or public release
+readiness, and historical published manifests are not replaced by local staging.
 
 ## Sources Of Truth
 
-1. Atelier [`AGENTS.md`](../../../AGENTS.md), its indexed rules and
-   [`Stack.md`](../../../Stack.md)
-2. Project [`AGENTS.md`](../AGENTS.md) and `.agents/rules/`
-3. `docs/V1_0_7_PLAN.md`
-4. `docs/V1_0_7_VALIDATION.md`
-6. `docs/V1_0_7_OCR.md`
-7. `docs/TESTING.md` and the platform release checklists
-8. `docs/SECURITY.md` and the repository `SECURITY.md`
-9. `branding-kit/README.md` and `site/README.md`
+1. Repository [`AGENTS.md`](../AGENTS.md) and `.agents/rules/`
+2. `docs/V1_0_7_PLAN.md`
+3. `docs/V1_0_7_VALIDATION.md` and `docs/V1_0_7_AUDIT_FOLLOW_THROUGH.md`
+4. `docs/V1_0_7_OCR.md`
+5. `docs/TESTING.md` and the platform release checklists
+6. `docs/SECURITY.md` and the repository `SECURITY.md`
+7. `docs/LOCAL_WORKSPACE.md`, `branding-kit/README.md` and `site/README.md`

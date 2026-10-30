@@ -310,8 +310,7 @@ Build:
 npm run build
 npm run tauri:build
 
-# macOS only, from a Mac with both Darwin sidecar architectures staged.
-# prepare:bundled-engines creates the universal sidecars required by Tauri.
+# macOS 15+ only, from an Apple Silicon Mac with native arm64 sidecars staged.
 # The wrapper refuses this command on Windows/Linux so a DMG is never presented as cross-built.
 npm run tauri:build:macos
 
@@ -337,6 +336,9 @@ cargo test --manifest-path src-tauri/Cargo.toml --target-dir "$env:TEMP\mc-cargo
 `npm run tauri:dev` and `npm run tauri:build` use a temporary `CARGO_TARGET_DIR` to avoid stale Tauri artifacts in `src-tauri/target`.
 
 ### Project Structure
+
+This repository is standalone, with its own development rules and design
+references. See [local workspace and relocation notes](docs/LOCAL_WORKSPACE.md).
 
 ```text
 src/                         React UI

@@ -241,7 +241,7 @@ npm run measure:baseline -- --output test-results/phase-2-baseline/after.json --
   500-non-blank-line limit; the largest is 416 lines. The 300-line objective
   remains an optimization target rather than a claim that every file reached
   it;
-- the vendored Vellum 1.0 token file exactly matches the Atelier source at
+- the vendored Vellum 1.0 token file exactly matches the reference snapshot at
   SHA-256
   `FA4C4754834756896E610CFB751170654B09BBBD543606149B1866513B8A44BE`;
 - the floating feedback overlap and unreliable preview recent-document return

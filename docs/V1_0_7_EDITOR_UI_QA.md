@@ -143,7 +143,7 @@ Vite à `127.0.0.1`, puis vérifié à 390 × 844 px :
 - passage du Convertisseur à l’Éditeur ;
 - création d’un document ;
 - rendu de la barre d’outils et de la page ;
-- saisie de `Test de transition Atelier IA` dans le document.
+- saisie d'un texte de transition dans le document.
 
 Ce smoke test confirme le rendu et ces interactions simulées uniquement. Il ne
 prouve pas l’enregistrement Tauri, la persistance après redémarrage, les imports
@@ -155,7 +155,7 @@ l’aperçu compilé existant et ne remplace pas un nouveau build de production.
 
 La Phase 2 remplace l’ancienne DA par le thème Vellum Paper sur l’application
 React complète. Les tokens officiels sont copiés localement dans
-`src/styles/vendor/vellum-tokens.css`. Le fichier source de l’Atelier et sa
+`src/styles/vendor/vellum-tokens.css`. Le fichier de référence Vellum et sa
 copie embarquée partagent le SHA-256
 `FA4C4754834756896E610CFB751170654B09BBBD543606149B1866513B8A44BE`.
 

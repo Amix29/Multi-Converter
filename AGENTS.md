@@ -1,6 +1,6 @@
 # Multi-Converter
 
-Guidance for AI agents working on Multi-Converter inside the Atelier IA workspace.
+Guidance for AI agents working on the standalone Multi-Converter repository.
 
 ## Project Context
 
@@ -8,19 +8,23 @@ Multi-Converter contains a local-first Tauri desktop app, its static Next.js mar
 
 ## Rule Hierarchy
 
-- [`../../AGENTS.md`](../../AGENTS.md), its indexed rules and [`../../Stack.md`](../../Stack.md) apply first.
-- This file and `.agents/rules/` contain only Multi-Converter additions. If a project rule duplicates or conflicts with an Atelier rule, keep the Atelier rule and remove the project copy.
+- This file and `.agents/rules/` govern this independent repository.
+- Development rules, stack decisions and design references are owned locally.
+  Historical integration records do not override the current repository rules.
 
 ## Rules
 
 Read the relevant focused rule before acting:
 
+- **Development** - [.agents/rules/development.md](.agents/rules/development.md) - Repository boundaries, stack, design, Git, quality and documentation.
 - **Product constraints** - [.agents/rules/product-constraints.md](.agents/rules/product-constraints.md) - Local privacy, conversion and OCR invariants.
 - **Testing** - [.agents/rules/testing.md](.agents/rules/testing.md) - Real-runtime evidence and platform-specific validation.
 - **Release engineering** - [.agents/rules/release-engineering.md](.agents/rules/release-engineering.md) - Publication, signing, assets and release-note safeguards.
 
 ## Universal Project Rules
 
+- Never use `rm -rf`; use `trash` for recoverable deletions. Preserve user files,
+  dirty historical worktrees and local build artifacts during maintenance.
 - Treat `docs/V1_0_7_PLAN.md` as the source of truth for V1.0.7 scope, `docs/V1_0_7_VALIDATION.md` as the combined release ledger and `docs/V1_0_7_OCR.md` as the OCR contract.
 - The Rust audit may ignore only `RUSTSEC-2026-0194` and `RUSTSEC-2026-0195`, and only while the affected `quick-xml` version is reachable exclusively through the build-time `wayland-scanner` proc-macro. Remove the exceptions when that dependency supports `quick-xml >=0.41.0`; never extend them to a runtime XML parser.
 

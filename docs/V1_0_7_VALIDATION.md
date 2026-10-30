@@ -2,8 +2,8 @@
 
 ## 2026-10-30 — Latest local continuation
 
-Application source `8b510138` is locally integrated on `codex/test`; the work branch
-is `codex/audit-follow-through`. It includes private intermediates, SVG isolation,
+Application source `8b510138` is locally integrated on `codex/test`; current
+workspace maintenance uses `codex/standalone-relocation`. The application includes private intermediates, SVG isolation,
 local batch reports, opt-in 24-hour recovery, authenticated OCR manifests and
 stable row ordering. Native contracts remain 24 commands / two events. The final
 canonical check passes, with 194 Windows Rust units and 201 each on Linux/Mac
@@ -26,7 +26,7 @@ claimed. Older sections below remain historical checkpoints.
 
 ## 2026-10-30 — Audit Follow-Through
 
-Current isolated work: `codex/audit-follow-through`, baseline `41459c23`.
+Earlier isolated audit work: `codex/audit-follow-through`, baseline `41459c23`.
 See [the continuously updated handoff](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
 The new lot adds explicit per-file stream copy, image ICC/frame/depth policy,
 native resource reservations and fixes narrow-window layout. Rust 178 units,
@@ -248,7 +248,7 @@ from **blocked**.
 
 ## 2026-07-31 Workspace Consolidation Evidence
 
-The local checkpoint combines the Atelier IA transition with the unfinished
+The local checkpoint combines the workspace transition with the unfinished
 V1.0.7 development tree so its rules, commands, documentation and source stay
 coherent. It is not a release candidate and does not close any pending host or
 OCR gate.
