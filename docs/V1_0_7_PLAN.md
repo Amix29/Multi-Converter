@@ -5,7 +5,8 @@
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
 - Last documentation review: **2026-10-30**.
 - Release status: **not ready**.
-- Local implementation source: `b766134f`, integrated on `codex/test`; work branch `codex/converter-audit-apple-silicon`.
+- Current application source: `d828ad3f`, integrated on `codex/test`; work branch `codex/audit-follow-through`.
+- The older Windows installer remains tied to `b766134f`; it does not contain these later source changes.
 - Continuation: `codex/audit-follow-through`, based on integrated `41459c23`;
   [current work and handoff](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
 - `codex/test` remains the persistent integration/CI validation branch; `main` is the public stable branch.

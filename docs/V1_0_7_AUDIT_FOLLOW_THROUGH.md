@@ -7,7 +7,12 @@ documentation updates. The isolated work branch is `codex/audit-follow-through`,
 based on `41459c23`. Local integration remains `codex/test`; `main` and remote
 branches are untouched. V1.0.7 is unpublished. The earlier Windows installer
 is tied to application source `b766134f` and does not contain this new lot.
-First follow-through lot `9859e8d9` is now locally integrated on `codex/test`.
+Application source through `d828ad3f` is now locally integrated on `codex/test`.
+The final canonical check passed, as did 191 Windows Rust units (12 opt-in
+exclusions), all 11 real conversion groups, HTTP protocol checks and Clippy.
+Linux passes 198 units and Clippy. Frontend units pass 56 tests, i18n covers
+404 keys, and the existing browser suite passes 12 / 10 declared exclusions.
+No push occurred. New Linux/Mac candidate builds target this source snapshot.
 
 ## First follow-through lot
 
@@ -275,10 +280,49 @@ installed native restart. Contracts now expose 24 commands / two events.
 Screenshots: [banner](audits/2026-10-30/recovery-banner-375.png),
 [setting](audits/2026-10-30/recovery-settings-375.png).
 
+## Native package construction in progress
+
+Linux is building an unsigned local AppImage from `d828ad3f`, with the verified
+real engines and reproducible OCR archive. The local-only configuration uses
+unpublished engine metadata and disables updater artifacts; it does not relax
+public release gates. A missing Tauri executable in the direct command PATH was
+corrected in the temporary build invocation; the product wrapper was unchanged.
+
+The available Apple Silicon Mac has 128 GiB RAM (96% free at the check) but only
+about 4 GiB free disk. A fresh owned 32 GiB virtual RAM device was verified before
+formatting and mounted at `/private/tmp/multi-converter-audit.0iOMg3/ram-work`.
+Sources/models are copied over a temporary pinned TLS link and checked by SHA-256;
+the durable source and evidence remain on Windows. Rust/Node/uv/Python, caches,
+HOME and build outputs are redirected into this temporary RAM workspace. No
+installed application or shell profile is modified.
+
+The locked native toolchain passed preparation. Initial source-check setup stopped
+at the intentional refusal to create CI placeholders outside CI. The first full
+engine invocation then required real sidecars to be staged before its preflight.
+These are failed temporary invocation attempts, not native gate passes. The
+official Apple Silicon OCR runtime build passed, including byte-identical repeated
+packaging and license inventory. It contains 5,796 files / 847,557,178 bytes; its
+278,062,692-byte ZIP has SHA-256
+`27856062d3e9cea9973a64f730dcb19156a9e7a36ec26165203445fe962f7d58`.
+Full source/engine reruns will use the actual staged binaries. Current worker
+inference, application packaging and installed GUI acceptance remain pending.
+
+The Linux package build exposed inherited Windows resource mappings: Tauri merges
+platform configurations into its base configuration rather than replacing the
+resource map. Windows engine resources now live in `tauri.windows.conf.json`;
+the base retains shared OCR resources. Regression checks inspect merged maps for
+all three platforms. Production configuration and Linux/macOS packaging contract
+checks pass. Native package builds are being retried with this correction.
+
+The RAM device is temporary and must be detached after receipts/artifacts are
+copied back. Never reuse its device number without verifying the current owned
+RAM image; a reboot can change device identifiers. The existing public bundle
+and earlier signed libvips probe copy are not current-application proof.
+
 ## Remaining authorized work
 
-- Native Linux source/build/package/engine/OCR validation as available; current
-  Apple Silicon build/package and OCR evidence still need adequate build space.
+- Complete native Linux and Apple Silicon package construction and inspection;
+  Apple Silicon worker inference is pending in the temporary RAM workspace.
 - Expanded OCR small-print/layout and cold/warm measurements; document fidelity,
   external-reference/macro fixtures and final package notices.
 - Target-size estimates and additional practical folder/batch features, evaluated

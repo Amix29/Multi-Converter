@@ -11,8 +11,8 @@ No release, publication or remote push is authorized by implementation approval.
 
 ## Work and integration
 
-- Work branch: codex/converter-audit-apple-silicon.
-- Integrated source: b766134f on local codex/test; base 24303e48 (audit docs after 98726742).
+- Current work branch: codex/audit-follow-through.
+- Current integrated application source: d828ad3f on local codex/test. Earlier implementation/source below remains historical.
 - Dedicated ordinary Git worktree under the task writable directory. The app's
   managed tool rejected the stale source path. The real base checkout was then
   fast-forwarded only after the complete staged source checks passed.
@@ -23,8 +23,11 @@ No release, publication or remote push is authorized by implementation approval.
 ## Implementation progress
 
 Current continuation: [audit follow-through](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
-It records the new work after baseline `41459c23`, current Mac access and Linux
-preparation. Earlier evidence below stays tied to its source/artifact.
+It records work after baseline `41459c23`: stream copy, image fidelity, resource
+admission, private intermediates, SVG isolation, local reports, opt-in recovery,
+Linux native conversion/OCR proof and current native package construction.
+The Mac build now uses a temporary RAM workspace. Earlier evidence below stays
+tied to its source/artifact.
 
 ### Follow-through started — 2026-10-30
 

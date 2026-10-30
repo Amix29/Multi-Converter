@@ -10,8 +10,10 @@ validation passed 11 conversion groups plus media offline protocols. Its officia
 OCR runtime was packaged reproducibly, with complete license inventory; the direct
 40-case corpus and isolated extracted-archive four-case probe passed. Current
 browser checks passed 12 tests with 10 declared exclusions, plus manual report/
-recovery checks at 375/1440 px. The final Windows canonical/native rerun is in
-progress for this lot. See [exact source/artifact boundaries and receipts](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
+recovery checks at 375/1440 px. The final Windows canonical gate passed, with
+191 Rust units, all 11 real conversion groups, media protocol checks and Clippy.
+Source `d828ad3f` is locally integrated on `codex/test`. Native package builds are
+in progress. See [exact source/artifact boundaries and receipts](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
 **Overall release gate remains blocked**; no new current installer acceptance is
 claimed. Older sections below remain historical checkpoints.
 
