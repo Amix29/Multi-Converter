@@ -24,7 +24,8 @@ net et légèrement imparfait de manière maîtrisée.
 
 Les grands titres sont francs et denses. Les paragraphes restent calmes. Les
 grilles et traits portent la personnalité ; les textes ne deviennent ni
-manuscrits ni éditoriaux en serif. Éviter le verre dépoli, le néon, les halos,
+manuscrits ni éditoriaux en serif. Réserver le verre dépoli à la navigation.
+Éviter le néon, les halos,
 les dégradés envahissants et les cartes de tableau de bord sans utilité.
 
 Public : particuliers et professionnels qui veulent convertir un fichier ou
@@ -36,7 +37,10 @@ Aucune métrique d'usage mesurée n'est inventée dans ce système.
 
 | Rôle | Clair | Sombre |
 | --- | --- | --- |
-| Nuance de référence et action | `#C86A34` | `#4D8445` |
+| Nuance de référence | `#C86A34` | `#4D8445` |
+| Fond du bouton principal | `#B05A2B` | `#45763D` |
+| Survol du bouton principal | `#A65328` | `#3D6B35` |
+| Pression du bouton principal | `#984820` | `#345E2E` |
 | Fond quadrillé | `#F5F3EC` | `#111710` |
 | Papier / panneau | `#FFFDF7` | `#1B2419` |
 | Surface secondaire | `#FFFAF0` | `#243020` |
@@ -46,12 +50,15 @@ Aucune métrique d'usage mesurée n'est inventée dans ce système.
 | Lien / accent lisible | `#9D461C` | `#A3D294` |
 | Bordure de panneau | `#DED9CC` | `#3D4B37` |
 | Bordure de contrôle | `#777F73` | `#8A9C80` |
-| Texte sur action de référence | `#0B100A` | `#000000` |
+| Texte des boutons principaux | `#FFFDF7` | `#FFFDF7` |
 
 Les deux nuances fournies restent exactes. Les variantes de survol, fonds
-doux, liens et focus dérivent de ces ancres. Le texte blanc sur les boutons
-compacts orange ou vert n'atteint pas 4,5:1 : le libellé est donc sombre et
-très gras. Les couleurs de référence ne servent pas seules à un petit texte
+doux, liens et focus dérivent de ces ancres. Le libellé des boutons principaux
+est blanc chaud, selon la correction du mainteneur du 1 novembre 2026.
+Les fonds d'action sont légèrement plus profonds que les ancres afin de garder
+au moins 4,5:1 au repos, au survol et à la pression. Les tokens `--action-*`
+portent ce rôle ; ne pas remettre le texte sombre de `--accent-on` sur un bouton.
+Les couleurs de référence ne servent pas seules à un petit texte
 de lien ; utiliser les nuances lisibles. Le mode sombre garde le quadrillage,
 les proportions et les ombres, avec des surfaces vertes très désaturées.
 

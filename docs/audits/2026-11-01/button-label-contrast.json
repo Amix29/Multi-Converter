@@ -1,0 +1,114 @@
+{
+  "verifiedAt": "2026-11-01T10:08:19.537460+00:00",
+  "change": "Warm-white labels on deeper orange/green primary actions; brand anchors unchanged.",
+  "pairs": [
+    {
+      "mode": "light",
+      "state": "rest",
+      "foreground": "#fffdf7",
+      "background": "#b05a2b",
+      "contrastRatio": 4.753,
+      "minimum": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "state": "hover",
+      "foreground": "#fffdf7",
+      "background": "#a65328",
+      "contrastRatio": 5.308,
+      "minimum": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "light",
+      "state": "pressed",
+      "foreground": "#fffdf7",
+      "background": "#984820",
+      "contrastRatio": 6.289,
+      "minimum": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "state": "rest",
+      "foreground": "#fffdf7",
+      "background": "#45763d",
+      "contrastRatio": 5.278,
+      "minimum": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "state": "hover",
+      "foreground": "#fffdf7",
+      "background": "#3d6b35",
+      "contrastRatio": 6.157,
+      "minimum": 4.5,
+      "status": "PASS"
+    },
+    {
+      "mode": "dark",
+      "state": "pressed",
+      "foreground": "#fffdf7",
+      "background": "#345e2e",
+      "contrastRatio": 7.409,
+      "minimum": 4.5,
+      "status": "PASS"
+    }
+  ],
+  "scope": "Primary colored buttons; secondary neutral buttons retain their readable foreground.",
+  "renderedCatalogue": {
+    "surface": "self-contained catalogue using shared action tokens",
+    "results": [
+      {
+        "mode": "light",
+        "rest": {
+          "color": "rgb(255, 253, 247)",
+          "background": "rgb(176, 90, 43)"
+        },
+        "hover": {
+          "color": "rgb(255, 253, 247)",
+          "background": "rgb(166, 83, 40)"
+        },
+        "pressed": {
+          "color": "rgb(255, 253, 247)",
+          "background": "rgb(152, 72, 32)"
+        }
+      },
+      {
+        "mode": "dark",
+        "rest": {
+          "color": "rgb(255, 253, 247)",
+          "background": "rgb(69, 118, 61)"
+        },
+        "hover": {
+          "color": "rgb(255, 253, 247)",
+          "background": "rgb(61, 107, 53)"
+        },
+        "pressed": {
+          "color": "rgb(255, 253, 247)",
+          "background": "rgb(52, 94, 46)"
+        }
+      }
+    ]
+  },
+  "openDesign": {
+    "id": "user:multi-converter-paper",
+    "title": "Multi-Converter",
+    "surface": "web",
+    "status": "published",
+    "swatches": [
+      "#f5f3ec",
+      "#4d8445",
+      "#1d241f",
+      "#c86a34"
+    ],
+    "nativeArchiveMatchedFiles": 34,
+    "mismatches": [],
+    "archiveSha256": "9383a452bbfb1359c6dea714daab2a5d20bc27b6f9e29f38192bf5a1f6c465fb",
+    "bodyMatches": true
+  },
+  "frontendBuild": "PASS",
+  "uiLayout": "PASS"
+}

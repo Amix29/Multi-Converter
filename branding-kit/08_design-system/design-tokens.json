@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "format": "od-design-tokens/v1",
   "contract": "TOKEN_SCHEMA",
-  "generatedAt": "2026-11-01T09:19:30.030Z",
+  "generatedAt": "2026-11-01T10:07:42.874Z",
   "source": {
     "tokensCss": "tokens.css",
     "tokenContractReport": "source/token-contract.report.json"
@@ -822,7 +822,11 @@
       "--weight-regular": "450",
       "--weight-medium": "650",
       "--weight-strong": "850",
-      "--weight-display": "950"
+      "--weight-display": "950",
+      "--action-bg": "#b05a2b",
+      "--action-on": "#fffdf7",
+      "--action-hover": "#a65328",
+      "--action-active": "#984820"
     },
     "dark": {
       "--bg": "#111710",
@@ -894,7 +898,11 @@
       "--weight-regular": "450",
       "--weight-medium": "650",
       "--weight-strong": "850",
-      "--weight-display": "950"
+      "--weight-display": "950",
+      "--action-bg": "#45763d",
+      "--action-on": "#fffdf7",
+      "--action-hover": "#3d6b35",
+      "--action-active": "#345e2e"
     }
   }
 }

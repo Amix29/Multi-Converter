@@ -248,11 +248,11 @@
                                                                                                             .button:active{
                                                                                                               transform: translateY(1px)}
                                                                                                               .primary{
-                                                                                                                background: var(--accent);
+                                                                                                                background: var(--action-bg);
                                                                                                                 border-color: var(--accent);
-                                                                                                                color: var(--accent-on)}
+                                                                                                                color: var(--action-on)}
                                                                                                                 .primary:hover{
-                                                                                                                  background: var(--accent-hover)}
+                                                                                                                  background: var(--action-hover)}
                                                                                                                   .secondary{
                                                                                                                     background: var(--vlm-surface-pure)}
                                                                                                                     .quiet{

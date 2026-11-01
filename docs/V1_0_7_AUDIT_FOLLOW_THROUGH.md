@@ -592,3 +592,8 @@ and existing browser regression suite (12 passed, 10 planned project skips)
 also pass. The [adoption ledger](APP_DESIGN_SYSTEM_ADOPTION.md) records final
 checks and the Open Design synchronization. These checks use preview APIs;
 they do not renew installed-package or native-engine acceptance receipts.
+
+Primary colored buttons were then corrected to warm-white labels by maintainer
+request. Dedicated deeper action shades preserve at least 4.5:1 in both modes
+for rest, hover and press; original brand anchors stay unchanged. See the
+[button contrast receipt](audits/2026-11-01/button-label-contrast.json).

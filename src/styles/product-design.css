@@ -29,6 +29,7 @@ body { background-image:url('../../branding-kit/08_design-system/assets/paper-gr
 .file-ticket,.format-card,.rail-button,.update-settings-card,.engine-diagnostics { border-radius:18px; }
 .primary-button,.secondary-button,.ghost-button,.icon-button { transition:transform 160ms cubic-bezier(.19,1,.22,1),background-color 160ms ease,border-color 160ms ease,box-shadow 160ms ease; }
 .primary-button { font-weight:850; box-shadow:2px 3px 0 color-mix(in srgb,var(--accent) 28%,transparent); }
+.primary-button:active:not(:disabled) { background:var(--vlm-primary-pressed); }
 .primary-button:active:not(:disabled),.secondary-button:active:not(:disabled),.icon-button:active:not(:disabled) { transform:translateY(1px) scale(.98); }
 .primary-button:focus-visible,.secondary-button:focus-visible,.ghost-button:focus-visible { transform:none; }
 .format-card.is-selected { box-shadow:inset 3px 0 0 var(--accent-strong),var(--vlm-shadow-xs); }

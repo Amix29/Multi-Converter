@@ -52,3 +52,15 @@ not duplicated. No new animation dependency or remote font was introduced.
 Browser preview uses mock conversion APIs and does not prove native conversion
 or OCR acceptance. This source/UI checkpoint does not rebuild or republish an
 installed package. Existing platform release acceptance remains open.
+
+## 2026-11-01 — Warm-white button labels
+
+The maintainer rejected dark text on colored buttons. Primary actions now use
+warm-white `#fffdf7` labels, with dedicated deeper action backgrounds:
+light `#b05a2b`, dark `#45763d`. Hover and pressed shades remain darker.
+The reference anchors `#c86a34` and `#4d8445` are unchanged. Shared `--action-*`
+tokens drive both the converter and Open Design; secondary neutral buttons
+keep their readable dark/light foreground. The
+[six measured action pairs](audits/2026-11-01/button-label-contrast.json)
+exceed 4.5:1. Rendered state and
+native-package readback checks accompany this correction.

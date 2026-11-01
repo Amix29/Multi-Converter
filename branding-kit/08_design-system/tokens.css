@@ -15,6 +15,10 @@
   --border: #ded9cc;
   --border-soft: #e8e3d6;
   --accent: #c86a34;
+  --action-bg: #b05a2b;
+  --action-on: #fffdf7;
+  --action-hover: #a65328;
+  --action-active: #984820;
   --accent-on: #0b100a;
   --accent-hover: #d77b40;
   --accent-active: #e08c52;
@@ -84,10 +88,10 @@
   --vlm-accent-border: var(--accent-strong);
   --vlm-border: var(--border);
   --vlm-divider: var(--border-soft);
-  --vlm-primary-bg: var(--accent);
-  --vlm-primary-text: var(--accent-on);
-  --vlm-primary-hover: var(--accent-hover);
-  --vlm-primary-pressed: var(--accent-active);
+  --vlm-primary-bg: var(--action-bg);
+  --vlm-primary-text: var(--action-on);
+  --vlm-primary-hover: var(--action-hover);
+  --vlm-primary-pressed: var(--action-active);
   --vlm-focus: var(--focus);
   --vlm-font-sans: var(--font-body);
   --vlm-font-serif: var(--font-display);
@@ -115,6 +119,10 @@
   --border: #3d4b37;
   --border-soft: #2e3b29;
   --accent: #4d8445;
+  --action-bg: #45763d;
+  --action-on: #fffdf7;
+  --action-hover: #3d6b35;
+  --action-active: #345e2e;
   --accent-on: #000000;
   --accent-hover: #609854;
   --accent-active: #6ea460;

@@ -62,11 +62,12 @@ main>section:not(.hero) { padding-top: 64px; scroll-margin-top: 140px; }
 .paper-card { border-radius: 18px; background: var(--surface); box-shadow: 2px 3px 0 rgba(29,36,31,.055); }
 h3 { font-weight: 850; }
 .button { font-size: 14px; font-weight: 850; border-radius: 12px; box-shadow: 2px 3px 0 color-mix(in srgb,var(--fg),transparent 88%); }
-.button.primary { background: var(--accent); color: var(--accent-on); box-shadow: 3px 4px 0 color-mix(in srgb,var(--accent),transparent 72%); }
-.button.primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.button.primary { background: var(--action-bg); color: var(--action-on); box-shadow: 3px 4px 0 color-mix(in srgb,var(--accent),transparent 72%); }
+.button.primary:hover { background: var(--action-hover); transform: translateY(-1px); }
 .button:active { transform: translate(1px,2px); box-shadow: none; }
 .button.quiet { box-shadow: none; }
 .button:disabled { box-shadow: none; }
+.button.primary:active:not(:disabled) { background: var(--action-active); }
 .notice { background: var(--fg); color: var(--bg); border: 1px solid var(--control-border); }
 select, textarea { font-size: 14px; }
 .accent-card { background: var(--accent-soft); border-color: var(--border); }
