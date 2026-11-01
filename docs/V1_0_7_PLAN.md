@@ -5,6 +5,11 @@
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
 - Last documentation review: **2026-11-01**.
 - Release status: **not ready**.
+- Approved next architecture: desktop Svelte 5 + Tailwind 4 + shadcn-svelte,
+  retaining Rust/Tauri/TypeScript/Vite. The maintainer approved it on 2026-11-01;
+  [execution mandate and acceptance](MANDAT_MIGRATION_SVELTE.md). The present
+  checkpoint remains React; migration implementation has not started. The site
+  is outside this migration, and final-source/platform gates must be renewed.
 - Current application-source checkpoint: `853aa081`, integrated on `codex/test`;
   current maintenance branch: `codex/app-design-system`. Documentation-only
   commits may follow this functional checkpoint.

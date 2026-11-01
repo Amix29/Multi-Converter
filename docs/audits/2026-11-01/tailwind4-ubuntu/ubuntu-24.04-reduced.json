@@ -1,0 +1,1267 @@
+{
+  "runtime": "native WebKitGTK via Python GI (same engine family as Linux Tauri; not packaged app acceptance)",
+  "osRelease": "PRETTY_NAME=\"Ubuntu 24.04.3 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.3 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n",
+  "webkit": "2.52.6",
+  "reducedMotionRequested": true,
+  "elapsedSeconds": 7.03,
+  "scenarios": [
+    {
+      "theme": "light",
+      "width": 375,
+      "height": 840,
+      "reducedMotion": true,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "features": {
+        "property": true,
+        "colorMix": true,
+        "oklch": true,
+        "containerQueries": true,
+        "startingStyle": true
+      },
+      "checks": [
+        {
+          "name": "actual viewport",
+          "pass": true,
+          "actual": 375
+        },
+        {
+          "name": "no horizontal overflow",
+          "pass": true,
+          "actual": 375
+        },
+        {
+          "name": "padding spacing",
+          "pass": true,
+          "actual": "24px"
+        },
+        {
+          "name": "responsive grid",
+          "pass": true,
+          "actual": "327px"
+        },
+        {
+          "name": "theme action color",
+          "pass": true,
+          "actual": "rgb(176, 90, 43)"
+        },
+        {
+          "name": "warm-white text",
+          "pass": true,
+          "actual": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "color-mix opacity modifier",
+          "pass": true,
+          "actual": "oklab(0.562678 0.086898 0.092777 / 0.5)"
+        },
+        {
+          "name": "rounded corners",
+          "pass": true,
+          "actual": "16px"
+        },
+        {
+          "name": "border color opacity",
+          "pass": true,
+          "actual": "oklab(0.251499 -0.012374 0.005972 / 0.2)"
+        },
+        {
+          "name": "box shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px"
+        },
+        {
+          "name": "custom offset shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(29, 36, 31) 3px 3px 0px 0px"
+        },
+        {
+          "name": "gradient",
+          "pass": true,
+          "actual": "linear-gradient(to right, oklch(0.646 0.222 41.116001) 0%, oklch(0.627 0.194 149.214005) 100%)"
+        },
+        {
+          "name": "ring shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(176, 90, 43) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "name": "translate utility",
+          "pass": true,
+          "actual": "8px"
+        },
+        {
+          "name": "rotate utility",
+          "pass": true,
+          "actual": "3deg"
+        },
+        {
+          "name": "blur filter",
+          "pass": true,
+          "actual": "blur(8px)"
+        },
+        {
+          "name": "backdrop blur",
+          "pass": true,
+          "actual": "blur(12px)"
+        },
+        {
+          "name": "dark variant",
+          "pass": true,
+          "actual": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "container query",
+          "pass": true,
+          "actual": {
+            "width": 285,
+            "columns": "285px"
+          }
+        },
+        {
+          "name": "registered property noninheritance",
+          "pass": true,
+          "actual": "7px"
+        },
+        {
+          "name": "disabled state",
+          "pass": true,
+          "actual": "0.5"
+        },
+        {
+          "name": "focus-visible outline",
+          "pass": true,
+          "actual": {
+            "width": "2px",
+            "style": "solid"
+          }
+        },
+        {
+          "name": "reduced-motion variant",
+          "pass": true,
+          "actual": {
+            "property": "none",
+            "duration": "0.2s"
+          }
+        },
+        {
+          "name": "native modal open",
+          "pass": true,
+          "actual": true
+        },
+        {
+          "name": "native modal close",
+          "pass": true,
+          "actual": false
+        },
+        {
+          "name": "no JavaScript errors",
+          "pass": true,
+          "actual": []
+        }
+      ],
+      "passed": 26,
+      "failed": []
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "height": 840,
+      "reducedMotion": true,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "features": {
+        "property": true,
+        "colorMix": true,
+        "oklch": true,
+        "containerQueries": true,
+        "startingStyle": true
+      },
+      "checks": [
+        {
+          "name": "actual viewport",
+          "pass": true,
+          "actual": 768
+        },
+        {
+          "name": "no horizontal overflow",
+          "pass": true,
+          "actual": 768
+        },
+        {
+          "name": "padding spacing",
+          "pass": true,
+          "actual": "24px"
+        },
+        {
+          "name": "responsive grid",
+          "pass": true,
+          "actual": "352px 352px"
+        },
+        {
+          "name": "theme action color",
+          "pass": true,
+          "actual": "rgb(176, 90, 43)"
+        },
+        {
+          "name": "warm-white text",
+          "pass": true,
+          "actual": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "color-mix opacity modifier",
+          "pass": true,
+          "actual": "oklab(0.562678 0.086898 0.092777 / 0.5)"
+        },
+        {
+          "name": "rounded corners",
+          "pass": true,
+          "actual": "16px"
+        },
+        {
+          "name": "border color opacity",
+          "pass": true,
+          "actual": "oklab(0.251499 -0.012374 0.005972 / 0.2)"
+        },
+        {
+          "name": "box shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px"
+        },
+        {
+          "name": "custom offset shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(29, 36, 31) 3px 3px 0px 0px"
+        },
+        {
+          "name": "gradient",
+          "pass": true,
+          "actual": "linear-gradient(to right, oklch(0.646 0.222 41.116001) 0%, oklch(0.627 0.194 149.214005) 100%)"
+        },
+        {
+          "name": "ring shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(176, 90, 43) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "name": "translate utility",
+          "pass": true,
+          "actual": "8px"
+        },
+        {
+          "name": "rotate utility",
+          "pass": true,
+          "actual": "3deg"
+        },
+        {
+          "name": "blur filter",
+          "pass": true,
+          "actual": "blur(8px)"
+        },
+        {
+          "name": "backdrop blur",
+          "pass": true,
+          "actual": "blur(12px)"
+        },
+        {
+          "name": "dark variant",
+          "pass": true,
+          "actual": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "container query",
+          "pass": true,
+          "actual": {
+            "width": 310,
+            "columns": "151px 151px"
+          }
+        },
+        {
+          "name": "registered property noninheritance",
+          "pass": true,
+          "actual": "7px"
+        },
+        {
+          "name": "disabled state",
+          "pass": true,
+          "actual": "0.5"
+        },
+        {
+          "name": "focus-visible outline",
+          "pass": true,
+          "actual": {
+            "width": "2px",
+            "style": "solid"
+          }
+        },
+        {
+          "name": "reduced-motion variant",
+          "pass": true,
+          "actual": {
+            "property": "none",
+            "duration": "0.2s"
+          }
+        },
+        {
+          "name": "native modal open",
+          "pass": true,
+          "actual": true
+        },
+        {
+          "name": "native modal close",
+          "pass": true,
+          "actual": false
+        },
+        {
+          "name": "no JavaScript errors",
+          "pass": true,
+          "actual": []
+        }
+      ],
+      "passed": 26,
+      "failed": []
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "height": 840,
+      "reducedMotion": true,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "features": {
+        "property": true,
+        "colorMix": true,
+        "oklch": true,
+        "containerQueries": true,
+        "startingStyle": true
+      },
+      "checks": [
+        {
+          "name": "actual viewport",
+          "pass": true,
+          "actual": 1024
+        },
+        {
+          "name": "no horizontal overflow",
+          "pass": true,
+          "actual": 1024
+        },
+        {
+          "name": "padding spacing",
+          "pass": true,
+          "actual": "24px"
+        },
+        {
+          "name": "responsive grid",
+          "pass": true,
+          "actual": "480px 480px"
+        },
+        {
+          "name": "theme action color",
+          "pass": true,
+          "actual": "rgb(176, 90, 43)"
+        },
+        {
+          "name": "warm-white text",
+          "pass": true,
+          "actual": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "color-mix opacity modifier",
+          "pass": true,
+          "actual": "oklab(0.562678 0.086898 0.092777 / 0.5)"
+        },
+        {
+          "name": "rounded corners",
+          "pass": true,
+          "actual": "16px"
+        },
+        {
+          "name": "border color opacity",
+          "pass": true,
+          "actual": "oklab(0.251499 -0.012374 0.005972 / 0.2)"
+        },
+        {
+          "name": "box shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px"
+        },
+        {
+          "name": "custom offset shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(29, 36, 31) 3px 3px 0px 0px"
+        },
+        {
+          "name": "gradient",
+          "pass": true,
+          "actual": "linear-gradient(to right, oklch(0.646 0.222 41.116001) 0%, oklch(0.627 0.194 149.214005) 100%)"
+        },
+        {
+          "name": "ring shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(176, 90, 43) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "name": "translate utility",
+          "pass": true,
+          "actual": "8px"
+        },
+        {
+          "name": "rotate utility",
+          "pass": true,
+          "actual": "3deg"
+        },
+        {
+          "name": "blur filter",
+          "pass": true,
+          "actual": "blur(8px)"
+        },
+        {
+          "name": "backdrop blur",
+          "pass": true,
+          "actual": "blur(12px)"
+        },
+        {
+          "name": "dark variant",
+          "pass": true,
+          "actual": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "container query",
+          "pass": true,
+          "actual": {
+            "width": 438,
+            "columns": "215px 215px"
+          }
+        },
+        {
+          "name": "registered property noninheritance",
+          "pass": true,
+          "actual": "7px"
+        },
+        {
+          "name": "disabled state",
+          "pass": true,
+          "actual": "0.5"
+        },
+        {
+          "name": "focus-visible outline",
+          "pass": true,
+          "actual": {
+            "width": "2px",
+            "style": "solid"
+          }
+        },
+        {
+          "name": "reduced-motion variant",
+          "pass": true,
+          "actual": {
+            "property": "none",
+            "duration": "0.2s"
+          }
+        },
+        {
+          "name": "native modal open",
+          "pass": true,
+          "actual": true
+        },
+        {
+          "name": "native modal close",
+          "pass": true,
+          "actual": false
+        },
+        {
+          "name": "no JavaScript errors",
+          "pass": true,
+          "actual": []
+        }
+      ],
+      "passed": 26,
+      "failed": []
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "height": 840,
+      "reducedMotion": true,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "features": {
+        "property": true,
+        "colorMix": true,
+        "oklch": true,
+        "containerQueries": true,
+        "startingStyle": true
+      },
+      "checks": [
+        {
+          "name": "actual viewport",
+          "pass": true,
+          "actual": 1440
+        },
+        {
+          "name": "no horizontal overflow",
+          "pass": true,
+          "actual": 1440
+        },
+        {
+          "name": "padding spacing",
+          "pass": true,
+          "actual": "24px"
+        },
+        {
+          "name": "responsive grid",
+          "pass": true,
+          "actual": "480px 480px"
+        },
+        {
+          "name": "theme action color",
+          "pass": true,
+          "actual": "rgb(176, 90, 43)"
+        },
+        {
+          "name": "warm-white text",
+          "pass": true,
+          "actual": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "color-mix opacity modifier",
+          "pass": true,
+          "actual": "oklab(0.562678 0.086898 0.092777 / 0.5)"
+        },
+        {
+          "name": "rounded corners",
+          "pass": true,
+          "actual": "16px"
+        },
+        {
+          "name": "border color opacity",
+          "pass": true,
+          "actual": "oklab(0.251499 -0.012374 0.005972 / 0.2)"
+        },
+        {
+          "name": "box shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px"
+        },
+        {
+          "name": "custom offset shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(29, 36, 31) 3px 3px 0px 0px"
+        },
+        {
+          "name": "gradient",
+          "pass": true,
+          "actual": "linear-gradient(to right, oklch(0.646 0.222 41.116001) 0%, oklch(0.627 0.194 149.214005) 100%)"
+        },
+        {
+          "name": "ring shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(176, 90, 43) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "name": "translate utility",
+          "pass": true,
+          "actual": "8px"
+        },
+        {
+          "name": "rotate utility",
+          "pass": true,
+          "actual": "3deg"
+        },
+        {
+          "name": "blur filter",
+          "pass": true,
+          "actual": "blur(8px)"
+        },
+        {
+          "name": "backdrop blur",
+          "pass": true,
+          "actual": "blur(12px)"
+        },
+        {
+          "name": "dark variant",
+          "pass": true,
+          "actual": "rgb(0, 0, 0)"
+        },
+        {
+          "name": "container query",
+          "pass": true,
+          "actual": {
+            "width": 438,
+            "columns": "215px 215px"
+          }
+        },
+        {
+          "name": "registered property noninheritance",
+          "pass": true,
+          "actual": "7px"
+        },
+        {
+          "name": "disabled state",
+          "pass": true,
+          "actual": "0.5"
+        },
+        {
+          "name": "focus-visible outline",
+          "pass": true,
+          "actual": {
+            "width": "2px",
+            "style": "solid"
+          }
+        },
+        {
+          "name": "reduced-motion variant",
+          "pass": true,
+          "actual": {
+            "property": "none",
+            "duration": "0.2s"
+          }
+        },
+        {
+          "name": "native modal open",
+          "pass": true,
+          "actual": true
+        },
+        {
+          "name": "native modal close",
+          "pass": true,
+          "actual": false
+        },
+        {
+          "name": "no JavaScript errors",
+          "pass": true,
+          "actual": []
+        }
+      ],
+      "passed": 26,
+      "failed": []
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "height": 840,
+      "reducedMotion": true,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "features": {
+        "property": true,
+        "colorMix": true,
+        "oklch": true,
+        "containerQueries": true,
+        "startingStyle": true
+      },
+      "checks": [
+        {
+          "name": "actual viewport",
+          "pass": true,
+          "actual": 375
+        },
+        {
+          "name": "no horizontal overflow",
+          "pass": true,
+          "actual": 375
+        },
+        {
+          "name": "padding spacing",
+          "pass": true,
+          "actual": "24px"
+        },
+        {
+          "name": "responsive grid",
+          "pass": true,
+          "actual": "327px"
+        },
+        {
+          "name": "theme action color",
+          "pass": true,
+          "actual": "rgb(69, 118, 61)"
+        },
+        {
+          "name": "warm-white text",
+          "pass": true,
+          "actual": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "color-mix opacity modifier",
+          "pass": true,
+          "actual": "oklab(0.516184 -0.078598 0.063762 / 0.5)"
+        },
+        {
+          "name": "rounded corners",
+          "pass": true,
+          "actual": "16px"
+        },
+        {
+          "name": "border color opacity",
+          "pass": true,
+          "actual": "oklab(0.955361 -0.00788 0.011442 / 0.2)"
+        },
+        {
+          "name": "box shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px"
+        },
+        {
+          "name": "custom offset shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(29, 36, 31) 3px 3px 0px 0px"
+        },
+        {
+          "name": "gradient",
+          "pass": true,
+          "actual": "linear-gradient(to right, oklch(0.646 0.222 41.116001) 0%, oklch(0.627 0.194 149.214005) 100%)"
+        },
+        {
+          "name": "ring shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(69, 118, 61) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "name": "translate utility",
+          "pass": true,
+          "actual": "8px"
+        },
+        {
+          "name": "rotate utility",
+          "pass": true,
+          "actual": "3deg"
+        },
+        {
+          "name": "blur filter",
+          "pass": true,
+          "actual": "blur(8px)"
+        },
+        {
+          "name": "backdrop blur",
+          "pass": true,
+          "actual": "blur(12px)"
+        },
+        {
+          "name": "dark variant",
+          "pass": true,
+          "actual": "rgb(255, 255, 255)"
+        },
+        {
+          "name": "container query",
+          "pass": true,
+          "actual": {
+            "width": 285,
+            "columns": "285px"
+          }
+        },
+        {
+          "name": "registered property noninheritance",
+          "pass": true,
+          "actual": "7px"
+        },
+        {
+          "name": "disabled state",
+          "pass": true,
+          "actual": "0.5"
+        },
+        {
+          "name": "focus-visible outline",
+          "pass": true,
+          "actual": {
+            "width": "2px",
+            "style": "solid"
+          }
+        },
+        {
+          "name": "reduced-motion variant",
+          "pass": true,
+          "actual": {
+            "property": "none",
+            "duration": "0.2s"
+          }
+        },
+        {
+          "name": "native modal open",
+          "pass": true,
+          "actual": true
+        },
+        {
+          "name": "native modal close",
+          "pass": true,
+          "actual": false
+        },
+        {
+          "name": "no JavaScript errors",
+          "pass": true,
+          "actual": []
+        }
+      ],
+      "passed": 26,
+      "failed": []
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "height": 840,
+      "reducedMotion": true,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "features": {
+        "property": true,
+        "colorMix": true,
+        "oklch": true,
+        "containerQueries": true,
+        "startingStyle": true
+      },
+      "checks": [
+        {
+          "name": "actual viewport",
+          "pass": true,
+          "actual": 768
+        },
+        {
+          "name": "no horizontal overflow",
+          "pass": true,
+          "actual": 768
+        },
+        {
+          "name": "padding spacing",
+          "pass": true,
+          "actual": "24px"
+        },
+        {
+          "name": "responsive grid",
+          "pass": true,
+          "actual": "352px 352px"
+        },
+        {
+          "name": "theme action color",
+          "pass": true,
+          "actual": "rgb(69, 118, 61)"
+        },
+        {
+          "name": "warm-white text",
+          "pass": true,
+          "actual": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "color-mix opacity modifier",
+          "pass": true,
+          "actual": "oklab(0.516184 -0.078598 0.063762 / 0.5)"
+        },
+        {
+          "name": "rounded corners",
+          "pass": true,
+          "actual": "16px"
+        },
+        {
+          "name": "border color opacity",
+          "pass": true,
+          "actual": "oklab(0.955361 -0.00788 0.011442 / 0.2)"
+        },
+        {
+          "name": "box shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px"
+        },
+        {
+          "name": "custom offset shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(29, 36, 31) 3px 3px 0px 0px"
+        },
+        {
+          "name": "gradient",
+          "pass": true,
+          "actual": "linear-gradient(to right, oklch(0.646 0.222 41.116001) 0%, oklch(0.627 0.194 149.214005) 100%)"
+        },
+        {
+          "name": "ring shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(69, 118, 61) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "name": "translate utility",
+          "pass": true,
+          "actual": "8px"
+        },
+        {
+          "name": "rotate utility",
+          "pass": true,
+          "actual": "3deg"
+        },
+        {
+          "name": "blur filter",
+          "pass": true,
+          "actual": "blur(8px)"
+        },
+        {
+          "name": "backdrop blur",
+          "pass": true,
+          "actual": "blur(12px)"
+        },
+        {
+          "name": "dark variant",
+          "pass": true,
+          "actual": "rgb(255, 255, 255)"
+        },
+        {
+          "name": "container query",
+          "pass": true,
+          "actual": {
+            "width": 310,
+            "columns": "151px 151px"
+          }
+        },
+        {
+          "name": "registered property noninheritance",
+          "pass": true,
+          "actual": "7px"
+        },
+        {
+          "name": "disabled state",
+          "pass": true,
+          "actual": "0.5"
+        },
+        {
+          "name": "focus-visible outline",
+          "pass": true,
+          "actual": {
+            "width": "2px",
+            "style": "solid"
+          }
+        },
+        {
+          "name": "reduced-motion variant",
+          "pass": true,
+          "actual": {
+            "property": "none",
+            "duration": "0.2s"
+          }
+        },
+        {
+          "name": "native modal open",
+          "pass": true,
+          "actual": true
+        },
+        {
+          "name": "native modal close",
+          "pass": true,
+          "actual": false
+        },
+        {
+          "name": "no JavaScript errors",
+          "pass": true,
+          "actual": []
+        }
+      ],
+      "passed": 26,
+      "failed": []
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "height": 840,
+      "reducedMotion": true,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "features": {
+        "property": true,
+        "colorMix": true,
+        "oklch": true,
+        "containerQueries": true,
+        "startingStyle": true
+      },
+      "checks": [
+        {
+          "name": "actual viewport",
+          "pass": true,
+          "actual": 1024
+        },
+        {
+          "name": "no horizontal overflow",
+          "pass": true,
+          "actual": 1024
+        },
+        {
+          "name": "padding spacing",
+          "pass": true,
+          "actual": "24px"
+        },
+        {
+          "name": "responsive grid",
+          "pass": true,
+          "actual": "480px 480px"
+        },
+        {
+          "name": "theme action color",
+          "pass": true,
+          "actual": "rgb(69, 118, 61)"
+        },
+        {
+          "name": "warm-white text",
+          "pass": true,
+          "actual": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "color-mix opacity modifier",
+          "pass": true,
+          "actual": "oklab(0.516184 -0.078598 0.063762 / 0.5)"
+        },
+        {
+          "name": "rounded corners",
+          "pass": true,
+          "actual": "16px"
+        },
+        {
+          "name": "border color opacity",
+          "pass": true,
+          "actual": "oklab(0.955361 -0.00788 0.011442 / 0.2)"
+        },
+        {
+          "name": "box shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px"
+        },
+        {
+          "name": "custom offset shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(29, 36, 31) 3px 3px 0px 0px"
+        },
+        {
+          "name": "gradient",
+          "pass": true,
+          "actual": "linear-gradient(to right, oklch(0.646 0.222 41.116001) 0%, oklch(0.627 0.194 149.214005) 100%)"
+        },
+        {
+          "name": "ring shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(69, 118, 61) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "name": "translate utility",
+          "pass": true,
+          "actual": "8px"
+        },
+        {
+          "name": "rotate utility",
+          "pass": true,
+          "actual": "3deg"
+        },
+        {
+          "name": "blur filter",
+          "pass": true,
+          "actual": "blur(8px)"
+        },
+        {
+          "name": "backdrop blur",
+          "pass": true,
+          "actual": "blur(12px)"
+        },
+        {
+          "name": "dark variant",
+          "pass": true,
+          "actual": "rgb(255, 255, 255)"
+        },
+        {
+          "name": "container query",
+          "pass": true,
+          "actual": {
+            "width": 438,
+            "columns": "215px 215px"
+          }
+        },
+        {
+          "name": "registered property noninheritance",
+          "pass": true,
+          "actual": "7px"
+        },
+        {
+          "name": "disabled state",
+          "pass": true,
+          "actual": "0.5"
+        },
+        {
+          "name": "focus-visible outline",
+          "pass": true,
+          "actual": {
+            "width": "2px",
+            "style": "solid"
+          }
+        },
+        {
+          "name": "reduced-motion variant",
+          "pass": true,
+          "actual": {
+            "property": "none",
+            "duration": "0.2s"
+          }
+        },
+        {
+          "name": "native modal open",
+          "pass": true,
+          "actual": true
+        },
+        {
+          "name": "native modal close",
+          "pass": true,
+          "actual": false
+        },
+        {
+          "name": "no JavaScript errors",
+          "pass": true,
+          "actual": []
+        }
+      ],
+      "passed": 26,
+      "failed": []
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "height": 840,
+      "reducedMotion": true,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "features": {
+        "property": true,
+        "colorMix": true,
+        "oklch": true,
+        "containerQueries": true,
+        "startingStyle": true
+      },
+      "checks": [
+        {
+          "name": "actual viewport",
+          "pass": true,
+          "actual": 1440
+        },
+        {
+          "name": "no horizontal overflow",
+          "pass": true,
+          "actual": 1440
+        },
+        {
+          "name": "padding spacing",
+          "pass": true,
+          "actual": "24px"
+        },
+        {
+          "name": "responsive grid",
+          "pass": true,
+          "actual": "480px 480px"
+        },
+        {
+          "name": "theme action color",
+          "pass": true,
+          "actual": "rgb(69, 118, 61)"
+        },
+        {
+          "name": "warm-white text",
+          "pass": true,
+          "actual": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "color-mix opacity modifier",
+          "pass": true,
+          "actual": "oklab(0.516184 -0.078598 0.063762 / 0.5)"
+        },
+        {
+          "name": "rounded corners",
+          "pass": true,
+          "actual": "16px"
+        },
+        {
+          "name": "border color opacity",
+          "pass": true,
+          "actual": "oklab(0.955361 -0.00788 0.011442 / 0.2)"
+        },
+        {
+          "name": "box shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px"
+        },
+        {
+          "name": "custom offset shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(29, 36, 31) 3px 3px 0px 0px"
+        },
+        {
+          "name": "gradient",
+          "pass": true,
+          "actual": "linear-gradient(to right, oklch(0.646 0.222 41.116001) 0%, oklch(0.627 0.194 149.214005) 100%)"
+        },
+        {
+          "name": "ring shadow",
+          "pass": true,
+          "actual": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(69, 118, 61) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+        },
+        {
+          "name": "translate utility",
+          "pass": true,
+          "actual": "8px"
+        },
+        {
+          "name": "rotate utility",
+          "pass": true,
+          "actual": "3deg"
+        },
+        {
+          "name": "blur filter",
+          "pass": true,
+          "actual": "blur(8px)"
+        },
+        {
+          "name": "backdrop blur",
+          "pass": true,
+          "actual": "blur(12px)"
+        },
+        {
+          "name": "dark variant",
+          "pass": true,
+          "actual": "rgb(255, 255, 255)"
+        },
+        {
+          "name": "container query",
+          "pass": true,
+          "actual": {
+            "width": 438,
+            "columns": "215px 215px"
+          }
+        },
+        {
+          "name": "registered property noninheritance",
+          "pass": true,
+          "actual": "7px"
+        },
+        {
+          "name": "disabled state",
+          "pass": true,
+          "actual": "0.5"
+        },
+        {
+          "name": "focus-visible outline",
+          "pass": true,
+          "actual": {
+            "width": "2px",
+            "style": "solid"
+          }
+        },
+        {
+          "name": "reduced-motion variant",
+          "pass": true,
+          "actual": {
+            "property": "none",
+            "duration": "0.2s"
+          }
+        },
+        {
+          "name": "native modal open",
+          "pass": true,
+          "actual": true
+        },
+        {
+          "name": "native modal close",
+          "pass": true,
+          "actual": false
+        },
+        {
+          "name": "no JavaScript errors",
+          "pass": true,
+          "actual": []
+        }
+      ],
+      "passed": 26,
+      "failed": []
+    }
+  ],
+  "passed": 208,
+  "failed": 0
+}

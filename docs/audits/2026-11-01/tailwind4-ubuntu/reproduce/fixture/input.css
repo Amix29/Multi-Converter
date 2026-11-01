@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@source "./index.html";
+@custom-variant dark (&:where(.dark, .dark *));
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-action: var(--action);
+  --color-panel: var(--panel);
+}
+:root { --paper: #f5f3ec; --ink: #1d241f; --action: #b05a2b; --panel: #fffdf7; color-scheme: light; }
+:root.dark { --paper: #111710; --ink: #eef2e8; --action: #45763d; --panel: #1b2419; color-scheme: dark; }
+body { background-image: linear-gradient(#8888880b 1px,transparent 1px),linear-gradient(90deg,#8888880b 1px,transparent 1px); background-size: 24px 24px; }
+@property --probe-length { syntax: "<length>"; inherits: false; initial-value: 7px; }
+#property-child { margin-left: var(--probe-length); }

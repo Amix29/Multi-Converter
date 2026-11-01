@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-01",
+  "scope": "isolated Tailwind 4 feasibility, desktop only; no Svelte/shadcn migration or application acceptance",
+  "build": {
+    "node": "v24.16.0",
+    "tailwind": "4.3.3",
+    "cli": "4.3.3"
+  },
+  "runs": [
+    {
+      "name": "tauri-ubuntu-24.04",
+      "webkit": "2.52.6 (host-linked)",
+      "scenarios": 8,
+      "passed": 208,
+      "failed": 0,
+      "reducedMotion": [
+        false
+      ],
+      "snapshots": 8
+    },
+    {
+      "name": "ubuntu-22.04",
+      "webkit": "2.50.4",
+      "scenarios": 8,
+      "passed": 208,
+      "failed": 0,
+      "reducedMotion": [
+        false
+      ],
+      "snapshots": 8
+    },
+    {
+      "name": "ubuntu-22.04-reduced",
+      "webkit": "2.50.4",
+      "scenarios": 8,
+      "passed": 208,
+      "failed": 0,
+      "reducedMotion": [
+        true
+      ],
+      "snapshots": 8
+    },
+    {
+      "name": "ubuntu-24.04",
+      "webkit": "2.52.6",
+      "scenarios": 8,
+      "passed": 208,
+      "failed": 0,
+      "reducedMotion": [
+        false
+      ],
+      "snapshots": 8
+    },
+    {
+      "name": "ubuntu-24.04-reduced",
+      "webkit": "2.52.6",
+      "scenarios": 8,
+      "passed": 208,
+      "failed": 0,
+      "reducedMotion": [
+        true
+      ],
+      "snapshots": 8
+    }
+  ],
+  "sources": {
+    "tailwind": "https://tailwindcss.com/docs/compatibility",
+    "ubuntuBase": "https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/"
+  },
+  "ubuntuBaseSha256": "242cd8898b33ea806ef5f13b1076ed7c76f9f989d18384452f7166692438ff1a",
+  "totals": {
+    "scenarios": 40,
+    "passed": 1040,
+    "failed": 0
+  },
+  "files": {
+    "reproduce/build-tauri.sh": "a9fdc8503f208bf5dfcc91de5bd719f2f3aa48ae1d05be65cc98ac389cabdfb3",
+    "reproduce/cleanup-jammy.py": "8e98b22c1cebd58504a182238304abee050b28c557c1c40fd137fcb24533bda3",
+    "reproduce/fixture/index.html": "05c102b3a72ad7a60824a231c792514072a6ef5a3f026044b222c54a933fb78d",
+    "reproduce/fixture/input.css": "069e5159a860df1ae76e9b46bd44de21343dcbe85ba8440578cae643ec1b141b",
+    "reproduce/fixture/output.css": "ada41d63f066bce242c336968ab265839bc22fe091e60deddb244b3de259d1f3",
+    "reproduce/fixture/package-lock.json": "a6fa61979a05dac80af787fabd6595761c92497f523a12b986b9da6df692f0e5",
+    "reproduce/fixture/package.json": "bcb5a6592d8259dbd834143cf2822e06d9131fc01620ccf7751155be1d3b8790",
+    "reproduce/fixture/probe.js": "2397b41053fde89ad79f3cf668631c6db423a49db1cf400805c90b707d8a4743",
+    "reproduce/prepare.sh": "d45f7d622a341ec5ec3f446b0bb623ae8bda395db1a9930e37c44a47ada65881",
+    "reproduce/README.md": "7ed8aa2545992d6be7e5c4cfa209a616419100188a14c796b9ebf69490ef10ff",
+    "reproduce/run-jammy.sh": "010dd2e981678e895f3172ebdaea2d4c9304ceb57ee44c2c012475505088584b",
+    "reproduce/run-noble.sh": "e80be914b162b33836a3b9d4899ccf4c39005480896c66ee6b482bcb992a14ce",
+    "reproduce/run-tauri.py": "0a23b6b2b54766bf391c2e22e7093c5edb72fcab44bdbb564f470abc116c46dc",
+    "reproduce/run-webkit.py": "9aef765f55cb7904a27b0faa3653e88fe24cfae2aedb66ca2842d22e8e6361f3",
+    "reproduce/setup-jammy.sh": "616f0ad17665739bc2a8f5cdedbcb6ed90f77788f93fdd9e2e8805b21eb0edcf",
+    "reproduce/tauri/build.rs": "cd0ac1f2fb0555a110a0298f504469b11502fe59744a2c7e6b1b2aa4aac425df",
+    "reproduce/tauri/Cargo.lock": "c9b6fd924e1ccfae609e20f6e2019198c4fb805f0958cfc0b1efb2d520470692",
+    "reproduce/tauri/Cargo.toml": "8f18d91d982fedd03d7acebaea2edc3c0f6414adb452d078145c90e505b3234b",
+    "reproduce/tauri/src/main.rs": "07d1488b39dcdca509fc379f7fceef994c6f99fa8b2fe08fae4503576dcd297e",
+    "reproduce/tauri/src/runner.js": "25e1e0bdc15718884d99960b32164bb6d1cff1427b68e327f29a94c0f7b5f9fc",
+    "reproduce/tauri/tauri.conf.json": "975d953fa7d198feb81557b998c8845b8faaef6c2386297c6f124648b3dd79f5",
+    "tauri-ubuntu-24.04-dark-375.png": "5242b636475b131a3a7bf02637d616d73250cc31167c9632fc1575b874c157b4",
+    "tauri-ubuntu-24.04-light-1440.png": "ff75a5faf344490eb23ca2a5dd882fb759ca3ddc6d45106bdb66bd099e18ffc0",
+    "tauri-ubuntu-24.04.json": "8afee52452322ba042691e01af0924f9b24c41bc55d7f48664ea0f101bd52349",
+    "ubuntu-22.04-dark-1440.png": "ad66d65f6d38e15de2f0e66b6071ccba349dd8625f32e736d118b09cb7779294",
+    "ubuntu-22.04-light-375.png": "8b279fce88ee6ca0d58896d183cff6da9da7f779df8a1f681615dedb1a33bfb7",
+    "ubuntu-22.04-reduced.json": "65512236451a0788b79ac6aef6fd83834dbeff577201cea81908cfc39e39abe6",
+    "ubuntu-22.04.json": "0520e1af0e4ad9b744e3daba0e41b78e244099bf8b867b6f7987de916ac21b36",
+    "ubuntu-24.04-reduced.json": "8f03daa4248028364c21a85f5e577d8e7ce87c8c55a7e62f2e31a7d7805ff267",
+    "ubuntu-24.04.json": "9985465323f2f1e77b0df68fe9632d31088a7e815425a8e11e786b3798c9d138"
+  }
+}

@@ -1,5 +1,40 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-01 — Desktop Svelte architecture approved; mandate prepared
+
+After the isolated Ubuntu/Tailwind tests, the maintainer approved the proposed
+Rust/Tauri/Svelte architecture and requested an execution mandate. The
+[mandate](MANDAT_MIGRATION_SVELTE.md) covers desktop only, design-system
+consistency improvements, parity, staged implementation, native acceptance and
+rollback. The supplied ZIP matches 34 repository design-system files; its
+extra instructions file is not imported as agent policy. The
+[source-review receipt](audits/2026-11-01/svelte-mandate-design-review.json)
+distinguishes verified inconsistencies from integration risks.
+
+This checkpoint changes documentation only. No Svelte migration, application
+test, native build or new package acceptance was performed. React remains the
+current implementation at documented functional source `853aa081`, and the
+overall V1.0.7 release gate remains blocked. Existing Tailwind evidence retains
+its exact runtime limits.
+
+Documentation checks passed: 87 local links across seven documents, 15 referenced
+existing npm scripts, all eight lots and twelve acceptance rows, archive/source
+identity and the seven source-review findings. `git diff --check` passed.
+
+## 2026-11-01 — Isolated Tailwind 4 Ubuntu feasibility
+
+The maintainer requested Ubuntu compatibility tests before deciding the desktop
+Svelte migration; the site is outside scope. Tailwind CSS/CLI 4.3.3 passes 26
+criteria across 40 scenarios: 1,040 assertions, zero failures. Real WebKitGTK
+2.50.4 in an isolated Ubuntu 22.04 userspace and 2.52.6 on Ubuntu 24.04 pass both
+themes, four widths and normal/reduced motion. An actual minimal Tauri 2.12.5
+window on Ubuntu 24.04 also passes. See [the report and proof limits](TAILWIND_4_UBUNTU_VALIDATION.md).
+
+This is isolated CSS feasibility evidence. It does not migrate the application,
+validate Svelte/shadcn components or an AppImage, establish old-WebKit support,
+or renew conversion/OCR and installed acceptance. The current application-source
+checkpoint remains `853aa081`; **overall release gate remains blocked**.
+
 ## 2026-11-01 — Current UI source and evidence boundaries
 
 Application-source checkpoint `853aa081` is locally integrated on `codex/test`;

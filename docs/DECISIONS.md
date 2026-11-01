@@ -1,5 +1,27 @@
 # Multi-Converter Decisions
 
+## 2026-11-01 — Desktop Svelte migration architecture approved
+
+**Decision:** the maintainer explicitly approved Rust + Tauri 2 + Svelte 5 +
+TypeScript + Vite, with Tailwind CSS 4, shadcn-svelte/Bits UI and the existing
+brand system. The migration concerns the desktop application only; `site/`
+keeps its current Next.js/React stack. See the French
+[execution mandate](MANDAT_MIGRATION_SVELTE.md) for scope, lots and acceptance.
+
+**Consequences:** this decision authorizes the desktop framework change and
+bounded improvements to design-system consistency. It supersedes the earlier
+React-retention decision for that migration, while retaining the native backend,
+local PP-OCRv6_medium runtime, data protection and platform boundaries. Exact
+compatible dependency versions are pinned during implementation. Existing
+stack rules describe the current implementation and must be reconciled when
+execution begins; they do not negate this explicit maintainer approval.
+
+**Current evidence:** Tailwind 4.3.3 passed isolated Ubuntu compatibility tests.
+Those tests do not validate Svelte/shadcn integration or a migrated application.
+This turn prepares the mandate; implementation has not started. Source remains
+React at documented functional checkpoint `853aa081`. No release, push or
+external design-library publication is authorized by this decision.
+
 ## 2026-11-01 — Approved product identity and readable action labels
 
 **Decision:** adopt the maintainer's original Multi-Converter graph-paper

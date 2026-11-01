@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Multi-Converter — Tailwind 4 Linux probe</title><link rel="stylesheet" href="output.css"></head>
+<body class="bg-paper text-ink font-sans antialiased">
+<main id="main" class="mx-auto max-w-5xl p-6">
+  <header class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-ink/20 bg-panel/80 p-4 backdrop-blur-md">
+    <div><p class="text-xs font-bold uppercase tracking-widest">Test de compatibilité Linux</p><h1 class="text-2xl font-black tracking-tight">Multi-Converter</h1></div>
+    <span class="rounded-full bg-action px-3 py-1 text-sm font-bold text-[#fffdf7]">Tailwind CSS 4</span>
+  </header>
+  <div id="layout" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <section id="card" class="rounded-2xl border border-ink/20 bg-panel p-5 shadow-md">
+      <h2 class="mb-4 text-lg font-extrabold">Fichiers → Formats → Conversion</h2>
+      <p class="mb-4 text-sm opacity-80">Échantillon CSS isolé. Aucune conversion réelle.</p>
+      <label class="mb-2 block text-sm font-bold" for="format">Format de sortie</label>
+      <select id="format" class="mb-4 w-full rounded-xl border border-ink/40 bg-paper p-3 text-ink"><option>Document PDF</option><option>Texte UTF-8</option></select>
+      <button id="action" class="rounded-xl bg-action px-4 py-3 font-bold text-[#fffdf7] shadow-[3px_3px_0_0_#1d241f] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-action">Préparer la conversion</button>
+      <div id="opacity" class="mt-5 h-4 rounded-full bg-action/50"></div>
+      <div id="gradient" class="mt-4 h-10 rounded-xl bg-linear-to-r from-orange-600 to-green-600"></div>
+      <div id="ring" class="mt-4 rounded-lg bg-paper p-3 ring-2 ring-action">Anneau, bordure et ombre</div>
+    </section>
+    <section class="rounded-2xl border border-ink/20 bg-panel p-5">
+      <h2 class="mb-4 text-lg font-extrabold">Couleurs, grille et conteneurs</h2>
+      <div id="dark-variant" class="mb-4 rounded-xl bg-orange-100 p-3 text-black dark:bg-green-900 dark:text-white">Thème clair / sombre</div>
+      <div id="container" class="@container"><div id="container-grid" class="grid grid-cols-1 gap-2 @min-[300px]:grid-cols-2"><div class="rounded-lg bg-paper p-3">PDF et documents</div><div class="rounded-lg bg-paper p-3">Images et OCR</div></div></div>
+      <div class="mt-6 flex gap-8"><div id="transform" class="size-8 translate-x-2 rotate-3 bg-action"></div><div id="blur" class="size-8 bg-action blur-sm"></div></div>
+      <div id="property-parent" style="--probe-length:31px"><div id="property-child" class="mt-5 text-sm">Propriété CSS enregistrée</div></div>
+      <div id="reduced" class="mt-4 motion-reduce:transition-none transition-opacity duration-200">Transitions adaptées au mouvement réduit</div>
+    </section>
+  </div>
+  <div class="mt-5 flex gap-3"><button id="open" class="rounded-xl border border-ink/40 bg-panel px-4 py-2 font-bold">Ouvrir le dialogue</button><button id="disabled" disabled class="rounded-xl bg-action px-4 py-2 text-white disabled:opacity-50">Action indisponible</button></div>
+  <dialog id="dialog" class="m-auto rounded-2xl border border-ink/20 bg-panel p-6 text-ink backdrop:bg-black/40"><h2 class="mb-4 font-bold">Extraction de texte</h2><p class="mb-4">Vérification du rendu natif Linux.</p><button id="close" class="rounded-xl bg-action px-4 py-2 text-[#fffdf7]">Fermer</button></dialog>
+</main><script src="probe.js"></script></body></html>

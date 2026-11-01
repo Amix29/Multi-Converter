@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-01",
+  "runtime": "Chromium compiled mock preview, fresh context per run; not native startup/RSS/OCR proof",
+  "measurements": [
+    {
+      "run": 0,
+      "startupMs": 240.06860000000006,
+      "settingsMs": 408.34849999999983,
+      "formatSelectionMs": 68.4668999999999,
+      "chromiumHeapBytes": 10000000,
+      "errors": []
+    },
+    {
+      "run": 1,
+      "startupMs": 144.23079999999982,
+      "settingsMs": 382.5821000000001,
+      "formatSelectionMs": 63.408300000000054,
+      "chromiumHeapBytes": 10000000,
+      "errors": []
+    },
+    {
+      "run": 2,
+      "startupMs": 137.25509999999986,
+      "settingsMs": 381.39829999999984,
+      "formatSelectionMs": 73.43499999999995,
+      "chromiumHeapBytes": 10000000,
+      "errors": []
+    },
+    {
+      "run": 3,
+      "startupMs": 158.40679999999975,
+      "settingsMs": 374.1166000000003,
+      "formatSelectionMs": 58.58520000000044,
+      "chromiumHeapBytes": 10000000,
+      "errors": []
+    },
+    {
+      "run": 4,
+      "startupMs": 150.4946,
+      "settingsMs": 387.85949999999957,
+      "formatSelectionMs": 68.50920000000042,
+      "chromiumHeapBytes": 10000000,
+      "errors": []
+    },
+    {
+      "run": 5,
+      "startupMs": 134.70960000000014,
+      "settingsMs": 393.83370000000014,
+      "formatSelectionMs": 64.95979999999963,
+      "chromiumHeapBytes": 10000000,
+      "errors": []
+    },
+    {
+      "run": 6,
+      "startupMs": 139.15080000000034,
+      "settingsMs": 390.64549999999963,
+      "formatSelectionMs": 64.19440000000031,
+      "chromiumHeapBytes": 10000000,
+      "errors": []
+    }
+  ],
+  "median": {
+    "startupMs": 144.23079999999982,
+    "settingsMs": 387.85949999999957,
+    "formatSelectionMs": 64.95979999999963,
+    "chromiumHeapBytes": 10000000
+  }
+}

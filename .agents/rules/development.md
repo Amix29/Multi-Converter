@@ -2,7 +2,9 @@
 
 Multi-Converter owns its desktop application, marketing site and branding kit.
 
-- Keep desktop React/TypeScript/Vite/Tauri 2/Rust, the existing static Next.js
+- Use desktop Svelte 5/TypeScript/Vite/Tauri 2/Rust with Tailwind 4 and
+  shadcn-svelte/Bits UI, as approved in `docs/MANDAT_MIGRATION_SVELTE.md`.
+  Preserve the existing static Next.js
   site and the exact Node/npm versions declared in the repository. Record
   architectural or dependency decisions in `docs/DECISIONS.md`; moving the
   repository does not authorize a framework or package-manager migration.

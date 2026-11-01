@@ -1,0 +1,386 @@
+{
+  "date": "2026-11-01",
+  "scope": "source-level design-system review for the execution mandate; no new visual or WCAG audit, no application migration",
+  "maintainerDecision": "desktop architecture approved; site excluded; this turn prepares the mandate",
+  "branch": "codex/test",
+  "head": "51e63aef060f27dc36e97cf773ddd13abe497202",
+  "archive": {
+    "name": "Multi-Converter.zip",
+    "bytes": 200180,
+    "sha256": "ec40ef91345d4150d8f18126564c300c29d075e02c9bbc8815386954e5e201fd",
+    "files": 35,
+    "matchingRepositoryFiles": 34,
+    "archiveOnly": [
+      "SKILLS.md"
+    ],
+    "instructionHandling": "archive content treated as reference data; no attached instructions installed or executed",
+    "entries": [
+      {
+        "path": "assets/catalogue-brand.css",
+        "bytes": 6027,
+        "sha256": "9079ddff2424c651c45ae29aa59f4d1cbf306fa1312b6710648311b1bb7f228f",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/catalogue-motion.js",
+        "bytes": 1275,
+        "sha256": "ee380346ec7e47b7f3c144d430f203119e81b63489ac483f8fac85dd6aa0f466",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/catalogue-polish.css",
+        "bytes": 3071,
+        "sha256": "27caa6fad404164c7ba74926ce3bac05226ab54942d5dd436ac213318c096be1",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/catalogue-product.css",
+        "bytes": 9739,
+        "sha256": "32f55a34f99359bacdfe4259f90d3039f8bdfc6d7666478530623ee829313472",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/catalogue-responsive.css",
+        "bytes": 9925,
+        "sha256": "6480c70f10e13f6c5fcd6b910508962307998bfef0ead7a6e47d010036acd294",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/catalogue-selects.js",
+        "bytes": 5320,
+        "sha256": "76a126087f4dcacaa9d2b35cb4ce16fe0e955df946dd35528373b20a55dc43dd",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/catalogue.css",
+        "bytes": 51296,
+        "sha256": "641f10656fe44a693173bd203cfb5d54ed264f73d448446c9ba25e753758854b",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/catalogue.js",
+        "bytes": 5834,
+        "sha256": "859427b76b4b4882a413553da9787a8228ee6e4482dc535458de7b257ca57b01",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/controls.css",
+        "bytes": 3128,
+        "sha256": "b810a9b87f31e056fcdf4112a20d458740fe8c4a4767ac3c85981ea9777eba1c",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/logo-alternative-green.svg",
+        "bytes": 611,
+        "sha256": "d2948aba4ed1d96c4e1b02e041b9ba92643bddb7e5275c5e87878ee1c8381bcc",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/logo-dark.svg",
+        "bytes": 601,
+        "sha256": "8fdc37e9521c1aa1207acffc64014b0ad165e34f61568306244c5e37d5d28865",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/logo.svg",
+        "bytes": 601,
+        "sha256": "c651e54b30035692632cf6d10f9ad68561bb3620b27fdc4dbaa376042b4ee446",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/paper-grid-dark.svg",
+        "bytes": 1532,
+        "sha256": "f15cbc644677cc87254cfc90144b83920306770324d8366591dda64f7aa9e6b9",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "assets/paper-grid-light.svg",
+        "bytes": 1533,
+        "sha256": "b22c320c241e99e7a793dab3a49c25667da04cc7e0314b78a19782dbbff55ca6",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "components.html",
+        "bytes": 15567,
+        "sha256": "1187c70d724093d651cf560a8897a1610e9b7b2711b2cb3a55307ad477c880f0",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "components.manifest.json",
+        "bytes": 9118,
+        "sha256": "d92dbb9ccbdfd9e0d1c4cb053712577068008cfbd988801d7a173c533a811d9c",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "design-tokens.json",
+        "bytes": 27606,
+        "sha256": "35a69a3f8d3111a1a70f3a690aa99bf30f352467f1709c539c57f62efce7941b",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "DESIGN.md",
+        "bytes": 11106,
+        "sha256": "3a246aff7f7d2ac387473b48eb8ca336c572154a2fa81bed745999dc67e2a4f5",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "manifest.json",
+        "bytes": 1869,
+        "sha256": "579197b868f02f0e3051d7042a9dba90f2c6f033b84b75a2cfa49bce8d99ac8d",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "preview/app.html",
+        "bytes": 123389,
+        "sha256": "86a30f4cfdaef1b65a3b19081b4f92fde24bc6e8302da401db1f4b0fe6ff64f5",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "preview/colors.html",
+        "bytes": 123545,
+        "sha256": "c8e0b08f8f6fc5bc05b603a00af91b10c264bee4ed67d48c65b4859d565bea88",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "preview/components-buttons.html",
+        "bytes": 123603,
+        "sha256": "dd27d819bfb284eefa6ee0e6eeff5a98c82f05f7335ea15347b5d1726d7740d3",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "preview/components-inputs.html",
+        "bytes": 123667,
+        "sha256": "65821a7ace840aad4fdfc25f8f6c88dc3ac057417213f950ad10e06ee1cfeab3",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "preview/spacing.html",
+        "bytes": 123543,
+        "sha256": "afa9ef38d10e25c86a6915c9651a2c47e267b99968eebea792074de8429e8218",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "preview/typography.html",
+        "bytes": 123536,
+        "sha256": "92787cb6a216ca87849b26124d48ca83bff59b796fcc4a3150fa3445a5577fc3",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "source/evidence.md",
+        "bytes": 558,
+        "sha256": "b8dc51a5e3734a76fbb35d049348827f822ef3d48a9b0870ea0f14fb3f2493e0",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "source/provenance.json",
+        "bytes": 563,
+        "sha256": "322776f5196830988c7cceb42e389a07b60f07870940d4a84a3149a679c740b1",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "source/scanned-files.json",
+        "bytes": 4494,
+        "sha256": "29fb5c225603f0dd5ab46bb45772d12b4df11655f3df07d18b2cacf66bfcf45b",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "source/theme-tokens.json",
+        "bytes": 6488,
+        "sha256": "7700659b07b85bb5b68f30bdda8e8efa57216e345d38c3142805ecbe0319874b",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "source/token-contract.report.json",
+        "bytes": 20877,
+        "sha256": "4b601fc4cac1f2bfa450b039c3eed342000a034563a273f1f9390b617be8ecb3",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "system/kit.dark.html",
+        "bytes": 123440,
+        "sha256": "ccce86ad0e18eb2db390c372475388524383e538b95f2ee8840e63cf8bc40e26",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "system/kit.html",
+        "bytes": 123389,
+        "sha256": "86a30f4cfdaef1b65a3b19081b4f92fde24bc6e8302da401db1f4b0fe6ff64f5",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "tokens.css",
+        "bytes": 4213,
+        "sha256": "a7ec0754df668f5f5069064a57c1b59979f96980961eda3e4b139d99aee4f264",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "USAGE.md",
+        "bytes": 2329,
+        "sha256": "950531bc1a67808301687ebfbffceba579ef8d48d5cd63ec42a27b5efa4da662",
+        "repositoryMatch": true,
+        "archiveOnly": false
+      },
+      {
+        "path": "SKILLS.md",
+        "bytes": 1876,
+        "sha256": "b5244eb0a8a31ae6967b29b6a0b4064fdd710773552512c0d018e0c026ecbc98",
+        "repositoryMatch": false,
+        "archiveOnly": true
+      }
+    ]
+  },
+  "tokenCoverage": {
+    "cssUniqueNames": 104,
+    "mainTokenIndexCount": 56,
+    "actionsInCss": [
+      "--action-active",
+      "--action-bg",
+      "--action-hover",
+      "--action-on"
+    ],
+    "actionsInMainTokenIndex": [],
+    "actionsInBothThemeMaps": true
+  },
+  "findings": [
+    {
+      "id": "DS-01",
+      "kind": "verified documentation inconsistency",
+      "evidence": [
+        {
+          "path": "branding-kit/08_design-system/DESIGN.md",
+          "line": 123,
+          "match": "libellé sombre contrasté"
+        },
+        {
+          "path": "branding-kit/08_design-system/USAGE.md",
+          "line": 14,
+          "match": "Le texte de bouton est sombre"
+        }
+      ],
+      "implementationStatus": "correction required by mandate; not applied in this planning turn"
+    },
+    {
+      "id": "DS-02",
+      "kind": "verified index coverage gap; theme values remain present",
+      "evidence": [
+        {
+          "path": "branding-kit/08_design-system/design-tokens.json",
+          "line": 11,
+          "match": "\"totalTokens\": 56"
+        },
+        {
+          "path": "branding-kit/08_design-system/source/theme-tokens.json",
+          "line": 73,
+          "match": "\"--action-bg\""
+        }
+      ],
+      "implementationStatus": "explicit additive contract/mapping required; preserve schema compatibility"
+    },
+    {
+      "id": "DS-03",
+      "kind": "integration risk, not a demonstrated Tailwind rendering defect",
+      "evidence": [
+        {
+          "path": "branding-kit/08_design-system/tokens.css",
+          "line": 55,
+          "match": "--text-lg:"
+        }
+      ],
+      "implementationStatus": "bridge and cascade policy required"
+    },
+    {
+      "id": "DS-04",
+      "kind": "verified different density scales",
+      "evidence": [
+        {
+          "path": "branding-kit/08_design-system/assets/controls.css",
+          "line": 6,
+          "match": "min-height:48px"
+        },
+        {
+          "path": "src/styles/design-system.css",
+          "line": 67,
+          "match": "--vlm-control-compact:"
+        }
+      ],
+      "implementationStatus": "purposeful variants required; existing size difference alone is not an accessibility violation"
+    },
+    {
+      "id": "DS-05",
+      "kind": "verified global reduced-motion override",
+      "evidence": [
+        {
+          "path": "src/styles/design-system.css",
+          "line": 132,
+          "match": "animation-duration:1ms"
+        }
+      ],
+      "implementationStatus": "interaction-specific reduced-motion behavior required"
+    },
+    {
+      "id": "DS-06",
+      "kind": "verified different motion values",
+      "evidence": [
+        {
+          "path": "branding-kit/08_design-system/tokens.css",
+          "line": 45,
+          "match": "--motion-fast: 140ms"
+        },
+        {
+          "path": "src/styles/design-system.css",
+          "line": 73,
+          "match": "--vlm-motion-fast: 150ms"
+        }
+      ],
+      "implementationStatus": "named motion roles and justified mapping required"
+    },
+    {
+      "id": "DS-07",
+      "kind": "migration risk from framework-specific custom interaction",
+      "evidence": [
+        {
+          "path": "src/app/components/ChoiceSelect.tsx",
+          "line": 58,
+          "match": "function onKeyDown"
+        }
+      ],
+      "implementationStatus": "preserve user contract with primitive integration and native keyboard checks"
+    }
+  ],
+  "changesPerformed": "mandate and documentation alignment only; no design-token or application-code correction applied",
+  "frameworkMigrationStarted": false,
+  "newApplicationTestsExecuted": false
+}

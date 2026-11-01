@@ -25,6 +25,14 @@ application does not load the marketing site at runtime.
 
 ## Technical Architecture
 
+The table below describes the **current React implementation**. On 2026-11-01
+the maintainer approved a **desktop-only Svelte 5 migration**, retaining Rust,
+Tauri 2, TypeScript and Vite and adopting Tailwind 4 + shadcn-svelte/Bits UI.
+The [execution mandate](MANDAT_MIGRATION_SVELTE.md) defines the target boundaries,
+design-system improvements and acceptance. Implementation has not started;
+the marketing site keeps its existing stack. Do not read this target decision
+as current Svelte runtime or package-validation evidence.
+
 | Layer | Responsibility |
 | --- | --- |
 | React + TypeScript | Converter, OCR and user-facing state |

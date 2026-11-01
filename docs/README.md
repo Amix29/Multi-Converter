@@ -7,6 +7,9 @@
 - V1.0.7 targets: Windows x64, Apple Silicon macOS 15+ and Linux x64
 - Repository surfaces: desktop application, static marketing site and branding kit
 - Development release: **V1.0.7**
+- Approved next desktop architecture: Svelte 5 + Tailwind 4 + shadcn-svelte,
+  with the existing Rust/Tauri backend. [Execution mandate](MANDAT_MIGRATION_SVELTE.md)
+  prepared; implementation has not started. The site is outside scope.
 - Functional UI source checkpoint: **`853aa081`**, integrated locally on **`codex/test`**; maintenance branch: **`codex/app-design-system`**. Later documentation-only commits do not change this application-source checkpoint. V1.0.7 remains unpublished and its release gate is open.
 - Current interface: approved light/dark design, system appearance preference,
   custom selectors, micro-interactions, scroll-dependent glass navigation and
@@ -28,6 +31,7 @@ no product fixes were applied by this audit. Raw evidence is in
 
 | Document | Status | Purpose |
 | --- | --- | --- |
+| [`MANDAT_MIGRATION_SVELTE.md`](MANDAT_MIGRATION_SVELTE.md) | Architecture approved, ready to execute | Desktop-only migration, design-system corrections, phased work and measurable acceptance |
 | [`APP_DESIGN_SYSTEM_ADOPTION.md`](APP_DESIGN_SYSTEM_ADOPTION.md) | Active UI checkpoint | Both runtime themes, selectors, motion, glass navigation and validation boundaries |
 | [`V1_0_7_APPROVED_IMPLEMENTATION.md`](V1_0_7_APPROVED_IMPLEMENTATION.md) | Active, implementation/validation in progress | Approved audit changes, Apple Silicon decision, current checks and remaining work |
 | [`V1_0_7_AUDIT_FOLLOW_THROUGH.md`](V1_0_7_AUDIT_FOLLOW_THROUGH.md) | Active continuation | Stream copy, image fidelity/resource budgets, real Mac probes, Linux preparation and remaining audit work |
@@ -44,6 +48,9 @@ no product fixes were applied by this audit. Raw evidence is in
 
 ## Project Architecture
 
+- [`TAILWIND_4_UBUNTU_VALIDATION.md`](TAILWIND_4_UBUNTU_VALIDATION.md) records the
+  isolated Tailwind 4 compatibility tests before a desktop-only Svelte migration
+  decision. It does not change the active framework or release readiness.
 - [`OPEN_DESIGN_SYSTEM.md`](OPEN_DESIGN_SYSTEM.md) records the approved light/dark
   identity, its native Open Design registration and validation evidence.
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) defines the desktop, site, branding,
