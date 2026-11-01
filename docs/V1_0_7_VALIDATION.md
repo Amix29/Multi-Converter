@@ -1,6 +1,37 @@
 # Multi-Converter V1.0.7 Validation
 
-## 2026-10-30 — Latest local continuation
+## 2026-11-01 — Current UI source and evidence boundaries
+
+Application-source checkpoint `853aa081` is locally integrated on `codex/test`;
+maintenance branch: `codex/app-design-system`. The UI adoption at `547b4bd4`
+adds both approved themes, persisted system/light/dark preferences, custom
+quality/media selectors, micro-interactions and scroll-dependent glass
+navigation. The follow-up replaces dark labels on colored primary buttons with
+warm-white text on deeper action shades, preserving the original brand anchors.
+
+The [adoption receipt](audits/2026-11-01/application-design-system.json) records
+56 frontend unit tests, 408 keys across six languages, 12 compiled-preview
+browser passes and 10 declared project skips, plus layout, source-structure,
+configuration and build checks. The
+[button correction receipt](audits/2026-11-01/button-label-contrast.json)
+separately records the later
+production frontend build, UI-layout check, six rendered catalogue states,
+minimum measured contrast 4.753:1 and 34 matching Open Design package files.
+The full browser suite and unit tests were not rerun for that CSS-only correction.
+
+Windows Tauri development launch was observed after the button correction:
+the `Multi-Converter` window opened and responded. This proves development
+startup, not acceptance of both themes in the native WebView, actual file/OCR
+operations or an installed package. Manual user acceptance is not recorded.
+Automated accessibility checks do not establish complete WCAG conformance.
+
+The preserved NSIS/AppImage/DMG candidates are still tied to `8b510138` and
+predate these UI changes. The full canonical/platform and installed-package
+gates have not been renewed on `853aa081`. **Overall release gate remains
+blocked; no publication or remote push is implied.** See the
+[current UI handoff](APP_DESIGN_SYSTEM_ADOPTION.md) for the test path.
+
+## 2026-10-30 — Native/candidate continuation (historical source)
 
 Application source `8b510138` is locally integrated on `codex/test`; current
 workspace maintenance uses `codex/standalone-relocation`. The application includes private intermediates, SVG isolation,

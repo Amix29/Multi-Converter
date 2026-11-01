@@ -1,5 +1,25 @@
 # Multi-Converter Decisions
 
+## 2026-11-01 — Approved product identity and readable action labels
+
+**Decision:** adopt the maintainer's original Multi-Converter graph-paper
+identity in both desktop themes, with exact light `#c86a34` and dark `#4d8445`
+brand anchors. This supersedes earlier Vellum Paper visual decisions. Use dense
+sans-serif headings, rounded panels, offset shadows and glass limited to the
+navigation panel after scrolling. Preserve the converter/OCR workflow.
+
+**Reason:** the maintainer rejected the initial design mismatch, native-looking
+selectors, insufficient motion and dark labels on colored buttons. Dedicated
+action backgrounds allow warm-white labels with measured contrast above 4.5:1
+without changing the reference anchors.
+
+**Consequences:** desktop and catalogue share brand tokens and select styles.
+System/light/dark preference stays local; reduced motion and keyboard access
+remain required. `--action-*` roles drive colored primary buttons; raw-accent
+foreground values are not primary-button labels. Open Design is a reusable
+personal library entry, not a community publication or an app release. See the
+[adoption ledger](APP_DESIGN_SYSTEM_ADOPTION.md) and its dated receipts for proof.
+
 ## 2026-10-30 — macOS 15 And Later On Apple Silicon
 
 After native Mach-O inspection found a 15.0 minimum in the available libvips

@@ -15,6 +15,13 @@ The PDFium wrapper retains native-text inspection and page-rendering tests.
 
 ## Windows x64
 
+For the 2026-11-01 interface checkpoint, use
+[`APP_DESIGN_SYSTEM_ADOPTION.md`](APP_DESIGN_SYSTEM_ADOPTION.md) for manual
+system/light/dark, custom-menu, scroll navigation and reduced-motion steps.
+Its dated receipts separate adoption tests from the later button-label color
+correction. A responsive Tauri development window only proves startup; it does
+not replace native visual review or the installed acceptance matrix below.
+
 Windows x64 is one of the current V1.0.6 public platforms and remains the primary local development gate. Use the grouped command when you want the same Windows validation sequence as the GitHub `Build` workflow:
 
 ```powershell

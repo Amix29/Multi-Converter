@@ -8,19 +8,27 @@ This checkout owns `.git`, the desktop application, `site/`, `branding-kit/`,
 the engine inputs and local generated files. Its remote remains
 `https://github.com/Amix29/Multi-Converter.git`.
 
-The root checkout stays on `codex/test`. Relocation maintenance is isolated on
-`codex/standalone-relocation`; the prior application source remains `8b510138`.
+The root checkout stays on `codex/test`, with functional UI source `853aa081`.
+Current design/documentation maintenance uses `codex/app-design-system`.
+Relocation used `codex/standalone-relocation`; the earlier native candidate
+source was `8b510138`. Documentation-only HEADs may follow the functional source.
 No push, release, dependency upgrade or application-data migration is implied.
 
 ## Governance
 
 Read the root `AGENTS.md`, `.agents/rules/`, `V1_0_7_PLAN.md`,
 `V1_0_7_VALIDATION.md` and `V1_0_7_AUDIT_FOLLOW_THROUGH.md` from this repository.
-The local development rule preserves the existing stack, Vellum Paper design,
+The local development rule preserves the existing stack, approved product design,
 quality budgets and evidence boundaries. Repository rules are self-contained;
 no parent rules file, stack matrix or shared-skill junction is required.
 Earlier integration decisions and old editor worktrees are historical; the
 active converter/OCR scope does not restore editing features.
+
+The active design contract is `branding-kit/08_design-system/DESIGN.md`.
+The desktop imports its tokens through `src/styles/design-system.css`, including
+dedicated `--action-*` roles for warm-white labels on colored primary buttons.
+The old vendor palette remains historical. See
+[the UI handoff](APP_DESIGN_SYSTEM_ADOPTION.md) for current checks and test steps.
 
 ## Worktrees and local artifacts
 

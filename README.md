@@ -134,8 +134,15 @@ V1.0.7 focuses on conversion and local OCR. Document and PDF editors were remove
 | Workstream | Goal | Current status |
 | --- | --- | --- |
 | 🔎 OCR | Convert scanned/image PDFs to text formats and copy text from images with `PP-OCRv6_medium` | Implemented in development; packaged and multiplatform validation remains open |
+| Interface | Consistent light/dark identity, accessible selectors and motion | Implemented locally; native visual and installed-package acceptance remains open |
 
 Repository and application metadata target `1.0.7`; this is an unpublished development version.
+
+The development interface now offers **Settings → Appearance → System / Light /
+Dark**, custom quality/media selectors, short micro-interactions and a glass
+navigation panel that appears after scrolling. Primary colored buttons use
+warm-white labels. See the [UI handoff](docs/APP_DESIGN_SYSTEM_ADOPTION.md) for
+the exact source checkpoint, checks and remaining validation.
 
 The complete scope and release gates are defined in [`docs/V1_0_7_PLAN.md`](docs/V1_0_7_PLAN.md). The full documentation map is available in [`docs/README.md`](docs/README.md).
 

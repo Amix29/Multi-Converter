@@ -1,6 +1,25 @@
 # V1.0.7 audit follow-through — 2026-10-30
 
-## Handoff
+## Current handoff — 2026-11-01
+
+Functional application source `853aa081` is integrated locally on `codex/test`;
+maintenance branch: `codex/app-design-system`. The approved identity now drives
+both desktop themes, system appearance, selectors, motion and glass navigation.
+The last correction uses warm-white labels on colored primary actions, with six
+measured state/theme pairs above 4.5:1. Open Design's last recorded export matches
+all 34 package source files. See [the UI handoff](APP_DESIGN_SYSTEM_ADOPTION.md),
+[adoption evidence](audits/2026-11-01/application-design-system.json) and
+[button evidence](audits/2026-11-01/button-label-contrast.json).
+
+A Windows Tauri development window opened for manual testing. No installed
+acceptance or renewed native conversion/OCR matrix is inferred from that launch.
+The preserved local NSIS/AppImage/DMG candidates below use `8b510138` and do not
+contain this new UI. Final-source canonical/platform checks, rebuilt candidates
+and installed acceptance remain required before release. No remote push or
+application publication occurred. Documentation-only updates may follow
+`853aa081` without changing its functional source checkpoint.
+
+## 2026-10-30 — Native/candidate handoff (historical source)
 
 The maintainer requested all remaining locally achievable audit work and continuous
 documentation updates. The audit used isolated branch `codex/audit-follow-through`,

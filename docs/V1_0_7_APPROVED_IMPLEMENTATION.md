@@ -8,13 +8,20 @@ The maintainer additionally selected macOS 15 and later after native runtime
 inspection established that minimum; Windows and Linux remain supported.
 Historical V1.0.6 universal assets/evidence stay unchanged. Conversion and local
 PP-OCRv6_medium OCR remain the product; document/PDF editors and cloud inference
-remain excluded. Preserve Vellum Paper, source files and the three-step journey.
+remain excluded. Preserve source files and the three-step journey. The original
+Vellum Paper visual decision was superseded by the maintainer-approved
+Multi-Converter design system and its 2026-11-01 runtime adoption.
 No release, publication or remote push is authorized by implementation approval.
 
 ## Work and integration
 
-- Current workspace maintenance branch: codex/standalone-relocation; see [local workspace](LOCAL_WORKSPACE.md).
-- Current integrated application source: 8b510138 on local codex/test. Matching local NSIS/AppImage/DMG candidates and receipts exist; installed acceptance remains pending. Earlier checkpoints below remain historical.
+- Current maintenance branch: `codex/app-design-system`; see [local workspace](LOCAL_WORKSPACE.md).
+- Current integrated application-source checkpoint: `853aa081` on local
+  `codex/test`. [UI adoption and checks](APP_DESIGN_SYSTEM_ADOPTION.md) include
+  both themes, selectors, motion, glass navigation and warm-white action labels.
+  Preserved local NSIS/AppImage/DMG candidates remain tied to `8b510138`;
+  matching packages and installed acceptance for the new UI are still pending.
+  Earlier checkpoints below remain historical.
 - Dedicated ordinary Git worktree under the task writable directory. The app's
   managed tool rejected the stale source path. The real base checkout was then
   fast-forwarded only after the complete staged source checks passed.

@@ -7,6 +7,11 @@ themes, followed by better selectors, micro-interactions and glass navigation
 based on the product website. This work uses `codex/app-design-system` and
 integrates verified changes locally on `codex/test`.
 
+Latest functional source: **`853aa081`**, locally integrated on `codex/test`.
+The broader UI adoption is `547b4bd4`; the button-label correction is `853aa081`.
+Documentation-only commits may follow these source checkpoints. V1.0.7 is
+unpublished, and existing installed-package candidates predate these changes.
+
 The desktop now imports the approved brand token source directly. Existing
 component aliases and dimensions are adapted locally; the old vendor palette
 is no longer imported. Appearance offers system, light and dark preferences,
@@ -20,10 +25,10 @@ after scrolling. Movement uses short opacity/transform transitions, with
 reduced-motion and opaque/forced-color fallbacks. No conversion engine or OCR
 behavior is changed by this work.
 
-## Validation status
+## UI adoption evidence — `547b4bd4`
 
 The [machine-readable receipt](audits/2026-11-01/application-design-system.json)
-records the final current checks:
+records the checks for the adoption checkpoint:
 
 - Both app themes at 320, 375, 768, 1024 and 1440 pixels, with no horizontal
   overflow; exact approved accent values and working select/keyboard behavior.
@@ -64,3 +69,44 @@ keep their readable dark/light foreground. The
 [six measured action pairs](audits/2026-11-01/button-label-contrast.json)
 exceed 4.5:1. Rendered state and
 native-package readback checks accompany this correction.
+
+For this later CSS-only correction, production frontend build, UI-layout and
+staged secret checks passed. All six state/theme pairs were rendered in the
+standalone catalogue using shared action tokens. The earlier full browser/unit
+suite remains evidence for the adoption checkpoint; it was not rerun for this
+color-only adjustment. The latest package readback is in the button receipt,
+which supersedes the earlier archive hash while retaining 34 matching files.
+
+## Manual review and next steps
+
+Windows native development startup through `npm start` was observed after the
+button correction: a responsive `Multi-Converter` window opened. No complete
+native visual acceptance, conversion/OCR acceptance or new installer is claimed.
+The user's manual review remains unrecorded; the launch is a dated observation,
+not a promise that the process remains open.
+
+To resume UI review:
+
+1. Run `npm start` from the standalone repository root.
+2. Open **Paramètres → Apparence**; compare **Clair**, **Sombre** and **Système**.
+   Confirm persistence after restart and system-following only in system mode.
+3. Import a suitable image/media file, choose an output and inspect the quality
+   or media selector. Verify arrows, Home/End, typeahead, Enter, Escape and focus.
+4. Compare the navigation panel at the top and after actual page/list scrolling;
+   its contents stay reachable. Check hover/press feedback and reduced motion.
+5. Confirm warm-white labels on colored primary actions in both themes. Neutral
+   secondary controls retain their theme-appropriate text.
+
+Before release, rebuild packages from the final integrated source and complete
+the remaining canonical, native-host and installed acceptance gates in
+[`V1_0_7_VALIDATION.md`](V1_0_7_VALIDATION.md). Earlier `8b510138` candidate
+receipts do not validate the interface introduced here.
+
+## Documentation reconciliation — 2026-11-01
+
+The entry-point documentation, plan, validation ledger, implementation handoff,
+workspace guide, testing guide and decision log now identify the same functional
+source checkpoint and current design. Documentation checks pass: 105 local
+links in 11 changed Markdown files, repository metadata and whitespace checks.
+This reconciliation changes documentation only; no application/runtime tests
+were rerun for it. Source and installed-package proof remain scoped above.

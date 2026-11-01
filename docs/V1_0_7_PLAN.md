@@ -3,12 +3,16 @@
 ## Status
 
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
-- Last documentation review: **2026-10-30**.
+- Last documentation review: **2026-11-01**.
 - Release status: **not ready**.
-- Current application source: `8b510138`, integrated on `codex/test`; current workspace maintenance branch `codex/standalone-relocation`.
+- Current application-source checkpoint: `853aa081`, integrated on `codex/test`;
+  current maintenance branch: `codex/app-design-system`. Documentation-only
+  commits may follow this functional checkpoint.
 - Workspace: standalone `Développement/Multi-Converter`;
   [location, rules and worktree recovery](LOCAL_WORKSPACE.md).
-- Local NSIS/AppImage/DMG candidates use `8b510138`; all remain unpublished with installed acceptance pending.
+- Preserved local NSIS/AppImage/DMG candidates use `8b510138`; they predate the
+  new interface and are not packages of `853aa081`. All remain unpublished with
+  installed acceptance pending.
 - macOS targets Apple Silicon on macOS 15 and later; Windows x64 and Linux x64 remain supported.
 - Conversion/OCR audit: `codex/audit-follow-through`, based on integrated `41459c23`;
   [current work and handoff](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
@@ -35,6 +39,10 @@ until the remaining gates close.
 - Packaged local `PP-OCRv6_medium` resources, CPU selection, verification, progress,
   cancellation and cleanup, with no runtime model downloads or cloud fallback.
 - Existing settings, onboarding, feedback and update behavior.
+- Approved light/dark brand system, local system/light/dark preference, custom
+  quality/media selectors, short accessible motion and glass navigation. Colored
+  primary actions use warm-white text and deeper action shades; the exact brand
+  anchors are unchanged. See [UI implementation and checks](APP_DESIGN_SYSTEM_ADOPTION.md).
 
 ## Removal And Data Handling
 

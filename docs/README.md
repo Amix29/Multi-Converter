@@ -3,10 +3,15 @@
 ## Current Product State
 
 - Published stable release: **V1.0.6**
-- Platforms: Windows x64, universal macOS and Linux x64
+- Published V1.0.6 platforms: Windows x64, universal macOS and Linux x64
+- V1.0.7 targets: Windows x64, Apple Silicon macOS 15+ and Linux x64
 - Repository surfaces: desktop application, static marketing site and branding kit
 - Development release: **V1.0.7**
-- Local integration: **`codex/test`**; current UI work branch: **`codex/app-design-system`**. See the [design adoption ledger](APP_DESIGN_SYSTEM_ADOPTION.md) for the latest UI checkpoint. V1.0.7 remains unpublished and its release gate is open.
+- Functional UI source checkpoint: **`853aa081`**, integrated locally on **`codex/test`**; maintenance branch: **`codex/app-design-system`**. Later documentation-only commits do not change this application-source checkpoint. V1.0.7 remains unpublished and its release gate is open.
+- Current interface: approved light/dark design, system appearance preference,
+  custom selectors, micro-interactions, scroll-dependent glass navigation and
+  warm-white primary-button labels. See the
+  [design adoption ledger](APP_DESIGN_SYSTEM_ADOPTION.md).
 - V1.0.7 objectives:
   - local `PP-OCRv6_medium` OCR for PDF-to-text conversion and copying text from images.
 

@@ -1,4 +1,11 @@
-# Multi-Converter Design System — verified 2026-10-31
+# Multi-Converter Design System — updated 2026-11-01
+
+Current functional source checkpoint: `853aa081`, integrated locally on
+`codex/test`; current maintenance branch: `codex/app-design-system`. The latest
+recorded synchronization is the
+[button-label receipt](audits/2026-11-01/button-label-contrast.json): all 34
+package files match, with no export differences and an identical design body.
+It supersedes older export hashes recorded below.
 
 ## Approved direction
 
@@ -57,15 +64,16 @@ catalogue and does not change the converter's preferences.
 - Native package readback and export are compared to the source files. The
   receipt records the exact file count and hashes after final synchronization.
 
-The [validation receipt](audits/2026-10-31/open-design-system-validation.json)
+The initial [validation receipt](audits/2026-10-31/open-design-system-validation.json)
 records 30 matching native files, zero export differences, both native theme
 renders, 10 viewport/theme checks, zero automated accessibility violations and
 36 measured semantic text pairs. The light secondary text was darkened to
 remain readable over grid intersections. Automated patterned-background checks
 remain incomplete; the receipt explicitly limits the contrast measurements.
 
-Source maintenance uses `codex/open-design-system`; verified work integrates
-locally on `codex/test`. No application release or remote Git push is implied.
+Initial registration used `codex/open-design-system`; current maintenance uses
+`codex/app-design-system`, integrated locally on `codex/test`. No application
+release or remote Git push is implied.
 The 2026-11-01 [application adoption](APP_DESIGN_SYSTEM_ADOPTION.md) imports this
 token source into the converter and adds system/light/dark preferences. That
 ledger records its own UI checks. Updated menus, micro-interactions and glass
@@ -76,3 +84,8 @@ The current [2026-11-01 receipt](audits/2026-11-01/application-design-system.jso
 records 34 matching package files and the improved native previews. Selects,
 section reveals, button feedback and the scroll-dependent glass panel were
 checked in both modes; the application uses the same brand/control sources.
+
+The subsequent button correction uses warm-white `#fffdf7` text with dedicated
+`--action-*` backgrounds: light `#b05a2b`, dark `#45763d`, plus deeper hover/press
+shades. Its six measured pairs exceed 4.5:1; the brand anchors remain unchanged.
+Use these action roles for primary buttons, not the dark raw-accent foreground.
