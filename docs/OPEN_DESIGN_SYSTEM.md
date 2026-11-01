@@ -1,6 +1,6 @@
 # Multi-Converter Design System — updated 2026-11-01
 
-Current desktop source checkpoint: `e8f4f5d7`, Svelte migration. The local kit
+Current desktop source checkpoint: `adf7b8ce`, Svelte migration. The local kit
 now includes additive action-role indexing, corrected guidance and canonical
 motion roles. [The migration ledger](MIGRATION_SVELTE_EXECUTION.md) records
 component integration and native WebKit UI checks. These local corrections have

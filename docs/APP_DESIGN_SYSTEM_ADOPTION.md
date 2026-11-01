@@ -2,7 +2,7 @@
 
 ## Current Svelte continuation
 
-Functional source `e8f4f5d7` ports the approved identity into Svelte, applies
+Functional source `adf7b8ce` ports the approved identity into Svelte, applies
 DS-01–DS-07 consistency fixes and validates the components in both themes on
 Chromium, WebKitGTK and system macOS WKWebView. See
 [MIGRATION_SVELTE_EXECUTION.md](MIGRATION_SVELTE_EXECUTION.md) for measured proof

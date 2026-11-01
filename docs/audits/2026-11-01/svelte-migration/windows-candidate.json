@@ -1,23 +1,23 @@
 {
-  "date": "2026-11-01T14:35:14.857Z",
-  "sourceCheckpoint": "e8f4f5d7",
+  "date": "2026-11-01T15:03:33.875Z",
+  "sourceCheckpoint": "adf7b8ce",
   "platform": "windows-x64",
   "build": "Tauri NSIS release build passed",
   "files": [
     {
       "name": "Multi-Converter_1.0.7_x64-setup.exe",
-      "bytes": 999656897,
-      "sha256": "e208c4062ec0bd80421024a6c46b4368491f6ceb9494734fe87b6f94f5c91188"
+      "bytes": 999658055,
+      "sha256": "a5d2b8fc1c22b972717d6f93eb0562065ec2b031ce3141bcca6f5757058142d9"
     },
     {
       "name": "Multi-Converter_1.0.7_x64-setup.exe.sig",
       "bytes": 428,
-      "sha256": "719ae51a49c7921c69957fa6f91732fc115b5cecedeade52fabfc78ceed3a7af"
+      "sha256": "1020bffa88bf32579d9552da5b503b8d8dbc00ef7b5e18bb738ccad89b70f231"
     },
     {
       "name": "multi-converter.exe",
       "bytes": 26602496,
-      "sha256": "27c435fca80a293a62b76d45e74e32bd3a986120b8fe984c38082ffaacf7020f"
+      "sha256": "f53dd4942a274b952d8f5cfee33d481a463cc9ed4313832202fd97292512239f"
     }
   ],
   "updaterSignature": "cryptographically verified against configured production public key",

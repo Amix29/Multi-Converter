@@ -1,6 +1,6 @@
 # Parité de la migration Svelte
 
-Source fonctionnelle `e8f4f5d7`. Le tableau sépare portage, preview, natif et paquet.
+Source fonctionnelle `adf7b8ce`. Le tableau sépare portage, preview, natif et paquet.
 Aucune réussite de preview ne vaut validation de fichier réel ou d’installation.
 
 | Domaine | Implémentation Svelte | Preuve et limite |

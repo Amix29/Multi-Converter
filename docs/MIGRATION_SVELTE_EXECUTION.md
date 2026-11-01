@@ -1,9 +1,9 @@
 # Exécution de la migration desktop Svelte
 
 État au 1 novembre 2026 : **portage source réalisé ; acceptation installée encore ouverte**.
-Source fonctionnelle finale : **`e8f4f5d7`**, branche de réalisation
-`codex/migrate-svelte`. Intégration locale prévue sur `codex/test` après
-sauvegarde contrôlée des modifications initiales. Aucun push ni publication.
+Source fonctionnelle finale : **`adf7b8ce`**, branche de réalisation
+`codex/migrate-svelte`. Intégration locale effectuée sur **`codex/test`**, après sauvegarde contrôlée
+des modifications initiales ; installation propre et `check` complet y passent. Aucun push ni publication.
 Le site Next.js et le backend Rust/Tauri gardent leurs frontières.
 
 | Lot | État et résultat |
@@ -40,6 +40,12 @@ Les tests vérifient aussi la résolution réellement installée. Aucun avis n�
 masqué. Le montage file dependency/override passe les installations propres
 Windows, Ubuntu et Mac ; les audits npm signalent zéro vulnérabilité.
 
+La dernière inspection du bundle a détecté des paramètres et notes updater de
+preview encore présents malgré leur neutralisation à l’exécution Tauri. Leur
+branche est désormais exclue à la compilation de production ; le garde de bundle
+contrôle aussi ces marqueurs. Les builds finaux Windows, Linux et Mac passent
+ce contrôle renforcé ; les scénarios preview restent disponibles dans leur mode.
+
 ## Design corrigé
 
 - DS-01/02 : texte d’action blanc chaud et quatre rôles additionnels indexés,
@@ -70,7 +76,7 @@ La bibliothèque externe de design n’a pas été modifiée ni republiée.
 | Chromium preview | **18 scénarios réussis**, 16 exclusions explicites par projet ; 2 000 fichiers, erreur/annulation/reprise, export/rapport/récupération, collage, OCR, six langues et 20 cycles réglages puis OCR |
 | Ubuntu 24.04.3 WSL2 | Outils Linux natifs, installation propre, préflight, gate CI complet et 201 tests Rust (13 ignorés) ; sidecars de compilation explicitement factices |
 | WebKitGTK 2.52.6 | **8 scénarios / 184 assertions / zéro échec**, deux thèmes et quatre largeurs, composants du produit compilé en mode preview |
-| Mac Apple Silicon 26.6.2 | Installation frontend propre, types, 60 unités, build et audit npm ; Node 24.22.2/npm 11.19.1 dans le dossier temporaire explicitement autorisé |
+| Mac Apple Silicon 26.6.2 | Installation frontend propre, types, 60 unités, build et audit npm ; Node 24.22.2/npm 11.7.0 (version canonique, installation propre répétée) dans le dossier temporaire explicitement autorisé |
 | WKWebView système | **8 scénarios / 184 assertions / zéro échec**, deux thèmes/quatre largeurs ; profil éphémère, fenêtre de test active pour le clavier |
 
 Les deux bancs WebKit rendent le vrai frontend compilé avec l’API de preview.
@@ -86,7 +92,8 @@ la médiane 48 170 ms est celle du corpus de cet hôte, pas une promesse produit
 ## Mesures comparables
 
 Sept paires de contextes Chromium neufs, ordre alterné, preview simulée identique
-à 2 000 fichiers ; valeurs médianes enregistrées, pas performances natives :
+à 2 000 fichiers ; mesures réalisées sur le checkpoint de chargement différé
+`e8f4f5d7`, conservées comme telles ; pas performances natives :
 
 | Mesure | React | Svelte |
 | --- | ---: | ---: |
@@ -98,21 +105,22 @@ Le portage avant chargement différé montrait un surcoût de démarrage de 25,5
 primitives de format au moment où une cible est choisie ramène cet écart à
 **2,92 ms / 2,5 %** ; l’état de l’écran reste monté et conservé. Les réglages
 s’ouvrent environ 81 % plus vite dans ce test. Les assets JS/CSS production
-complets passent de 574 401 à 642 481 octets (+11,9 %), gzip de 156 378 à
-175 541 (+12,3 %), contrepartie des primitives accessibles et du rendu sûr.
+complets de la source finale passent de 574 401 à 642 038 octets (+11,8 %), gzip de 156 378 à
+175 375 (+12,1 %), contrepartie des primitives accessibles et du rendu sûr.
+Le reçu des assets finaux est distinct des timings du checkpoint précédent.
 Aucune baisse de RAM OS ni accélération OCR n’est revendiquée.
 
 ## Candidate Windows locale
 
-NSIS de `e8f4f5d7` construit avec toutes les ressources configurées :
+NSIS de `adf7b8ce` construit avec toutes les ressources configurées :
 `%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe`.
-L’installateur fait 999 656 897 octets ; son
+L’installateur fait 999 658 055 octets ; son
 [reçu d’empreintes](audits/2026-11-01/svelte-migration/windows-candidate.json)
 consigne aussi l’exécutable et la signature. La signature updater est vérifiée
 cryptographiquement contre la clé publique configurée. **Authenticode :
 NotSigned** ; une signature updater ne remplace pas la signature Windows.
 Aucun installateur n’a été publié et aucun `latest.json` fictif n’a été créé.
-Les trois premières candidates restent dans leurs dossiers de checkpoint.
+Les candidates précédentes restent dans leurs dossiers de checkpoint.
 
 ## Politique Linux et limites restantes
 
@@ -137,6 +145,8 @@ Le code migré est livré pour cette étape ; le gate release V1.0.7 reste bloqu
 
 ## Reproduction et preuves
 
+- [Assets production finaux](audits/2026-11-01/svelte-migration/final-production-assets.json)
+  et [intégration locale](audits/2026-11-01/svelte-migration/local-integration.json).
 - [Résumé machine](audits/2026-11-01/svelte-migration/validation-summary.json),
   [comparaison appariée](audits/2026-11-01/svelte-migration/paired-preview-comparison.json)
   et [état avant optimisation](audits/2026-11-01/svelte-migration/paired-preview-before-lazy-options.json).
@@ -159,7 +169,8 @@ Les sources des bancs sont versionnées ; leurs dépendances sont celles du syst
 
 Checkpoints : `9b26001d` référence, `716752e0` portage,
 `4712da08` consolidation, `74d5adaf` menu étroit,
-`e0ecf6a5` isolation des tokens, `e8f4f5d7` chargement différé final.
+`e0ecf6a5` isolation des tokens, `e8f4f5d7` chargement différé,
+`adf7b8ce` exclusion stricte des fixtures de production.
 Les anciens fichiers React ont une copie récupérable locale sous
 `tmp/react-legacy` dans le worktree ; Git conserve leurs versions historiques.
 Les candidates intermédiaires restent dans leurs dossiers de checkpoint.

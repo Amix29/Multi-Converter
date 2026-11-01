@@ -1,6 +1,6 @@
 {
   "date": "2026-11-01",
-  "sourceCheckpoint": "e8f4f5d7",
+  "sourceCheckpoint": "adf7b8ce",
   "releaseGate": "blocked",
   "windows": {
     "canonicalCheck": "pass",
@@ -29,12 +29,12 @@
       "transitiveWarningsRetained": true
     },
     "candidate": {
-      "sourceCheckpoint": "e8f4f5d7",
+      "sourceCheckpoint": "adf7b8ce",
       "build": "pass",
       "updaterSignature": "verified",
       "authenticode": "NotSigned",
-      "installerSha256": "e208c4062ec0bd80421024a6c46b4368491f6ceb9494734fe87b6f94f5c91188",
-      "installerBytes": 999656897
+      "installerSha256": "a5d2b8fc1c22b972717d6f93eb0562065ec2b031ce3141bcca6f5757058142d9",
+      "installerBytes": 999658055
     }
   },
   "linux": {
@@ -63,7 +63,8 @@
       "assertions": 184,
       "failed": 0
     },
-    "tauriDmg": "not built"
+    "tauriDmg": "not built",
+    "npm": "11.7.0 (canonical clean install/types/60 units/config-merge/build/audit passed; initial run also passed with 11.19.1)"
   },
   "previewMeasurements": [
     {
@@ -91,8 +92,9 @@
     },
     {
       "implementation": "svelte",
-      "bytes": 642481,
-      "gzipBytes": 175541
+      "sourceCheckpoint": "adf7b8ce",
+      "bytes": 642038,
+      "gzipBytes": 175375
     }
   ],
   "open": [
@@ -101,5 +103,16 @@
     "final AppImage and DMG with native staged engines and OCR",
     "clean-host installed acceptance on every named platform",
     "publication not authorized"
-  ]
+  ],
+  "previewMeasurementSourceCheckpoint": "e8f4f5d7",
+  "finalProductionFixtureGuard": {
+    "sourceCheckpoint": "adf7b8ce",
+    "passed": true,
+    "platforms": [
+      "Windows",
+      "Linux",
+      "macOS"
+    ],
+    "fix": "Compile-time development/preview guard removes updater QA fixtures and fake release notes; expanded production marker checks."
+  }
 }

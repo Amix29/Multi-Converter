@@ -2,7 +2,7 @@
   "runtime": "WebKitGTK compiled product mock preview; not Tauri IPC or installed acceptance",
   "osRelease": "PRETTY_NAME=\"Ubuntu 24.04.3 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.3 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n",
   "webkit": "2.52.6",
-  "elapsedSeconds": 10.84,
+  "elapsedSeconds": 9.89,
   "scenarios": [
     {
       "theme": "light",
@@ -1047,5 +1047,5 @@
   ],
   "passed": 8,
   "failed": 0,
-  "productSourceCheckpoint": "e8f4f5d7"
+  "productSourceCheckpoint": "adf7b8ce"
 }

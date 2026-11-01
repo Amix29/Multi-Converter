@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-01",
+  "branch": "codex/test",
+  "sourceCheckpoint": "adf7b8ce",
+  "integrationCommit": "6a247c39a5d57e129502241405c38a6bb6431a5e",
+  "preexistingDocs": {
+    "filesCompared": 39,
+    "baseline": "9b26001d",
+    "allMatched": true,
+    "recoverableStash": "ef19e736dfed79522a14ee768054884378970d2f"
+  },
+  "preexistingCargoToml": {
+    "sha256": "8913AFF785EB5BA7605312DF34B81EFE66A031DE3177E8CA27CC6DC703C087BA",
+    "bytesUnchanged": true
+  },
+  "freshNpmCi": "passed",
+  "typecheck": "passed",
+  "configMerge": "passed",
+  "canonicalCheck": "passed",
+  "pushOrPublication": false,
+  "integrationCommitScope": "Initial integration commit; final correction is subsequently fast-forwarded on the same branch."
+}

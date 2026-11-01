@@ -2,7 +2,9 @@
 
 ## 2026-11-01 — Svelte source migration and renewed available gates
 
-Functional source **`e8f4f5d7`** completes the desktop source port. React remains
+Functional source **`adf7b8ce`**, locally integrated on **`codex/test`**, completes
+the desktop source port. Clean install, typechecking and the full canonical
+check also pass from the primary checkout after integration. React remains
 only in the unchanged marketing site. The full execution and criteria matrix
 are in [the migration ledger](MIGRATION_SVELTE_EXECUTION.md) and
 [parity matrix](MIGRATION_SVELTE_PARITE.md).
@@ -15,6 +17,10 @@ compile-only sidecars. Compiled-product preview passes 18 Chromium scenarios.
 Real WebKitGTK and system macOS WKWebView each pass 8 scenarios/184 assertions.
 The Windows NSIS candidate is built from the final functional checkpoint; its
 updater signature is cryptographically verified. Authenticode remains NotSigned.
+
+The final production guard also removes updater QA parameters and fixture notes
+at compile time. Windows, Linux and macOS production builds pass the expanded
+bundle marker check; preview fixtures remain confined to development/preview.
 
 These proofs do not complete native GUI/installed acceptance. No new AppImage
 or DMG is claimed, no release metadata is fabricated, and no publication occurs.

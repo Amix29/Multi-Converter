@@ -57,10 +57,10 @@
         },
         {
           "detail": {
-            "bottom": 648.6033935546875,
-            "left": 159.4758758544922,
-            "right": 343.4930419921875,
-            "top": 547.1281127929688
+            "bottom": 648.2874755859375,
+            "left": 159.5551300048828,
+            "right": 343.413818359375,
+            "top": 546.899658203125
           },
           "name": "portaled menu stays inside viewport",
           "passed": true
@@ -187,10 +187,10 @@
         },
         {
           "detail": {
-            "bottom": 609.8113403320312,
-            "left": 197.7328643798828,
-            "right": 516.2671661376953,
-            "top": 508.278564453125
+            "bottom": 609.1122436523438,
+            "left": 198.03627014160156,
+            "right": 515.9637603759766,
+            "top": 507.77288818359375
           },
           "name": "portaled menu stays inside viewport",
           "passed": true
@@ -317,10 +317,10 @@
         },
         {
           "detail": {
-            "bottom": 610.9371948242188,
-            "left": 197.67825317382812,
-            "right": 516.32177734375,
-            "top": 509.3695983886719
+            "bottom": 610.8755493164062,
+            "left": 197.70501708984375,
+            "right": 516.2949829101562,
+            "top": 509.3249816894531
           },
           "name": "portaled menu stays inside viewport",
           "passed": true
@@ -577,10 +577,10 @@
         },
         {
           "detail": {
-            "bottom": 648.1122436523438,
-            "left": 159.59909057617188,
-            "right": 343.3698425292969,
-            "top": 546.7728881835938
+            "bottom": 648.8113403320312,
+            "left": 159.42369079589844,
+            "right": 343.5451965332031,
+            "top": 547.278564453125
           },
           "name": "portaled menu stays inside viewport",
           "passed": true
@@ -707,10 +707,10 @@
         },
         {
           "detail": {
-            "bottom": 609.8755493164062,
-            "left": 197.70501708984375,
-            "right": 516.2949829101562,
-            "top": 508.3249816894531
+            "bottom": 609.3707275390625,
+            "left": 197.92408752441406,
+            "right": 516.0759429931641,
+            "top": 507.9598693847656
           },
           "name": "portaled menu stays inside viewport",
           "passed": true
@@ -837,10 +837,10 @@
         },
         {
           "detail": {
-            "bottom": 610.9371948242188,
-            "left": 197.67825317382812,
-            "right": 516.32177734375,
-            "top": 509.3695983886719
+            "bottom": 610.8755493164062,
+            "left": 197.70501708984375,
+            "right": 516.2949829101562,
+            "top": 509.3249816894531
           },
           "name": "portaled menu stays inside viewport",
           "passed": true
@@ -967,10 +967,10 @@
         },
         {
           "detail": {
-            "bottom": 375.20135498046875,
-            "left": 489.49761962890625,
-            "right": 807.5023803710938,
-            "top": 273.8373107910156
+            "bottom": 375.8755187988281,
+            "left": 489.20501708984375,
+            "right": 807.7949829101562,
+            "top": 274.3249816894531
           },
           "name": "portaled menu stays inside viewport",
           "passed": true
@@ -1045,6 +1045,7 @@
     }
   ],
   "hostArchitecture": "arm64",
-  "node": "v24.22.2",
-  "productSourceCheckpoint": "e8f4f5d7"
+  "nodeVersion": "24.22.2",
+  "npmVersion": "11.7.0",
+  "productSourceCheckpoint": "adf7b8ce"
 }

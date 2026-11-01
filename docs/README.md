@@ -10,7 +10,7 @@
 - Desktop source now uses Svelte 5 + Tailwind 4 + shadcn-svelte/Bits UI with the
   existing Rust/Tauri backend. [Execution and evidence](MIGRATION_SVELTE_EXECUTION.md),
   [parity matrix](MIGRATION_SVELTE_PARITE.md). The site is unchanged.
-- Functional source checkpoint: **`e8f4f5d7`**, implementation branch **`codex/migrate-svelte`**, local integration branch **`codex/test`**. V1.0.7 remains unpublished; installed-platform acceptance is open.
+- Functional source checkpoint: **`adf7b8ce`**, implementation branch **`codex/migrate-svelte`**, locally integrated on **`codex/test`**. V1.0.7 remains unpublished; installed-platform acceptance is open.
 - Current interface: approved light/dark design, system appearance preference,
   custom selectors, micro-interactions, scroll-dependent glass navigation and
   warm-white primary-button labels. See the

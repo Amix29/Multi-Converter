@@ -1,0 +1,53 @@
+{
+  "sourceCheckpoint": "adf7b8ce",
+  "scope": "Complete production JS/CSS assets, including lazy chunks; sizes exclude native engines and installer.",
+  "files": [
+    {
+      "name": "FormatOptions-BrYkvJaa.css",
+      "bytes": 547,
+      "gzipBytes": 280
+    },
+    {
+      "name": "FormatOptions-jVJBVYIT.js",
+      "bytes": 68405,
+      "gzipBytes": 19907
+    },
+    {
+      "name": "ImageOcrDialog-DgzjjMtA.js",
+      "bytes": 7454,
+      "gzipBytes": 2872
+    },
+    {
+      "name": "index-CK5vtXj5.css",
+      "bytes": 88861,
+      "gzipBytes": 16620
+    },
+    {
+      "name": "index-DnlubSzh.js",
+      "bytes": 198192,
+      "gzipBytes": 53937
+    },
+    {
+      "name": "marked.esm-BtO3-ueZ.js",
+      "bytes": 40511,
+      "gzipBytes": 12265
+    },
+    {
+      "name": "scroll-lock-BYrjcUsk.js",
+      "bytes": 215932,
+      "gzipBytes": 63000
+    },
+    {
+      "name": "SettingsPanel-Dt5csiA-.js",
+      "bytes": 9500,
+      "gzipBytes": 3532
+    },
+    {
+      "name": "window-CN1y1DyW.js",
+      "bytes": 12636,
+      "gzipBytes": 2962
+    }
+  ],
+  "bytes": 642038,
+  "gzipBytes": 175375
+}

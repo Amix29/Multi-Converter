@@ -64,3 +64,18 @@ route pass with the other two project objects unchanged and no removed entry.
 primary checkout. `npm run build:frontend` passed from the new root. The staged
 secret-leak scan, documentation-name scan and `git diff --check` also pass.
 See the audit follow-through ledger and the versioned relocation receipt.
+
+## Svelte migration integration — 2026-11-01
+
+The Svelte desktop source at `adf7b8ce` is integrated locally on `codex/test`.
+The implementation worktree on `codex/migrate-svelte` remains available for
+reproduction, React-file recovery and later installed acceptance. Do not remove
+its local staged engines or candidates as part of routine cleanup.
+
+The 39 modified/untracked initial documentation files match preserved checkpoint
+`9b26001d`. Their recoverable stash is
+`ef19e736dfed79522a14ee768054884378970d2f` (message `pre-svelte-docs-preserved-2026-11-01`).
+They are already represented by the migrated history; blindly applying the stash
+would restore obsolete status text. The original Cargo.toml bytes are unchanged.
+See [the integration receipt](audits/2026-11-01/svelte-migration/local-integration.json)
+and [execution ledger](MIGRATION_SVELTE_EXECUTION.md). No push/publication occurred.
