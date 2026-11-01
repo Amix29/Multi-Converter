@@ -2,7 +2,6 @@
   "date": "2026-11-01",
   "branch": "codex/test",
   "sourceCheckpoint": "adf7b8ce",
-  "integrationCommit": "6a247c39a5d57e129502241405c38a6bb6431a5e",
   "preexistingDocs": {
     "filesCompared": 39,
     "baseline": "9b26001d",
@@ -18,5 +17,14 @@
   "configMerge": "passed",
   "canonicalCheck": "passed",
   "pushOrPublication": false,
-  "integrationCommitScope": "Initial integration commit; final correction is subsequently fast-forwarded on the same branch."
+  "initialIntegrationCommit": "6a247c39a5d57e129502241405c38a6bb6431a5e",
+  "finalSourceIntegrationCommit": "1494bf53eae64037dea88529d0a84e076451b3e9",
+  "finalSourceIntegrationScope": "Includes functional checkpoint adf7b8ce and its evidence documentation; later changes to this receipt are documentation only.",
+  "finalCanonicalCheck": {
+    "command": "npm run check",
+    "sourceCheckpoint": "adf7b8ce",
+    "checkout": "primary codex/test",
+    "result": "passed",
+    "recordedAt": "2026-11-01T15:19:39.774Z"
+  }
 }
