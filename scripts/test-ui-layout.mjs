@@ -38,7 +38,7 @@ assert.match(app, /importToastActive\s*\?\s*"has-import-toast"\s*:\s*""/, "app s
 assert.match(appModel, /mockWelcomeSeen"\)\s*!==\s*"1"/, "dev QA hook for skipping the welcome dialog is missing");
 assert.match(api, /mockWelcomeSeen"\)\s*!==\s*"1"/, "preview API must honor the welcome-skip QA hook");
 assert.match(updaterHook, /mockUpdate"\)\s*!==\s*"1"/, "update reminder QA hook is missing");
-assert.doesNotMatch(updaterHook, /import\.meta\.env\.DEV[\s\S]{0,240}mockUpdate/, "mock update UI must be available in built browser previews");
+assert.match(updaterHook, /import\.meta\.env\.DEV\s*\|\|\s*import\.meta\.env\.MODE\s*===\s*"preview"/, "mock update UI must be compiled only for dev or explicit built previews");
 assert.match(app, /feedbackVisible={feedbackLauncherActive}/, "app shell must pass the current feedback visibility rules to the topbar");
 assert.match(appTopbar, /<div\s+class="topbar-actions">[\s\S]*?<FeedbackButton/, "feedback must render inside the topbar action group");
 assert.match(appTopbar, /<div\s+class="brand-title-row">[\s\S]*?brand-mark[\s\S]*?<h1>Multi-Converter<\/h1>/, "the logo must sit immediately beside the product name");

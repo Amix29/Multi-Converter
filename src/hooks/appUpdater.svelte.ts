@@ -282,24 +282,27 @@ export function createAppUpdater(options: AppUpdaterOptions) {
         .catch(() => undefined);
     });
   });
-  $effect(() => {
-    void [currentVersion, options.isTauriRuntime, setAppUpdateStatus];
-    return untrack(() => {
-      // Keep this browser-only hook available for built preview QA; the Tauri runtime ignores it.
-      if (options.isTauriRuntime) return;
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("mockUpdate") !== "1") return;
-      const version = params.get("mockUpdateVersion") || "9.9.9";
-      setUpdateInfo({
-        version,
-        currentVersion,
-        date: null,
-        body: `# Multi-Converter v${version}\n\n## Highlights\n\n- Preview update reminder for interface QA.\n\n## Download And Installation\n\n- Preview only.\n\n## Validation\n\n- Preview only.`,
+  if (import.meta.env.DEV || import.meta.env.MODE === "preview") {
+    $effect(() => {
+      void [currentVersion, options.isTauriRuntime, setAppUpdateStatus];
+      return untrack(() => {
+        // Keep this browser-only hook available for built preview QA; the Tauri runtime ignores it.
+        if (options.isTauriRuntime) return;
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("mockUpdate") !== "1") return;
+        const version = params.get("mockUpdateVersion") || "9.9.9";
+        setUpdateInfo({
+          version,
+          currentVersion,
+          date: null,
+          body: `# Multi-Converter v${version}\n\n## Highlights\n\n- Preview update reminder for interface QA.\n\n## Download And Installation\n\n- Preview only.\n\n## Validation\n\n- Preview only.`,
+        });
+        setAppUpdateStatus("available");
+        setUpdateReminderVisible(true);
       });
-      setAppUpdateStatus("available");
-      setUpdateReminderVisible(true);
     });
-  });
+  }
+
   $effect(() => {
     void [
       canRunAutomaticUpdateCheck,

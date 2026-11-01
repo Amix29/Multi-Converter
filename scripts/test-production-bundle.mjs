@@ -6,7 +6,7 @@ const assets = path.join(root, "dist/assets");
 const files = fs.readdirSync(assets).filter(name => name.endsWith(".js"));
 assert.ok(files.length > 0, "build production assets before checking");
 const source = files.map(name => fs.readFileSync(path.join(assets, name), "utf8")).join("\n");
-for (const marker of ["mockLargeBatch", "mockSlowOcr", "mockConversionFailure", "multi-converter-preview-recovery", "multi-converter-preview"]) {
+for (const marker of ["mockUpdate", "mockUpdateVersion", "9.9.9", "Preview update reminder for interface QA.", "mockWelcomeSeen", "mockOcrImage", "mockSingleFile", "mockUnsupportedFiles", "mockMediaFiles", "mockLargeBatch", "mockSlowOcr", "mockConversionFailure", "multi-converter-preview-recovery", "multi-converter-preview"]) {
   assert.ok(!source.includes(marker), "preview fixture present in production: " + marker);
 }
 assert.doesNotMatch(source, /react-dom|react\.production|react-jsx-runtime/, "desktop bundle must not ship React");
