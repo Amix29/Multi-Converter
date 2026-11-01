@@ -4,7 +4,11 @@
   import { styleString } from "../../lib/styleString";
   import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
   import { t, type LanguageCode } from "../../i18n";
-  import { fileSummary, hasAvailableTargets, uploadedFilesSummary } from "../conversion/model";
+  import {
+    fileSummary,
+    hasAvailableTargets,
+    uploadedFilesSummary,
+  } from "../conversion/model";
   import { createVirtualGridWindow } from "../conversion/virtualGridWindow.svelte.js";
   import type { FileItem } from "../types";
   import FileTicket from "./FileTicket.svelte";

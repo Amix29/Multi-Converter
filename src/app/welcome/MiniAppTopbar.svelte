@@ -1,12 +1,10 @@
 <script lang="ts">
-  
-  
   import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
 
   import { t, type LanguageCode, type TranslationKey } from "../../i18n";
-  
+
   import type { Step } from "../types";
-  
+
   import SettingsIcon from "../components/SettingsIcon.svelte";
 
   type WelcomePreviewKind = "hello" | "language" | "convert";

@@ -1,4 +1,9 @@
-import { dictionaries, defaultLanguage, languageOptions, type LanguageCode } from "./index";
+import {
+  dictionaries,
+  defaultLanguage,
+  languageOptions,
+  type LanguageCode,
+} from "./index";
 export function createI18n() {
   let initial: LanguageCode = defaultLanguage;
   try {

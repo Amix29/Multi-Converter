@@ -1,12 +1,8 @@
 <script lang="ts">
-  
-  
-
   import { api } from "../../lib/api";
   import { t, type LanguageCode, type TranslationKey } from "../../i18n";
   import { minimumReportVersion, repositoryUrl } from "../../lib/updateService";
   import type { FeedbackKind } from "../types";
-  
 
   const issueNewUrl = `${repositoryUrl}/issues/new`;
   const feedbackKinds: FeedbackKind[] = ["bug", "feature", "other"];

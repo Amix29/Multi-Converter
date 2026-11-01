@@ -1,11 +1,9 @@
 <script lang="ts">
-  
   import { styleString } from "../lib/styleString";
 
   import { t, type LanguageCode } from "../i18n";
-  
+
   import { type UpdateDownloadSize } from "../lib/updateService";
-  
 
   function updateDownloadSizeLabel(size: UpdateDownloadSize) {
     const downloaded = formatMegabytes(size.downloaded);

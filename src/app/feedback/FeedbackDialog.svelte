@@ -1,8 +1,7 @@
 <script lang="ts">
   import { Button } from "../../components/ui/button/index.js";
   import ModalSurface from "../../components/ModalSurface.svelte";
-  
-  
+
   import { api } from "../../lib/api";
   import { t, type LanguageCode, type TranslationKey } from "../../i18n";
   import { minimumReportVersion, repositoryUrl } from "../../lib/updateService";

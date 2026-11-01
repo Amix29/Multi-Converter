@@ -4,10 +4,18 @@
 
   import ModalSurface from "./ModalSurface.svelte";
   import { untrack } from "svelte";
-  
+
   import { t, type LanguageCode } from "../i18n";
-  import { releaseNotesForLanguage, translateReleaseNotesForLanguage } from "../lib/releaseNotes";
-  import { releasePageUrl, type AppUpdateInfo, type UpdateDownloadSize, type UpdateStatus } from "../lib/updateService";
+  import {
+    releaseNotesForLanguage,
+    translateReleaseNotesForLanguage,
+  } from "../lib/releaseNotes";
+  import {
+    releasePageUrl,
+    type AppUpdateInfo,
+    type UpdateDownloadSize,
+    type UpdateStatus,
+  } from "../lib/updateService";
   import ReleaseNotesMarkdown from "./ReleaseNotesMarkdown.svelte";
   import UpdateProgress from "./UpdateProgress.svelte";
   function updateDownloadSizeLabel(size: UpdateDownloadSize) {

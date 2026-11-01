@@ -1,10 +1,7 @@
 <script lang="ts">
-  
-  
   import { t, type LanguageCode } from "../../i18n";
   import { importAnalyzingText, importedFilesText } from "../conversion/model";
   import type { ImportFeedback } from "../types";
-  
 
   let props: {
     language: LanguageCode;

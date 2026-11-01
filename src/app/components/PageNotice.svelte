@@ -1,8 +1,6 @@
 <script lang="ts">
-  
-  
   import { t, type LanguageCode } from "../../i18n";
-  
+
   import type { Notice } from "../types";
   import CloseIcon from "./CloseIcon.svelte";
 

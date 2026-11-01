@@ -2,10 +2,12 @@
   import { Button } from "../../components/ui/button/index.js";
   import { resolveStateUpdate, type StateSetter } from "../../lib/stateUpdate";
 
-  
-  
   import { t, type LanguageCode } from "../../i18n";
-  import { api, type DependencyBootstrap, type OcrRuntimeInfoV1 } from "../../lib/api";
+  import {
+    api,
+    type DependencyBootstrap,
+    type OcrRuntimeInfoV1,
+  } from "../../lib/api";
 
   let props: {
     language: LanguageCode;

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { Button } from "../../components/ui/button/index.js";
-  
+
   import { styleString } from "../../lib/styleString";
   import { t, translateBackendMessage, type LanguageCode } from "../../i18n";
   import { clamp, displayFileName, formatBytes } from "../conversion/model";
-  
+
   import { resultWarningText } from "../conversion/resultWarnings";
   import { statusLabelKeys, type FileItem } from "../types";
 

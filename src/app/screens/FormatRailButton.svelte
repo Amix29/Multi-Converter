@@ -1,16 +1,13 @@
 <script lang="ts">
-  
-  
   import { t, type LanguageCode } from "../../i18n";
-  
-  
-  import { compactFileMeta, displayFileName, hasAvailableTargets, targetForFormat } from "../conversion/model";
+
+  import {
+    compactFileMeta,
+    displayFileName,
+    hasAvailableTargets,
+    targetForFormat,
+  } from "../conversion/model";
   import type { FileItem } from "../types";
-  
-  
-  
-  
-  
 
   let props: {
     file: FileItem;

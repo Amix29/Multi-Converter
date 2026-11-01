@@ -1,12 +1,13 @@
 <script lang="ts">
   import { Button } from "./ui/button/index.js";
-  
-  
 
   import { t, type LanguageCode } from "../i18n";
-  
-  import { type AppUpdateInfo, type UpdateDownloadSize, type UpdateStatus } from "../lib/updateService";
-  
+
+  import {
+    type AppUpdateInfo,
+    type UpdateDownloadSize,
+    type UpdateStatus,
+  } from "../lib/updateService";
 
   function updateDownloadSizeLabel(size: UpdateDownloadSize) {
     const downloaded = formatMegabytes(size.downloaded);

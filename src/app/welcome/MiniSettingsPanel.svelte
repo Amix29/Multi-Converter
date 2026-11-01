@@ -1,14 +1,16 @@
 <script lang="ts">
   import { Button } from "../../components/ui/button/index.js";
-  
-  
-  
 
-  import { languageLabel, languageOptions, t, type LanguageCode, type TranslationKey } from "../../i18n";
+  import {
+    languageLabel,
+    languageOptions,
+    t,
+    type LanguageCode,
+    type TranslationKey,
+  } from "../../i18n";
   import { minimumReportVersion } from "../../lib/updateService";
   import type { Step } from "../types";
   import CloseIcon from "../components/CloseIcon.svelte";
-  
 
   type WelcomePreviewKind = "hello" | "language" | "convert";
   function advanceWelcomeStep(

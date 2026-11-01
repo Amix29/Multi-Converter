@@ -1,10 +1,9 @@
 <script lang="ts">
-  
   import { styleString } from "../../lib/styleString";
   import { t, type LanguageCode } from "../../i18n";
-  
+
   import { createVirtualWindow } from "../conversion/virtualWindow.svelte.js";
-  
+
   import { type FileItem } from "../types";
   import JobRow from "./JobRow.svelte";
 

@@ -1,7 +1,12 @@
 import { resolveStateUpdate, type StateSetter } from "../../lib/stateUpdate";
 import { untrack } from "svelte";
 
-import { api, type QualityProfile, type RecoveryPlan, type RecoveryState } from "../../lib/api";
+import {
+  api,
+  type QualityProfile,
+  type RecoveryPlan,
+  type RecoveryState,
+} from "../../lib/api";
 import { t, type LanguageCode } from "../../i18n";
 import type { FileItem, NoticeTone } from "../types";
 import { recoveryPlan } from "./recoveryModel";

@@ -1,7 +1,10 @@
 <script lang="ts">
   import type { Token } from "marked";
   import MarkdownNodes from "./MarkdownNodes.svelte";
-  import { fallbackMarkdownTokens, markdownNodes } from "../lib/releaseMarkdown";
+  import {
+    fallbackMarkdownTokens,
+    markdownNodes,
+  } from "../lib/releaseMarkdown";
   let { body }: { body: string } = $props();
   let tokens = $state.raw<readonly Token[]>([]);
   $effect(() => {

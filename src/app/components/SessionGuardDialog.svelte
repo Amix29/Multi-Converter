@@ -1,8 +1,7 @@
 <script lang="ts">
   import { Button } from "../../components/ui/button/index.js";
   import ModalSurface from "../../components/ModalSurface.svelte";
-  
-  
+
   import { t, type LanguageCode } from "../../i18n";
 
   let props: {

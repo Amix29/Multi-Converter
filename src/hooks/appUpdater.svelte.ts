@@ -6,7 +6,22 @@ import { getVersion } from "@tauri-apps/api/app";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { type Update } from "@tauri-apps/plugin-updater";
 import { t, type LanguageCode } from "../i18n";
-import { checkForUpdateWithTimeout, clearPendingUpdateInstallation, fetchReleaseBodyForVersion, isMissingUpdateReleaseError, isUpdateCheckTimeout, latestReleaseUrl, minimumReportVersion, readPendingUpdateInstallation, rememberUpdateInstallation, updateCheckErrorMessage, updateCheckTimeoutMs, type AppUpdateInfo, type UpdateDownloadSize, type UpdateStatus } from "../lib/updateService";
+import {
+  checkForUpdateWithTimeout,
+  clearPendingUpdateInstallation,
+  fetchReleaseBodyForVersion,
+  isMissingUpdateReleaseError,
+  isUpdateCheckTimeout,
+  latestReleaseUrl,
+  minimumReportVersion,
+  readPendingUpdateInstallation,
+  rememberUpdateInstallation,
+  updateCheckErrorMessage,
+  updateCheckTimeoutMs,
+  type AppUpdateInfo,
+  type UpdateDownloadSize,
+  type UpdateStatus,
+} from "../lib/updateService";
 type UpdateNoticeTone = "success" | "error";
 interface AppUpdaterOptions {
   bootInfoLoaded: boolean;

@@ -7,7 +7,14 @@
   import { t, translateCategory, type LanguageCode } from "../../i18n";
   import { stablePartitionBySupport } from "../conversion/largeListModel";
   import { createVirtualWindow } from "../conversion/virtualWindow.svelte.js";
-  import { fileGroupId, groupedFormatOptions, hasAvailableTargets, readyCountText, targetForFormat, uniqueIntents } from "../conversion/model";
+  import {
+    fileGroupId,
+    groupedFormatOptions,
+    hasAvailableTargets,
+    readyCountText,
+    targetForFormat,
+    uniqueIntents,
+  } from "../conversion/model";
   import type { FileItem } from "../types";
   import type { MediaMode, QualityProfile } from "../../lib/api";
   import QualityProfileSelector from "./QualityProfileSelector.svelte";

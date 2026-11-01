@@ -1,11 +1,13 @@
 <script lang="ts">
   import ModalSurface from "./ModalSurface.svelte";
-  
-  
+
   import { t, type LanguageCode } from "../i18n";
-  
-  import { type AppUpdateInfo, type UpdateDownloadSize } from "../lib/updateService";
-  
+
+  import {
+    type AppUpdateInfo,
+    type UpdateDownloadSize,
+  } from "../lib/updateService";
+
   import UpdateProgress from "./UpdateProgress.svelte";
   function updateDownloadSizeLabel(size: UpdateDownloadSize) {
     const downloaded = formatMegabytes(size.downloaded);

@@ -1,16 +1,5 @@
 <script lang="ts">
-  
-  
-  
-  
-  
-  
   import type { ConversionIntent, FileItem } from "../types";
-  
-  
-  
-  
-  
 
   let props: {
     intent: ConversionIntent;

@@ -2,7 +2,7 @@
   import { resolveStateUpdate, type StateSetter } from "../../lib/stateUpdate";
 
   import { untrack } from "svelte";
-  
+
   import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
   import { t, type LanguageCode } from "../../i18n";
   import FeedbackButton from "../feedback/FeedbackButton.svelte";

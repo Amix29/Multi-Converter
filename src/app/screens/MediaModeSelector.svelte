@@ -1,6 +1,4 @@
 <script lang="ts">
-  
-  
   import type { MediaMode } from "../../lib/api";
   import { t, type LanguageCode } from "../../i18n";
   import ChoiceSelect from "../components/ChoiceSelect.svelte";

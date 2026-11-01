@@ -7,7 +7,11 @@
   import { styleString } from "../lib/styleString";
   import { writeText } from "@tauri-apps/plugin-clipboard-manager";
   import { t, type LanguageCode, type TranslationKey } from "../i18n";
-  import { api, type OcrDocumentResultV1, type OcrProgressV1 } from "../lib/api";
+  import {
+    api,
+    type OcrDocumentResultV1,
+    type OcrProgressV1,
+  } from "../lib/api";
 
   function ocrPhaseLabel(language: LanguageCode, phase: string) {
     const keyByPhase: Record<string, string> = {

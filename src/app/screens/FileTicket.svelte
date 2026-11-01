@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Button } from "../../components/ui/button/index.js";
-  
-  
+
   import { t, type LanguageCode } from "../../i18n";
   import { compactFileMeta, hasAvailableTargets } from "../conversion/model";
   import type { FileItem } from "../types";

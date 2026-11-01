@@ -4,13 +4,13 @@
 
   import ModalSurface from "../../components/ModalSurface.svelte";
   import { untrack } from "svelte";
-  
+
   import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
   import { t, type LanguageCode, type TranslationKey } from "../../i18n";
-  
+
   import type { Step } from "../types";
   import CloseIcon from "../components/CloseIcon.svelte";
-  
+
   import WelcomePreview from "./WelcomePreview.svelte";
   type WelcomePreviewKind = "hello" | "language" | "convert";
   function advanceWelcomeStep(

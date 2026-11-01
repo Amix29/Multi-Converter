@@ -1,11 +1,19 @@
 <script lang="ts">
   import { Button } from "../../components/ui/button/index.js";
   import ModalSurface from "../../components/ModalSurface.svelte";
-  
-  
+
   import UpdateProgress from "../../components/UpdateProgress.svelte";
-  import { languageLabel, languageOptions, t, type LanguageCode } from "../../i18n";
-  import type { AppUpdateInfo, UpdateDownloadSize, UpdateStatus } from "../../lib/updateService";
+  import {
+    languageLabel,
+    languageOptions,
+    t,
+    type LanguageCode,
+  } from "../../i18n";
+  import type {
+    AppUpdateInfo,
+    UpdateDownloadSize,
+    UpdateStatus,
+  } from "../../lib/updateService";
   import CloseIcon from "../components/CloseIcon.svelte";
   import EngineDiagnostics from "./EngineDiagnostics.svelte";
   import type { DependencyBootstrap } from "../../lib/api";

@@ -5,8 +5,23 @@ import { api, type FileDescription, type MediaMode } from "../../lib/api";
 import { updateMediaMode } from "./mediaOptions";
 import { translateBackendMessage, type LanguageCode } from "../../i18n";
 import type { FileItem, ImportFeedback, NoticeTone, Step } from "../types";
-import { applyProgressBatch, preferredImportOrigin, selectUniqueImports, withoutUnsupportedFiles } from "./largeListModel";
-import { clamp, clipboardEventFiles, clipboardFileName, hasAvailableDescriptionTargets, isEditablePasteTarget, skippedFilesText, targetForFormat, toClipboardFileInput, updateFileSelection } from "./model";
+import {
+  applyProgressBatch,
+  preferredImportOrigin,
+  selectUniqueImports,
+  withoutUnsupportedFiles,
+} from "./largeListModel";
+import {
+  clamp,
+  clipboardEventFiles,
+  clipboardFileName,
+  hasAvailableDescriptionTargets,
+  isEditablePasteTarget,
+  skippedFilesText,
+  targetForFormat,
+  toClipboardFileInput,
+  updateFileSelection,
+} from "./model";
 
 export function createFileWorkflow(options: {
   language: LanguageCode;

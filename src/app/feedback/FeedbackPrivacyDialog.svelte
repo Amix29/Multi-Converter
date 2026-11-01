@@ -4,7 +4,7 @@
 
   import ModalSurface from "../../components/ModalSurface.svelte";
   import { untrack } from "svelte";
-  
+
   import { api } from "../../lib/api";
   import { t, type LanguageCode, type TranslationKey } from "../../i18n";
   import { minimumReportVersion, repositoryUrl } from "../../lib/updateService";

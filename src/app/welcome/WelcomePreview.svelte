@@ -1,13 +1,8 @@
 <script lang="ts">
-  
-  
-  
-
   import { t, type LanguageCode, type TranslationKey } from "../../i18n";
-  
+
   import type { Step } from "../types";
-  
-  
+
   import MiniAppTopbar from "./MiniAppTopbar.svelte";
   import MiniUploadArea from "./MiniUploadArea.svelte";
   import MiniSettingsPanel from "./MiniSettingsPanel.svelte";
