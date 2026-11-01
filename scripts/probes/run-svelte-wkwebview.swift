@@ -14,6 +14,7 @@ final class MigrationProbe: NSObject, NSApplicationDelegate, WKNavigationDelegat
     init(base: URL, source: String, output: URL) { self.base = base; self.source = source; self.output = output }
     func applicationDidFinishLaunching(_ notification: Notification) {
         let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
         configuration.userContentController.add(self, name: "migration")
         let initial = "window.__migrationProbeErrors=[];window.addEventListener('error',e=>window.__migrationProbeErrors.push(e.message));window.addEventListener('unhandledrejection',e=>window.__migrationProbeErrors.push(String(e.reason)));localStorage.setItem('multi-converter.theme',new URLSearchParams(location.search).get('probeTheme')||'light');"
         configuration.userContentController.addUserScript(WKUserScript(source: initial, injectionTime: .atDocumentStart, forMainFrameOnly: true))
@@ -35,7 +36,9 @@ final class MigrationProbe: NSObject, NSApplicationDelegate, WKNavigationDelegat
         let url = URL(string: "/?mockWelcomeSeen=1&mockMediaFiles=1&probeTheme=\(theme)&probeWidth=\(width)", relativeTo: base)!.absoluteURL
         view.load(URLRequest(url: url))
     }
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { finish(fatal: String(describing: error)) }
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        guard webView.url?.host == base.host else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             self.window.makeFirstResponder(self.view)
             for type in [NSEvent.EventType.keyDown, .keyUp] {
@@ -43,7 +46,7 @@ final class MigrationProbe: NSObject, NSApplicationDelegate, WKNavigationDelegat
             }
             let (theme, width) = self.scenarios[self.index]
             let reduced = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? "true" : "false"
-            let script = self.source + "\nrunMigrationProbe('\(theme)',\(width),\(reduced)).then(value=>window.webkit.messageHandlers.migration.postMessage(JSON.stringify(value)))"
+            let script = self.source + "\nrunMigrationProbe('\(theme)',\(width),\(reduced)).then(value=>window.webkit.messageHandlers.migration.postMessage(JSON.stringify(value)));void 0"
             self.view.evaluateJavaScript(script) { _, error in
                 if let error = error { self.finish(fatal: String(describing: error)) }
             }

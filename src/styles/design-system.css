@@ -1,6 +1,7 @@
 /* Desktop dimensions and compatibility aliases; brand values come from the approved source. */
 @import "../../branding-kit/08_design-system/tokens.css";
 :root {
+  --mc-radius-control: var(--radius-sm);
   --vlm-text-hero-xl: clamp(4.5rem, 11vw, 10.5rem);
   --vlm-text-hero: clamp(3.75rem, 8vw, 8rem);
   --vlm-text-display: clamp(3rem, 5.6vw, 5.75rem);

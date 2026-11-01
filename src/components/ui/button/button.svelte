@@ -7,7 +7,7 @@
   } from "svelte/elements";
 
   export const buttonVariants = tv({
-    base: "inline-flex items-center justify-center gap-2 disabled:pointer-events-none",
+    base: "tw:inline-flex tw:items-center tw:justify-center tw:gap-2 tw:disabled:pointer-events-none",
     variants: {
       variant: {
         default: "primary-button",
@@ -15,7 +15,7 @@
         ghost: "ghost-button",
         unstyled: "",
       },
-      size: { default: "min-h-11", compact: "min-h-8", inherit: "" },
+      size: { default: "tw:min-h-11", compact: "tw:min-h-8", inherit: "" },
     },
     defaultVariants: { variant: "default", size: "default" },
   });

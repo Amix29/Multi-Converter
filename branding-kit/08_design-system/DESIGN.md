@@ -212,7 +212,8 @@ Les contrôles denses desktop (32 px) sont réservés au pointeur fin ; les cham
 standard mesurent 44 px et les variantes confortables 48 px. Le catalogue garde
 ses variantes de présentation de 48 px. Une cible dense s'agrandit en mode tactile.
 
-Le pont Tailwind utilise `text-mc-body`, `text-mc-label` et `text-mc-title` pour
+Tailwind isole ses utilitaires et variables avec le préfixe `tw:`/`--tw-`.
+Le pont utilise `tw:text-mc-body`, `tw:text-mc-label` et `tw:text-mc-title` pour
 les tailles canoniques ; `--text-lg` du kit ne définit pas la classe Tailwind
 `text-lg`. L'ordre est Tailwind, tokens canoniques, puis styles du produit.
 Les alias de mouvement rapide et de panneau pointent sur 140 et 210 ms du kit.

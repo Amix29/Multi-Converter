@@ -20,6 +20,17 @@ window.runMigrationProbe = async (theme, width, expectedReduced) => {
     check('theme initialized from persisted preference', document.documentElement.dataset.theme === theme);
     check('native reduced-motion preference matches CSS', matchMedia('(prefers-reduced-motion: reduce)').matches === expectedReduced, expectedReduced);
     await pause(120); // Let the host's native keyboard event reach the WebView process.
+    const tokenProbe = document.createElement('span');
+    tokenProbe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none';
+    document.body.append(tokenProbe);
+    tokenProbe.className = 'tw:text-lg';
+    check('Tailwind text-lg is isolated from brand text-lg', getComputedStyle(tokenProbe).fontSize === '18px', getComputedStyle(tokenProbe).fontSize);
+    tokenProbe.className = 'tw:text-mc-body';
+    check('brand body bridge is exact', getComputedStyle(tokenProbe).fontSize === '16px');
+    tokenProbe.className = 'tw:bg-primary tw:text-primary-foreground tw:rounded-lg';
+    check('Tailwind action bridge has warm-white text', getComputedStyle(tokenProbe).color === 'rgb(255, 253, 247)');
+    check('Tailwind control radius uses the brand alias', getComputedStyle(tokenProbe).borderRadius === '12px', getComputedStyle(tokenProbe).borderRadius);
+    tokenProbe.remove();
     const browse = button('Parcourir');
     browse.focus();
     check('keyboard focus indicator is available', browse.matches(':focus-visible'));
@@ -71,6 +82,7 @@ window.runMigrationProbe = async (theme, width, expectedReduced) => {
     check('no horizontal document overflow', document.documentElement.scrollWidth <= innerWidth + 1, document.documentElement.scrollWidth);
     check('no captured runtime errors', report.errors.length === 0, report.errors);
   } catch (error) {
+    report.document = { href: location.href, ready: document.readyState, text: document.body?.innerText.slice(0, 800), scripts: [...document.scripts].map(node => node.src) };
     check('complete interaction sequence', false, String(error));
   }
   report.passed = checks.every(item => item.passed);

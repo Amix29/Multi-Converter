@@ -3,7 +3,8 @@
   "style": "nova",
   "tailwind": {
     "css": "src/styles/tailwind.css",
-    "baseColor": "neutral"
+    "baseColor": "neutral",
+    "prefix": "tw"
   },
   "aliases": {
     "components": "@/components",

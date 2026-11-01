@@ -30,6 +30,7 @@ for (const [index, mode] of ["light", "dark"].entries()) {
   }
 }
 const bridge = fs.readFileSync(path.join(root, "src/styles/tailwind.css"), "utf8");
+assert.match(bridge, /prefix\(tw\)/, "Tailwind variables must be isolated from canonical kit names");
 assert.doesNotMatch(bridge, /--text-(?:xs|sm|base|lg|xl):/, "generic Tailwind typography must remain independent");
 assert.match(bridge, /--color-primary: var\(--action-bg\)/);
 assert.match(bridge, /--color-primary-foreground: var\(--action-on\)/);
