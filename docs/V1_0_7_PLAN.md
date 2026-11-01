@@ -19,6 +19,10 @@
   Windows NSIS candidate was built from `adf7b8ce`; installed acceptance
   and new migrated AppImage/DMG packages remain open. No candidate is published.
 - macOS targets Apple Silicon on macOS 15 and later; Windows x64 and Linux x64 remain supported.
+- Native follow-through was stopped at the maintainer's request on 2026-11-01
+  to restore local disk space. New temporary copies are removed; no additional
+  installed acceptance or migrated Mac/Linux package is claimed. See the
+  [storage rollback receipt](audits/2026-11-01/svelte-migration/native-preparation-rollback.json).
 - Conversion/OCR audit: `codex/audit-follow-through`, based on integrated `41459c23`;
   [current work and handoff](V1_0_7_AUDIT_FOLLOW_THROUGH.md).
 - `codex/test` remains the persistent integration/CI validation branch; `main` is the public stable branch.

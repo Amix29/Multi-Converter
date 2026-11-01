@@ -6,14 +6,24 @@ Source fonctionnelle finale : **`adf7b8ce`**, branche de réalisation
 des modifications initiales ; installation propre et `check` complet y passent. Aucun push ni publication.
 Le site Next.js et le backend Rust/Tauri gardent leurs frontières.
 
-## Suite native demandée le 1 novembre 2026
+## Suite native interrompue le 1 novembre 2026
 
 Le mainteneur demande de poursuivre les essais natifs Windows et les paquets
 macOS avec moteurs réels, ainsi que Linux si un environnement local existe.
-Ubuntu WSL est disponible. Le contrôle Windows répond maintenant ; le protocole
-`docs/TESTING.md` exige toutefois un profil Windows propre et Windows Sandbox
-n’est pas installé. Le choix du profil d’installation est en cours de clarification.
-La préparation des moteurs et paquets se poursuit indépendamment.
+Ubuntu WSL est disponible et le contrôle Windows répond maintenant. Le
+mainteneur a choisi son compte actuel avec sauvegarde, sans preuve de profil
+Windows vierge. Il a ensuite demandé l’arrêt de cette préparation et la
+restitution de l’espace disque, avant toute nouvelle installation Windows,
+interaction GUI du produit ou compilation native Mac.
+
+Les transferts et vérifications ont été arrêtés. Les copies temporaires de
+sauvegarde Windows et le nouvel espace d’extraction Linux sont retirés ; le
+disque RAM temporaire Mac de 32 Gio est détaché. Les profils et l’installation
+Windows d’origine, le checkout Linux frontend antérieur, les preuves du portage
+et les anciens paquets sont conservés. Les mesures finales sont consignées dans
+le [reçu de restitution](audits/2026-11-01/svelte-migration/native-preparation-rollback.json).
+Cette phase ne fournit donc aucune nouvelle acceptation installée ni nouveau
+DMG/AppImage Svelte. Les critères natifs restent ouverts.
 
 Le validateur Windows refusait toute version autre que 1.0.6 : il compare
 désormais la candidate à la version réelle de `package.json`, avec régression
@@ -147,9 +157,10 @@ encore être construite/vérifiée sur sa base de distribution avec ses moteurs
 et son OCR Linux réels. Les placeholders du gate CI ne peuvent pas être publiés.
 
 La sélection native, le drop/collage et les exports GUI doivent encore être
-acceptés dans la candidate finale. L’outil de contrôle Windows a expiré avant
-interaction, en attente d’autorisation de fenêtre ; cette limite n’a pas été
-contournée par un autre pilote GUI. Les 66 scénarios installés Windows et les
+acceptés dans la candidate finale. Lors de la première phase, l’outil de contrôle
+Windows avait expiré avant interaction ; le contrôle répond désormais, mais la
+suite a été interrompue par le mainteneur avant tout essai GUI du produit.
+Les 66 scénarios installés Windows et les
 acceptations DMG/AppImage sur hôtes propres restent ouverts. Les copies Linux
 et Mac de validation frontend ne disposent pas ici de l’ensemble des moteurs
 et OCR natifs requis pour de nouveaux paquets complets.

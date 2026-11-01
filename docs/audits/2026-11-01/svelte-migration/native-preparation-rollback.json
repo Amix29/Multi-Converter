@@ -1,0 +1,42 @@
+{
+  "date": "2026-11-01",
+  "status": "stopped-at-maintainer-request",
+  "scope": "Restore storage consumed by this native follow-through; retain the completed Svelte migration and all earlier artifacts.",
+  "windows": {
+    "freeBytesBeforeFollowThrough": 16084119552,
+    "freeBytesBeforeCleanup": 8367419392,
+    "freeBytesAfterCleanup": 17953185792,
+    "removedTemporaryFiles": 93211,
+    "removedTemporaryLogicalBytes": 8694363315,
+    "temporaryDirectoryRemoved": true,
+    "originalApplicationProfilesModified": false,
+    "originalInstallationModified": false,
+    "newInstallerExecuted": false,
+    "productGuiScenariosExecuted": 0
+  },
+  "linux": {
+    "newNativeWorkspaceRemoved": true,
+    "previousFrontendValidationWorkspacePreserved": true,
+    "freeBlockDiscardCompleted": true,
+    "discardNote": "fstrim reports logical free filesystem ranges; that output is not a measurement of physical host space recovered.",
+    "newAppImageBuilt": false
+  },
+  "macos": {
+    "newDownloadSessionStopped": true,
+    "ramBytesReleased": 34359738368,
+    "ramVolumeDetached": true,
+    "newNativeHelperFilesRemoved": true,
+    "previousFrontendValidationWorkspacePreserved": true,
+    "installedApplicationModified": false,
+    "nativeApplicationBuildStarted": false
+  },
+  "transfer": {
+    "allTemporaryServersStopped": true,
+    "applicationOrUserFilesPublished": false
+  },
+  "retainedChanges": {
+    "nativeProtocolVersionFix": "023a6ad0489d2fa56bb85ff3bc59a329aeec6527",
+    "protocolSelfTest": "passed (66 scenario definitions); no installed acceptance claimed"
+  },
+  "acceptance": "Still open; native continuation stopped before product GUI acceptance or new Mac/Linux packages."
+}

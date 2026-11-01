@@ -1,5 +1,20 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-01 — Native preparation stopped; temporary storage restored
+
+The maintainer requested stopping the native follow-through and restoring disk
+space. Windows application-state backup copies and the newly extracted Linux
+payload are removed; the owned 32 GiB Mac RAM volume is detached. Original
+profiles, the previous Windows installation, earlier artifacts and the completed
+Svelte source migration remain preserved. See the
+[rollback receipt](audits/2026-11-01/svelte-migration/native-preparation-rollback.json).
+
+No new Windows installer was executed, no product GUI scenario was completed and
+no native Mac application build was started in this follow-through. Installed
+acceptance and new migrated DMG/AppImage packages remain open. The native ledger
+version check was corrected to use the current package version; its 66-scenario
+self-test passes, which is protocol evidence only.
+
 ## 2026-11-01 — Svelte source migration and renewed available gates
 
 Functional source **`adf7b8ce`**, locally integrated on **`codex/test`**, completes
