@@ -25,7 +25,7 @@ final class MigrationProbe: NSObject, NSApplicationDelegate, WKNavigationDelegat
         window.title = "Multi-Converter Svelte system WebKit probe"
         window.contentView = view
         window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: false)
+        NSApp.activate(ignoringOtherApps: true)
         DispatchQueue.main.asyncAfter(deadline: .now() + 110) { self.finish(fatal: "probe timeout") }
         next()
     }
@@ -42,7 +42,7 @@ final class MigrationProbe: NSObject, NSApplicationDelegate, WKNavigationDelegat
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             self.window.makeFirstResponder(self.view)
             for type in [NSEvent.EventType.keyDown, .keyUp] {
-                if let event = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: self.window.windowNumber, context: nil, characters: "\t", charactersIgnoringModifiers: "\t", isARepeat: false, keyCode: 48) { self.window.sendEvent(event) }
+                if let event = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: self.window.windowNumber, context: nil, characters: "\t", charactersIgnoringModifiers: "\t", isARepeat: false, keyCode: 48) { NSApp.sendEvent(event) }
             }
             let (theme, width) = self.scenarios[self.index]
             let reduced = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? "true" : "false"

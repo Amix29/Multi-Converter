@@ -17,10 +17,7 @@
   } from "../conversion/model";
   import type { FileItem } from "../types";
   import type { MediaMode, QualityProfile } from "../../lib/api";
-  import QualityProfileSelector from "./QualityProfileSelector.svelte";
-  import { supportsQualityProfile } from "./qualitySupport";
-  import MediaModeSelector from "./MediaModeSelector.svelte";
-  import { supportsStreamCopy } from "../conversion/mediaOptions";
+
   import FormatRailButton from "./FormatRailButton.svelte";
   import FormatCard from "./FormatCard.svelte";
 
@@ -223,16 +220,17 @@
       >
         {#if activeFile}
           <div class="format-tools">
-            {#if supportsStreamCopy(activeFile)}<MediaModeSelector
-                language={props.language}
-                value={activeFile.mediaMode ?? "convert"}
-                onChange={(value) => props.onMediaMode(activeFile.id, value)}
-              />{/if}
-            {#if activeFile.mediaMode !== "copy" && supportsQualityProfile(activeFile.selectedFormat, activeFile.sourceFormat)}<QualityProfileSelector
-                language={props.language}
-                value={props.qualityProfile}
-                onChange={props.onQualityProfile}
-              />{/if}
+            {#if activeFile.selectedFormat}
+              {#await import("./FormatOptions.svelte") then options}
+                <options.default
+                  file={activeFile}
+                  language={props.language}
+                  qualityProfile={props.qualityProfile}
+                  onQualityProfile={props.onQualityProfile}
+                  onMediaMode={props.onMediaMode}
+                />
+              {/await}
+            {/if}
             {#if selectedIntent}<p class="selected-format-detail">
                 {selectedIntent.target.engineLabel} · {selectedIntent.target
                   .detail}

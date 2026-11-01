@@ -1,0 +1,238 @@
+{
+  "date": "2026-11-01T14:15:37.110Z",
+  "scope": "Compiled mock preview only. Seven paired fresh Chromium contexts per implementation, alternating order. No native startup, OS RSS, OCR or package claim.",
+  "measurements": [
+    {
+      "implementation": "react",
+      "pair": 0,
+      "startupMs": 103.9354000000003,
+      "settingsMs": 376.7309,
+      "formatSelectionMs": 58.86810000000014,
+      "errors": []
+    },
+    {
+      "implementation": "svelte",
+      "pair": 0,
+      "startupMs": 106.99589999999989,
+      "settingsMs": 69.17770000000019,
+      "formatSelectionMs": 53.508600000000115,
+      "errors": []
+    },
+    {
+      "implementation": "svelte",
+      "pair": 1,
+      "startupMs": 140.63619999999992,
+      "settingsMs": 69.68029999999999,
+      "formatSelectionMs": 45.87689999999975,
+      "errors": []
+    },
+    {
+      "implementation": "react",
+      "pair": 1,
+      "startupMs": 117.49620000000004,
+      "settingsMs": 357.7988000000005,
+      "formatSelectionMs": 44.68509999999969,
+      "errors": []
+    },
+    {
+      "implementation": "react",
+      "pair": 2,
+      "startupMs": 115.52109999999993,
+      "settingsMs": 365.3126999999995,
+      "formatSelectionMs": 58.63500000000022,
+      "errors": []
+    },
+    {
+      "implementation": "svelte",
+      "pair": 2,
+      "startupMs": 136.1765000000005,
+      "settingsMs": 70.79889999999978,
+      "formatSelectionMs": 41.04239999999936,
+      "errors": []
+    },
+    {
+      "implementation": "svelte",
+      "pair": 3,
+      "startupMs": 118.44329999999991,
+      "settingsMs": 59.57790000000023,
+      "formatSelectionMs": 42.17630000000008,
+      "errors": []
+    },
+    {
+      "implementation": "react",
+      "pair": 3,
+      "startupMs": 101.53819999999996,
+      "settingsMs": 371.16779999999926,
+      "formatSelectionMs": 46.037100000000464,
+      "errors": []
+    },
+    {
+      "implementation": "react",
+      "pair": 4,
+      "startupMs": 118.95309999999972,
+      "settingsMs": 366.4223000000002,
+      "formatSelectionMs": 62.76630000000023,
+      "errors": []
+    },
+    {
+      "implementation": "svelte",
+      "pair": 4,
+      "startupMs": 121.15149999999994,
+      "settingsMs": 68.56909999999971,
+      "formatSelectionMs": 46.74250000000029,
+      "errors": []
+    },
+    {
+      "implementation": "svelte",
+      "pair": 5,
+      "startupMs": 115.65620000000126,
+      "settingsMs": 74.76100000000042,
+      "formatSelectionMs": 45.854699999999866,
+      "errors": []
+    },
+    {
+      "implementation": "react",
+      "pair": 5,
+      "startupMs": 109.2569999999996,
+      "settingsMs": 360.5553,
+      "formatSelectionMs": 61.9968000000008,
+      "errors": []
+    },
+    {
+      "implementation": "react",
+      "pair": 6,
+      "startupMs": 128.0023000000001,
+      "settingsMs": 367.10259999999835,
+      "formatSelectionMs": 45.943199999999706,
+      "errors": []
+    },
+    {
+      "implementation": "svelte",
+      "pair": 6,
+      "startupMs": 112.71689999999944,
+      "settingsMs": 64.16840000000047,
+      "formatSelectionMs": 44.335399999999936,
+      "errors": []
+    }
+  ],
+  "summaries": [
+    {
+      "implementation": "react",
+      "median": {
+        "startupMs": 115.52109999999993,
+        "settingsMs": 366.4223000000002,
+        "formatSelectionMs": 58.63500000000022
+      }
+    },
+    {
+      "implementation": "svelte",
+      "median": {
+        "startupMs": 118.44329999999991,
+        "settingsMs": 69.17770000000019,
+        "formatSelectionMs": 45.854699999999866
+      }
+    }
+  ],
+  "assets": [
+    {
+      "implementation": "react",
+      "files": [
+        {
+          "name": "api-B7tpCnUx.js",
+          "bytes": 134326,
+          "gzipBytes": 34020
+        },
+        {
+          "name": "event-CpjZXHKX.js",
+          "bytes": 3297,
+          "gzipBytes": 1350
+        },
+        {
+          "name": "ImageOcrDialog-jI7Zo2Zk.js",
+          "bytes": 5561,
+          "gzipBytes": 2011
+        },
+        {
+          "name": "index-CiQpcrhl.js",
+          "bytes": 98886,
+          "gzipBytes": 27732
+        },
+        {
+          "name": "index-RovTUPF4.css",
+          "bytes": 82136,
+          "gzipBytes": 14904
+        },
+        {
+          "name": "marked.esm-BtO3-ueZ.js",
+          "bytes": 40511,
+          "gzipBytes": 12265
+        },
+        {
+          "name": "react-vendor-BYvtchxv.js",
+          "bytes": 189551,
+          "gzipBytes": 58935
+        },
+        {
+          "name": "SettingsPanel-BXzCxuEw.js",
+          "bytes": 7464,
+          "gzipBytes": 2162
+        },
+        {
+          "name": "window-bN7oBJ8M.js",
+          "bytes": 12669,
+          "gzipBytes": 2999
+        }
+      ]
+    },
+    {
+      "implementation": "svelte",
+      "files": [
+        {
+          "name": "FormatOptions-BrYkvJaa.css",
+          "bytes": 547,
+          "gzipBytes": 280
+        },
+        {
+          "name": "FormatOptions-BUHLB0gW.js",
+          "bytes": 68405,
+          "gzipBytes": 19910
+        },
+        {
+          "name": "ImageOcrDialog-wm4Sdi7c.js",
+          "bytes": 7454,
+          "gzipBytes": 2874
+        },
+        {
+          "name": "index-B4KSqr45.js",
+          "bytes": 198635,
+          "gzipBytes": 54092
+        },
+        {
+          "name": "index-CK5vtXj5.css",
+          "bytes": 88861,
+          "gzipBytes": 16620
+        },
+        {
+          "name": "marked.esm-BtO3-ueZ.js",
+          "bytes": 40511,
+          "gzipBytes": 12265
+        },
+        {
+          "name": "scroll-lock-BYrjcUsk.js",
+          "bytes": 215932,
+          "gzipBytes": 63000
+        },
+        {
+          "name": "SettingsPanel-DekKy4Vb.js",
+          "bytes": 9500,
+          "gzipBytes": 3533
+        },
+        {
+          "name": "window-BbyMcB8_.js",
+          "bytes": 12636,
+          "gzipBytes": 2967
+        }
+      ]
+    }
+  ]
+}
