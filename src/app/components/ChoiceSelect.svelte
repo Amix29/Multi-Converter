@@ -60,7 +60,7 @@
   :global(.mc-select-menu) {
     position: relative;
     width: var(--bits-select-anchor-width);
-    min-width: 220px;
+    min-width: 0;
     max-width: calc(100vw - 24px);
     max-height: min(280px, var(--bits-select-content-available-height));
   }

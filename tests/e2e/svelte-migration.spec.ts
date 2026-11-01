@@ -11,6 +11,7 @@ test.beforeEach(async ({ page }, info) => {
 test("Bits select supports keyboard, typeahead, dismissal and stream-copy state", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 375, height: 900 });
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/?mockWelcomeSeen=1&mockMediaFiles=1");
@@ -21,6 +22,9 @@ test("Bits select supports keyboard, typeahead, dismissal and stream-copy state"
   await mode.focus();
   await page.keyboard.press("Space");
   await expect(page.getByRole("listbox")).toBeVisible();
+  const menuBounds = await page.getByRole("listbox").boundingBox();
+  expect(menuBounds!.x).toBeGreaterThanOrEqual(0);
+  expect(menuBounds!.x + menuBounds!.width).toBeLessThanOrEqual(375);
   await page.keyboard.press("End");
   await page.keyboard.press("Enter");
   await expect(mode).toContainText("Copier");
