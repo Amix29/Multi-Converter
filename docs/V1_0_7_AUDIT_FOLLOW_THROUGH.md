@@ -576,3 +576,19 @@ See [the design-system ledger](OPEN_DESIGN_SYSTEM.md) and its validation receipt
 Work uses `codex/open-design-system` and integrates locally on `codex/test`.
 Runtime styling adoption and native conversion acceptance remain separate work;
 this checkpoint creates a reusable design package and publishes no app release.
+
+## 2026-11-01 — Desktop themes and interaction polish
+
+The converter now consumes the approved brand tokens, with a local
+system/light/dark preference in all six interface languages. The former vendor
+palette is no longer loaded. Quality/media menus share the catalogue's custom
+control treatment and retain keyboard selection, Escape and focus behavior.
+The navigation panel blends into the paper at the top and appears as a blurred
+surface after page/list scrolling. Hover, press, menu, dialogue and catalogue
+reveal transitions respect reduced-motion and forced-color settings.
+
+Initial browser checks pass in both themes at five widths; the 56 unit tests
+and existing browser regression suite (12 passed, 10 planned project skips)
+also pass. The [adoption ledger](APP_DESIGN_SYSTEM_ADOPTION.md) records final
+checks and the Open Design synchronization. These checks use preview APIs;
+they do not renew installed-package or native-engine acceptance receipts.

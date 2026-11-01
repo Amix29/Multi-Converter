@@ -29,3 +29,11 @@ de perte de métadonnées et un pied d'action accessible à 375 px. »
 
 Dans le dépôt Multi-Converter, `docs/OPEN_DESIGN_SYSTEM.md` conserve le statut
 d'installation Open Design et les contrôles effectués.
+
+Après une modification du catalogue, exécuter depuis la racine du dépôt
+`python scripts/build-design-previews.py`. Ce générateur sans dépendance
+reconstruit les six aperçus, les deux entrées `system/kit*.html` et les empreintes
+de source. Ne pas modifier directement les pages générées. Le produit et le
+catalogue partagent `assets/controls.css` ; le comportement du menu React reste
+dans `src/app/components/ChoiceSelect.tsx`. Toute modification des tokens exige
+aussi la régénération des index JSON natifs avant de mettre à jour Open Design.

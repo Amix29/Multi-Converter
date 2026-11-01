@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import brandLogoUrl from "../../assets/multi-converter-icon-brand-orange.svg";
 import { t, type LanguageCode } from "../../i18n";
 import { FeedbackButton } from "../feedback/FeedbackOverlays";
@@ -14,8 +14,21 @@ export const AppTopbar = memo(function AppTopbar(props: {
   onSettings(): void;
   onStep(step: Step): void;
 }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const containers = document.querySelectorAll(".screen.is-active .file-lane, .screen.is-active .rail-scroll, .screen.is-active .format-results, .screen.is-active .job-list");
+      setScrolled(window.scrollY > 16 || Array.from(containers).some(element => element.scrollTop > 16));
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    update();
+    document.addEventListener("scroll", onScroll, { capture: true, passive: true });
+    return () => { cancelAnimationFrame(frame); document.removeEventListener("scroll", onScroll, true); };
+  }, [props.step]);
   return (
-    <header className="topbar">
+    <header className="topbar" data-scrolled={scrolled}>
       <div className="brand">
         <div className="brand-title-row">
           <div className="brand-mark" aria-hidden="true">
@@ -35,6 +48,7 @@ export const AppTopbar = memo(function AppTopbar(props: {
             type="button"
             className={`process-step ${props.step === item.id ? "is-active" : ""} ${props.step > item.id ? "is-done" : ""}`}
             disabled={item.id > props.step || props.isConverting}
+            aria-current={props.step === item.id ? "step" : undefined}
             onClick={() => props.onStep(item.id)}
           >
             <span>{item.label}</span>

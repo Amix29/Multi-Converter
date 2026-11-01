@@ -123,15 +123,23 @@ preview mode; production-output inspection remains part of frontend validation.
 
 ## Styling Boundary
 
-Vellum Paper remains the desktop foundation. `src/styles.css` imports the focused
-styles under `src/styles/`; components consume shared semantic `--vlm-*` tokens.
+`src/styles/design-system.css` imports the approved product tokens directly and
+supplies desktop dimensions and semantic compatibility aliases. `src/styles.css`
+imports focused styles under `src/styles/`; existing components retain their
+`--vlm-*` names while resolving to the new brand values. The old vendor palette
+is retained as historical source and is no longer imported by the application.
 Editor styles, bundled editor icons and font controls have been removed.
 
 The approved design reference for new visual work is
 [`branding-kit/08_design-system/DESIGN.md`](../branding-kit/08_design-system/DESIGN.md):
 the original warm sketchbook identity with light orange `#c86a34` and dark green
-`#4d8445`, approved on 2026-10-30. It is registered in Open Design; this design
-package does not itself migrate the current runtime stylesheet.
+`#4d8445`, approved on 2026-10-30. Both runtime themes now use this source.
+Appearance is a local system/light/dark preference; its system listener stays
+active outside settings. Shared select styles cover the catalogue and product.
+Menus render above clipped converter panels, preserve trigger focus and expose
+listbox navigation. Header panel opacity follows page or active list scrolling;
+blur is limited to that panel with an opaque fallback. See
+[`APP_DESIGN_SYSTEM_ADOPTION.md`](APP_DESIGN_SYSTEM_ADOPTION.md) for evidence.
 
 ## Marketing Site Boundary
 

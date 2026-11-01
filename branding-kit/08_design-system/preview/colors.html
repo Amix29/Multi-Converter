@@ -1035,6 +1035,98 @@ dialog h2 { font-weight: 900; }
 }
 
 </style>
+  <style>
+/* Shared select treatment for the product and the reference catalogue. */
+.choice-select { display:grid; gap:8px; min-width:0; }
+.choice-label { color:var(--fg-2); font:750 13px/1.4 var(--font-body); }
+.choice-trigger {
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  width:100%; min-width:0; min-height:48px; padding:11px 14px;
+  border:1px solid var(--control-border); border-radius:12px;
+  color:var(--fg); background:var(--surface); text-align:left; cursor:pointer;
+  font:650 14px/1.45 var(--font-body);
+  box-shadow:0 1px 0 color-mix(in srgb,var(--surface) 80%,transparent) inset,0 2px 3px color-mix(in srgb,var(--fg) 4%,transparent);
+  transition:border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease,transform 150ms cubic-bezier(.25,.46,.45,.94);
+}
+.choice-trigger>span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.choice-trigger svg { width:20px; height:20px; flex-shrink:0; color:var(--muted); transition:transform 180ms cubic-bezier(.19,1,.22,1); }
+.choice-trigger svg,.choice-menu svg { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.choice-trigger[aria-expanded="true"] { border-color:var(--accent-strong); box-shadow:0 0 0 3px var(--accent-soft); }
+.choice-trigger[aria-expanded="true"] svg { transform:rotate(180deg); color:var(--accent-strong); }
+.choice-trigger:focus-visible { outline:2px solid var(--focus); outline-offset:3px; }
+.choice-menu {
+  position:fixed; z-index:1100; margin:0; padding:6px;
+  overflow:auto; overscroll-behavior:contain; scrollbar-width:thin;
+  border:1px solid var(--control-border); border-radius:16px;
+  background:var(--surface); color:var(--fg); font:650 14px/1.45 var(--font-body);
+  box-shadow:0 12px 36px color-mix(in srgb,var(--fg) 14%,transparent),0 2px 6px color-mix(in srgb,var(--fg) 7%,transparent);
+  transform-origin:top center; animation:choice-in 180ms cubic-bezier(.19,1,.22,1) both;
+}
+.choice-menu [role="option"] {
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  min-height:44px; padding:10px 12px; border-radius:10px; cursor:pointer;
+}
+.choice-menu [role="option"][data-active="true"] { background:var(--accent-soft); }
+.choice-menu [role="option"][aria-selected="true"] { color:var(--accent-strong); }
+.choice-menu svg { width:18px; height:18px; flex-shrink:0; opacity:0; }
+.choice-menu [aria-selected="true"] svg { opacity:1; }
+.choice-menu[data-keyboard="true"] { animation:none; }
+select[hidden] { display:none!important; }
+@media (hover:hover) and (pointer:fine) {
+  .choice-trigger:hover { border-color:var(--accent-strong); background:var(--surface-warm); }
+}
+.choice-trigger:active { transform:scale(.99); }
+@keyframes choice-in { from { opacity:0; transform:translateY(-4px) scale(.985); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce) { .choice-menu { animation:none; } .choice-trigger:active { transform:none; } }
+@media (forced-colors:active) { .choice-trigger,.choice-menu { border-color:ButtonText; } .choice-menu [data-active="true"] { outline:2px solid Highlight; } }
+
+</style>
+  <style>
+.masthead { isolation:isolate; border-color:transparent; background:transparent; box-shadow:none; }
+.masthead::before {
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  border:1px solid var(--border); border-radius:inherit; background:var(--surface);
+  box-shadow:0 12px 36px color-mix(in srgb,var(--fg) 8%,transparent),0 1px 0 color-mix(in srgb,var(--surface) 80%,transparent) inset;
+  opacity:0; transition:opacity 240ms cubic-bezier(.19,1,.22,1);
+}
+.masthead.is-scrolled::before,.masthead:has(.brand-navigation.is-open)::before { opacity:1; }
+[data-theme="dark"] .masthead { box-shadow:none; }
+@supports (backdrop-filter:blur(1px)) {
+  .masthead::before { background:color-mix(in srgb,var(--surface) 88%,transparent); backdrop-filter:blur(18px) saturate(1.08); }
+}
+.brand-navigation { position:relative; border-color:transparent; }
+.masthead.is-scrolled .brand-navigation { border-color:var(--border); }
+.brand-navigation a { transition:color 150ms ease,background-color 180ms ease,transform 180ms cubic-bezier(.19,1,.22,1); }
+.brand-navigation a[aria-current] { color:var(--accent-strong); background:var(--accent-soft); }
+.section-heading h2::after { content:""; display:block; width:56px; height:3px; margin-top:16px; border-radius:3px; background:var(--accent-strong); transform-origin:left; }
+.reveal-ready { opacity:0; transform:translateY(12px); transition:opacity 380ms cubic-bezier(.19,1,.22,1),transform 380ms cubic-bezier(.19,1,.22,1); }
+.reveal-ready.is-visible { opacity:1; transform:none; }
+.paper-card,.swatch>div { transition:transform 220ms cubic-bezier(.19,1,.22,1),border-color 180ms ease,box-shadow 180ms ease; }
+.button svg { transition:transform 180ms cubic-bezier(.19,1,.22,1); }
+.button:active:not(:disabled) { transform:translateY(1px) scale(.98); }
+.quality label { transition:background-color 180ms ease,border-color 180ms ease,transform 180ms cubic-bezier(.19,1,.22,1); }
+.quality label:has(:checked) { border-color:var(--accent-strong); box-shadow:0 0 0 1px var(--accent-strong) inset; }
+.quality input { accent-color:var(--accent-strong); }
+.status svg { stroke-dasharray:60; }
+dialog[open] { animation:catalogue-dialog-in 220ms cubic-bezier(.19,1,.22,1) both; }
+.notice:not([hidden]) { animation:catalogue-dialog-in 180ms cubic-bezier(.19,1,.22,1) both; }
+@keyframes catalogue-dialog-in { from { opacity:0; transform:translateY(6px) scale(.99); } to { opacity:1; transform:none; } }
+@media (hover:hover) and (pointer:fine) {
+  .swatch>div:hover { transform:translateY(-3px); }
+  .paper-card:hover { border-color:var(--control-border); }
+  .button.primary:hover svg { transform:translateX(3px); }
+  .brand-navigation a:hover { transform:translateY(-1px); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .reveal-ready { opacity:1; transform:none; }
+  .button:active,.swatch>div:hover,.brand-navigation a:hover,.button.primary:hover svg { transform:none; }
+  dialog[open],.notice:not([hidden]) { animation:none; }
+}
+@media (forced-colors:active) { .masthead::before { background:Canvas; backdrop-filter:none; } }
+
+</style>
+
+
 
 <style>main>section:not(#fondations),.book-footer,#brand-navigation,#menu-toggle{display:none!important}main>section{padding-top:44px!important}</style>
 </head>
@@ -1227,6 +1319,128 @@ Le bon format. Tout simplement.</textarea><div class="preview-footer"><span clas
       byId('ocr-status').textContent = 'Copie automatique indisponible. Copiez la sélection avec votre raccourci habituel.';
     }
   });
+})();
+
+</script>
+<script>
+/* Progressive enhancement: native selects remain the no-script fallback. */
+(() => {
+  let dismiss = () => {};
+  document.querySelectorAll('select').forEach(select => {
+    const originalId = select.id;
+    const label = document.querySelector(`label[for="${originalId}"]`);
+    const trigger = document.createElement('button');
+    trigger.id = `${originalId}-trigger`;
+    trigger.type = 'button';
+    trigger.className = 'choice-trigger';
+    trigger.setAttribute('role', 'combobox');
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.setAttribute('aria-label', label?.textContent || 'Format de sortie');
+    if (select.hasAttribute('aria-describedby')) trigger.setAttribute('aria-describedby',select.getAttribute('aria-describedby'));
+    if (label) label.htmlFor = trigger.id;
+    const value = document.createElement('span');
+    const chevron = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>';
+    trigger.append(value);
+    trigger.insertAdjacentHTML('beforeend', chevron);
+    const refresh = () => { value.textContent = select.selectedOptions[0]?.textContent || ''; };
+    refresh();
+    select.after(trigger);
+    select.hidden = true;
+    let menu = null;
+    let active = 0;
+    let search = '';
+    let searchedAt = 0;
+    const close = () => {
+      menu?.remove(); menu = null;
+      trigger.setAttribute('aria-expanded','false');
+      trigger.removeAttribute('aria-controls');
+      trigger.removeAttribute('aria-activedescendant');
+    };
+    const highlight = () => {
+      menu?.querySelectorAll('[role="option"]').forEach((option,index) => { option.dataset.active=String(index===active); });
+      trigger.setAttribute('aria-activedescendant',`${originalId}-option-${active}`);
+      menu?.children[active]?.scrollIntoView({block:'nearest'});
+    };
+    const choose = index => { select.selectedIndex=index; refresh(); select.dispatchEvent(new Event('change',{bubbles:true})); close(); };
+    const open = keyboard => {
+      dismiss(); dismiss=close;
+      const rect=trigger.getBoundingClientRect();
+      const width=Math.min(Math.max(rect.width,220),innerWidth-24);
+      menu=document.createElement('div');
+      menu.id=`${originalId}-options`;
+      menu.className='choice-menu'; menu.setAttribute('role','listbox');
+      menu.setAttribute('aria-label',trigger.getAttribute('aria-label'));
+      const height=Math.min(260,select.options.length*48+16,Math.max(80,innerHeight-24));
+      const top=innerHeight-rect.bottom-12<height && rect.top>height ? rect.top-height-6 : rect.bottom+6;
+      Object.assign(menu.style,{left:`${Math.max(12,Math.min(rect.left,innerWidth-width-12))}px`,top:`${top}px`,width:`${width}px`,maxHeight:`${Math.min(height,innerHeight-top-12)}px`});
+      if(keyboard) menu.style.animation='none';
+      [...select.options].forEach((option,index) => {
+        const row=document.createElement('div');
+        row.id=`${originalId}-option-${index}`;
+        row.setAttribute('role','option'); row.setAttribute('aria-selected',String(index===select.selectedIndex));
+        const text=document.createElement('span'); text.textContent=option.textContent; row.append(text);
+        row.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>');
+        row.addEventListener('pointermove',()=>{ active=index; highlight(); });
+        row.addEventListener('pointerdown',event=>event.preventDefault());
+        row.addEventListener('click',()=>choose(index));
+        menu.append(row);
+      });
+      document.body.append(menu); active=select.selectedIndex;
+      trigger.setAttribute('aria-expanded','true'); trigger.setAttribute('aria-controls',menu.id); highlight();
+    };
+    trigger.addEventListener('click',()=>menu?close():open(false));
+    trigger.addEventListener('blur',close);
+    select.addEventListener('change',refresh);
+    trigger.addEventListener('keydown',event=>{
+      if(event.key==='Tab') { close(); return; }
+      if(event.key==='Escape'&&menu) { event.preventDefault(); event.stopPropagation(); close(); return; }
+      if(['ArrowDown','ArrowUp','Home','End','Enter',' '].includes(event.key)) {
+        event.preventDefault();
+        if(!menu) { open(true); return; }
+        if(event.key==='Enter'||event.key===' ') { choose(active); return; }
+        active=event.key==='Home'?0:event.key==='End'?select.options.length-1:(active+(event.key==='ArrowDown'?1:-1)+select.options.length)%select.options.length;
+        highlight();
+      } else if(event.key.length===1&&!event.ctrlKey&&!event.metaKey&&!event.altKey) {
+        event.preventDefault(); const now=Date.now(); search=now-searchedAt>600?event.key:search+event.key; searchedAt=now;
+        if(!menu) open(true);
+        const index=[...select.options].findIndex(option=>option.textContent.toLocaleLowerCase().startsWith(search.toLocaleLowerCase()));
+        if(index>=0) { active=index; highlight(); }
+      }
+    });
+    document.addEventListener('pointerdown',event=>{ if(!trigger.contains(event.target)&&!menu?.contains(event.target)) close(); },true);
+    document.addEventListener('scroll',event=>{ if(!menu?.contains(event.target)) close(); },{capture:true,passive:true});
+    window.addEventListener('resize',close);
+  });
+})();
+
+</script>
+<script>
+(() => {
+  const header = document.querySelector('.masthead');
+  const links = [...document.querySelectorAll('.brand-navigation a')];
+  let frame = 0;
+  const update = () => { frame=0; header?.classList.toggle('is-scrolled',scrollY>24); };
+  addEventListener('scroll',()=>{ if(!frame) frame=requestAnimationFrame(update); },{passive:true});
+  update();
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const sections = [...document.querySelectorAll('main>section[id]')];
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        if(entry.intersectionRatio>.15) links.forEach(link=>{
+          if(link.hash===`#${entry.target.id}`) link.setAttribute('aria-current','location');
+          else link.removeAttribute('aria-current');
+        });
+      }
+    });
+  },{threshold:[0,.15,.4],rootMargin:'0px 0px -5% 0px'});
+  sections.forEach(section=>{
+    if(!reduced.matches && section.getBoundingClientRect().top>innerHeight) section.classList.add('reveal-ready');
+    observer.observe(section);
+  });
+  reduced.addEventListener('change',()=>{ if(reduced.matches) sections.forEach(section=>section.classList.remove('reveal-ready')); });
 })();
 
 </script>

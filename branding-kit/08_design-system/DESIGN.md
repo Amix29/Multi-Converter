@@ -168,5 +168,27 @@ conversion ni OCR n'est exécuté par le catalogue.
 Sources : kit de marque versionné, guide typographique, styles du site et
 captures fournies par le mainteneur. Les ancres clair/sombre sont explicitement
 validées le 30 octobre 2026. `tokens.css` est la source compilée ; les index
-JSON, manifeste de composants et rapports sont dérivés. L'adoption dans le
-logiciel livré reste un travail séparé de la création de cette bibliothèque.
+JSON, manifeste de composants et rapports sont dérivés. L'application en
+développement importe ces tokens ; les validations des paquets installés
+restent distinctes de la validation visuelle du catalogue et du frontend.
+
+## 10. Finition des interactions — 1 novembre 2026
+
+La barre conserve ses liens et son accès clavier en haut de page. Son panneau
+est transparent à cette position, puis devient un verre lisible après 24 px de
+défilement (16 px dans l'application). Flou de 18 px, surface à 88 %, bord discret
+et ombre douce. Sans `backdrop-filter`, utiliser une surface opaque. Ne pas
+animer le flou lui-même ; seule l'opacité du panneau change en 240 ms.
+
+Les sélecteurs partagent `assets/controls.css` : police sans-serif, champ de
+48 px, chevron qui pivote, menu de surface arrondi, coche de sélection et état
+actif distinct. Flèches, Début/Fin et recherche par caractères déplacent l'option
+active ; Entrée valide, Échap annule et Tab poursuit la navigation. Le focus
+reste sur le déclencheur. Dans le catalogue, le sélecteur natif reste le repli
+sans JavaScript. Les options ne prennent aucune animation au clavier.
+
+Les retours de pression (150–180 ms), les flèches de bouton, les cartes au
+survol, les états de profil et les ouvertures de dialogue restent courts.
+Les sections du catalogue entrent une seule fois, par opacité et déplacement
+de 12 px sur 380 ms. La réduction des animations supprime ces déplacements.
+Ne pas animer l'arrivée de chaque fichier dans les longues listes virtualisées.

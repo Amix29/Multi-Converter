@@ -1,4 +1,8 @@
 {
+  "settings.appearance": "Darstellung",
+  "settings.theme.system": "System",
+  "settings.theme.light": "Hell",
+  "settings.theme.dark": "Dunkel",
   "recovery.unavailable": "Dieser Stapel ist abgelaufen oder nicht mehr verfügbar.",
   "recovery.setting": "Letzten gestarteten Stapel merken (24 Std.)",
   "recovery.settingDetail": "Standardmäßig aus. Speichert Pfade und Einstellungen auf diesem Gerät, ohne Dateiinhalte. Originale erforderlich; Ausgaben werden neu berechnet.",

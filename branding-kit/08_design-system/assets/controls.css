@@ -1,0 +1,43 @@
+/* Shared select treatment for the product and the reference catalogue. */
+.choice-select { display:grid; gap:8px; min-width:0; }
+.choice-label { color:var(--fg-2); font:750 13px/1.4 var(--font-body); }
+.choice-trigger {
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  width:100%; min-width:0; min-height:48px; padding:11px 14px;
+  border:1px solid var(--control-border); border-radius:12px;
+  color:var(--fg); background:var(--surface); text-align:left; cursor:pointer;
+  font:650 14px/1.45 var(--font-body);
+  box-shadow:0 1px 0 color-mix(in srgb,var(--surface) 80%,transparent) inset,0 2px 3px color-mix(in srgb,var(--fg) 4%,transparent);
+  transition:border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease,transform 150ms cubic-bezier(.25,.46,.45,.94);
+}
+.choice-trigger>span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.choice-trigger svg { width:20px; height:20px; flex-shrink:0; color:var(--muted); transition:transform 180ms cubic-bezier(.19,1,.22,1); }
+.choice-trigger svg,.choice-menu svg { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.choice-trigger[aria-expanded="true"] { border-color:var(--accent-strong); box-shadow:0 0 0 3px var(--accent-soft); }
+.choice-trigger[aria-expanded="true"] svg { transform:rotate(180deg); color:var(--accent-strong); }
+.choice-trigger:focus-visible { outline:2px solid var(--focus); outline-offset:3px; }
+.choice-menu {
+  position:fixed; z-index:1100; margin:0; padding:6px;
+  overflow:auto; overscroll-behavior:contain; scrollbar-width:thin;
+  border:1px solid var(--control-border); border-radius:16px;
+  background:var(--surface); color:var(--fg); font:650 14px/1.45 var(--font-body);
+  box-shadow:0 12px 36px color-mix(in srgb,var(--fg) 14%,transparent),0 2px 6px color-mix(in srgb,var(--fg) 7%,transparent);
+  transform-origin:top center; animation:choice-in 180ms cubic-bezier(.19,1,.22,1) both;
+}
+.choice-menu [role="option"] {
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  min-height:44px; padding:10px 12px; border-radius:10px; cursor:pointer;
+}
+.choice-menu [role="option"][data-active="true"] { background:var(--accent-soft); }
+.choice-menu [role="option"][aria-selected="true"] { color:var(--accent-strong); }
+.choice-menu svg { width:18px; height:18px; flex-shrink:0; opacity:0; }
+.choice-menu [aria-selected="true"] svg { opacity:1; }
+.choice-menu[data-keyboard="true"] { animation:none; }
+select[hidden] { display:none!important; }
+@media (hover:hover) and (pointer:fine) {
+  .choice-trigger:hover { border-color:var(--accent-strong); background:var(--surface-warm); }
+}
+.choice-trigger:active { transform:scale(.99); }
+@keyframes choice-in { from { opacity:0; transform:translateY(-4px) scale(.985); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce) { .choice-menu { animation:none; } .choice-trigger:active { transform:none; } }
+@media (forced-colors:active) { .choice-trigger,.choice-menu { border-color:ButtonText; } .choice-menu [data-active="true"] { outline:2px solid Highlight; } }

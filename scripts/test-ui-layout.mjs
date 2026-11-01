@@ -25,7 +25,7 @@ const stylesRoot = path.join(root, "src", "styles");
 const css = [
   fs.readFileSync(path.join(root, "src", "styles.css"), "utf8"),
   ...fs.readdirSync(stylesRoot, { recursive: true })
-    .filter((name) => name.endsWith(".css"))
+    .filter((name) => name.endsWith(".css") && !name.startsWith("vendor"))
     .map((name) => fs.readFileSync(path.join(stylesRoot, name), "utf8")),
 ].join("\n");
 const fileCardsCss = fs.readFileSync(path.join(root, "src", "styles", "file-cards.css"), "utf8");
@@ -75,7 +75,7 @@ assert.match(floatingCorner, /flex-direction:\s*column;/, "floating-corner must 
 assert.match(floatingCorner, /pointer-events:\s*none;/, "floating-corner should not block the app outside its children");
 assert.match(cssRule(".floating-corner > *"), /pointer-events:\s*auto;/, "floating-corner children must remain clickable");
 assert.match(cssRule(".floating-corner > *"), /transform-origin:\s*right bottom;/, "floating-corner children should animate from the corner anchor");
-assert.match(css, /--vlm-ease-standard:\s*cubic-bezier\(0\.22,\s*0\.72,\s*0\.18,\s*1\);/, "shared Vellum UI easing token is missing");
+assert.match(css, /--vlm-ease-standard:\s*cubic-bezier\(0\.19,\s*1,\s*0\.22,\s*1\);/, "the approved product easing token is missing");
 assert.match(cssRule("button"), /touch-action:\s*manipulation;/, "buttons should use manipulation touch action");
 assert.match(cssRule(".app-shell"), /--floating-toast-offset:\s*24px;/, "app shell must define the default floating toast offset");
 assert.match(cssRule(".app-shell.has-update-reminder"), /--floating-toast-offset:\s*190px;/, "update reminder state must reserve vertical toast space");

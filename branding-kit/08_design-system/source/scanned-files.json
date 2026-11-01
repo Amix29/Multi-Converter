@@ -5,6 +5,14 @@
       "sha256": "c3ebec4b9db15a38076d9da509532482642e34dce11ffb8739a4623688b85e1f"
     },
     {
+      "path": "assets/catalogue-motion.js",
+      "sha256": "ee380346ec7e47b7f3c144d430f203119e81b63489ac483f8fac85dd6aa0f466"
+    },
+    {
+      "path": "assets/catalogue-polish.css",
+      "sha256": "27caa6fad404164c7ba74926ce3bac05226ab54942d5dd436ac213318c096be1"
+    },
+    {
       "path": "assets/catalogue-product.css",
       "sha256": "32f55a34f99359bacdfe4259f90d3039f8bdfc6d7666478530623ee829313472"
     },
@@ -13,12 +21,20 @@
       "sha256": "6480c70f10e13f6c5fcd6b910508962307998bfef0ead7a6e47d010036acd294"
     },
     {
+      "path": "assets/catalogue-selects.js",
+      "sha256": "76a126087f4dcacaa9d2b35cb4ce16fe0e955df946dd35528373b20a55dc43dd"
+    },
+    {
       "path": "assets/catalogue.css",
       "sha256": "400b6494f0c86e4fd741583666be4b6887423d9d33c3bcc8591ce7af25c80b67"
     },
     {
       "path": "assets/catalogue.js",
       "sha256": "859427b76b4b4882a413553da9787a8228ee6e4482dc535458de7b257ca57b01"
+    },
+    {
+      "path": "assets/controls.css",
+      "sha256": "b810a9b87f31e056fcdf4112a20d458740fe8c4a4767ac3c85981ea9777eba1c"
     },
     {
       "path": "assets/logo-alternative-green.svg",
@@ -42,7 +58,7 @@
     },
     {
       "path": "components.html",
-      "sha256": "8f8e46f52df29a9f0834c87d23c445685cb4faecdd9d91389ef0e493bb8f6d65"
+      "sha256": "1187c70d724093d651cf560a8897a1610e9b7b2711b2cb3a55307ad477c880f0"
     },
     {
       "path": "components.manifest.json",
@@ -50,11 +66,11 @@
     },
     {
       "path": "design-tokens.json",
-      "sha256": "b6ffa9f1ff17055b5a6d4e66864a4e5be38cad746709cc608640ca3f0ef1629f"
+      "sha256": "b4a5131a7834cf95826c231cc353d8206ce51e7b4554ac0c2399d7b5c501c00c"
     },
     {
       "path": "DESIGN.md",
-      "sha256": "3ad7c991eab6ae8efe39075846ecb886204b2fb5bfc518066ccae75bae0d3058"
+      "sha256": "29df2873155df699f54f961e3b629bb4f9c3d7703f14953ef64e8b7b0e4df0c3"
     },
     {
       "path": "manifest.json",
@@ -62,27 +78,27 @@
     },
     {
       "path": "preview/app.html",
-      "sha256": "c93a2b91568bded0710a268ef36ef7b6e09ccc311ba42c2ad4abc6fa20065010"
+      "sha256": "0ee7f757d246bc53f98cd176e66a72bbd5f5fee83bc2a81e47041379dbe70372"
     },
     {
       "path": "preview/colors.html",
-      "sha256": "9c56da206b9d592c0013c583257ef3e6b93c690013e63a1576e3da6f400a63ee"
+      "sha256": "4c02a7dc2cfd631857e7558427a0a4afbbabc858c9ad29bd61512254071f53c3"
     },
     {
       "path": "preview/components-buttons.html",
-      "sha256": "e58554b14d73c8a90b78e4d64a333ff12d6b616c24966eb49d348aabf72813a6"
+      "sha256": "2d9f79a0c43e74c934096ad36a25ecfb7888a9ec6d6455b58b948c1b9db17e24"
     },
     {
       "path": "preview/components-inputs.html",
-      "sha256": "477ef3c5eb7612242e0db1d45b417e29983dca832daff68eb29b921704cac642"
+      "sha256": "b9234b02a285053ce08d76f6cf3765631bbdf31c630ed083badea2bc17fd32b6"
     },
     {
       "path": "preview/spacing.html",
-      "sha256": "23a2ec880d896aeb30750f5c2a45472c7cfdf6611cb7172dfa4e46f950bbf75b"
+      "sha256": "dfd7873a337907ec915d1f3be7b33b462a54f2a836cbbf5ec3c53085a03bc554"
     },
     {
       "path": "preview/typography.html",
-      "sha256": "74d75d5d1538715c82cd495e44ba933419f960cfe7e0df3686d61592ec557b64"
+      "sha256": "5484d23535a44287fd3e095dceb49b0f159ded263342797eae1dc17347244074"
     },
     {
       "path": "source/evidence.md",
@@ -90,7 +106,7 @@
     },
     {
       "path": "source/provenance.json",
-      "sha256": "08aadffb7a859b833be17204f84d45a2951c6d413ac936a79aee14a495700a29"
+      "sha256": "322776f5196830988c7cceb42e389a07b60f07870940d4a84a3149a679c740b1"
     },
     {
       "path": "source/theme-tokens.json",
@@ -98,15 +114,15 @@
     },
     {
       "path": "source/token-contract.report.json",
-      "sha256": "d2d4da377b5d8da0215bb65963cbda03779d6bf7e70f9efa11755b5d804514be"
+      "sha256": "cf5bd2c87751039172aa7a89017947b31d0b7655940ef0976ae63e218c31c88e"
     },
     {
       "path": "system/kit.dark.html",
-      "sha256": "892b66c4472243520b51b6a8ae86dbb80f5300528a7a517638b3bdb6b86fe55a"
+      "sha256": "0eebd1fccf9398e78232d8b19059c7aade742f3b0b714ec808c38602e6d4b1fe"
     },
     {
       "path": "system/kit.html",
-      "sha256": "c93a2b91568bded0710a268ef36ef7b6e09ccc311ba42c2ad4abc6fa20065010"
+      "sha256": "0ee7f757d246bc53f98cd176e66a72bbd5f5fee83bc2a81e47041379dbe70372"
     },
     {
       "path": "tokens.css",
@@ -114,7 +130,7 @@
     },
     {
       "path": "USAGE.md",
-      "sha256": "f63c9fd6fd60643087791c70c7942f4eff58a956ca9ac5fee48602401516e93e"
+      "sha256": "950531bc1a67808301687ebfbffceba579ef8d48d5cd63ec42a27b5efa4da662"
     }
   ]
 }

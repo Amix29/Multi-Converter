@@ -1,4 +1,8 @@
 {
+  "settings.appearance": "Appearance",
+  "settings.theme.system": "System",
+  "settings.theme.light": "Light",
+  "settings.theme.dark": "Dark",
   "recovery.unavailable": "This batch has expired or is no longer available.",
   "recovery.setting": "Remember the last started batch (24 h)",
   "recovery.settingDetail": "Off by default. Stores paths and settings on this device, without file contents. Originals required; outputs are recomputed.",

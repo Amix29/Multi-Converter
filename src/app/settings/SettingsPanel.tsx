@@ -15,8 +15,11 @@ import type {
 import { CloseIcon } from "../components/Icons";
 import { EngineDiagnostics } from "./EngineDiagnostics";
 import type { DependencyBootstrap } from "../../lib/api";
+import type { ThemePreference } from "../useTheme";
 
 export function SettingsPanel(props: {
+  theme: ThemePreference;
+  onTheme(theme: ThemePreference): void;
   isOpen: boolean;
   dependencies: DependencyBootstrap | null;
   language: LanguageCode;
@@ -118,6 +121,18 @@ export function SettingsPanel(props: {
 
         <div className="settings-grid">
           <section className="settings-column">
+            <section className="theme-setting" aria-labelledby="theme-setting-title">
+              <span className="label" id="theme-setting-title">{t(props.language, "settings.appearance")}</span>
+              <div className="theme-choices" role="group" aria-labelledby="theme-setting-title">
+                {(["system", "light", "dark"] as const).map(theme => <button key={theme} type="button"
+                  aria-pressed={props.theme === theme} onClick={() => props.onTheme(theme)}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">{theme === "system" ? <path d="M3 4h18v13H3zM8 21h8m-4-4v4" />
+                    : theme === "light" ? <><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/></>
+                    : <path d="M20 15a8 8 0 0 1-11-11 8 8 0 1 0 11 11Z" />}</svg>
+                  {t(props.language, `settings.theme.${theme}`)}
+                </button>)}
+              </div>
+            </section>
             <section
               className="setting-select language-setting"
               aria-labelledby="language-setting-title"

@@ -11,8 +11,9 @@ Multi-Converter owns its desktop application, marketing site and branding kit.
 - For new visual work, use the maintainer-approved identity in
   `branding-kit/08_design-system/DESIGN.md`: warm graph paper, dense sans-serif
   titles, rounded cards and offset shadows; light anchor `#c86a34`, dark anchor
-  `#4d8445`. Existing desktop runtime tokens record the current implementation;
-  migrate them only through a separately validated application change.
+  `#4d8445`. The desktop imports this token source through
+  `src/styles/design-system.css`; keep its compatibility aliases theme-aware.
+  Treat the old vendor palette as historical, not the active design reference.
   Preserve keyboard access, visible focus, accessible
   labels, reduced motion and narrow-window behavior when changing the UI.
   Target WCAG 2.2 AA, coherent SVG icons and layouts checked at 375, 768, 1024

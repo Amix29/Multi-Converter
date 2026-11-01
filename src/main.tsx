@@ -2,10 +2,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { I18nProvider } from "./i18n";
-import "./styles/vendor/vellum-tokens.css";
+import "./styles/design-system.css";
 import "./styles.css";
+import { initializeTheme } from "./app/useTheme";
 
-document.documentElement.dataset.theme = "paper";
+initializeTheme();
 
 createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>

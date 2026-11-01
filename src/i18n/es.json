@@ -1,4 +1,8 @@
 {
+  "settings.appearance": "Apariencia",
+  "settings.theme.system": "Sistema",
+  "settings.theme.light": "Claro",
+  "settings.theme.dark": "Oscuro",
   "recovery.unavailable": "Este lote ha caducado o ya no está disponible.",
   "recovery.setting": "Recordar el último lote iniciado (24 h)",
   "recovery.settingDetail": "Desactivado por defecto. Guarda rutas y ajustes en este dispositivo, sin contenido. Requiere originales; los resultados se recalculan.",

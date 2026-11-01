@@ -23,6 +23,7 @@ import { FormatScreen } from "./app/screens/FormatScreen";
 import { ProgressScreen } from "./app/screens/ProgressScreen";
 import type { Notice, NoticeTone } from "./app/types";
 import { useStableEvent } from "./app/useStableEvent";
+import { useTheme } from "./app/useTheme";
 import { WelcomePanel } from "./app/welcome/WelcomePanel";
 import { UpdateDialog, UpdateInstallDialog, UpdateReminder } from "./components/UpdateFlow";
 import { useAppUpdater } from "./hooks/useAppUpdater";
@@ -36,6 +37,7 @@ const SettingsPanel = lazy(() => import("./app/settings/SettingsPanel").then((mo
 const ImageOcrDialog = lazy(() => import("./ocr/ImageOcrDialog").then((module) => ({ default: module.ImageOcrDialog })));
 
 export default function App() {
+  const theme = useTheme();
   const { language, setLanguage } = useI18n();
   const bootStarted = useRef(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(readStoredNotificationsEnabled);
@@ -199,6 +201,8 @@ export default function App() {
         isConverting={conversionWorkflow.isConverting || Boolean(ocrJobId)} language={language}
         onCancel={sessionGuard.dismiss} onConfirm={() => void sessionGuard.confirm()} />
       {isSettingsOpen && <Suspense fallback={<span role="status">{t(language, "common.loading")}</span>}><SettingsPanel
+        theme={theme.preference}
+        onTheme={theme.setPreference}
         isOpen={isSettingsOpen}
         dependencies={dependencies}
         language={language}

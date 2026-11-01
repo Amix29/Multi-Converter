@@ -1,4 +1,8 @@
 {
+  "settings.appearance": "Aparência",
+  "settings.theme.system": "Sistema",
+  "settings.theme.light": "Claro",
+  "settings.theme.dark": "Escuro",
   "recovery.unavailable": "Este lote expirou ou já não está disponível.",
   "recovery.setting": "Recordar o último lote iniciado (24 h)",
   "recovery.settingDetail": "Desativado por predefinição. Guarda caminhos e definições neste dispositivo, sem conteúdo. Requer os originais; os resultados são recalculados.",

@@ -1,4 +1,8 @@
 {
+  "settings.appearance": "Aspetto",
+  "settings.theme.system": "Sistema",
+  "settings.theme.light": "Chiaro",
+  "settings.theme.dark": "Scuro",
   "recovery.unavailable": "Questo lotto è scaduto o non è più disponibile.",
   "recovery.setting": "Ricorda l’ultimo lotto avviato (24 ore)",
   "recovery.settingDetail": "Disattivato per impostazione predefinita. Conserva percorsi e impostazioni su questo dispositivo, senza contenuti. Servono gli originali; i risultati vengono ricalcolati.",

@@ -1,0 +1,217 @@
+{
+  "verifiedAt": "2026-11-01T09:20:56.924390+00:00",
+  "sourceBranch": "codex/app-design-system",
+  "integrationBranch": "codex/test",
+  "appPreview": {
+    "checks": [
+      {
+        "width": 320,
+        "scroll": 320,
+        "accent": "#c86a34",
+        "theme": "light"
+      },
+      {
+        "width": 375,
+        "scroll": 375,
+        "accent": "#c86a34",
+        "theme": "light"
+      },
+      {
+        "width": 768,
+        "scroll": 768,
+        "accent": "#c86a34",
+        "theme": "light"
+      },
+      {
+        "width": 1024,
+        "scroll": 1024,
+        "accent": "#c86a34",
+        "theme": "light"
+      },
+      {
+        "width": 1440,
+        "scroll": 1440,
+        "accent": "#c86a34",
+        "theme": "light"
+      },
+      {
+        "width": 320,
+        "scroll": 320,
+        "accent": "#4d8445",
+        "theme": "dark"
+      },
+      {
+        "width": 375,
+        "scroll": 375,
+        "accent": "#4d8445",
+        "theme": "dark"
+      },
+      {
+        "width": 768,
+        "scroll": 768,
+        "accent": "#4d8445",
+        "theme": "dark"
+      },
+      {
+        "width": 1024,
+        "scroll": 1024,
+        "accent": "#4d8445",
+        "theme": "dark"
+      },
+      {
+        "width": 1440,
+        "scroll": 1440,
+        "accent": "#4d8445",
+        "theme": "dark"
+      }
+    ],
+    "audits": [
+      {
+        "theme": "light",
+        "violations": [],
+        "incomplete": [
+          "color-contrast"
+        ],
+        "review": []
+      },
+      {
+        "theme": "dark",
+        "violations": [],
+        "incomplete": [
+          "color-contrast"
+        ],
+        "review": []
+      }
+    ],
+    "keyboardSelection": true,
+    "escapeAndFocus": true,
+    "themePersistence": true,
+    "systemTheme": true,
+    "navigationScroll": true,
+    "reducedMotion": "0.001s",
+    "errors": []
+  },
+  "catalogue": {
+    "results": [
+      {
+        "theme": "light",
+        "top": {
+          "opacity": "0",
+          "blur": "blur(18px) saturate(1.08)"
+        },
+        "scroll": {
+          "opacity": "1",
+          "blur": "blur(18px) saturate(1.08)"
+        },
+        "keyboard": true,
+        "viewportChecks": 5,
+        "violations": [],
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      {
+        "theme": "dark",
+        "top": {
+          "opacity": "0",
+          "blur": "blur(18px) saturate(1.08)"
+        },
+        "scroll": {
+          "opacity": "1",
+          "blur": "blur(18px) saturate(1.08)"
+        },
+        "keyboard": true,
+        "viewportChecks": 5,
+        "violations": [],
+        "incomplete": [
+          "color-contrast"
+        ]
+      }
+    ],
+    "reducedMotion": "1e-05s",
+    "errors": []
+  },
+  "openDesign": {
+    "archive": {
+      "id": "user:multi-converter-paper",
+      "title": "Multi-Converter",
+      "surface": "web",
+      "status": "published",
+      "swatches": [
+        "#f5f3ec",
+        "#4d8445",
+        "#1d241f",
+        "#c86a34"
+      ],
+      "nativeArchiveMatchedFiles": 34,
+      "mismatches": [],
+      "archiveSha256": "d417fe446249e32889699a90c5fdafd96d159673dc98e665fe834333d258f96b",
+      "bodyMatches": true
+    },
+    "rendering": {
+      "nativeShowcase": [
+        {
+          "status": 200,
+          "theme": "light",
+          "accent": "#c86a34",
+          "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif",
+          "overflow": false,
+          "heading": "Multi-Converter"
+        },
+        {
+          "status": 200,
+          "theme": "dark",
+          "accent": "#4d8445",
+          "font": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Arial, sans-serif",
+          "overflow": false,
+          "heading": "Multi-Converter"
+        }
+      ],
+      "standalonePreviewPages": 5,
+      "errors": [],
+      "failures": []
+    }
+  },
+  "checks": {
+    "typescript": "PASS",
+    "translations": {
+      "status": "PASS",
+      "languages": 6,
+      "keys": 408
+    },
+    "unitTests": {
+      "passed": 56,
+      "files": 9
+    },
+    "browserRegression": {
+      "passed": 12,
+      "skipped": 10,
+      "reason": "Existing desktop/mobile project guards"
+    },
+    "uiLayout": "PASS",
+    "sourceStructure": "PASS",
+    "productionConfig": "PASS",
+    "previewBuild": "PASS",
+    "productionFrontendBuild": "PASS",
+    "repositoryMetadata": "PASS",
+    "stagedSecretLeakScan": "PASS"
+  },
+  "screenshotsSha256": {
+    "application-light-select.png": "a322ebfda840571ce2fcb9a2e701832a8534d6d4e02f0d56b79c3e01e40158a2",
+    "application-dark-select.png": "c6c678fde49864a1396b2cce8a731502044fa8fdf224539da5987606a4082512",
+    "application-appearance-dark.png": "88968e8e724fc555ba1cb459d9113dd2f46c17c69a100cea488b1be428e49cd2",
+    "catalogue-light-polished.png": "8fb3718bd97b47250148fc69dd582239692c9bf48fa922191d22eeb9f94780f4",
+    "catalogue-dark-polished.png": "ddb4b407c8241450e32aeb2fdee35d33f799c7456032ca51be104618bc5e15bf"
+  },
+  "scope": [
+    "Desktop React UI and shared approved brand assets; no engine changes.",
+    "Existing browser regression uses compiled preview/mock APIs.",
+    "Open Design rendering is its saved artifact endpoint, not desktop chrome automation."
+  ],
+  "limits": [
+    "Patterned-background color contrast is incomplete in automated accessibility checks.",
+    "No full WCAG certification is claimed.",
+    "No new installed Windows/macOS/Linux package or native conversion acceptance was performed.",
+    "No application release or remote push."
+  ]
+}

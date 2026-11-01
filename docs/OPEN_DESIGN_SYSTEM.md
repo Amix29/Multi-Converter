@@ -66,5 +66,13 @@ remain incomplete; the receipt explicitly limits the contrast measurements.
 
 Source maintenance uses `codex/open-design-system`; verified work integrates
 locally on `codex/test`. No application release or remote Git push is implied.
-The current converter runtime retains its existing styles until a separate
-implementation adopts this design system and passes its own UI/native checks.
+The 2026-11-01 [application adoption](APP_DESIGN_SYSTEM_ADOPTION.md) imports this
+token source into the converter and adds system/light/dark preferences. That
+ledger records its own UI checks. Updated menus, micro-interactions and glass
+navigation also improve the reference catalogue; historical receipts above
+describe the original registration, not the later package revision.
+
+The current [2026-11-01 receipt](audits/2026-11-01/application-design-system.json)
+records 34 matching package files and the improved native previews. Selects,
+section reveals, button feedback and the scroll-dependent glass panel were
+checked in both modes; the application uses the same brand/control sources.

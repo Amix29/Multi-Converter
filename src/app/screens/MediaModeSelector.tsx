@@ -1,5 +1,6 @@
 import type { MediaMode } from "../../lib/api";
 import { t, type LanguageCode } from "../../i18n";
+import { ChoiceSelect } from "../components/ChoiceSelect";
 
 export function MediaModeSelector(props: {
   language: LanguageCode;
@@ -8,15 +9,9 @@ export function MediaModeSelector(props: {
 }) {
   return (
     <div className="quality-options">
-      <label className="quality-selector">
-        <span>{t(props.language, "media.mode")}</span>
-        <select value={props.value} onChange={(event) => {
-          if (event.currentTarget.value === "convert" || event.currentTarget.value === "copy") props.onChange(event.currentTarget.value);
-        }}>
-          <option value="convert">{t(props.language, "media.convert")}</option>
-          <option value="copy">{t(props.language, "media.copy")}</option>
-        </select>
-      </label>
+      <ChoiceSelect label={t(props.language, "media.mode")} value={props.value}
+        options={(["convert", "copy"] as const).map(value => ({value, label:t(props.language, `media.${value}`)}))}
+        onChange={value => { if (value === "convert" || value === "copy") props.onChange(value); }} />
       <p>{t(props.language, props.value === "copy" ? "media.copyDetail" : "media.convertDetail")}</p>
     </div>
   );
