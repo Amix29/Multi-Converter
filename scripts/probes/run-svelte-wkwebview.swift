@@ -42,7 +42,8 @@ final class MigrationProbe: NSObject, NSApplicationDelegate, WKNavigationDelegat
                 if let event = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: self.window.windowNumber, context: nil, characters: "\t", charactersIgnoringModifiers: "\t", isARepeat: false, keyCode: 48) { self.window.sendEvent(event) }
             }
             let (theme, width) = self.scenarios[self.index]
-            let script = self.source + "\nrunMigrationProbe('\(theme)',\(width)).then(value=>window.webkit.messageHandlers.migration.postMessage(JSON.stringify(value)))"
+            let reduced = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? "true" : "false"
+            let script = self.source + "\nrunMigrationProbe('\(theme)',\(width),\(reduced)).then(value=>window.webkit.messageHandlers.migration.postMessage(JSON.stringify(value)))"
             self.view.evaluateJavaScript(script) { _, error in
                 if let error = error { self.finish(fatal: String(describing: error)) }
             }

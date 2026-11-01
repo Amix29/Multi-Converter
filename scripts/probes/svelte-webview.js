@@ -1,5 +1,5 @@
 /* Runs only in the owned WebView probe, never imported by the desktop bundle. */
-window.runMigrationProbe = async (theme, width) => {
+window.runMigrationProbe = async (theme, width, expectedReduced) => {
   const checks = [];
   const check = (name, condition, detail = null) => checks.push({ name, passed: Boolean(condition), detail });
   const pause = (ms = 40) => new Promise(resolve => setTimeout(resolve, ms));
@@ -18,7 +18,7 @@ window.runMigrationProbe = async (theme, width) => {
     await until(() => button('Parcourir'), 'application mount');
     check('viewport is the requested width', Math.abs(innerWidth - width) <= 1, innerWidth);
     check('theme initialized from persisted preference', document.documentElement.dataset.theme === theme);
-    check('reduced motion is exposed', matchMedia('(prefers-reduced-motion: reduce)').matches);
+    check('native reduced-motion preference matches CSS', matchMedia('(prefers-reduced-motion: reduce)').matches === expectedReduced, expectedReduced);
     await pause(120); // Let the host's native keyboard event reach the WebView process.
     const browse = button('Parcourir');
     browse.focus();

@@ -22,7 +22,7 @@ export function assertWindowsCiContracts({ packageJson, buildWorkflow, windowsBu
   );
   assert.equal(
     packageJson.scripts["build:frontend"],
-    "npm run validate:i18n && npm run typecheck && vite build",
+    "npm run validate:i18n && npm run typecheck && vite build && npm run test:production-bundle",
     "the production frontend build must avoid preview fixtures",
   );
   assert.doesNotMatch(packageJson.scripts.build, /vite build\s+--mode preview/, "the packaged Tauri build must never include browser-preview fixtures");

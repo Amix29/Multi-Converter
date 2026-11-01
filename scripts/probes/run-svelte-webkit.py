@@ -60,7 +60,7 @@ def loaded(widget, event):
         view.grab_focus()
         for event_type in [Gdk.EventType.KEY_PRESS, Gdk.EventType.KEY_RELEASE]:
             Gdk.test_simulate_key(window.get_window(), 10, 10, Gdk.KEY_Tab, Gdk.ModifierType(0), event_type)
-        code = probe + "\nrunMigrationProbe(new URLSearchParams(location.search).get('probeTheme'),Number(new URLSearchParams(location.search).get('probeWidth'))).then(value=>window.webkit.messageHandlers.migration.postMessage(JSON.stringify(value)))"
+        code = probe + "\nrunMigrationProbe(new URLSearchParams(location.search).get('probeTheme'),Number(new URLSearchParams(location.search).get('probeWidth')),true).then(value=>window.webkit.messageHandlers.migration.postMessage(JSON.stringify(value)))"
         view.run_javascript(code, None, None, None)
         return False
     GLib.timeout_add(300, evaluate)
