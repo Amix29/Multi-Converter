@@ -1,5 +1,17 @@
 # Multi-Converter Decisions
 
+## 2026-11-01 — Measured deferred format controls
+
+**Decision:** load format-selection primitives when a target is selected while
+keeping the format screen and its view state mounted. This removes the measured
+19–26 ms cold-preview overhead without adding caches or a state framework.
+Seven alternating paired contexts measure startup at 118.44 ms versus React
+115.52 ms, settings 69.18 versus 366.42 ms and format selection 45.85 versus
+58.64 ms. These are preview measurements; native startup/RSS is not inferred.
+Total JS/CSS grows 11.9% raw / 12.3% gzip for accessible primitives and safe
+rendering; the startup gap is 2.5%, below the mandate's investigation threshold.
+The full UI and both native WebKit probes pass after this boundary change.
+
 ## 2026-11-01 — Svelte execution and build dependency hardening
 
 **Decision:** pin Svelte 5.57.3, its Vite plugin 7.3.1, svelte-check 4.7.7,

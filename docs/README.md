@@ -7,10 +7,10 @@
 - V1.0.7 targets: Windows x64, Apple Silicon macOS 15+ and Linux x64
 - Repository surfaces: desktop application, static marketing site and branding kit
 - Development release: **V1.0.7**
-- Approved next desktop architecture: Svelte 5 + Tailwind 4 + shadcn-svelte,
-  with the existing Rust/Tauri backend. [Execution mandate](MANDAT_MIGRATION_SVELTE.md)
-  prepared; implementation has not started. The site is outside scope.
-- Functional UI source checkpoint: **`853aa081`**, integrated locally on **`codex/test`**; maintenance branch: **`codex/app-design-system`**. Later documentation-only commits do not change this application-source checkpoint. V1.0.7 remains unpublished and its release gate is open.
+- Desktop source now uses Svelte 5 + Tailwind 4 + shadcn-svelte/Bits UI with the
+  existing Rust/Tauri backend. [Execution and evidence](MIGRATION_SVELTE_EXECUTION.md),
+  [parity matrix](MIGRATION_SVELTE_PARITE.md). The site is unchanged.
+- Functional source checkpoint: **`e8f4f5d7`**, implementation branch **`codex/migrate-svelte`**, local integration branch **`codex/test`**. V1.0.7 remains unpublished; installed-platform acceptance is open.
 - Current interface: approved light/dark design, system appearance preference,
   custom selectors, micro-interactions, scroll-dependent glass navigation and
   warm-white primary-button labels. See the
@@ -31,7 +31,9 @@ no product fixes were applied by this audit. Raw evidence is in
 
 | Document | Status | Purpose |
 | --- | --- | --- |
-| [`MANDAT_MIGRATION_SVELTE.md`](MANDAT_MIGRATION_SVELTE.md) | Architecture approved, ready to execute | Desktop-only migration, design-system corrections, phased work and measurable acceptance |
+| [`MIGRATION_SVELTE_EXECUTION.md`](MIGRATION_SVELTE_EXECUTION.md) | Source migrated, installed acceptance open | Lots, current proofs, measurements and recovery |
+| [`MIGRATION_SVELTE_PARITE.md`](MIGRATION_SVELTE_PARITE.md) | Current parity matrix | Functional coverage and A01–A12 limits |
+| [`MANDAT_MIGRATION_SVELTE.md`](MANDAT_MIGRATION_SVELTE.md) | Executed at source level; acceptance tracked separately | Desktop-only migration, design-system corrections, phased work and measurable acceptance |
 | [`APP_DESIGN_SYSTEM_ADOPTION.md`](APP_DESIGN_SYSTEM_ADOPTION.md) | Active UI checkpoint | Both runtime themes, selectors, motion, glass navigation and validation boundaries |
 | [`V1_0_7_APPROVED_IMPLEMENTATION.md`](V1_0_7_APPROVED_IMPLEMENTATION.md) | Active, implementation/validation in progress | Approved audit changes, Apple Silicon decision, current checks and remaining work |
 | [`V1_0_7_AUDIT_FOLLOW_THROUGH.md`](V1_0_7_AUDIT_FOLLOW_THROUGH.md) | Active continuation | Stream copy, image fidelity/resource budgets, real Mac probes, Linux preparation and remaining audit work |

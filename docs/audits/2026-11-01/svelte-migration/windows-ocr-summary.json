@@ -1,0 +1,292 @@
+{
+  "schemaVersion": 1,
+  "platform": "windows-x64",
+  "runtimeArchiveSha256": "77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac",
+  "directExecutable": null,
+  "runtimeExtractionMs": 19963,
+  "runtimeInitializationMs": 12508,
+  "peakWorkerWorkingSetBytes": 701444096,
+  "memoryMeasurement": "Maximum of sampled main-process RSS/working-set values; child processes excluded.",
+  "medianRecognitionMs": 48170,
+  "cleanMean": 1,
+  "difficultMean": 0.9976190476190476,
+  "networkSamples": 745,
+  "observedWorkerConnections": [],
+  "results": [
+    {
+      "id": "clean-fr-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 46744,
+      "workerWorkingSetBytes": 588357632
+    },
+    {
+      "id": "clean-fr-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 588357632
+    },
+    {
+      "id": "clean-fr-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 588357632
+    },
+    {
+      "id": "clean-en-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 50273,
+      "workerWorkingSetBytes": 594116608
+    },
+    {
+      "id": "clean-en-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 594116608
+    },
+    {
+      "id": "clean-en-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 594116608
+    },
+    {
+      "id": "clean-es-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 49596,
+      "workerWorkingSetBytes": 594632704
+    },
+    {
+      "id": "clean-es-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 594632704
+    },
+    {
+      "id": "clean-es-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 594632704
+    },
+    {
+      "id": "clean-de-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 52046,
+      "workerWorkingSetBytes": 592973824
+    },
+    {
+      "id": "clean-de-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 592973824
+    },
+    {
+      "id": "clean-de-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 592973824
+    },
+    {
+      "id": "clean-it-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 23296,
+      "workerWorkingSetBytes": 596918272
+    },
+    {
+      "id": "clean-it-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 596918272
+    },
+    {
+      "id": "clean-it-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 596918272
+    },
+    {
+      "id": "clean-pt-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 61577,
+      "workerWorkingSetBytes": 598777856
+    },
+    {
+      "id": "clean-pt-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 598777856
+    },
+    {
+      "id": "clean-pt-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 598777856
+    },
+    {
+      "id": "clean-ja-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 45256,
+      "workerWorkingSetBytes": 599543808
+    },
+    {
+      "id": "clean-ja-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 599543808
+    },
+    {
+      "id": "clean-ja-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 599543808
+    },
+    {
+      "id": "rotation-positive",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 58121,
+      "workerWorkingSetBytes": 611573760
+    },
+    {
+      "id": "rotation-negative",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 611573760
+    },
+    {
+      "id": "inclination-positive",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 611573760
+    },
+    {
+      "id": "inclination-negative",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 611573760
+    },
+    {
+      "id": "low-contrast",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 45789,
+      "workerWorkingSetBytes": 612536320
+    },
+    {
+      "id": "noise",
+      "kind": "ocr-image",
+      "accuracy": 0.9761904761904762,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 612536320
+    },
+    {
+      "id": "soft-focus",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 612536320
+    },
+    {
+      "id": "perspective-horizontal",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 38292,
+      "workerWorkingSetBytes": 609951744
+    },
+    {
+      "id": "perspective-combined",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 609951744
+    },
+    {
+      "id": "structured-multiline",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 36963,
+      "workerWorkingSetBytes": 611205120
+    },
+    {
+      "id": "blank",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 28878,
+      "workerWorkingSetBytes": 606826496
+    },
+    {
+      "id": "pdf-native",
+      "kind": "pdf-hybrid",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 606826496
+    },
+    {
+      "id": "pdf-scanned",
+      "kind": "pdf-hybrid",
+      "accuracy": 1,
+      "elapsedMs": 98236,
+      "workerWorkingSetBytes": 701210624
+    },
+    {
+      "id": "pdf-mixed-multipage",
+      "kind": "pdf-hybrid",
+      "accuracy": 1,
+      "elapsedMs": 99678,
+      "workerWorkingSetBytes": 701444096
+    },
+    {
+      "id": "normalization-png",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0
+    },
+    {
+      "id": "normalization-jpeg",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0
+    },
+    {
+      "id": "normalization-webp",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0
+    },
+    {
+      "id": "normalization-tiff",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0
+    },
+    {
+      "id": "normalization-bmp",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0
+    }
+  ]
+}

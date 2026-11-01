@@ -1,13 +1,22 @@
 # Application design-system adoption — 2026-11-01
 
-## Scope and current checkpoint
+## Current Svelte continuation
+
+Functional source `e8f4f5d7` ports the approved identity into Svelte, applies
+DS-01–DS-07 consistency fixes and validates the components in both themes on
+Chromium, WebKitGTK and system macOS WKWebView. See
+[MIGRATION_SVELTE_EXECUTION.md](MIGRATION_SVELTE_EXECUTION.md) for measured proof
+and remaining installed-package gates. The following adoption checkpoint is
+historical React evidence; it is retained for traceability.
+
+## Historical scope and React checkpoint
 
 The maintainer requested the approved Multi-Converter design in both desktop
 themes, followed by better selectors, micro-interactions and glass navigation
 based on the product website. This work uses `codex/app-design-system` and
 integrates verified changes locally on `codex/test`.
 
-Latest functional source: **`853aa081`**, locally integrated on `codex/test`.
+Historical functional source: **`853aa081`**, locally integrated on `codex/test`.
 The broader UI adoption is `547b4bd4`; the button-label correction is `853aa081`.
 Documentation-only commits may follow these source checkpoints. V1.0.7 is
 unpublished, and existing installed-package candidates predate these changes.

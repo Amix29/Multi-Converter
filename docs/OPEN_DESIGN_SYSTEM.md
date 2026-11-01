@@ -1,11 +1,15 @@
 # Multi-Converter Design System — updated 2026-11-01
 
-Current functional source checkpoint: `853aa081`, integrated locally on
-`codex/test`; current maintenance branch: `codex/app-design-system`. The latest
-recorded synchronization is the
-[button-label receipt](audits/2026-11-01/button-label-contrast.json): all 34
-package files match, with no export differences and an identical design body.
-It supersedes older export hashes recorded below.
+Current desktop source checkpoint: `e8f4f5d7`, Svelte migration. The local kit
+now includes additive action-role indexing, corrected guidance and canonical
+motion roles. [The migration ledger](MIGRATION_SVELTE_EXECUTION.md) records
+component integration and native WebKit UI checks. These local corrections have
+not been synchronized to the external design library.
+
+The latest **historical external synchronization** remains the
+[button-label receipt](audits/2026-11-01/button-label-contrast.json), which matched
+the 34 package files at that time. Its hashes do not describe the corrected local
+kit after migration. No external library write or publication was performed.
 
 ## Approved direction
 

@@ -7,17 +7,17 @@
 - Release status: **not ready**.
 - Active migration architecture: desktop Svelte 5 + Tailwind 4 + shadcn-svelte,
   retaining Rust/Tauri/TypeScript/Vite. The maintainer approved it on 2026-11-01;
-  [execution mandate and acceptance](MANDAT_MIGRATION_SVELTE.md). Source porting is underway on `codex/migrate-svelte`; see the
+  [execution mandate and acceptance](MANDAT_MIGRATION_SVELTE.md). Source porting is complete on `codex/migrate-svelte`; see the
   [execution ledger](MIGRATION_SVELTE_EXECUTION.md). The site is outside this
   migration, and installed/final-source platform gates must be renewed.
-- Current application-source checkpoint: `853aa081`, integrated on `codex/test`;
-  current maintenance branch: `codex/app-design-system`. Documentation-only
+- Current application-source checkpoint: `e8f4f5d7`, implementation branch
+  `codex/migrate-svelte`; local integration remains `codex/test`. Documentation-only
   commits may follow this functional checkpoint.
 - Workspace: standalone `Développement/Multi-Converter`;
   [location, rules and worktree recovery](LOCAL_WORKSPACE.md).
-- Preserved local NSIS/AppImage/DMG candidates use `8b510138`; they predate the
-  new interface and are not packages of `853aa081`. All remain unpublished with
-  installed acceptance pending.
+- Historical NSIS/AppImage/DMG candidates at `8b510138` remain preserved. A new
+  Windows NSIS candidate was built from `e8f4f5d7`; installed acceptance
+  and new migrated AppImage/DMG packages remain open. No candidate is published.
 - macOS targets Apple Silicon on macOS 15 and later; Windows x64 and Linux x64 remain supported.
 - Conversion/OCR audit: `codex/audit-follow-through`, based on integrated `41459c23`;
   [current work and handoff](V1_0_7_AUDIT_FOLLOW_THROUGH.md).

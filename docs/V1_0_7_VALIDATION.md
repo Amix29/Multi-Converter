@@ -1,5 +1,26 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-01 — Svelte source migration and renewed available gates
+
+Functional source **`e8f4f5d7`** completes the desktop source port. React remains
+only in the unchanged marketing site. The full execution and criteria matrix
+are in [the migration ledger](MIGRATION_SVELTE_EXECUTION.md) and
+[parity matrix](MIGRATION_SVELTE_PARITE.md).
+
+New proof: clean installs and type/build checks on three OS; Windows canonical
+check, 60 units, 194 Rust tests plus all 11 heavy conversion groups; real Windows
+OCR runtime/corpus (40 cases, clean 100%, difficult 99.76%, no observed remote
+connections); Linux compile/unit/contract gate (201 Rust tests), explicitly with
+compile-only sidecars. Compiled-product preview passes 18 Chromium scenarios.
+Real WebKitGTK and system macOS WKWebView each pass 8 scenarios/184 assertions.
+The Windows NSIS candidate is built from the final functional checkpoint; its
+updater signature is cryptographically verified. Authenticode remains NotSigned.
+
+These proofs do not complete native GUI/installed acceptance. No new AppImage
+or DMG is claimed, no release metadata is fabricated, and no publication occurs.
+**Overall V1.0.7 release gate remains blocked.** Historical entries below keep
+their original scope and do not become current package evidence.
+
 ## 2026-11-01 — Svelte migration execution in progress
 
 The maintainer requested full execution, staged delivery and all available

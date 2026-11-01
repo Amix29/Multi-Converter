@@ -1,0 +1,1051 @@
+{
+  "runtime": "WebKitGTK compiled product mock preview; not Tauri IPC or installed acceptance",
+  "osRelease": "PRETTY_NAME=\"Ubuntu 24.04.3 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.3 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n",
+  "webkit": "2.52.6",
+  "elapsedSeconds": 10.84,
+  "scenarios": [
+    {
+      "theme": "light",
+      "width": 375,
+      "runtimeWidth": 375,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "checks": [
+        {
+          "name": "viewport is the requested width",
+          "passed": true,
+          "detail": 375
+        },
+        {
+          "name": "theme initialized from persisted preference",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "native reduced-motion preference matches CSS",
+          "passed": true,
+          "detail": true
+        },
+        {
+          "name": "Tailwind text-lg is isolated from brand text-lg",
+          "passed": true,
+          "detail": "18px"
+        },
+        {
+          "name": "brand body bridge is exact",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind action bridge has warm-white text",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind control radius uses the brand alias",
+          "passed": true,
+          "detail": "12px"
+        },
+        {
+          "name": "keyboard focus indicator is available",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "both fixture files are mounted",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "select has resolvable accessible labels",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "portaled menu stays inside viewport",
+          "passed": true,
+          "detail": {
+            "left": 166,
+            "right": 360.75,
+            "top": 497,
+            "bottom": 599
+          }
+        },
+        {
+          "name": "menu uses theme surface",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "copy mode removes encoding quality",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "selection restores trigger focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "menu Escape restores focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "main action remains visible and enabled",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "primary text is warm white",
+          "passed": true,
+          "detail": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "primary background uses canonical role",
+          "passed": true,
+          "detail": "rgb(176, 90, 43)"
+        },
+        {
+          "name": "dialog owns initial focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog restores original focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog removes modal body state",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "no horizontal document overflow",
+          "passed": true,
+          "detail": 375
+        },
+        {
+          "name": "no captured runtime errors",
+          "passed": true,
+          "detail": []
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "runtimeWidth": 768,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "checks": [
+        {
+          "name": "viewport is the requested width",
+          "passed": true,
+          "detail": 768
+        },
+        {
+          "name": "theme initialized from persisted preference",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "native reduced-motion preference matches CSS",
+          "passed": true,
+          "detail": true
+        },
+        {
+          "name": "Tailwind text-lg is isolated from brand text-lg",
+          "passed": true,
+          "detail": "18px"
+        },
+        {
+          "name": "brand body bridge is exact",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind action bridge has warm-white text",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind control radius uses the brand alias",
+          "passed": true,
+          "detail": "12px"
+        },
+        {
+          "name": "keyboard focus indicator is available",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "both fixture files are mounted",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "select has resolvable accessible labels",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "portaled menu stays inside viewport",
+          "passed": true,
+          "detail": {
+            "left": 186,
+            "right": 506,
+            "top": 509,
+            "bottom": 611
+          }
+        },
+        {
+          "name": "menu uses theme surface",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "copy mode removes encoding quality",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "selection restores trigger focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "menu Escape restores focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "main action remains visible and enabled",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "primary text is warm white",
+          "passed": true,
+          "detail": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "primary background uses canonical role",
+          "passed": true,
+          "detail": "rgb(176, 90, 43)"
+        },
+        {
+          "name": "dialog owns initial focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog restores original focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog removes modal body state",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "no horizontal document overflow",
+          "passed": true,
+          "detail": 768
+        },
+        {
+          "name": "no captured runtime errors",
+          "passed": true,
+          "detail": []
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "runtimeWidth": 1024,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "checks": [
+        {
+          "name": "viewport is the requested width",
+          "passed": true,
+          "detail": 1024
+        },
+        {
+          "name": "theme initialized from persisted preference",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "native reduced-motion preference matches CSS",
+          "passed": true,
+          "detail": true
+        },
+        {
+          "name": "Tailwind text-lg is isolated from brand text-lg",
+          "passed": true,
+          "detail": "18px"
+        },
+        {
+          "name": "brand body bridge is exact",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind action bridge has warm-white text",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind control radius uses the brand alias",
+          "passed": true,
+          "detail": "12px"
+        },
+        {
+          "name": "keyboard focus indicator is available",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "both fixture files are mounted",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "select has resolvable accessible labels",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "portaled menu stays inside viewport",
+          "passed": true,
+          "detail": {
+            "left": 186,
+            "right": 506,
+            "top": 510,
+            "bottom": 612
+          }
+        },
+        {
+          "name": "menu uses theme surface",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "copy mode removes encoding quality",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "selection restores trigger focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "menu Escape restores focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "main action remains visible and enabled",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "primary text is warm white",
+          "passed": true,
+          "detail": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "primary background uses canonical role",
+          "passed": true,
+          "detail": "rgb(176, 90, 43)"
+        },
+        {
+          "name": "dialog owns initial focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog restores original focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog removes modal body state",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "no horizontal document overflow",
+          "passed": true,
+          "detail": 1024
+        },
+        {
+          "name": "no captured runtime errors",
+          "passed": true,
+          "detail": []
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "runtimeWidth": 1440,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "checks": [
+        {
+          "name": "viewport is the requested width",
+          "passed": true,
+          "detail": 1440
+        },
+        {
+          "name": "theme initialized from persisted preference",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "native reduced-motion preference matches CSS",
+          "passed": true,
+          "detail": true
+        },
+        {
+          "name": "Tailwind text-lg is isolated from brand text-lg",
+          "passed": true,
+          "detail": "18px"
+        },
+        {
+          "name": "brand body bridge is exact",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind action bridge has warm-white text",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind control radius uses the brand alias",
+          "passed": true,
+          "detail": "12px"
+        },
+        {
+          "name": "keyboard focus indicator is available",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "both fixture files are mounted",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "select has resolvable accessible labels",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "portaled menu stays inside viewport",
+          "passed": true,
+          "detail": {
+            "left": 477,
+            "right": 797,
+            "top": 275,
+            "bottom": 377
+          }
+        },
+        {
+          "name": "menu uses theme surface",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "copy mode removes encoding quality",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "selection restores trigger focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "menu Escape restores focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "main action remains visible and enabled",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "primary text is warm white",
+          "passed": true,
+          "detail": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "primary background uses canonical role",
+          "passed": true,
+          "detail": "rgb(176, 90, 43)"
+        },
+        {
+          "name": "dialog owns initial focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog restores original focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog removes modal body state",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "no horizontal document overflow",
+          "passed": true,
+          "detail": 1440
+        },
+        {
+          "name": "no captured runtime errors",
+          "passed": true,
+          "detail": []
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "runtimeWidth": 375,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "checks": [
+        {
+          "name": "viewport is the requested width",
+          "passed": true,
+          "detail": 375
+        },
+        {
+          "name": "theme initialized from persisted preference",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "native reduced-motion preference matches CSS",
+          "passed": true,
+          "detail": true
+        },
+        {
+          "name": "Tailwind text-lg is isolated from brand text-lg",
+          "passed": true,
+          "detail": "18px"
+        },
+        {
+          "name": "brand body bridge is exact",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind action bridge has warm-white text",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind control radius uses the brand alias",
+          "passed": true,
+          "detail": "12px"
+        },
+        {
+          "name": "keyboard focus indicator is available",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "both fixture files are mounted",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "select has resolvable accessible labels",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "portaled menu stays inside viewport",
+          "passed": true,
+          "detail": {
+            "left": 166,
+            "right": 360.75,
+            "top": 497,
+            "bottom": 599
+          }
+        },
+        {
+          "name": "menu uses theme surface",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "copy mode removes encoding quality",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "selection restores trigger focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "menu Escape restores focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "main action remains visible and enabled",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "primary text is warm white",
+          "passed": true,
+          "detail": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "primary background uses canonical role",
+          "passed": true,
+          "detail": "rgb(69, 118, 61)"
+        },
+        {
+          "name": "dialog owns initial focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog restores original focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog removes modal body state",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "no horizontal document overflow",
+          "passed": true,
+          "detail": 375
+        },
+        {
+          "name": "no captured runtime errors",
+          "passed": true,
+          "detail": []
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "runtimeWidth": 768,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "checks": [
+        {
+          "name": "viewport is the requested width",
+          "passed": true,
+          "detail": 768
+        },
+        {
+          "name": "theme initialized from persisted preference",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "native reduced-motion preference matches CSS",
+          "passed": true,
+          "detail": true
+        },
+        {
+          "name": "Tailwind text-lg is isolated from brand text-lg",
+          "passed": true,
+          "detail": "18px"
+        },
+        {
+          "name": "brand body bridge is exact",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind action bridge has warm-white text",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind control radius uses the brand alias",
+          "passed": true,
+          "detail": "12px"
+        },
+        {
+          "name": "keyboard focus indicator is available",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "both fixture files are mounted",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "select has resolvable accessible labels",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "portaled menu stays inside viewport",
+          "passed": true,
+          "detail": {
+            "left": 186,
+            "right": 506,
+            "top": 509,
+            "bottom": 611
+          }
+        },
+        {
+          "name": "menu uses theme surface",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "copy mode removes encoding quality",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "selection restores trigger focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "menu Escape restores focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "main action remains visible and enabled",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "primary text is warm white",
+          "passed": true,
+          "detail": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "primary background uses canonical role",
+          "passed": true,
+          "detail": "rgb(69, 118, 61)"
+        },
+        {
+          "name": "dialog owns initial focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog restores original focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog removes modal body state",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "no horizontal document overflow",
+          "passed": true,
+          "detail": 768
+        },
+        {
+          "name": "no captured runtime errors",
+          "passed": true,
+          "detail": []
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "runtimeWidth": 1024,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "checks": [
+        {
+          "name": "viewport is the requested width",
+          "passed": true,
+          "detail": 1024
+        },
+        {
+          "name": "theme initialized from persisted preference",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "native reduced-motion preference matches CSS",
+          "passed": true,
+          "detail": true
+        },
+        {
+          "name": "Tailwind text-lg is isolated from brand text-lg",
+          "passed": true,
+          "detail": "18px"
+        },
+        {
+          "name": "brand body bridge is exact",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind action bridge has warm-white text",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind control radius uses the brand alias",
+          "passed": true,
+          "detail": "12px"
+        },
+        {
+          "name": "keyboard focus indicator is available",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "both fixture files are mounted",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "select has resolvable accessible labels",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "portaled menu stays inside viewport",
+          "passed": true,
+          "detail": {
+            "left": 186,
+            "right": 506,
+            "top": 510,
+            "bottom": 612
+          }
+        },
+        {
+          "name": "menu uses theme surface",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "copy mode removes encoding quality",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "selection restores trigger focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "menu Escape restores focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "main action remains visible and enabled",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "primary text is warm white",
+          "passed": true,
+          "detail": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "primary background uses canonical role",
+          "passed": true,
+          "detail": "rgb(69, 118, 61)"
+        },
+        {
+          "name": "dialog owns initial focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog restores original focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog removes modal body state",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "no horizontal document overflow",
+          "passed": true,
+          "detail": 1024
+        },
+        {
+          "name": "no captured runtime errors",
+          "passed": true,
+          "detail": []
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "runtimeWidth": 1440,
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15",
+      "checks": [
+        {
+          "name": "viewport is the requested width",
+          "passed": true,
+          "detail": 1440
+        },
+        {
+          "name": "theme initialized from persisted preference",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "native reduced-motion preference matches CSS",
+          "passed": true,
+          "detail": true
+        },
+        {
+          "name": "Tailwind text-lg is isolated from brand text-lg",
+          "passed": true,
+          "detail": "18px"
+        },
+        {
+          "name": "brand body bridge is exact",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind action bridge has warm-white text",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "Tailwind control radius uses the brand alias",
+          "passed": true,
+          "detail": "12px"
+        },
+        {
+          "name": "keyboard focus indicator is available",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "both fixture files are mounted",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "select has resolvable accessible labels",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "portaled menu stays inside viewport",
+          "passed": true,
+          "detail": {
+            "left": 477,
+            "right": 797,
+            "top": 275,
+            "bottom": 377
+          }
+        },
+        {
+          "name": "menu uses theme surface",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "copy mode removes encoding quality",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "selection restores trigger focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "menu Escape restores focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "main action remains visible and enabled",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "primary text is warm white",
+          "passed": true,
+          "detail": "rgb(255, 253, 247)"
+        },
+        {
+          "name": "primary background uses canonical role",
+          "passed": true,
+          "detail": "rgb(69, 118, 61)"
+        },
+        {
+          "name": "dialog owns initial focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog restores original focus",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "dialog removes modal body state",
+          "passed": true,
+          "detail": null
+        },
+        {
+          "name": "no horizontal document overflow",
+          "passed": true,
+          "detail": 1440
+        },
+        {
+          "name": "no captured runtime errors",
+          "passed": true,
+          "detail": []
+        }
+      ],
+      "errors": [],
+      "passed": true
+    }
+  ],
+  "passed": 8,
+  "failed": 0,
+  "productSourceCheckpoint": "e8f4f5d7"
+}

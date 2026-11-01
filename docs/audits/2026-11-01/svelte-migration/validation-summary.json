@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-01",
+  "sourceCheckpoint": "e8f4f5d7",
+  "releaseGate": "blocked",
+  "windows": {
+    "canonicalCheck": "pass",
+    "freshNpmCi": "pass",
+    "rust": {
+      "passed": 194,
+      "ignored": 13
+    },
+    "heavyConversionGroups": 11,
+    "mediaOffline": "pass",
+    "frontendUnits": 60,
+    "ui": {
+      "passed": 18,
+      "projectSkips": 16
+    },
+    "format": "pass",
+    "clippy": "pass",
+    "pdfiumWrapper": "pass",
+    "pythonAudit": "pass",
+    "ocrSupplyChainAudit": "pass",
+    "npmAudit": {
+      "vulnerabilities": 0
+    },
+    "rustAudit": {
+      "blockingVulnerabilities": 0,
+      "transitiveWarningsRetained": true
+    },
+    "candidate": {
+      "sourceCheckpoint": "e8f4f5d7",
+      "build": "pass",
+      "updaterSignature": "verified",
+      "authenticode": "NotSigned",
+      "installerSha256": "e208c4062ec0bd80421024a6c46b4368491f6ceb9494734fe87b6f94f5c91188",
+      "installerBytes": 999656897
+    }
+  },
+  "linux": {
+    "freshNpmCi": "pass",
+    "nativeToolchainPreflight": "pass",
+    "compileUnitContractGate": "pass",
+    "rust": {
+      "passed": 201,
+      "ignored": 13
+    },
+    "sidecars": "compile-only placeholders in CI gate; not real Linux conversion evidence",
+    "ui": {
+      "engine": "WebKitGTK 2.52.6",
+      "scenarios": 8,
+      "assertions": 184,
+      "failed": 0
+    }
+  },
+  "macos": {
+    "architecture": "arm64",
+    "os": "26.6.2",
+    "freshFrontendInstallTypeUnitsBuildAudit": "pass",
+    "ui": {
+      "engine": "system WKWebView",
+      "scenarios": 8,
+      "assertions": 184,
+      "failed": 0
+    },
+    "tauriDmg": "not built"
+  },
+  "previewMeasurements": [
+    {
+      "implementation": "react",
+      "median": {
+        "startupMs": 115.52109999999993,
+        "settingsMs": 366.4223000000002,
+        "formatSelectionMs": 58.63500000000022
+      }
+    },
+    {
+      "implementation": "svelte",
+      "median": {
+        "startupMs": 118.44329999999991,
+        "settingsMs": 69.17770000000019,
+        "formatSelectionMs": 45.854699999999866
+      }
+    }
+  ],
+  "productionAssetTotals": [
+    {
+      "implementation": "react",
+      "bytes": 574401,
+      "gzipBytes": 156378
+    },
+    {
+      "implementation": "svelte",
+      "bytes": 642481,
+      "gzipBytes": 175541
+    }
+  ],
+  "open": [
+    "post-migration native picker/drop/paste/export GUI acceptance",
+    "installed Windows acceptance",
+    "final AppImage and DMG with native staged engines and OCR",
+    "clean-host installed acceptance on every named platform",
+    "publication not authorized"
+  ]
+}

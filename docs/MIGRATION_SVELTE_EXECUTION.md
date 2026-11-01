@@ -1,76 +1,167 @@
-# Exécution de la migration Svelte
+# Exécution de la migration desktop Svelte
 
-## État — 1 novembre 2026
+État au 1 novembre 2026 : **portage source réalisé ; acceptation installée encore ouverte**.
+Source fonctionnelle finale : **`e8f4f5d7`**, branche de réalisation
+`codex/migrate-svelte`. Intégration locale prévue sur `codex/test` après
+sauvegarde contrôlée des modifications initiales. Aucun push ni publication.
+Le site Next.js et le backend Rust/Tauri gardent leurs frontières.
 
-Exécution demandée explicitement après approbation du mandat. Worktree dédié :
-`~/.codex/worktrees/multi-converter-svelte/Multi-Converter`, branche
-`codex/migrate-svelte`, base `51e63aef`. Le checkout principal et ses modifications
-préexistantes restent conservés. Aucun push ni publication.
+| Lot | État et résultat |
+| --- | --- |
+| L0 Référence | Réalisé : référence React isolée, 56 unités, builds et mesures ; sauvegarde documentaire `9b26001d` |
+| L1 Socle | Réalisé : Svelte 5, Vite, TS, Tailwind 4, installations propres sur trois OS, lancement Tauri Windows observé |
+| L2 Design | Réalisé au niveau source et moteurs UI : DS-01 à DS-07 corrigés ; deux WebKit natifs, quatre largeurs, clavier et thèmes |
+| L3 Parcours vertical | Source, preview et moteurs réels validés ; picker/export GUI après migration encore à accepter |
+| L4 Parité conversion | Implémentée : lots, reprise, copie de flux, collage implicite, rapports, récupération et réexport ; scénarios UI et backend séparés |
+| L5 OCR et annexes | Implémentés : OCR, six langues, thèmes, diagnostics, accueil, retours et mises à jour ; corpus Windows réel réussi |
+| L6 Bascule | Réalisée : runtime React, types/plugin/hooks et palette desktop orphelins retirés ; site inchangé |
+| L7 Validation | Gates disponibles exécutés ; candidate Windows construite et signature updater vérifiée ; acceptation installée et nouveaux DMG/AppImage ouverts |
 
-| Lot | État | Preuve |
-| --- | --- | --- |
-| L0 Référence | Terminé | React : builds preview/production, 56 unités et sept mesures Chromium enregistrées |
-| L1 Socle | Réalisé | Types sans erreur/avertissement, preview/production, lancement Tauri Windows ; installation propre Mac réussie |
-| L2 Design | Intégré, WebKit en cours | DS-01 à DS-07 corrigés ; six contrastes AA, huit captures et clavier Chromium |
-| L3 Parcours vertical | Partiel | Preview complet et matrice réelle Windows réussis ; picker/export GUI non prouvés |
-| L4 Parité conversion | Intégré | Lots, virtualisation, annulation/reprise ; vérifications complémentaires rapport/récupération en cours |
-| L5 OCR et annexes | Intégré, validation en cours | OCR preview, six langues et préférences, 20 cycles ; runtime et corpus réels Windows réussis |
-| L6 Bascule | Réalisée au niveau source | React/types/plugin retirés du desktop ; aucun changement sous site/ |
-| L7 Validation | À réaliser | Gates finaux et preuves séparées par plateforme |
+## Construction et qualité
 
-## Limites actuelles
+Versions exactes : Svelte 5.57.3, plugin Vite Svelte 7.3.1, svelte-check 4.7.7,
+Tailwind/plugin Vite 4.3.3, Bits UI 2.20.2, Lucide Svelte 1.66.0.
+Vite 8, TypeScript 6, Node 24/npm 11 et Rust/Tauri restent dans leur périmètre.
+Le bouton provient du registre shadcn-svelte 1.7.2, style nova, avec variantes
+possédées localement. Les dialogues et sélecteurs utilisent directement Bits UI,
+avec une seule implémentation de chaque primitive. Provenance et licences sont
+conservées dans `src/components/ui/` et dans `NOTICE`.
 
-La migration n'est pas encore livrée. Les preuves Ubuntu/Tailwind antérieures
-restent des tests isolés. La validation installée et le gate release restent ouverts.
+Les contrôleurs utilisent les runes et des getters vivants ; les modèles purs et
+la façade API sont conservés. Les effets possèdent leur nettoyage, y compris les
+abonnements résolus tardivement. Les huit surfaces modales partagent focus,
+Échap, portail et restitution du focus. Les notes Markdown deviennent un arbre
+Svelte typé et échappé, sans HTML brut ni chargement d’images distantes.
 
-## Contrôles intermédiaires
+Le plugin Svelte atteint deepmerge 4.3.1, affecté par GHSA-gcqx-w48m-w2h4 sans
+version officielle corrigée lors de l’inspection. Le fork MIT local de build
+bloque les clés dangereuses des deux côtés de la fusion, à toute profondeur.
+Les tests vérifient aussi la résolution réellement installée. Aucun avis n’est
+masqué. Le montage file dependency/override passe les installations propres
+Windows, Ubuntu et Mac ; les audits npm signalent zéro vulnérabilité.
 
-- Versions résolues : Svelte 5.57.3, plugin Vite Svelte 7.3.1, svelte-check 4.7.7,
-  Tailwind/plugin Vite 4.3.3 et Bits UI 2.20.2. Vite 8 et TypeScript 6 conservés.
-- Référence Chromium : médianes de sept contextes neufs, démarrage 144,23 ms,
-  réglages 387,86 ms et sélection de format dans un lot de 2 000 fichiers 64,96 ms.
-  Ce sont des mesures de preview simulée, pas le démarrage natif ni la mémoire OS.
-- Premier parcours Svelte : neuf tests UI réussis, trois régressions de démarrage
-  de conversion corrigées et rejouées avec succès, dix exclusions existantes. Aucun échec masqué.
-- Les huit surfaces modales partagent Bits UI ; les notes de version sont rendues
-  depuis un arbre typé et échappé, sans injection HTML brute.
-- Deepmerge : aucun correctif officiel pour GHSA-gcqx-w48m-w2h4. Un fork local MIT
-  utilisé uniquement au build bloque les clés dangereuses des deux côtés de la
-  fusion ; les régressions vérifient aussi la résolution réellement utilisée par
-  le plugin. L'audit npm après installation signale zéro vulnérabilité.
+## Design corrigé
 
-- Point de reprise L0 : `9b26001d`. Après correction de la garde de démarrage,
-  les trois scénarios précédemment en échec passent sans modifier leurs assertions.
-- Tauri Windows : compilation native et lancement observés, port isolé 1428.
-  L'outil de contrôle de fenêtre a expiré en attente d'autorisation : picker,
-  export GUI et acceptation installée ne sont pas déclarés validés par ce lancement.
+- DS-01/02 : texte d’action blanc chaud et quatre rôles additionnels indexés,
+  sans casser le schéma externe des 56 tokens. Contrastes repos/survol/pression :
+  clair **4,753 / 5,308 / 6,289**, sombre **5,278 / 6,157 / 7,409**.
+- DS-03 : préfixe Tailwind `tw:` et variables `--tw-*`, pont explicite vers
+  les rôles canoniques. Les deux WebKit vérifient 18 px pour `tw:text-lg`,
+  16 px pour le corps de marque et 12 px pour le rayon de contrôle.
+- DS-04 : actions majeures et tactile >=44 px ; variantes denses explicites.
+  Le vrai checkbox des réglages possède sa cible 48 × 44 et son focus visible.
+- DS-05/06 : réduction du mouvement ciblée, sans durées globales de 1 ms ;
+  libellés/progression conservés, alias rapides/panneaux reliés aux 140/210 ms.
+- DS-07 : menu Bits UI. Le banc WebKit a découvert un débordement de 11 px à
+  375 px ; la largeur minimale fautive est corrigée et protégée par régression.
 
-## Preuves intermédiaires de consolidation
+Les captures Chromium finales et deux vues WebKitGTK sont versionnées avec les
+reçus. Les vues macOS clair/large et sombre/étroite ont été inspectées dans le
+rendu natif ; elles restent dans le dossier temporaire autorisé du Mac.
+La bibliothèque externe de design n’a pas été modifiée ni republiée.
 
-- Windows : 60 tests frontend et 194 tests Rust réussis ; 13 tests lourds ignorés
-  par cette commande. La matrice lourde a été exécutée séparément : 11 groupes
-  réussis, plus le contrôle média hors ligne avec zéro requête non autorisée.
-- Format Rust et Clippy sans avertissement : réussis. L’audit Rust est exécuté
-  sans nouvelle exception ; ses avertissements transitifs restent à distinguer
-  des vulnérabilités bloquantes.
-- Les 12 scénarios UI existants passent, avec leurs dix exclusions de projet
-  inchangées. Les nouvelles régressions couvrent menus/clavier/typeahead,
-  six langues persistées, thèmes et vingt cycles de réglages puis d’OCR.
-- Les contrastes texte/action : clair 4,753 / 5,308 / 6,289 ; sombre
-  5,278 / 6,157 / 7,409 (repos, survol, pression).
-- Mac Apple Silicon macOS 26.6.2 : transfert temporaire explicitement autorisé,
-  archive frontend SHA-256 48e8f14b1ab71dfb9a1ac8d8f457957d05c6c0d4d0b11fc9e3f65e585f91f72a.
-  Installation propre, types, 60 unités, fork de fusion, build production et audit
-  npm réussis avec Node 24.22.2/npm 11.19.1. Ce n’est pas un DMG ni une application
-  Tauri installée. Aucun autre projet de cet appareil n’a été modifié.
-- Copie de référence React conservée dans le checkout initial, checkpoint L0 et
-  sauvegarde récupérable des anciens fichiers sous le dossier local ignoré
-  `tmp/react-legacy` du worktree de migration.
+## Validations réalisées
 
-- Corpus OCR Windows final : 40 cas, moyenne propre 100 %, difficile 99,76 %,
-  médiane 48 170 ms et pic 668,9 Mio. Observation réseau : 745 échantillons,
-  zéro connexion distante. Les limites de performance restent celles de cet hôte.
-- `npm run check` complet passe après adaptation des contrôles Svelte ; le scan
-  de secrets conserve ses règles et les chemins personnels ont été retirés des
-  nouveaux documents versionnés. Le build production rejette automatiquement
-  tout marqueur des fixtures preview et tout runtime React desktop.
+| Environnement | Preuve actuelle |
+| --- | --- |
+| Windows x64 | Installation propre, `check` complet, 60 unités frontend, 194 tests Rust (13 lourds ignorés ici), puis les 11 groupes lourds de conversion séparément ; contrôle média hors ligne réussi |
+| Windows OCR | Runtime embarqué source puis corpus de 40 cas ; moyenne propre 100 %, difficile 99,76 %, zéro connexion distante sur 745 observations |
+| Rust/PDFium | Format et Clippy sans avertissement, wrapper exécuté, archive LibreOffice extraite/testée, audits Python et chaîne OCR réussis ; audit Rust sans nouvelle exception ni vulnérabilité bloquante, avertissements transitifs conservés |
+| Chromium preview | **18 scénarios réussis**, 16 exclusions explicites par projet ; 2 000 fichiers, erreur/annulation/reprise, export/rapport/récupération, collage, OCR, six langues et 20 cycles réglages puis OCR |
+| Ubuntu 24.04.3 WSL2 | Outils Linux natifs, installation propre, préflight, gate CI complet et 201 tests Rust (13 ignorés) ; sidecars de compilation explicitement factices |
+| WebKitGTK 2.52.6 | **8 scénarios / 184 assertions / zéro échec**, deux thèmes et quatre largeurs, composants du produit compilé en mode preview |
+| Mac Apple Silicon 26.6.2 | Installation frontend propre, types, 60 unités, build et audit npm ; Node 24.22.2/npm 11.19.1 dans le dossier temporaire explicitement autorisé |
+| WKWebView système | **8 scénarios / 184 assertions / zéro échec**, deux thèmes/quatre largeurs ; profil éphémère, fenêtre de test active pour le clavier |
+
+Les deux bancs WebKit rendent le vrai frontend compilé avec l’API de preview.
+Ils prouvent les composants, la cascade et les interactions dans ces moteurs ;
+ils ne prouvent ni commandes Tauri, ni conversions natives, ni paquets installés.
+Les essais GTK utilisent Xvfb/graphismes logiciels ; Wayland/GPU physique ne sont
+pas certifiés. Le banc Mac est une fixture ad-hoc, pas une signature Apple du
+produit, une notarisation ou un DMG Multi-Converter.
+
+Le pic OCR de 668,9 Mio mesure le processus worker principal, hors enfants ;
+la médiane 48 170 ms est celle du corpus de cet hôte, pas une promesse produit.
+
+## Mesures comparables
+
+Sept paires de contextes Chromium neufs, ordre alterné, preview simulée identique
+à 2 000 fichiers ; valeurs médianes enregistrées, pas performances natives :
+
+| Mesure | React | Svelte |
+| --- | ---: | ---: |
+| Démarrage preview | 115,52 ms | 118,44 ms |
+| Première ouverture des réglages | 366,42 ms | 69,18 ms |
+| Sélection d’un format | 58,64 ms | 45,85 ms |
+
+Le portage avant chargement différé montrait un surcoût de démarrage de 25,58 ms. Charger les
+primitives de format au moment où une cible est choisie ramène cet écart à
+**2,92 ms / 2,5 %** ; l’état de l’écran reste monté et conservé. Les réglages
+s’ouvrent environ 81 % plus vite dans ce test. Les assets JS/CSS production
+complets passent de 574 401 à 642 481 octets (+11,9 %), gzip de 156 378 à
+175 541 (+12,3 %), contrepartie des primitives accessibles et du rendu sûr.
+Aucune baisse de RAM OS ni accélération OCR n’est revendiquée.
+
+## Candidate Windows locale
+
+NSIS de `e8f4f5d7` construit avec toutes les ressources configurées :
+`%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe`.
+L’installateur fait 999 656 897 octets ; son
+[reçu d’empreintes](audits/2026-11-01/svelte-migration/windows-candidate.json)
+consigne aussi l’exécutable et la signature. La signature updater est vérifiée
+cryptographiquement contre la clé publique configurée. **Authenticode :
+NotSigned** ; une signature updater ne remplace pas la signature Windows.
+Aucun installateur n’a été publié et aucun `latest.json` fictif n’a été créé.
+Les trois premières candidates restent dans leurs dossiers de checkpoint.
+
+## Politique Linux et limites restantes
+
+Le produit reste Linux x64. Le frontend est vérifié ici avec WebKitGTK 2.52.6
+sur Ubuntu 24.04. Les anciens tests Tailwind seuls sur Jammy 2.50.4 restent
+historiques et ne deviennent pas des tests Svelte ou d’AppImage sur Ubuntu 22.04.
+Exiger un système et WebKitGTK maintenus à jour ; aucune version WebKit minimale
+universelle n’est déduite de ces deux points de mesure. La candidate Linux doit
+encore être construite/vérifiée sur sa base de distribution avec ses moteurs
+et son OCR Linux réels. Les placeholders du gate CI ne peuvent pas être publiés.
+
+La sélection native, le drop/collage et les exports GUI doivent encore être
+acceptés dans la candidate finale. L’outil de contrôle Windows a expiré avant
+interaction, en attente d’autorisation de fenêtre ; cette limite n’a pas été
+contournée par un autre pilote GUI. Les 66 scénarios installés Windows et les
+acceptations DMG/AppImage sur hôtes propres restent ouverts. Les copies Linux
+et Mac de validation frontend ne disposent pas ici de l’ensemble des moteurs
+et OCR natifs requis pour de nouveaux paquets complets.
+
+**Le mandat n’est donc pas déclaré accepté de bout en bout sur les trois OS.**
+Le code migré est livré pour cette étape ; le gate release V1.0.7 reste bloqué.
+
+## Reproduction et preuves
+
+- [Résumé machine](audits/2026-11-01/svelte-migration/validation-summary.json),
+  [comparaison appariée](audits/2026-11-01/svelte-migration/paired-preview-comparison.json)
+  et [état avant optimisation](audits/2026-11-01/svelte-migration/paired-preview-before-lazy-options.json).
+- [WebKit Ubuntu](audits/2026-11-01/svelte-migration/ubuntu-webkit-ui.json),
+  [WKWebView Mac](audits/2026-11-01/svelte-migration/macos-wkwebview-ui.json) et
+  [OCR Windows sans texte reconnu](audits/2026-11-01/svelte-migration/windows-ocr-summary.json).
+- [Matrice de parité et critères A01–A12](MIGRATION_SVELTE_PARITE.md).
+
+Commandes courantes : `npm ci`, `npm run check`, `npm run test:ui:preview`,
+`npm run build:frontend`, `npm run test:production-bundle`,
+`npm run test:conversions`, `npm run test:ocr:runtime`,
+`npm run test:ocr:corpus` et les gates de plateforme documentés dans TESTING.
+Sur Linux, après build preview :
+`xvfb-run -a python3 scripts/probes/run-svelte-webkit.py "$PWD" "<sortie>"`.
+Sur Mac, après build preview :
+`bash scripts/probes/run-svelte-wkwebview.sh "$PWD" "<sortie>"`.
+Les sources des bancs sont versionnées ; leurs dépendances sont celles du système.
+
+## Reprise et conservation
+
+Checkpoints : `9b26001d` référence, `716752e0` portage,
+`4712da08` consolidation, `74d5adaf` menu étroit,
+`e0ecf6a5` isolation des tokens, `e8f4f5d7` chargement différé final.
+Les anciens fichiers React ont une copie récupérable locale sous
+`tmp/react-legacy` dans le worktree ; Git conserve leurs versions historiques.
+Les candidates intermédiaires restent dans leurs dossiers de checkpoint.
+La comparaison de 39 documents/fichiers initiaux avec `9b26001d` est identique ;
+les modifications préexistantes et le Cargo.toml local sont préservés.

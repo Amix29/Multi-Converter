@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-01T14:35:14.857Z",
+  "sourceCheckpoint": "e8f4f5d7",
+  "platform": "windows-x64",
+  "build": "Tauri NSIS release build passed",
+  "files": [
+    {
+      "name": "Multi-Converter_1.0.7_x64-setup.exe",
+      "bytes": 999656897,
+      "sha256": "e208c4062ec0bd80421024a6c46b4368491f6ceb9494734fe87b6f94f5c91188"
+    },
+    {
+      "name": "Multi-Converter_1.0.7_x64-setup.exe.sig",
+      "bytes": 428,
+      "sha256": "719ae51a49c7921c69957fa6f91732fc115b5cecedeade52fabfc78ceed3a7af"
+    },
+    {
+      "name": "multi-converter.exe",
+      "bytes": 26602496,
+      "sha256": "27c435fca80a293a62b76d45e74e32bd3a986120b8fe984c38082ffaacf7020f"
+    }
+  ],
+  "updaterSignature": "cryptographically verified against configured production public key",
+  "authenticode": "NotSigned (Windows Authenticode); separate from verified updater signature",
+  "nativeContractsAndSiteUnchanged": true,
+  "installedAcceptance": "not performed",
+  "publication": "not authorized; no upload or latest.json generated",
+  "buildWarnings": [
+    "Existing STATIC_VCRUNTIME deprecation from Tauri build tooling"
+  ]
+}
