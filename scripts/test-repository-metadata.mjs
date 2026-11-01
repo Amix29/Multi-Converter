@@ -54,7 +54,7 @@ for (const keyword of [
   "tauri",
   "tauri-v2",
   "rust",
-  "react",
+  "svelte",
   "typescript",
   "windows",
   "windows-converter",

@@ -10,9 +10,10 @@ traite aucun fichier et ne télécharge aucune police.
 
 Les 56 tokens partagés Open Design sont explicites dans chaque mode. Les
 variables `--vlm-*` sont des alias de compatibilité du catalogue ; elles ne
-dictent pas une autre identité. `--accent` porte l'action orange/verte et
-`--accent-strong` les petits textes accentués. Le texte de bouton est sombre
-pour garder les couleurs de référence exactes avec un contraste AA.
+dictent pas une autre identité. `--accent` porte la référence orange/verte et
+`--accent-strong` les petits textes accentués. Les boutons principaux utilisent `--action-bg/hover/active` avec `--action-on`
+blanc chaud ; les six couples thème/état dépassent 4,5:1. Les quatre rôles
+additionnels sont indexés dans `source/action-roles.json`.
 
 Le paquet suit `od-design-system-project/v1`. Pour le modifier dans Open Design,
 ouvrir son espace d'édition, conserver les fichiers canoniques, puis synchroniser
@@ -34,6 +35,6 @@ Après une modification du catalogue, exécuter depuis la racine du dépôt
 `python scripts/build-design-previews.py`. Ce générateur sans dépendance
 reconstruit les six aperçus, les deux entrées `system/kit*.html` et les empreintes
 de source. Ne pas modifier directement les pages générées. Le produit et le
-catalogue partagent `assets/controls.css` ; le comportement du menu React reste
-dans `src/app/components/ChoiceSelect.tsx`. Toute modification des tokens exige
+catalogue partagent `assets/controls.css` ; le comportement du menu Svelte repose sur Bits UI
+dans `src/app/components/ChoiceSelect.svelte`. Toute modification des tokens exige
 aussi la régénération des index JSON natifs avant de mettre à jour Open Design.

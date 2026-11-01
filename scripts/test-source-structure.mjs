@@ -5,7 +5,7 @@ import process from "node:process";
 const projectRoot = path.resolve(import.meta.dirname, "..");
 const hardLimit = 500;
 const targetLimit = 300;
-const handwrittenExtensions = new Set([".cjs", ".js", ".mjs", ".rs", ".ts", ".tsx"]);
+const handwrittenExtensions = new Set([".cjs", ".js", ".mjs", ".rs", ".ts", ".tsx", ".svelte"]);
 const ignoredDirectories = new Set([
   ".git",
   ".next",

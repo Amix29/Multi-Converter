@@ -25,24 +25,21 @@ application does not load the marketing site at runtime.
 
 ## Technical Architecture
 
-The table below describes the **current React implementation**. On 2026-11-01
-the maintainer approved a **desktop-only Svelte 5 migration**, retaining Rust,
-Tauri 2, TypeScript and Vite and adopting Tailwind 4 + shadcn-svelte/Bits UI.
-The [execution mandate](MANDAT_MIGRATION_SVELTE.md) defines the target boundaries,
-design-system improvements and acceptance. Implementation has not started;
-the marketing site keeps its existing stack. Do not read this target decision
-as current Svelte runtime or package-validation evidence.
+The desktop frontend now uses Svelte 5, TypeScript, Vite, Tailwind 4 and selected
+local shadcn-svelte components backed by Bits UI. Rust/Tauri 2, command contracts,
+local engines and the static Next.js marketing site retain their boundaries.
+See [migration execution](MIGRATION_SVELTE_EXECUTION.md) for current evidence;
+source migration, native-host tests and installed acceptance are separate gates.
 
 | Layer | Responsibility |
 | --- | --- |
-| React + TypeScript | Converter, OCR and user-facing state |
+| Svelte 5 + TypeScript | Converter, OCR and user-facing state |
 | Tauri 2 IPC | Typed boundary between the WebView and native operations |
 | Rust | File access, conversion orchestration, OCR and bounded parsers |
 | Bundled engines | FFmpeg, PDFium, LibreOffice, Pandoc and libvips conversion paths |
 | Local application data | Application preferences and verified OCR runtime caches |
 
-The existing application does not need a new framework, database or local web
-server for standalone development.
+The static desktop SPA needs no database, embedded web server or additional router.
 
 ## Rust Backend Boundaries
 
@@ -92,17 +89,32 @@ supported DOCX, EPUB or ODT text parts.
 
 ## Frontend Boundaries
 
-The React frontend is organized by product responsibility instead of keeping
+The Svelte frontend is organized by product responsibility instead of keeping
 the whole workflow in one component:
 
 | Area | Responsibility |
 | --- | --- |
-| `src/App.tsx` | Application lifecycle, composition of the converter, OCR and global overlays |
+| `src/App.svelte`, `src/app/application.svelte.ts` | Composition, application lifecycle and overlay orchestration |
 | `src/app/conversion/` | Pure conversion-selection rules and stateful file/conversion workflows |
 | `src/app/screens/` | Files, format selection and conversion progress screens |
 | `src/app/layout/`, `settings/`, `welcome/`, `feedback/` | Shell navigation and focused overlays or panels |
 
 The converter and OCR dialog consume the public API from `src/lib/api.ts`.
+
+Stateful domain factories live in `*.svelte.ts`: file intake/progress, batch
+conversion, output actions, recovery, session guard, virtualization, locale,
+theme and update scheduling. Live getters preserve cross-domain reactivity.
+`$derived` owns computed values; external subscriptions/timers use effects
+with explicit cleanup, including late subscription completion. The typed
+`stateUpdate` helper preserves functional immutable updates synchronously.
+
+`ModalSurface.svelte` provides one Bits UI dialog/focus/portal implementation
+for all eight modal surfaces. `ChoiceSelect.svelte` uses Bits UI select;
+`components/ui/button` is the project-owned shadcn-svelte registry source.
+The registry provenance and token bridge are recorded in the execution ledger.
+Markdown release notes become a typed, escaped Svelte tree; HTML and image
+embedding are not interpreted. Settings, OCR and Markdown parsing remain lazy.
+
 
 ## Frontend API Boundary
 

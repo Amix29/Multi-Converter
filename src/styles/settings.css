@@ -223,3 +223,14 @@
   padding: 7px 10px;
   font-size: 11px;
 }
+
+/* The real checkbox owns a 48 x 44 hit target; its drawing is decorative. */
+.switch-control { position:relative; min-width:48px; min-height:44px; align-items:center; }
+.switch-control input { inset:0; width:100%; height:100%; margin:0; z-index:1; pointer-events:auto; cursor:pointer; }
+.switch-control span { pointer-events:none; }
+.switch-control input:focus-visible + span { outline:2px solid var(--focus); outline-offset:3px; }
+.switch-control input:disabled { cursor:default; }
+.switch-control input:disabled + span { opacity:.6; }
+@media (prefers-reduced-motion:reduce) {
+  .switch-control span, .switch-control span::after { transition:none; }
+}

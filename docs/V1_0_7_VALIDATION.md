@@ -1,5 +1,23 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-01 — Svelte migration execution in progress
+
+The maintainer requested full execution, staged delivery and all available
+validation. Source work is isolated on `codex/migrate-svelte`; the original
+`codex/test` checkout and pre-existing changes remain preserved. The desktop
+uses Svelte/Tailwind/Bits UI; the marketing site remains unchanged.
+
+Current new evidence: 60 frontend units, 194 Rust tests, all 11 heavy conversion
+matrix groups, media offline controls, Rust formatting/Clippy, canonical checks
+and production mock/React exclusion pass on Windows. Packaged OCR runtime and
+40-case corpus pass (clean 100%, difficult 99.76%, 745 network samples with no
+remote connection). Frontend clean-install/type/unit/build checks pass on Linux
+and the explicitly authorized Apple Silicon Mac. UI preview/native-host/package
+claims remain distinct. See [execution and open gates](MIGRATION_SVELTE_EXECUTION.md).
+
+No Svelte installed-package acceptance or release is claimed. The overall
+V1.0.7 release gate remains blocked; old packages do not validate this frontend.
+
 ## 2026-11-01 — Desktop Svelte architecture approved; mandate prepared
 
 After the isolated Ubuntu/Tailwind tests, the maintainer approved the proposed

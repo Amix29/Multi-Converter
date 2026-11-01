@@ -34,7 +34,7 @@
     },
     {
       "path": "assets/controls.css",
-      "sha256": "b810a9b87f31e056fcdf4112a20d458740fe8c4a4767ac3c85981ea9777eba1c"
+      "sha256": "4170f70118fa130f102fec52dae810390433ef7907304299d1fe717ad9e5f0cb"
     },
     {
       "path": "assets/logo-alternative-green.svg",
@@ -70,7 +70,7 @@
     },
     {
       "path": "DESIGN.md",
-      "sha256": "3a246aff7f7d2ac387473b48eb8ca336c572154a2fa81bed745999dc67e2a4f5"
+      "sha256": "c18c173b8e9c96487795e2780e117789c25cde4afd180c692fb7d6ec981fb4ac"
     },
     {
       "path": "manifest.json",
@@ -78,27 +78,31 @@
     },
     {
       "path": "preview/app.html",
-      "sha256": "86a30f4cfdaef1b65a3b19081b4f92fde24bc6e8302da401db1f4b0fe6ff64f5"
+      "sha256": "61eca0220ecd233d4701fde23cf10c835e5c6c2645ede551db54b5585905884e"
     },
     {
       "path": "preview/colors.html",
-      "sha256": "c8e0b08f8f6fc5bc05b603a00af91b10c264bee4ed67d48c65b4859d565bea88"
+      "sha256": "9b569e4f427a6416f17ba7f976ac1f6d757369977e5dab1e57e33f13b3c1180f"
     },
     {
       "path": "preview/components-buttons.html",
-      "sha256": "dd27d819bfb284eefa6ee0e6eeff5a98c82f05f7335ea15347b5d1726d7740d3"
+      "sha256": "f84b150859c968082bbf288c8073d6ceedc70ae03a2cc7203ed08fcdaecf999f"
     },
     {
       "path": "preview/components-inputs.html",
-      "sha256": "65821a7ace840aad4fdfc25f8f6c88dc3ac057417213f950ad10e06ee1cfeab3"
+      "sha256": "ebac83f12c98afd4c48773fe44f03d66fba0fcfd7813401590da09ecdb1142da"
     },
     {
       "path": "preview/spacing.html",
-      "sha256": "afa9ef38d10e25c86a6915c9651a2c47e267b99968eebea792074de8429e8218"
+      "sha256": "5262117cdb17fb4d12e25b0ad18e9d8b80a5051e7c91d9fa4f3be1ba608e0b93"
     },
     {
       "path": "preview/typography.html",
-      "sha256": "92787cb6a216ca87849b26124d48ca83bff59b796fcc4a3150fa3445a5577fc3"
+      "sha256": "0807deadca8f8cb170bb4fbbe1ddd57d3fd4bf8c14cad727a0c45771c53a4532"
+    },
+    {
+      "path": "source/action-roles.json",
+      "sha256": "a6bfbd5464f4502e687a08e94deb2d93e2b45845315e667a30f0253d2370a97a"
     },
     {
       "path": "source/evidence.md",
@@ -118,11 +122,11 @@
     },
     {
       "path": "system/kit.dark.html",
-      "sha256": "ccce86ad0e18eb2db390c372475388524383e538b95f2ee8840e63cf8bc40e26"
+      "sha256": "ad6b87252a480bb05407d96152a15bacd7661e8e02cd0ec4416d88242f8905b3"
     },
     {
       "path": "system/kit.html",
-      "sha256": "86a30f4cfdaef1b65a3b19081b4f92fde24bc6e8302da401db1f4b0fe6ff64f5"
+      "sha256": "61eca0220ecd233d4701fde23cf10c835e5c6c2645ede551db54b5585905884e"
     },
     {
       "path": "tokens.css",
@@ -130,7 +134,7 @@
     },
     {
       "path": "USAGE.md",
-      "sha256": "950531bc1a67808301687ebfbffceba579ef8d48d5cd63ec42a27b5efa4da662"
+      "sha256": "3a4b092e6a33e3eea6b3e8386ba4dc7b88ed0d2040c503eeaca226f68bb0d247"
     }
   ]
 }

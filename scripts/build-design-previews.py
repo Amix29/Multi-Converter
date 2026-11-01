@@ -56,6 +56,13 @@ usage.write_text(text,encoding='utf-8',newline='\n')
 print(json.dumps({'nativePreviewPages':len(pages)}))
 for file in package.rglob('*'):
     if file.is_file(): file.write_bytes(file.read_bytes().replace(b'\r\n',b'\n'))
+# Additive semantic roles: preserve the external 56-token schema.
+css_source=(package/'tokens.css').read_text(encoding='utf-8')
+role_names=['--action-bg','--action-hover','--action-active','--action-on']
+blocks=re.findall(r'[^{}]+\{([^{}]+)\}',css_source)
+actions={mode:{name:re.search(re.escape(name)+r':\s*([^;]+);',block).group(1).strip()
+               for name in role_names} for mode,block in zip(['light','dark'],blocks[:2])}
+(package/'source/action-roles.json').write_text(json.dumps({'schemaVersion':1,'source':'tokens.css','externalTokenCount':56,'themes':actions},indent=2)+'\n',encoding='utf-8',newline='\n')
 rows=[{'path':file.relative_to(package).as_posix(),'sha256':hashlib.sha256(file.read_bytes()).hexdigest()}
       for file in sorted(package.rglob('*')) if file.is_file() and file.name!='scanned-files.json']
 (package/'source/scanned-files.json').write_text(json.dumps({'files':rows},indent=2)+'\n',encoding='utf-8',newline='\n')

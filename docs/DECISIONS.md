@@ -1,5 +1,27 @@
 # Multi-Converter Decisions
 
+## 2026-11-01 — Svelte execution and build dependency hardening
+
+**Decision:** pin Svelte 5.57.3, its Vite plugin 7.3.1, svelte-check 4.7.7,
+Tailwind/plugin 4.3.3, Bits UI 2.20.2 and Lucide Svelte 1.66.0. Retain Vite 8,
+TypeScript 6, Node 24/npm 11 and the existing Tauri/Rust dependencies.
+Use selected shadcn-svelte 1.7.2 registry sources (nova), customized locally;
+remove unused generated primitives rather than maintaining duplicate dialogs.
+
+**Build-only remediation:** the Vite Svelte plugin reaches deepmerge 4.3.1,
+affected by GHSA-gcqx-w48m-w2h4 with no upstream fixed release at inspection.
+A small MIT-preserving local fork filters dangerous own keys on both operands
+at every level. A direct file dependency plus npm's matching override makes the
+fork portable across clean Windows/Linux/macOS installs. Regression tests verify
+the actual installed resolution, nested inputs, prototypes, arrays and symbols.
+This is a real patch, not an advisory suppression; revisit when upstream fixes it.
+
+**Design:** the additive four action roles preserve the external 56-token
+schema. Existing brand anchors and CSS remain canonical. Buttons use warm-white
+action text, density is explicit, and reduced motion targets interactions.
+The marketing site remains untouched. Runtime and installed proof are tracked
+in [the execution ledger](MIGRATION_SVELTE_EXECUTION.md).
+
 ## 2026-11-01 — Desktop Svelte migration architecture approved
 
 **Decision:** the maintainer explicitly approved Rust + Tauri 2 + Svelte 5 +
@@ -18,8 +40,8 @@ execution begins; they do not negate this explicit maintainer approval.
 
 **Current evidence:** Tailwind 4.3.3 passed isolated Ubuntu compatibility tests.
 Those tests do not validate Svelte/shadcn integration or a migrated application.
-This turn prepares the mandate; implementation has not started. Source remains
-React at documented functional checkpoint `853aa081`. No release, push or
+The subsequent execution request started the source migration in the dedicated
+`codex/migrate-svelte` worktree; the React checkpoint remains isolated for comparison. No release, push or
 external design-library publication is authorized by this decision.
 
 ## 2026-11-01 — Approved product identity and readable action labels

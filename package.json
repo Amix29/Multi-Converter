@@ -21,12 +21,12 @@
     "site:dev": "npm --prefix site run dev",
     "site:build": "npm --prefix site run build",
     "site:check": "npm --prefix site run check",
-    "build:frontend": "npm run validate:i18n && npm run typecheck && vite build",
+    "build:frontend": "npm run validate:i18n && npm run typecheck && vite build && npm run test:production-bundle",
     "build:frontend:preview": "npm run validate:i18n && npm run typecheck && vite build --mode preview",
     "preview:test": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
-    "build": "npm run prepare:installer-assets && npm run prepare:bundled-engines && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && tsc --noEmit && vite build",
-    "check": "npm run prepare:installer-assets && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && npm run test:source-structure && npm run test:rust-structure && npm run test:rust-contracts && npm run test:release-notes && npm run test:ocr && npm run test:platform-provenance && npm run test:platform-restaging && npm run test:staged-engine-assets && npm run test:ocr:platform-locks && npm run test:ocr:platform-packaging && npm run test:windows:native -- --self-test && npm run test:windows:pdfium-native -- --self-test && npm run test:macos:native -- --self-test && npm run test:linux:native -- --self-test && npm run validate:pdfium-engine-release -- --self-test && npm run typecheck:tests && npm run test:unit && npm run test:elf && npm run test:macos-packaging && npm run test:linux-packaging && npm run test:linux-sidecars && npm run test:linux-sidecar-release-assets && npm run test:linux-engine-release-assets && npm run test:github-workflows && npm run test:phase-8-workflows && npm run test:release-assets && npm run test:macos-dmg-artifact && npm run test:macos-release-artifacts && npm run test:linux-release-artifacts && npm run test:bundled-engines-platform && npm run test:ui-layout && npm run test:repository-metadata && npm run test:production-config && npm run test:secret-leaks && npm run test:version-sync && npm run test:run-tauri && npm run typecheck && npm run validate:engines",
-    "typecheck": "tsc --noEmit",
+    "build": "npm run prepare:installer-assets && npm run prepare:bundled-engines && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && npm run typecheck && vite build && npm run test:production-bundle",
+    "check": "npm run prepare:installer-assets && npm run validate:bundled-engines && npm run validate:embedded-manifest && npm run validate:i18n && npm run test:config-merge && npm run test:design-contract && npm run test:source-structure && npm run test:rust-structure && npm run test:rust-contracts && npm run test:release-notes && npm run test:ocr && npm run test:platform-provenance && npm run test:platform-restaging && npm run test:staged-engine-assets && npm run test:ocr:platform-locks && npm run test:ocr:platform-packaging && npm run test:windows:native -- --self-test && npm run test:windows:pdfium-native -- --self-test && npm run test:macos:native -- --self-test && npm run test:linux:native -- --self-test && npm run validate:pdfium-engine-release -- --self-test && npm run typecheck:tests && npm run test:unit && npm run test:elf && npm run test:macos-packaging && npm run test:linux-packaging && npm run test:linux-sidecars && npm run test:linux-sidecar-release-assets && npm run test:linux-engine-release-assets && npm run test:github-workflows && npm run test:phase-8-workflows && npm run test:release-assets && npm run test:macos-dmg-artifact && npm run test:macos-release-artifacts && npm run test:linux-release-artifacts && npm run test:bundled-engines-platform && npm run test:ui-layout && npm run test:repository-metadata && npm run test:production-config && npm run test:secret-leaks && npm run test:version-sync && npm run test:run-tauri && npm run typecheck && npm run validate:engines",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "validate:i18n": "node scripts/validate-i18n.mjs",
     "sync:i18n": "node scripts/sync-i18n.mjs",
@@ -155,7 +155,11 @@
     "test:pdf": "node scripts/cargo-test-temp.mjs test --manifest-path src-tauri/Cargo.toml pdf_text_conversions -- --nocapture",
     "test:pdfium-wrapper": "node scripts/pdfium-wrapper-cargo.mjs test",
     "test:pdfium-wrapper:compile": "node scripts/pdfium-wrapper-cargo.mjs test --no-run",
-    "clippy:pdfium-wrapper": "node scripts/pdfium-wrapper-cargo.mjs clippy --all-targets -- -D warnings"
+    "clippy:pdfium-wrapper": "node scripts/pdfium-wrapper-cargo.mjs clippy --all-targets -- -D warnings",
+    "typecheck:svelte": "npm run typecheck",
+    "test:config-merge": "node scripts/test-config-merge.mjs",
+    "test:design-contract": "node scripts/test-design-contract.mjs",
+    "test:production-bundle": "node scripts/test-production-bundle.mjs"
   },
   "keywords": [
     "tauri",
@@ -190,7 +194,7 @@
     "tauri-app",
     "tauri-v2",
     "rust",
-    "react",
+    "svelte",
     "typescript",
     "documents",
     "images",
@@ -226,22 +230,30 @@
   "license": "AGPL-3.0-or-later",
   "type": "module",
   "dependencies": {
+    "@internationalized/date": "3.12.2",
+    "@lucide/svelte": "1.66.0",
     "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-clipboard-manager": "2.3.2",
     "@tauri-apps/plugin-notification": "^2.3.3",
     "@tauri-apps/plugin-process": "^2.3.1",
     "@tauri-apps/plugin-updater": "2.14.1",
+    "bits-ui": "2.20.2",
     "marked": "^18.0.5",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "svelte": "5.57.3",
+    "tailwind-merge": "3.7.0"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@tailwindcss/vite": "4.3.3",
     "@tauri-apps/cli": "^2.11.0",
     "@types/node": "24.13.3",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "deepmerge": "file:vendor/config-merge",
+    "prettier": "3.9.10",
+    "prettier-plugin-svelte": "4.1.1",
+    "svelte-check": "4.7.7",
+    "tailwind-variants": "3.3.1",
+    "tailwindcss": "4.3.3",
     "typescript": "^6.0.3",
     "vite": "8.3.5",
     "vitest": "4.1.12"
@@ -249,5 +261,8 @@
   "main": "index.js",
   "directories": {
     "doc": "docs"
+  },
+  "overrides": {
+    "deepmerge": "$deepmerge"
   }
 }

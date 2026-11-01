@@ -1,0 +1,8 @@
+{
+  "name": "@multi-converter/config-merge",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.cjs",
+  "license": "MIT",
+  "description": "Local build-only deepmerge 4.3.1 fork blocking unsafe keys in both target and source traversal"
+}

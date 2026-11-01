@@ -8,10 +8,10 @@
   color:var(--fg); background:var(--surface); text-align:left; cursor:pointer;
   font:650 14px/1.45 var(--font-body);
   box-shadow:0 1px 0 color-mix(in srgb,var(--surface) 80%,transparent) inset,0 2px 3px color-mix(in srgb,var(--fg) 4%,transparent);
-  transition:border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease,transform 150ms cubic-bezier(.25,.46,.45,.94);
+  transition:border-color var(--motion-fast) ease, background-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease,transform var(--motion-fast) cubic-bezier(.25,.46,.45,.94);
 }
 .choice-trigger>span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
-.choice-trigger svg { width:20px; height:20px; flex-shrink:0; color:var(--muted); transition:transform 180ms cubic-bezier(.19,1,.22,1); }
+.choice-trigger svg { width:20px; height:20px; flex-shrink:0; color:var(--muted); transition:transform var(--motion-base) cubic-bezier(.19,1,.22,1); }
 .choice-trigger svg,.choice-menu svg { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .choice-trigger[aria-expanded="true"] { border-color:var(--accent-strong); box-shadow:0 0 0 3px var(--accent-soft); }
 .choice-trigger[aria-expanded="true"] svg { transform:rotate(180deg); color:var(--accent-strong); }
@@ -22,7 +22,7 @@
   border:1px solid var(--control-border); border-radius:16px;
   background:var(--surface); color:var(--fg); font:650 14px/1.45 var(--font-body);
   box-shadow:0 12px 36px color-mix(in srgb,var(--fg) 14%,transparent),0 2px 6px color-mix(in srgb,var(--fg) 7%,transparent);
-  transform-origin:top center; animation:choice-in 180ms cubic-bezier(.19,1,.22,1) both;
+  transform-origin:top center; animation:choice-in var(--motion-base) cubic-bezier(.19,1,.22,1) both;
 }
 .choice-menu [role="option"] {
   display:flex; align-items:center; justify-content:space-between; gap:14px;

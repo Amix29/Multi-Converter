@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "source": "tokens.css",
+  "externalTokenCount": 56,
+  "themes": {
+    "light": {
+      "--action-bg": "#b05a2b",
+      "--action-hover": "#a65328",
+      "--action-active": "#984820",
+      "--action-on": "#fffdf7"
+    },
+    "dark": {
+      "--action-bg": "#45763d",
+      "--action-hover": "#3d6b35",
+      "--action-active": "#345e2e",
+      "--action-on": "#fffdf7"
+    }
+  }
+}

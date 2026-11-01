@@ -239,7 +239,7 @@ This section is for anyone who wants to run the project locally, fix a bug, sugg
 | Layer | Technology |
 | --- | --- |
 | Desktop application | Tauri 2 |
-| UI | React + TypeScript |
+| UI | Svelte 5 + TypeScript, Tailwind 4, shadcn-svelte/Bits UI |
 | Planned OCR | PP-OCRv6_medium through a local Tauri-managed runtime |
 | Backend | Rust + Cargo |
 | Frontend build | Vite |
@@ -348,7 +348,7 @@ This repository is standalone, with its own development rules and design
 references. See [local workspace and relocation notes](docs/LOCAL_WORKSPACE.md).
 
 ```text
-src/                         React UI
+src/                         Svelte UI
 src/i18n/                    UI translations
 src-tauri/                   Tauri/Rust backend
 src-tauri/tauri.macos.conf.json

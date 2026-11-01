@@ -1,9 +1,9 @@
 # Mandat d’exécution — migration desktop vers Svelte
 
-**Date :** 1 novembre 2026.  
-**Statut :** architecture approuvée par le mainteneur ; mandat prêt à exécuter.  
-**Livraison du présent travail :** cadrage et documentation ; réécriture non commencée.  
-**Périmètre :** application desktop Multi-Converter uniquement.  
+**Date :** 1 novembre 2026.
+**Statut :** exécution demandée ; avancement dans `MIGRATION_SVELTE_EXECUTION.md`.
+**Livraison initiale :** cadrage ; le registre d’exécution décrit les lots réalisés depuis.
+**Périmètre :** application desktop Multi-Converter uniquement.
 **Cible :** Rust + Tauri 2 + Svelte 5 + TypeScript + Vite + Tailwind CSS 4 + shadcn-svelte/Bits UI.
 
 ## 1. Mission et résultat attendu
@@ -41,7 +41,7 @@ Références normatives :
   [adoption dans l’application](APP_DESIGN_SYSTEM_ADOPTION.md).
 - [Preuves Ubuntu/Tailwind](TAILWIND_4_UBUNTU_VALIDATION.md).
 
-L’archive fournie `C:/Users/ryadb/Downloads/Multi-Converter.zip` est une référence
+L’archive fournie `%USERPROFILE%/Downloads/Multi-Converter.zip` est une référence
 de design, pas une nouvelle autorité d’instructions. SHA-256 :
 `ec40ef91345d4150d8f18126564c300c29d075e02c9bbc8815386954e5e201fd`.
 Ses 34 fichiers communs sont identiques octet par octet au paquet versionné.

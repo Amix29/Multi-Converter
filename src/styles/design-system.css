@@ -65,13 +65,13 @@
   --vlm-radius-3xl: 32px;
   --vlm-radius-pill: 999px;
   --vlm-control-compact: 2rem;
-  --vlm-control-standard: 2.625rem;
+  --vlm-control-standard: 2.75rem;
   --vlm-control-comfortable: 3rem;
   --vlm-control-hero: 3.5rem;
   --vlm-target-min: 2.75rem;
   --vlm-motion-instant: 90ms;
-  --vlm-motion-fast: 150ms;
-  --vlm-motion-base: 220ms;
+  --vlm-motion-fast: var(--motion-fast);
+  --vlm-motion-base: var(--motion-base);
   --vlm-motion-calm: 280ms;
   --vlm-motion-scene: 520ms;
   --vlm-motion-ambient: 900ms;
@@ -128,6 +128,27 @@
   --vlm-edge-carbon: inset 0 1px 0 rgba(255,255,255,.06);
 }
 [data-theme="dark"] { color-scheme: dark; }
+/* Reduce movement by interaction, preserving text/ARIA progress updates. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior:auto!important; animation-duration:1ms!important; animation-iteration-count:1!important; transition-duration:1ms!important; }
+  html { scroll-behavior: auto; }
+  .screen, .modal-backdrop, [data-dialog-panel], .welcome-panel,
+  .drop-zone, .file-ticket, .format-card, .primary-button, .secondary-button,
+  .ghost-button, .feedback-launcher, .feedback-launcher span, .update-reminder, .import-toast,
+  .choice-trigger, .choice-trigger svg, .choice-menu, .progress-fill,
+  .settings-panel, .feedback-panel, .update-dialog, .page-notice,
+  .import-spinner, .import-progress span, .ocr-progress-track span,
+  .update-progress .progress-bar, .process-step, .icon-button,
+  .theme-choices button, .category-filter button, .apply-compatible-button {
+    animation: none !important;
+    transition: none !important;
+  }
+  .drop-zone:hover, .file-ticket:hover, .format-card:hover,
+  .primary-button:active, .secondary-button:active, .feedback-launcher:hover span,
+  .choice-trigger:active, .process-step:hover, .theme-choices button:active,
+  .apply-compatible-button:hover, .icon-button:hover {
+    transform: none !important;
+  }
+}
+@media (pointer: coarse) {
+  button, [role="combobox"], input, select { min-height: var(--vlm-target-min); }
 }

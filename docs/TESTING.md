@@ -13,6 +13,16 @@ The Windows installed acceptance protocol now requires 66 converter/OCR/installe
 scenarios. Old 101-scenario receipts do not prove the new candidate.
 The PDFium wrapper retains native-text inspection and page-rendering tests.
 
+## Svelte migration checks
+
+The desktop now uses Svelte 5. `npm run typecheck` invokes svelte-check with
+warnings treated as failures; `build` and both frontend build modes use it.
+`check` also runs the patched build-merge regression and the canonical design
+contract/contrast/source-index checks. Source budgets include `.svelte` files.
+The migration UI suite adds Bits UI keyboard/typeahead, six persisted languages,
+system/explicit themes, twenty-cycle overlay teardown and both-theme captures.
+See `MIGRATION_SVELTE_EXECUTION.md` for measured platform evidence and open gates.
+
 ## Windows x64
 
 For the 2026-11-01 interface checkpoint, use

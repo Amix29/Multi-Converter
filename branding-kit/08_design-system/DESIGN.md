@@ -120,7 +120,7 @@ même système de couleurs, boutons, formes et statuts relie les deux usages.
 
 | Composant | Contrat |
 | --- | --- |
-| Bouton principal | Orange en clair, vert en sombre, libellé sombre contrasté, ombre décalée ; une action dominante par groupe |
+| Bouton principal | Orange en clair, vert en sombre, libellé blanc chaud contrasté, ombre décalée ; une action dominante par groupe |
 | Bouton secondaire | Papier du thème, bordure lisible, libellé fort ; danger identifié par un texte et une couleur fonctionnelle |
 | Champ et menu | Libellé visible, aide associée, valeur actuelle lisible ; erreur liée au champ |
 | Carte fichier | Nom, format, taille, état et réglages associés ; noms longs et traductions préservés |
@@ -199,3 +199,24 @@ survol, les états de profil et les ouvertures de dialogue restent courts.
 Les sections du catalogue entrent une seule fois, par opacité et déplacement
 de 12 px sur 380 ms. La réduction des animations supprime ces déplacements.
 Ne pas animer l'arrivée de chaque fichier dans les longues listes virtualisées.
+
+## Contrat desktop Svelte — migration du 1 novembre 2026
+
+Les quatre rôles additionnels `--action-bg`, `--action-hover`, `--action-active`
+et `--action-on` sont indexés dans `source/action-roles.json`. Ils complètent les
+56 tokens du schéma externe sans changer leur nom ni leur ordre. Le texte
+principal reste blanc chaud dans les deux thèmes, avec un contraste >= 4,5:1.
+
+Densité : les actions majeures et les cibles tactiles mesurent au moins 44 px.
+Les contrôles denses desktop (32 px) sont réservés au pointeur fin ; les champs
+standard mesurent 44 px et les variantes confortables 48 px. Le catalogue garde
+ses variantes de présentation de 48 px. Une cible dense s'agrandit en mode tactile.
+
+Le pont Tailwind utilise `text-mc-body`, `text-mc-label` et `text-mc-title` pour
+les tailles canoniques ; `--text-lg` du kit ne définit pas la classe Tailwind
+`text-lg`. L'ordre est Tailwind, tokens canoniques, puis styles du produit.
+Les alias de mouvement rapide et de panneau pointent sur 140 et 210 ms du kit.
+Les rôles 280/520/900 ms restent réservés aux scènes et décorations. En mode
+réduction du mouvement, supprimer explicitement transitions, rotations et
+animations décoratives ; conserver les libellés et valeurs de progression.
+Les menus et dialogues desktop emploient Bits UI (focus, clavier, portail).

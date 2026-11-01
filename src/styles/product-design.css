@@ -66,3 +66,5 @@ body { background-image:url('../../branding-kit/08_design-system/assets/paper-gr
   .topbar::before { transition:none; }
 }
 @media (forced-colors:active) { .topbar::before { background:Canvas; backdrop-filter:none; } .theme-choices [aria-pressed="true"] { outline:2px solid Highlight; } }
+
+.icon-button .lucide-ui-icon { fill:none; stroke:currentColor; stroke-width:2; }

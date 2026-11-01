@@ -3,7 +3,7 @@ import path from "node:path";
 const SOURCE_GROUP_ORDER = ["frontend", "rust", "automation", "tests", "configuration"];
 
 const SOURCE_ROOTS = [
-  { prefix: "src/", group: "frontend", extensions: [".css", ".ts", ".tsx"] },
+  { prefix: "src/", group: "frontend", extensions: [".css", ".ts", ".tsx", ".svelte"] },
   { prefix: "src-tauri/src/", group: "rust", extensions: [".rs"] },
   { prefix: "scripts/", group: "automation", extensions: [".js", ".mjs", ".ps1", ".ts"] },
   { prefix: "tests/", group: "tests", extensions: [".js", ".mjs", ".ts", ".tsx"] },

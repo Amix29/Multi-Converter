@@ -22,7 +22,7 @@ for (const platform of ["linux", "macos"]) {
   const resources = { ...tauriConfig.bundle.resources, ...platformConfig(platform).bundle.resources };
   assert.deepEqual(resources, { ...commonResources, "bundled-engines/": "engines/" }, `${platform} merged resources must contain project notices, native engines and OCR`);
 }
-const frontendFiles = ["src/App.tsx", "src/lib/api.ts"]
+const frontendFiles = ["src/App.svelte", "src/lib/api.ts"]
   .map((relative) => fs.readFileSync(path.join(root, relative), "utf8"))
   .join("\n");
 

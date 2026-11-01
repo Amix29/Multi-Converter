@@ -1,3 +1,9 @@
 @import "../../branding-kit/08_design-system/assets/controls.css";
 .quality-options .choice-select { grid-template-columns:minmax(0,max-content) minmax(180px,320px); justify-content:start; align-items:center; gap:12px; }
 @media (max-width:600px) { .quality-options .choice-select { grid-template-columns:minmax(0,1fr); } }
+
+/* Desktop form density; the catalogue retains its 48px presentation variant. */
+.quality-options .choice-trigger { min-height:44px; padding:9px 12px; }
+@media (max-width:600px) {
+  .quality-options .choice-select { grid-template-columns:minmax(0,1fr) minmax(0,1.35fr); gap:8px; }
+}

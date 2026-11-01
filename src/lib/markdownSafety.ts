@@ -1,4 +1,4 @@
-const releaseNotesRelativeUrlBase = "https://github.com/Amix29/Multi-Converter";
+const releaseNotesRelativeUrlBase = "https://github.com/Amix29/Multi-Converter/";
 
 export function safeReleaseNoteHref(href: string) {
   const trimmed = href.trim();

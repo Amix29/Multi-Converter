@@ -3,24 +3,25 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const app = fs.readFileSync(path.join(root, "src", "App.tsx"), "utf8");
+const composition = fs.readFileSync(path.join(root, "src", "app", "application.svelte.ts"), "utf8");
+const app = fs.readFileSync(path.join(root, "src", "App.svelte"), "utf8").replaceAll("application.", "");
 const appModel = fs.readFileSync(path.join(root, "src", "app", "conversion", "model.ts"), "utf8");
-const appTopbar = fs.readFileSync(path.join(root, "src", "app", "layout", "AppTopbar.tsx"), "utf8");
-const filesScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "FilesScreen.tsx"), "utf8");
-const formatScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "FormatScreen.tsx"), "utf8");
-const progressScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "ProgressScreen.tsx"), "utf8");
-const virtualizedJobList = fs.readFileSync(path.join(root, "src", "app", "screens", "VirtualizedJobList.tsx"), "utf8");
+const appTopbar = fs.readFileSync(path.join(root, "src", "app", "layout", "AppTopbar.svelte"), "utf8");
+const filesScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "FilesScreen.svelte"), "utf8");
+const formatScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "FormatScreen.svelte"), "utf8");
+const progressScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "ProgressScreen.svelte"), "utf8");
+const virtualizedJobList = fs.readFileSync(path.join(root, "src", "app", "screens", "VirtualizedJobList.svelte"), "utf8");
 const largeListModel = fs.readFileSync(path.join(root, "src", "app", "conversion", "largeListModel.ts"), "utf8");
-const feedbackOverlays = fs.readFileSync(path.join(root, "src", "app", "feedback", "FeedbackOverlays.tsx"), "utf8");
-const fileWorkflow = fs.readFileSync(path.join(root, "src", "app", "conversion", "useFileWorkflow.ts"), "utf8");
+const feedbackOverlays = fs.readFileSync(path.join(root, "src", "app", "feedback", "FeedbackButton.svelte"), "utf8");
+const fileWorkflow = fs.readFileSync(path.join(root, "src", "app", "conversion", "fileWorkflow.svelte.ts"), "utf8");
 const api = [
   fs.readFileSync(path.join(root, "src", "lib", "api.ts"), "utf8"),
   fs.readFileSync(path.join(root, "src", "lib", "api", "contracts.ts"), "utf8"),
   fs.readFileSync(path.join(root, "src", "lib", "api", "previewAdapter.ts"), "utf8"),
   fs.readFileSync(path.join(root, "src", "lib", "api", "tauriAdapter.ts"), "utf8"),
 ].join("\n");
-const updaterHook = fs.readFileSync(path.join(root, "src", "hooks", "useAppUpdater.ts"), "utf8");
-const updateFlow = fs.readFileSync(path.join(root, "src", "components", "UpdateFlow.tsx"), "utf8");
+const updaterHook = fs.readFileSync(path.join(root, "src", "hooks", "appUpdater.svelte.ts"), "utf8");
+const updateFlow = fs.readFileSync(path.join(root, "src", "components", "UpdateReminder.svelte"), "utf8");
 const stylesRoot = path.join(root, "src", "styles");
 const css = [
   fs.readFileSync(path.join(root, "src", "styles.css"), "utf8"),
@@ -30,7 +31,7 @@ const css = [
 ].join("\n");
 const fileCardsCss = fs.readFileSync(path.join(root, "src", "styles", "file-cards.css"), "utf8");
 
-assert.match(app, /<div className="floating-corner" data-testid="floating-corner">/, "floating-corner wrapper is missing");
+assert.match(app, /<div\s+class="floating-corner"\s+data-testid="floating-corner"\s*>/, "floating-corner wrapper is missing");
 assert.match(app, /updateReminderActive\s*\?\s*"has-update-reminder"\s*:\s*""/, "app shell must expose update reminder state for layout collision avoidance");
 assert.doesNotMatch(app, /has-feedback-launcher/, "topbar feedback must not reserve space as a floating control");
 assert.match(app, /importToastActive\s*\?\s*"has-import-toast"\s*:\s*""/, "app shell must expose import toast state for notice collision avoidance");
@@ -39,33 +40,33 @@ assert.match(api, /mockWelcomeSeen"\)\s*!==\s*"1"/, "preview API must honor the 
 assert.match(updaterHook, /mockUpdate"\)\s*!==\s*"1"/, "update reminder QA hook is missing");
 assert.doesNotMatch(updaterHook, /import\.meta\.env\.DEV[\s\S]{0,240}mockUpdate/, "mock update UI must be available in built browser previews");
 assert.match(app, /feedbackVisible={feedbackLauncherActive}/, "app shell must pass the current feedback visibility rules to the topbar");
-assert.match(appTopbar, /<div className="topbar-actions">[\s\S]*?<FeedbackButton/, "feedback must render inside the topbar action group");
-assert.match(appTopbar, /<div className="brand-title-row">[\s\S]*?brand-mark[\s\S]*?<h1>Multi-Converter<\/h1>/, "the logo must sit immediately beside the product name");
+assert.match(appTopbar, /<div\s+class="topbar-actions">[\s\S]*?<FeedbackButton/, "feedback must render inside the topbar action group");
+assert.match(appTopbar, /<div\s+class="brand-title-row">[\s\S]*?brand-mark[\s\S]*?<h1>Multi-Converter<\/h1>/, "the logo must sit immediately beside the product name");
 assert.match(css, /grid-template-areas:\s*[\r\n]+\s*"brand actions"[\r\n]+\s*"context context";/, "compact topbars must keep settings on the right and move context below");
 assert.doesNotMatch(app, /<FeedbackButton/, "feedback must not remain in the floating app-shell stack");
 assert.match(feedbackOverlays, /data-testid="feedback-launcher"/, "feedback launcher test id is missing");
 assert.match(updateFlow, /data-testid="update-reminder"/, "update reminder test id is missing");
 assert.match(fileWorkflow, /window\.addEventListener\("paste", onPaste\)/, "clipboard paste listener is missing");
-assert.match(fileWorkflow, /canImportDroppedFiles\s*=\s*step === 1 \|\| step === 2/, "paste and drop imports must be limited to converter Files and Formats");
-assert.match(fileWorkflow, /canImportDroppedFilesRef\.current\)\s*{\s*await addFilePaths\(paths\);/, "native converter drops must remain limited to import steps");
+assert.match(fileWorkflow, /canImportDroppedFiles\s*=\s*\$derived\(step === 1 \|\| step === 2\)/, "paste and drop imports must be limited to converter Files and Formats");
+assert.match(fileWorkflow, /canImportDroppedFiles\)\s*{\s*await addFilePaths\(paths\);/, "native converter drops must remain limited to import steps");
 assert.match(fileWorkflow, /if \(!canImportDroppedFiles\) return;/, "HTML file drops must be ignored outside import steps");
 assert.match(fileWorkflow, /api\.saveClipboardFiles/, "clipboard files must be saved locally before analysis");
 assert.doesNotMatch(app + appTopbar + fileWorkflow, /pasteFromClipboard|clipboard-button/, "clipboard import must remain implicit without a dedicated UI button");
 assert.match(api, /saveClipboardFiles\(files: ClipboardFileInput\[\]\)/, "clipboard API contract is missing");
-assert.match(app, /bootstrapDependencies\(\)[\s\S]*?\}, \[setInternetAvailable\]\);/, "engine bootstrap must not rerun when only the language changes");
-assert.match(fileWorkflow, /api\.onProgress[\s\S]*?\}, \[addFilePaths\]\);/, "native progress and drop listeners must not resubscribe on language changes");
+assert.match(composition, /untrack[\s\S]*?bootStarted\.current[\s\S]*?bootstrapDependencies\(\)/, "engine bootstrap must be isolated from language dependencies");
+assert.match(fileWorkflow, /untrack[\s\S]*?onProgress[\s\S]*?disposed/, "native listeners must own teardown and avoid implicit language tracking");
 assert.match(filesScreen, /upload\.removeUnsupported/, "Files must expose a bulk action for unsupported imports");
 assert.match(fileWorkflow, /withoutUnsupportedFiles/, "bulk unsupported removal must use the shared pure helper");
 assert.match(formatScreen, /stablePartitionBySupport/, "Formats must keep compatible files before unsupported files");
 assert.match(largeListModel, /for \(const file of files\)[\s\S]*?supported[\s\S]*?unsupported/, "the supported-first partition must remain stable");
 assert.match(progressScreen, /progress\.filterAll[\s\S]*?progress\.filterErrors/, "output status filters are missing");
-assert.match(virtualizedJobList, /props\.files\.slice\(windowState\.startIndex, windowState\.endIndex\)/, "output jobs must mount only the visible virtual window");
+assert.match(virtualizedJobList, /props\.files\.slice\(\s*windowState\.startIndex,\s*windowState\.endIndex,?\s*\)/, "output jobs must mount only the visible virtual window");
 assert.match(virtualizedJobList, /data-total-count={props\.files\.length}/, "the virtual output list must expose its complete item count for QA");
 assert.match(fileCardsCss, /max-height:\s*calc\(3 \* 132px \+ 2 \* 12px\);/, "the file lane must show at most three card rows");
 assert.doesNotMatch(fileCardsCss, /animation\s*:/, "large file-card lists must not animate each card on entry");
 
 assert.doesNotMatch(app + appTopbar + fileWorkflow, /EditorWorkspace|onAppMode|editorDropRequest/, "removed editor navigation must not return");
-assert.match(app, /<ImageOcrDialog/, "image OCR must remain available from the converter");
+assert.match(app, /import\("\.\/ocr\/ImageOcrDialog\.svelte"\)/, "image OCR must remain available from the converter");
 assert.match(api, /recognizeImage|recognize_image/, "the OCR API must remain available");
 assert.doesNotMatch(api, /editorCreateDocument|pdfEditorOpen|editor_create_document|pdf_editor_open/, "editor APIs must not be exposed");
 
