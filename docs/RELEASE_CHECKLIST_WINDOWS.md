@@ -8,7 +8,7 @@ For macOS packaging, use `docs/RELEASE_CHECKLIST_MACOS.md` instead of this Windo
 npm ci
 npm run typecheck
 npm run validate:i18n
-npm run test:editor
+npm run test:ui:preview
 npm run validate:bundled-engines
 npm run validate:embedded-manifest
 npm run validate:engines
@@ -29,13 +29,13 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp
 Before a V1.0.7 Windows release:
 
 - `docs/V1_0_7_VALIDATION.md` must mark the combined Windows feature and release gates passed;
-- `docs/V1_0_7_EDITOR_VALIDATION.md` must mark the complete real Tauri Office matrix passed;
+- the converter/OCR native acceptance matrix must pass for the final Svelte candidate; document/PDF editors are cancelled;
 - real `PP-OCRv6_medium` inference must pass the fixtures in `docs/V1_0_7_OCR.md`;
 - scanned PDF to TXT/Markdown/HTML and copy-text-from-image must work offline in the packaged application;
 - OCR progress, cancellation, limits, cleanup and original-file integrity must pass;
 - `npm run test:windows:native` must validate the exact installed candidate from a dedicated clean Windows x64 profile;
 - `NOTICE` and `docs/THIRD_PARTY_ENGINES.md` must name the exact packaged OCR runtime/model and notices;
-- version metadata may change to `1.0.7` only after these checks pass.
+- synchronized development metadata `1.0.7` does not establish release readiness.
 
 For a Windows-only release workflow run, do not enable the `include_macos` manual input and do not mention a macOS DMG in the GitHub release notes.
 

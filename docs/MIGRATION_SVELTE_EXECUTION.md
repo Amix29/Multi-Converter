@@ -6,6 +6,20 @@ Source fonctionnelle finale : **`adf7b8ce`**, branche de réalisation
 des modifications initiales ; installation propre et `check` complet y passent. Aucun push ni publication.
 Le site Next.js et le backend Rust/Tauri gardent leurs frontières.
 
+## Suite native demandée le 1 novembre 2026
+
+Le mainteneur demande de poursuivre les essais natifs Windows et les paquets
+macOS avec moteurs réels, ainsi que Linux si un environnement local existe.
+Ubuntu WSL est disponible. Le contrôle Windows répond maintenant ; le protocole
+`docs/TESTING.md` exige toutefois un profil Windows propre et Windows Sandbox
+n’est pas installé. Le choix du profil d’installation est en cours de clarification.
+La préparation des moteurs et paquets se poursuit indépendamment.
+
+Le validateur Windows refusait toute version autre que 1.0.6 : il compare
+désormais la candidate à la version réelle de `package.json`, avec régression
+sur une version obsolète. Les checklists Windows/Linux sont réalignées sur le
+convertisseur/OCR, sans exigences d’éditeurs supprimés.
+
 | Lot | État et résultat |
 | --- | --- |
 | L0 Référence | Réalisé : référence React isolée, 56 unités, builds et mesures ; sauvegarde documentaire `9b26001d` |

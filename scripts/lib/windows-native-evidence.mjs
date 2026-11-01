@@ -6,6 +6,9 @@ import path from "node:path";
 
 const OCR_PDF_KINDS = ["native", "scanned", "mixed"];
 const OCR_TARGETS = ["txt", "markdown", "html", "csv", "json", "xml", "docx", "odt", "rtf"];
+const PROJECT_VERSION = JSON.parse(
+  await fs.readFile(new URL("../../package.json", import.meta.url), "utf8"),
+).version;
 
 export const SCENARIOS = Object.freeze([
   ...scenarioGroup("installer", [
@@ -104,7 +107,9 @@ export function createManifest({ candidate, environment, runId }) {
 export async function validateManifest(manifest, { rehash = true } = {}) {
   const errors = [];
   if (manifest.schemaVersion !== 1) errors.push("schemaVersion must be 1");
-  if (manifest.candidate?.version !== "1.0.6") errors.push("candidate version must remain 1.0.6");
+  if (manifest.candidate?.version !== PROJECT_VERSION) {
+    errors.push(`candidate version must match current project version ${PROJECT_VERSION}`);
+  }
   if (manifest.environment?.platform !== "win32" || manifest.environment?.arch !== "x64") {
     errors.push("evidence must come from Windows x64");
   }

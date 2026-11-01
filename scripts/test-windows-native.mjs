@@ -157,11 +157,14 @@ async function selfTest() {
     assert.ok(inventory.trees.every(({ path: treePath }) => treePath.startsWith(installationRoot)));
     const manifest = createManifest({
       runId: "self-test",
-      candidate: { version: "1.0.6", installer: identity, installedExecutable: identity },
+      candidate: { version: JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8")).version, installer: identity, installedExecutable: identity },
       environment: { platform: "win32", arch: "x64", profileIsolation: "dedicated", packageMode: "installed", networkMode: "offline" },
     });
     const errors = await validateManifest(manifest, { rehash: false });
     assert.ok(errors.some((error) => error.includes("expected pass")));
+    assert.ok(!errors.some((error) => error.includes("candidate version")));
+    const staleVersion = { ...manifest, candidate: { ...manifest.candidate, version: "0.0.0-stale" } };
+    assert.ok((await validateManifest(staleVersion, { rehash: false })).some((error) => error.includes("candidate version")));
     const changed = { path: file, beforeBytes: 1, afterBytes: 2, beforeSha256: "a", afterSha256: "b" };
     const scenario = { id: "converter.rust-text", status: "pass", artifacts: [identity], sources: [changed] };
     const focusedErrors = await validateScenarioOnly({ scenarios: [scenario] }, SCENARIO_BY_ID.get(scenario.id));
