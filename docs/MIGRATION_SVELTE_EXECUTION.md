@@ -1,10 +1,22 @@
 # Exécution de la migration desktop Svelte
 
 État au 1 novembre 2026 : **portage source réalisé ; acceptation installée encore ouverte**.
-Source fonctionnelle finale : **`adf7b8ce`**, branche de réalisation
+Source du portage initial : **`adf7b8ce`**, branche de réalisation
 `codex/migrate-svelte`. Intégration locale effectuée sur **`codex/test`**, après sauvegarde contrôlée
 des modifications initiales ; installation propre et `check` complet y passent. Aucun push ni publication.
 Le site Next.js et le backend Rust/Tauri gardent leurs frontières.
+
+## Correction ciblée du 5 novembre 2026
+
+Source courante **`0b003d33`** : la barre de titre Windows suit les couleurs du
+design system et le choix clair/sombre/système. La fenêtre de développement a
+été vérifiée nativement dans les trois choix, avec le manifeste Cargo antérieur
+conservé à l’identique et sans copie de moteurs. Les 64 tests frontend, 196 tests
+Rust (13 ignorés), Clippy et contrôles ciblés passent. Les anciennes preuves de
+conversion/paquets ci-dessous restent rattachées à leurs checkpoints d’origine.
+Voir [l’adoption et les captures](APP_DESIGN_SYSTEM_ADOPTION.md) et le
+[reçu Windows](audits/2026-11-05/native-titlebar/validation.json).
+Les préparations Linux/macOS et l’acceptation installée globale restent arrêtées.
 
 ## Suite native interrompue le 1 novembre 2026
 

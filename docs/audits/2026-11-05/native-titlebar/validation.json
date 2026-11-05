@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-05T21:01:55.379Z",
+  "sourceCommit": "0b003d339df83b7c855c86e1613d2a0b983388d0",
+  "platform": "windows-x64",
+  "osVersion": "10.0.26300.0",
+  "scope": "Native development window appearance; not installed/release acceptance.",
+  "implementation": {
+    "nativeDecorations": true,
+    "colorsFrom": "resolved --bg / --fg CSS design tokens",
+    "systemPreference": "Tauri native override cleared",
+    "binding": "local documented DwmSetWindowAttribute FFI; no dependency changes",
+    "command": "main-window-only sync_window_theme; typed preference and validated six-digit RGB",
+    "updates": "ordered; duplicate requests suppressed; queue recovers after failure"
+  },
+  "palette": {
+    "light": {
+      "background": "#f5f3ec",
+      "foreground": "#1d241f"
+    },
+    "dark": {
+      "background": "#111710",
+      "foreground": "#eef2e8"
+    }
+  },
+  "checks": {
+    "svelte": {
+      "errors": 0,
+      "warnings": 0
+    },
+    "frontendTests": {
+      "passed": 64
+    },
+    "rustTests": {
+      "passed": 196,
+      "ignored": 13
+    },
+    "rustFmt": "passed",
+    "clippy": "passed with -D warnings",
+    "sourceBudgets": "passed",
+    "ipcContracts": "25 commands / 2 existing progress events passed",
+    "uiLayout": "passed",
+    "productionConfiguration": "passed",
+    "mechanicalUiDetector": [],
+    "nativeBuild": "passed"
+  },
+  "nativeGui": {
+    "sequence": [
+      "light",
+      "dark",
+      "light",
+      "system"
+    ],
+    "initialPreference": "system",
+    "restoredPreference": "system",
+    "systemResolvedTheme": "dark",
+    "captionAndTextColors": "visually confirmed in real Windows title bar",
+    "nativeControls": "minimize/maximize/close retained",
+    "finalState": "settings closed; corrected window left open",
+    "windowTitle": "Multi-Converter",
+    "dimensions": {
+      "width": 1182,
+      "height": 792
+    }
+  },
+  "executable": {
+    "name": "multi-converter.exe",
+    "bytes": 50912256,
+    "sha256": "5d5560ba4f3b50d23607ec64a980b1bc2bba74ba345535d24f93ee7bde479a31"
+  },
+  "captures": [
+    {
+      "name": "light-settings.jpg",
+      "bytes": 106847,
+      "sha256": "fd44f80886712a0b796657ab3a19e20784206609511504e9298909e15a1705b2"
+    },
+    {
+      "name": "dark-settings.jpg",
+      "bytes": 98090,
+      "sha256": "f475512f4af40dae73a7bc87fc436cb97b989793b296f845038900ada8a6d88f"
+    },
+    {
+      "name": "system-settings.jpg",
+      "bytes": 98023,
+      "sha256": "90b2d2ffc046bd71f551a656110fa3a91c889cc2b84d72e131dfdbb847378f47"
+    }
+  ],
+  "preservation": {
+    "cargoTomlSha256": "8913aff785eb5ba7605312df34b81efe66a031de3177e8ca27cc6dc703c087ba",
+    "cargoManifestPreexistingBytesUnchanged": true,
+    "lockfileUnchanged": true,
+    "existingSidecarsUntouched": true,
+    "resourceOrEngineStagingInvoked": false,
+    "linuxMacosPreparationInvoked": false,
+    "newInstallerBuilt": false
+  },
+  "limitations": [
+    "Exact DWM caption colors require Windows 11 attributes; older Windows uses native light/dark fallback.",
+    "No fresh Linux/macOS host validation or installed package acceptance.",
+    "The earlier adf7b8ce release candidate does not contain this fix."
+  ]
+}

@@ -55,7 +55,7 @@ Tauri invoke handlers
 ```
 
 `src-tauri/src/lib.rs` is the composition root: it registers application state,
-plugins and the existing 24 commands, but does not implement conversion or
+plugins and the 25 commands, but does not implement conversion or
 OCR behavior. The command modules translate Tauri inputs into domain calls;
 domain modules remain directly unit-testable without a WebView. Existing facade
 files retain their module paths and public contracts while delegating to focused
@@ -197,12 +197,22 @@ is limited to frontend development.
 
 ## Conversion-Only Scope (2026-10-29)
 
-The application exposes 24 native commands for conversion, OCR, export, onboarding
-and external links, with `convert-progress` and `ocr-progress` events. Neither
+The application exposes 25 native commands for conversion, OCR, export, onboarding,
+external links and native window appearance, with `convert-progress` and `ocr-progress` events. Neither
 frontend adapters nor the Tauri invoke handler expose document/PDF editing.
 The former editor-only Office bridge and font-enumeration modules are removed;
 the generic document conversion path retains LibreOffice and Pandoc.
 Old local drafts remain untouched. Legacy saved mode preferences are ignored.
+
+`src/app/theme.svelte.ts` forwards the selected appearance and resolved `--bg` /
+`--fg` design tokens through `src/lib/windowTheme.ts`. Native updates are ordered
+and duplicate media events are suppressed. `window_theme::sync_window_theme`
+accepts only the main window, a typed preference and six-digit RGB colors. Rust
+sets Tauri's native theme (or restores system tracking) and, on Windows 11, uses
+the local DWM binding for caption/text colors. Decorations and native window
+controls remain enabled. Older Windows versions retain native light/dark themes
+when custom caption attributes are unsupported. No conversion API or permission
+scope is expanded by this appearance command.
 
 Batch report export runs its hashing and filesystem work off the async executor.
 It validates outputs against the current managed batch, records their actual

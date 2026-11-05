@@ -1,5 +1,26 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-05 — Native title-bar theme correction
+
+Source `0b003d33` adds a bounded, main-window-only appearance command. Svelte
+forwards the existing design tokens and preference; Windows caption/text colors
+follow Light/Dark and System clears the native theme override. The existing
+Cargo manifest, lockfile, native decorations and conversion/OCR contracts remain
+preserved; one appearance command brings the registered command count to 25.
+
+Windows evidence: Svelte types (zero errors/warnings), 64 frontend tests, 196 Rust
+tests (13 heavy cases ignored), formatting, Clippy with warnings denied,
+source/IPC/layout/production-config guards and a development executable build.
+Real-window checks cover Light → Dark → Light → System, with native title-bar
+captures. The original System preference was restored and the corrected
+development window remains available for maintainer testing. See the
+[receipt and captures](audits/2026-11-05/native-titlebar/validation.json).
+
+No new installer or platform package was built. The earlier NSIS candidate at
+`adf7b8ce` remains historical and does not include this correction. Installed
+acceptance and the full release gate remain open; Linux/macOS staging was not
+resumed.
+
 ## 2026-11-01 — Native preparation stopped; temporary storage restored
 
 The maintainer requested stopping the native follow-through and restoring disk

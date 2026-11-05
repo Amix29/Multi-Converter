@@ -1,5 +1,27 @@
 # Application design-system adoption — 2026-11-01
 
+## 2026-11-05 — Native Windows title bar
+
+Source `0b003d33` synchronizes the native title bar with the existing appearance
+preference. Caption/background colors come directly from `--bg` and `--fg`:
+light `#f5f3ec` / `#1d241f`, dark `#111710` / `#eef2e8`. System restores native
+OS tracking; no duplicate palette or custom window controls are introduced.
+
+The corrected Windows development window was exercised through Light, Dark,
+Light and System, then left open with its original System preference. The title
+bar, text and native controls were inspected in both themes. Native binding,
+input validation, request ordering and retry tests pass. See the
+[validation receipt](audits/2026-11-05/native-titlebar/validation.json),
+[light capture](audits/2026-11-05/native-titlebar/light-settings.jpg),
+[dark capture](audits/2026-11-05/native-titlebar/dark-settings.jpg) and
+[system capture](audits/2026-11-05/native-titlebar/system-settings.jpg).
+
+This uses the existing development cache with resource/sidecar staging disabled;
+no installer, Linux/macOS preparation or engine-copy workflow was run. Exact
+caption colors require the documented Windows 11 DWM attributes; older Windows
+retains native light/dark appearance. macOS/Linux host behavior is not revalidated
+by this Windows appearance check.
+
 ## Current Svelte continuation
 
 Functional source `adf7b8ce` ports the approved identity into Svelte, applies

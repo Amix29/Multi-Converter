@@ -3,16 +3,19 @@
 ## Status
 
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
-- Last documentation review: **2026-11-01**.
+- Last documentation review: **2026-11-05**.
 - Release status: **not ready**.
 - Active migration architecture: desktop Svelte 5 + Tailwind 4 + shadcn-svelte,
   retaining Rust/Tauri/TypeScript/Vite. The maintainer approved it on 2026-11-01;
   [execution mandate and acceptance](MANDAT_MIGRATION_SVELTE.md). Source porting is complete on `codex/migrate-svelte`; see the
   [execution ledger](MIGRATION_SVELTE_EXECUTION.md). The site is outside this
   migration, and installed/final-source platform gates must be renewed.
-- Current application-source checkpoint: `adf7b8ce`, implementation branch
+- Current application-source checkpoint: `0b003d33` (native title-bar themes), implementation branch
   `codex/migrate-svelte`; locally integrated on `codex/test`. Documentation-only
   commits may follow this functional checkpoint.
+- Native title-bar appearance was verified in a Windows development window on
+  2026-11-05; [proof](audits/2026-11-05/native-titlebar/validation.json). This
+  targeted correction does not resume Linux/macOS staging or installed acceptance.
 - Workspace: standalone `Développement/Multi-Converter`;
   [location, rules and worktree recovery](LOCAL_WORKSPACE.md).
 - Historical NSIS/AppImage/DMG candidates at `8b510138` remain preserved. A new

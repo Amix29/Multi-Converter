@@ -1,5 +1,21 @@
 # Multi-Converter Decisions
 
+## 2026-11-05 — Native title bar follows the application's appearance
+
+**Decision:** preserve native window decorations and synchronize them with the
+Svelte preference, using resolved `--bg` / `--fg` tokens rather than a separate
+native palette. A small, main-window-only command validates RGB input and
+applies Tauri's theme plus the documented Windows 11 DWM caption/text colors.
+Selecting System clears the native override. Requests are serialized and
+duplicate media events suppressed; a failed update does not poison later choices.
+
+The DWM binding is local to the Windows implementation; existing dependencies,
+Cargo manifest and lockfile are retained. Unsupported custom-color attributes
+fall back to native light/dark appearance. Native controls, resizing and docking
+remain owned by the OS. See the
+[Microsoft attribute contract](https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute)
+and the [native appearance evidence](audits/2026-11-05/native-titlebar/validation.json).
+
 ## 2026-11-01 — Measured deferred format controls
 
 **Decision:** load format-selection primitives when a target is selected while
