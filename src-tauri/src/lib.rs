@@ -12,6 +12,7 @@ mod private_temp;
 mod process_support;
 mod registry;
 mod runtime_log;
+mod window_theme;
 
 use commands::*;
 
@@ -57,6 +58,7 @@ pub fn run() {
             set_batch_recovery_enabled,
             save_batch_recovery,
             clear_batch_recovery,
+            window_theme::sync_window_theme,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Multi-Converter");

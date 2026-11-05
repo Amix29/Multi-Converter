@@ -37,6 +37,7 @@ assert.deepEqual(commands, [
   "set_batch_recovery_enabled",
   "save_batch_recovery",
   "clear_batch_recovery",
+  "window_theme::sync_window_theme",
 ]);
 
 function rustFilesUnder(directory) {
@@ -135,6 +136,7 @@ const expectedSignatures = new Map([
   ["set_batch_recovery_enabled", "async fn set_batch_recovery_enabled(app:AppHandle,enabled:bool)->CommandResult<RecoveryState>"],
   ["save_batch_recovery", "async fn save_batch_recovery(app:AppHandle,plan:RecoveryPlan)->CommandResult<usize>"],
   ["clear_batch_recovery", "async fn clear_batch_recovery(app:AppHandle)->CommandResult<bool>"],
+  ["sync_window_theme", "fn sync_window_theme(window:WebviewWindow,preference:ThemePreference,background:String,foreground:String)->Result<(),String>"],
 ]);
 
 assert.deepEqual(

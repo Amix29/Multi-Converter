@@ -1,5 +1,6 @@
 import { resolveStateUpdate, type StateSetter } from "../lib/stateUpdate";
 import { untrack } from "svelte";
+import { syncNativeWindowTheme } from "../lib/windowTheme";
 
 export type ThemePreference = "system" | "light" | "dark";
 const key = "multi-converter.theme";
@@ -36,6 +37,9 @@ export function createTheme() {
               ? "dark"
               : "light"
             : preference;
+        void syncNativeWindowTheme(preference).catch((error: unknown) => {
+          console.warn("Native window theme update failed", error);
+        });
       };
       apply();
       system.addEventListener("change", apply);
