@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-06T21:32:42.610Z",
+  "platform": "windows-x64",
+  "version": "1.0.7",
+  "sourceCheckpoint": "334bd2a5c338600da1ae514b89be7f79bce3f5f5",
+  "functionalCheckpoint": "0b003d339df83b7c855c86e1613d2a0b983388d0",
+  "purpose": "Private refreshed Svelte installer requested by maintainer, including native title-bar theme sync",
+  "files": [
+    {
+      "path": "C:/Users/ryadb/AppData/Local/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe",
+      "bytes": 999648595,
+      "sha256": "9d65095a042c0d18ae2e446fea2f438a8b46669aecee0aef4d7c45072fa7e1d4"
+    },
+    {
+      "path": "C:/Users/ryadb/AppData/Local/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
+      "bytes": 428,
+      "sha256": "a1d20d2a6b051a21836093b87dcb556bf19ff9785f8dd1f1f2093c32434126bf"
+    },
+    {
+      "path": "C:/Users/ryadb/AppData/Local/Temp/mc-cargo-target-svelte-migration/release/multi-converter.exe",
+      "bytes": 26635264,
+      "sha256": "562b52d6104277f732d66d88975c4497f088414a5e2c1b684160ddf88dec9c84"
+    }
+  ],
+  "updaterSignature": "cryptographically verified against configured production public key",
+  "authenticode": "NotSigned (Windows Authenticode); separate from verified updater signature",
+  "build": "Tauri native release build and NSIS packaging",
+  "resourceChecks": {
+    "nsisScriptSha256": "de1e99642e7fdf4c0262445230b86695338b55268b96bcf04f7c21209bfbe00c",
+    "requiredPayloads": [
+      "ffmpeg.exe",
+      "ffprobe.exe",
+      "libreoffice.zip",
+      "windows-x64.zip",
+      "pdfium",
+      "pandoc",
+      "libvips",
+      "models-lock.json",
+      "multi-converter.exe"
+    ],
+    "models": {
+      "fileCount": 21,
+      "totalBytes": 185082003,
+      "aggregateSha256": "e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb"
+    },
+    "runtime": {
+      "bytes": 236811152,
+      "sha256": "77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac"
+    }
+  },
+  "frontend": "Svelte types zero errors/warnings; production bundle guard passed; sync_window_theme present",
+  "reusedResources": "Existing real Windows engines and OCR inputs; no resource restaging",
+  "previousCandidate": "C:/Users/ryadb/AppData/Local/Temp/mc-cargo-target-svelte-migration/release/bundle-adf7b8ce-before-20261106",
+  "previousCargoManifestPreserved": true,
+  "installedAcceptance": "Not performed for this package; maintainer will install manually",
+  "otherPlatforms": "Linux/macOS staging remains stopped",
+  "publication": "No upload, tag, public release or latest.json generated",
+  "buildWarnings": [
+    "Existing STATIC_VCRUNTIME deprecation from Tauri build tooling"
+  ]
+}

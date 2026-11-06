@@ -1,10 +1,25 @@
 # Exécution de la migration desktop Svelte
 
-État au 1 novembre 2026 : **portage source réalisé ; acceptation installée encore ouverte**.
+État au 6 novembre 2026 : **portage source réalisé ; acceptation installée encore ouverte**.
 Source du portage initial : **`adf7b8ce`**, branche de réalisation
 `codex/migrate-svelte`. Intégration locale effectuée sur **`codex/test`**, après sauvegarde contrôlée
 des modifications initiales ; installation propre et `check` complet y passent. Aucun push ni publication.
 Le site Next.js et le backend Rust/Tauri gardent leurs frontières.
+
+## Installateur Windows actualisé le 6 novembre 2026
+
+À la demande du mainteneur, l'installateur NSIS privé a été reconstruit depuis
+`334bd2a5`, avec l'interface Svelte et la correction de barre de titre `0b003d33`.
+Le build de production, le typage, les gardes de bundle et les contrôles des
+moteurs passent. La signature updater est vérifiée cryptographiquement ; les
+empreintes du runtime OCR et des 21 fichiers de modèles correspondent au verrou.
+Le paquet fait 999 648 595 octets ; voir le
+[reçu de construction](audits/2026-11-06/windows-svelte-installer.json).
+
+Les moteurs et le cache existants sont réutilisés. L'ancien paquet et son
+exécutable sont conservés par déplacement, sans copie supplémentaire. Le
+mainteneur installera lui-même cette candidate : aucune nouvelle acceptation
+installée n'est revendiquée. Aucun push ni publication ; Linux/macOS restent arrêtés.
 
 ## Correction ciblée du 5 novembre 2026
 

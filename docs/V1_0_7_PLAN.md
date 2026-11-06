@@ -3,7 +3,7 @@
 ## Status
 
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
-- Last documentation review: **2026-11-05**.
+- Last documentation review: **2026-11-06**.
 - Release status: **not ready**.
 - Active migration architecture: desktop Svelte 5 + Tailwind 4 + shadcn-svelte,
   retaining Rust/Tauri/TypeScript/Vite. The maintainer approved it on 2026-11-01;
@@ -18,9 +18,12 @@
   targeted correction does not resume Linux/macOS staging or installed acceptance.
 - Workspace: standalone `Développement/Multi-Converter`;
   [location, rules and worktree recovery](LOCAL_WORKSPACE.md).
-- Historical NSIS/AppImage/DMG candidates at `8b510138` remain preserved. A new
-  Windows NSIS candidate was built from `adf7b8ce`; installed acceptance
-  and new migrated AppImage/DMG packages remain open. No candidate is published.
+- Historical NSIS/AppImage/DMG candidates at `8b510138` and the initial Svelte
+  NSIS candidate at `adf7b8ce` remain preserved. The current private Windows NSIS
+  candidate was refreshed on 2026-11-06 from `334bd2a5`, including the native
+  title-bar fix; [build/integrity receipt](audits/2026-11-06/windows-svelte-installer.json).
+  Installed acceptance and new migrated AppImage/DMG packages remain open.
+  No candidate is published.
 - macOS targets Apple Silicon on macOS 15 and later; Windows x64 and Linux x64 remain supported.
 - Native follow-through was stopped at the maintainer's request on 2026-11-01
   to restore local disk space. New temporary copies are removed; no additional

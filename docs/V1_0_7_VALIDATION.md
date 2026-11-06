@@ -1,5 +1,30 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-06 — Refreshed private Windows Svelte installer
+
+At the maintainer's request, a new Windows x64 NSIS installer was built from
+source `334bd2a5` (functional title-bar correction `0b003d33`). It includes the
+Svelte desktop interface and native caption/text theme synchronization. The
+999,648,595-byte installer has SHA-256
+`9d65095a042c0d18ae2e446fea2f438a8b46669aecee0aef4d7c45072fa7e1d4`.
+See the [candidate receipt](audits/2026-11-06/windows-svelte-installer.json).
+
+Passed: bundled-engine and embedded-manifest validation, production configuration
+and version synchronization, OCR contracts, Svelte types (zero errors/warnings),
+production frontend build/fixture guard, native optimized build and NSIS
+packaging. The updater signature is cryptographically verified against the
+configured public key. OCR runtime archive and all 21 model files match their
+locked hashes; the generated NSIS script includes real FFmpeg/ffprobe, PDFium,
+LibreOffice, Pandoc, libvips and OCR resources. These are build/input checks,
+not a new installed conversion or OCR acceptance run.
+
+The existing engines and Cargo cache were reused; the earlier bundle and native
+executable were moved into `bundle-adf7b8ce-before-20261106` beside the new bundle,
+without duplicating them. The preexisting Cargo manifest remains byte-identical.
+Linux/macOS staging remains stopped. The maintainer will install this private
+development candidate manually; no installer was executed, public release was
+published or updater metadata generated. Installed/final release gates remain open.
+
 ## 2026-11-05 — Native title-bar theme correction
 
 Source `0b003d33` adds a bounded, main-window-only appearance command. Svelte
