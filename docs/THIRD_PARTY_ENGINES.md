@@ -64,12 +64,16 @@ local engineering receipts, not public redistribution approval or installed
 application acceptance. See `V1_0_7_AUDIT_FOLLOW_THROUGH.md` for current inference
 and package evidence.
 
-The Windows package also reuses the exact verified LibreOffice release archive
-from the bundled-engine cache instead of presenting its 1.5 GB expanded tree
-directly to NSIS. The archive is 483,796,141 bytes, is checked against the
-LibreOffice entry in `engines-manifest.json`, and is extracted locally only
-when a conversion needs it. This is a packaging change only: LibreOffice and
-all of its license and notice requirements remain part of the application.
+The Windows package derives a 328,694,744-byte headless distribution profile
+from the verified 483,796,141-byte LibreOffice release archive. The original
+download URL/hash remain in `engines-manifest.json`; the derived archive has
+its own source/output hashes in `windows-libreoffice-profile.json`. It removes
+internal UI extras, preserves conversion libraries/filters, dictionaries,
+hyphenation, locales, fonts and notices, and is extracted locally when needed.
+No new derived asset is claimed as published. LibreOffice and its license and
+notice requirements remain part of the application. See
+[`ENGINE_REDUCTION_EXECUTION.md`](ENGINE_REDUCTION_EXECUTION.md) for exact scope
+and native parity evidence.
 
 ## macOS engine status
 

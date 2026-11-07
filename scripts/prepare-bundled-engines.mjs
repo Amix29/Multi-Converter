@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 import { createBundledEngineHelpers, hostEnginePlatform } from "./lib/bundled-engine-files.mjs";
 import {
@@ -186,11 +187,15 @@ async function stageCompressedBundledEngine(engine) {
   const target = path.join(platformDir, `${engine.id}.zip`);
   await fs.mkdir(platformDir, { recursive: true });
   const current = await sha256File(target).catch(() => null);
-  if (current === engine.sha256.toLowerCase()) return;
-
-  const source = path.join(cacheDir, `${engine.id}-${engine.version}.zip`);
-  await downloadVerified(engine.downloadUrl, source, engine.sha256, engine.id);
-  await fs.copyFile(source, target);
+  if (current !== engine.sha256.toLowerCase()) {
+    const source = path.join(cacheDir, `${engine.id}-${engine.version}.zip`);
+    await downloadVerified(engine.downloadUrl, source, engine.sha256, engine.id);
+    await fs.copyFile(source, target);
+  }
+  const result = spawnSync(process.execPath, ["scripts/prepare-libreoffice-profile.mjs"], {
+    cwd: root, stdio: "inherit", windowsHide: true,
+  });
+  if (result.error || result.status !== 0) throw new Error("LibreOffice profile preparation failed");
 }
 
 async function pruneBundledEngines(expectedEngines) {

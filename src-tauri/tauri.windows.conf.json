@@ -5,7 +5,7 @@
       "bundled-engines/pdfium/": "engines/pdfium/",
       "bundled-engines/pandoc/": "engines/pandoc/",
       "bundled-engines/libvips/": "engines/libvips/",
-      "bundled-engine-archives/windows-x64/libreoffice.zip": "engine-archives/libreoffice.zip"
+      "bundled-engine-archives/windows-x64/libreoffice.headless.zip": "engine-archives/libreoffice.zip"
     }
   }
 }

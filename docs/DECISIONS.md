@@ -1,5 +1,16 @@
 # Multi-Converter Decisions
 
+## 2026-11-07 — Profile the Windows LibreOffice payload without changing its engine
+
+Keep the published engine manifest immutable as a source-of-origin contract.
+Derive a separately hash-locked headless payload by filtering compressed ZIP
+records, preserving all conversion libraries, filters, fonts, document-language
+data and notices. Bundle only the derived archive. Its runtime cache is keyed
+by the derived hash so older installations and development checkouts are not
+overwritten. Do not switch OCR models/runtimes, drop formats or add network
+dependencies as a size optimization. Native parity and byte/size checks precede
+adoption; see [the execution ledger](ENGINE_REDUCTION_EXECUTION.md).
+
 ## 2026-11-05 — Native title bar follows the application's appearance
 
 **Decision:** preserve native window decorations and synchronize them with the

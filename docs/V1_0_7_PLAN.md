@@ -7,8 +7,11 @@
 - Release status: **not ready**.
 - Package-weight audit completed on 2026-11-07:
   [measurements and optimization proposals](ENGINE_SIZE_AUDIT_2026_11.md).
-  The current setup remains 999,648,595 bytes; no engine pruning, runtime
-  substitution, cleanup or distribution-policy change has been applied.
+  The maintainer authorized execution afterwards. The Windows LibreOffice
+  headless profile reduces its archive to 328,694,744 bytes; native parity and
+  source gates pass, with a new private setup being built. See
+  [the reduction ledger](ENGINE_REDUCTION_EXECUTION.md). No OCR runtime/model
+  substitution, user-data cleanup or distribution-policy change is applied.
 - Active migration architecture: desktop Svelte 5 + Tailwind 4 + shadcn-svelte,
   retaining Rust/Tauri/TypeScript/Vite. The maintainer approved it on 2026-11-01;
   [execution mandate and acceptance](MANDAT_MIGRATION_SVELTE.md). Source porting is complete on `codex/migrate-svelte`; see the

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "profileId": "windows-headless-v1",
+  "engineId": "libreoffice",
+  "platform": "windows-x64",
+  "sourceArchiveSha256": "dcd78e44960098bb34ed2db3d752087f1a5975ed7e8ea8938afadf2b571a4801",
+  "archiveSha256": "d521a61c1c5fa175fc60871f872b221dcce858b20968b27a8708df3d7f8e7d70",
+  "compressedSizeBytes": 328694744,
+  "installedSizeBytes": 1142267215,
+  "fileCount": 9888,
+  "archiveFileName": "libreoffice.headless.zip"
+}

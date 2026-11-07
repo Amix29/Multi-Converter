@@ -21,6 +21,13 @@ const requireAdvancedEngines = process.env.MULTI_CONVERTER_REQUIRE_ADVANCED_ENGI
 
 const errors = [];
 
+if (platform === "windows-x64" && manifest.engines.some(engine => engine.id === "libreoffice" && engine.platform === platform)) {
+  const profile = spawnSync(process.execPath, [path.join(import.meta.dirname, "prepare-libreoffice-profile.mjs"), "--check"], {
+    cwd: root, encoding: "utf8", windowsHide: true,
+  });
+  if (profile.error || profile.status !== 0) errors.push(`libreoffice profile: ${profile.error?.message ?? profile.stderr}`);
+}
+
 if (platform === "unsupported") {
   errors.push(`Plateforme de moteurs non supportee: ${process.platform}/${process.arch}`);
 }

@@ -1,5 +1,25 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-07 — Engine reduction lot 1: Windows LibreOffice profile
+
+The deterministic Windows profile preserves all conversion binaries/filters,
+document-language data and notices. Its archive is 328,694,744 bytes versus
+483,796,141 bytes originally; expanded runtime is 1,142,267,215 bytes. Source
+and output have separate locks, and the derived-hash cache preserves older
+installed runtimes. OCR resources and all other engines remain unchanged.
+
+Native reference/profile comparison passes PDF, DOCX, DOC, ODT, RTF, HTML and
+TXT on a controlled multilingual, three-page fixture: exact text/page/raster
+comparison at 200 DPI for paginated outputs. The final profile adds one retained
+copyright file and passes a renewed 9,888-file CRC validation and PDF smoke.
+The real Rust ZIP reader streams the entire profile to a sink without extraction.
+Canonical check, 199 Rust tests (14 ignored), all 11 heavy conversion groups,
+media offline control, formatting and Clippy pass. See
+[the execution ledger](ENGINE_REDUCTION_EXECUTION.md) and its dated receipts.
+
+The new Windows setup is being built; no installed-application acceptance,
+public release, new OCR inference corpus or Mac/Linux package is claimed.
+
 ## 2026-11-07 — Engine/package size audit, no product optimization
 
 Read-only NSIS input inventory measures 1,405,904,795 bytes before installer

@@ -25,6 +25,25 @@ See `MIGRATION_SVELTE_EXECUTION.md` for measured platform evidence and open gate
 
 ## Windows x64
 
+### Engine-size profiles
+
+`npm run test:engine-profiles` validates selective ZIP copying, decompression
+after directory-offset changes, original-file preservation and unsafe/duplicate
+path rejection. The canonical check also validates the real profiled archive
+against `src-tauri/windows-libreoffice-profile.json` without generating it.
+
+`npm run test:libreoffice-profile:native` requires Windows x64 and an original
+LibreOffice tree matching the pinned source archive. Set
+`MULTI_CONVERTER_LO_REFERENCE` when the matching tree is outside source staging.
+It CRC-verifies retained files, builds a hardlink-only candidate view and
+compares PDF/DOCX/DOC/ODT/RTF/HTML/TXT text and paginated raster output. It never
+falls back to copying a full engine if hardlinks are unavailable. This is direct
+engine parity evidence, not installed-application acceptance.
+
+The ignored Rust test `prepared_libreoffice_profile_streams` reads every entry
+using the runtime's ZIP library into a sink, without creating an extracted tree.
+See [the execution ledger](ENGINE_REDUCTION_EXECUTION.md) for measured results.
+
 For the 2026-11-01 interface checkpoint, use
 [`APP_DESIGN_SYSTEM_ADOPTION.md`](APP_DESIGN_SYSTEM_ADOPTION.md) for manual
 system/light/dark, custom-menu, scroll navigation and reduced-motion steps.

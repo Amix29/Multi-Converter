@@ -1,6 +1,8 @@
 # Audit du poids des moteurs et du setup — 7 novembre 2026
 
 Statut : **audit et propositions ; aucune optimisation produit appliquée**.
+Ce statut décrit l'audit initial. Le mainteneur a ensuite autorisé l'exécution ;
+voir [les lots et leurs validations](ENGINE_REDUCTION_EXECUTION.md) pour l'état courant.
 Référence : source `19561e1e`, candidate Windows privée du 6 novembre,
 fonctionnel `0b003d33`. Les fichiers utilisateur, anciennes installations,
 archives et moteurs restent conservés. Aucune préparation Linux/macOS,
