@@ -9,29 +9,34 @@ Pas de changement de modèle, de téléchargement OCR à l'exécution, de conver
 cloud, de publication ni de préparation Linux/macOS. Les anciens artefacts et
 fichiers utilisateur sont conservés.
 
-Lot 2 : **setup Windows construit, contenu complet et signature updater validés**.
-
-Le lot 3 poursuit maintenant le profilage OCR/LibreOffice avec une cible indicative
-de 300 Mo et arrêt autorisé pour préserver les garanties. Voir
-[le contrat, les preuves et les limites du lot 3](ENGINE_REDUCTION_LOT3.md).
+Lot 3 : **setup Windows construit, contenu complet et signature updater validés**.
+La cible indicative de 300 Mo n'est pas atteinte. Arrêt au profil conservateur
+validé ; les cinq modèles hors ligne et les bibliothèques d'inférence/conversion
+restent inchangés. Voir [les changements, preuves et limites](ENGINE_REDUCTION_LOT3.md).
 
 | Candidate Windows | Setup (octets) | Taille décimale |
 | --- | ---: | ---: |
 | Original avant allègement | 999 648 595 | 999,65 Mo |
 | Lot 1, profil Office ZIP | 845 749 678 | 845,75 Mo |
-| Lot 2, ressources directes + LZMA solide | **513 064 488** | **513,06 Mo** |
+| Lot 2, ressources directes + LZMA solide | 513 064 488 | 513,06 Mo |
+| Lot 3, profil OCR et ressources UI Office | **499 243 548** | **499,24 Mo** |
 
-Le gain est de **486 584 107 octets / 48,68 %** face à l'original, et **39,34 %**
-face au lot 1. Le [reçu final](audits/2026-11-07/engine-reduction/windows-solid-candidate.json)
-lie le setup, sa signature et le binaire aux mesures. Le [contrôle du contenu](audits/2026-11-07/engine-reduction/windows-solid-payload.json)
-confirme **17 178 fichiers / 2 029 601 083 octets** de ressources décodées et
-hashées sans extraction sur disque. Ce total concerne les fichiers applicatifs,
-pas une mesure physique du répertoire installé et de ses métadonnées.
+Gain du lot 3 : **13 820 940 octets / 2,69 %** face au lot 2,
+soit **50,06 %** face à l'original. Le
+[reçu final](audits/2026-11-07/engine-lot3/windows-candidate.json) lie le setup,
+sa signature et le binaire à ces mesures. Le
+[contrôle du contenu](audits/2026-11-07/engine-lot3/windows-payload.json) confirme
+**14 922 fichiers / 1 905 642 479 octets**
+décodés et hashés sans extraction sur disque. Ce total logique n'est pas une
+mesure physique du répertoire installé et de ses métadonnées.
 
-La signature updater est vérifiée cryptographiquement ; le setup n'a pas de
-signature Windows Authenticode. Il reste privé, non publié et **non validé par
-le protocole d'installation GUI**. Les anciennes candidates sont conservées ;
-aucun installateur n'a été exécuté ici.
+La signature updater est vérifiée cryptographiquement ; Authenticode reste
+`NotSigned`. Le setup reste privé, non publié et **non validé par le protocole
+d'installation GUI**. Les anciens setups sont préservés par déplacement ; les
+liens vers le [reçu du lot 2](audits/2026-11-07/engine-reduction/windows-solid-candidate.json)
+sont corrigés vers son emplacement archivé et ses trois SHA ont été recontrôlés.
+Aucun installateur n'a été exécuté ici. La compatibilité des anciens restes OCR
+a été prouvée par un overlay natif isolé, pas par le parcours graphique updater.
 
 ## Lot 1 — LibreOffice Windows, profil de distribution headless
 

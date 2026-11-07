@@ -51,11 +51,16 @@ Maintainer review of native-library notices and model redistribution terms is
 still required before public packaging. The top-level Apache-2.0 licenses for
 PaddleOCR, PaddleX and PaddlePaddle are necessary but not sufficient.
 
-The model artifact is 185,082,003 installed bytes. The current Windows runtime
-is 660,643,156 installed bytes and its verified package archive is 236,811,152
-bytes. Per-file manifests and aggregate hashes are recorded in the OCR
-contract. Compression changes neither the runtime contents nor its licensing
-obligations. Linux and Apple Silicon official OCR artifacts have since been built
+The model artifact is 185,082,003 installed bytes. The original Windows runtime
+is 660,643,156 installed bytes and its verified source archive is 236,811,152
+bytes. The November 7 Windows distribution profile retains 612,271,290 bytes
+in 4,990 files: Paddle development headers, two static import libraries and the
+OpenCV video-reader plugin are omitted. No inference/image-codec binary or model
+is replaced; all original notices are retained. Source and distribution hashes
+are recorded separately in the OCR contract and `windows-ocr-profile.json`.
+Known original leftover files are accepted only at their pinned size/hash during
+an upgrade; they are not included in the new package. Licensing obligations
+remain unchanged. Linux and Apple Silicon official OCR artifacts have since been built
 and packaged reproducibly. Their matching selection and license inventories are
 recorded in `docs/audits/2026-10-30/`; Linux covers 71 distributions / 103 license
 files and Apple Silicon 72 distributions / 104 license files. All distributions
@@ -149,13 +154,18 @@ Before publishing V1 engine archives:
 
 ## Windows direct-resource profile (2026-11-07)
 
-The unreleased `windows-offline-direct-v2` payload keeps conversion executables,
+The unreleased v3 Windows direct-resource payload keeps conversion executables,
 filters, fonts, locales, hyphenation data, licenses and notices. Its Office
 spellchecking/thesaurus data and registrations are omitted because the desktop
 has no editing workspace. Frozen source hashes and small XML overlays live in
 `tools/engine-profiles/`; an independent XML audit checks preservation of all
-other registry semantics. OCR runtime/model files retain their exact original
-locks. Their notices and the additional OCR license folder remain bundled.
+other registry semantics. The v3 Office profile also omits 4,182 translated
+`org.openoffice.Office.UI` components from 123 locale registry files, using
+frozen byte ranges and source/output hashes. A separate semantic audit proves
+all 3,198 non-UI components in these files remain identical. No conversion binary,
+font, filter, document locale or hyphenation file is removed by this v3 step.
+The OCR distribution uses its separately pinned profile above; all five models
+retain their original lock. Notices and the additional OCR license folder remain bundled.
 Solid LZMA changes transport compression only; the public engine origin manifest
 and historical release archives remain unchanged. See the
 [reduction ledger](ENGINE_REDUCTION_EXECUTION.md) for evidence and proof limits.

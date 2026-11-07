@@ -1,22 +1,23 @@
 {
-  "date": "2026-11-07T12:25:10.581Z",
+  "applicationSourceCheckpoint": "1c066776",
+  "date": "2026-11-07T13:29:05.457Z",
   "platform": "windows-x64",
   "version": "1.0.7",
   "files": [
     {
       "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe",
-      "bytes": 498966911,
-      "sha256": "d1811e49521edab45b0142351031110f9bb8a6dd5fa908dce41fd4e621cefeb7"
+      "bytes": 499243548,
+      "sha256": "af92620203820b683aa8d4c8ed03000c617aaaf8a05da5a8fa3fa94cf8a8f5ca"
     },
     {
       "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
       "bytes": 428,
-      "sha256": "27747ed0328be4b2891c776d7298edec4c6009078e0716f861cce7857f4029bb"
+      "sha256": "bc66552f01ad21c102cc98920a37f83b3bcf5c2a310bb127794664fa431dfb5e"
     },
     {
       "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/multi-converter.exe",
-      "bytes": 26711040,
-      "sha256": "abc6678916ea5c650609d602499628d19ff2503a5a3a52bef2f64d84f30ddabc"
+      "bytes": 27163648,
+      "sha256": "57bf2b4fd3e8011413198729c6d4f1605fbf5cec62241672bf5e0c1ac00b839f"
     }
   ],
   "goal": {
@@ -26,32 +27,34 @@
   },
   "comparison": {
     "previousSetupBytes": 513064488,
-    "currentSetupBytes": 498966911,
-    "reductionBytes": 14097577,
-    "reductionPercent": 2.75,
-    "reductionFromOriginalPercent": 50.09,
+    "currentSetupBytes": 499243548,
+    "reductionBytes": 13820940,
+    "reductionPercent": 2.69,
+    "reductionFromOriginalPercent": 50.06,
     "previousResourceBytes": 2029601083,
-    "currentResourceBytes": 1905189871
+    "currentResourceBytes": 1905642479
   },
   "verifiedResourceFiles": 14922,
   "container": "7-Zip t passed, no extraction",
   "updaterSignature": "Verified against configured production public key",
   "applicationBinary": {
-    "bytes": 26711040,
-    "sha256": "9ae5ac81e1e4816dc7f2001a1da954767379630fd489e68a3bbbef20f0c5fd1d",
-    "sourceSha256": "abc6678916ea5c650609d602499628d19ff2503a5a3a52bef2f64d84f30ddabc",
+    "bytes": 27163648,
+    "sha256": "763c280a01fc1fad0213aa3ebb4e406386666a0ad4ee847dd1cabdea335c6218",
+    "sourceSha256": "57bf2b4fd3e8011413198729c6d4f1605fbf5cec62241672bf5e0c1ac00b839f",
     "transformation": "Exact Tauri UNK-to-NSS marker replacement",
-    "markerOffset": 22208544
+    "markerOffset": 22658176
   },
   "validation": {
-    "rust": "201 passed, 15 ignored; real OCR integrity separately passed",
+    "rust": "202 passed, 15 ignored; fresh and upgrade-overlay OCR integrity separately passed",
     "ocr": "40 cases passed; all 40 normalized texts identical to reference; 296 samples, zero remote connections",
     "office": "7 formats exact text/page/raster parity and unchanged tree after conversion",
     "conversions": "11 native groups and negative HTTP control passed",
     "canonicalCheck": "passed; targeted marker/metadata guards rerun after additional verifier changes",
     "clippy": "all targets warnings denied passed",
+    "upgradeCompatibility": "Original retained files accepted only at exact embedded size/hash; native overlay and negative controls passed",
     "installedGuiAcceptance": "not performed"
   },
   "preservation": "Previous 513 MB installer and native exe preserved in bundle-ceafb3f7-before-engine-lot3; v2 resource view kept for running older apps",
-  "scope": "Windows only; no Linux/macOS preparation or publication"
+  "scope": "Windows only; no Linux/macOS preparation or publication",
+  "authenticode": "NotSigned"
 }

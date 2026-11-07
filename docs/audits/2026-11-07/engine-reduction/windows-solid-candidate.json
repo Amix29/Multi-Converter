@@ -5,17 +5,17 @@
   "version": "1.0.7",
   "files": [
     {
-      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe",
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-ceafb3f7-before-engine-lot3/nsis/Multi-Converter_1.0.7_x64-setup.exe",
       "bytes": 513064488,
       "sha256": "48b73cbb75b3657ad422554114535807b7fe16c7abb5617b92a8a6068806b2b5"
     },
     {
-      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-ceafb3f7-before-engine-lot3/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
       "bytes": 428,
       "sha256": "83f6e20982491d0b356ec33a7f30180af8c6c510446c29dfb94bce9514a791ed"
     },
     {
-      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/multi-converter.exe",
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-ceafb3f7-before-engine-lot3/multi-converter-source.exe",
       "bytes": 26681856,
       "sha256": "a2409f6c5ea32e0381d7e20d1ad817537a7aedd80830dce4ab81928dde0e37f4"
     }
@@ -71,5 +71,6 @@
   "bundleMarker": "__TAURI_BUNDLE_TYPE_VAR_NSS verified; repeated patch warning comes from reusing the already patched NSIS binary",
   "storage": "Source runtimes linked, not duplicated. Previous installers/caches preserved; no installed-tree extraction for package verification",
   "publication": "none; no push, release or updater metadata publication",
-  "otherPlatforms": "Linux/macOS preparations remain stopped"
+  "otherPlatforms": "Linux/macOS preparations remain stopped",
+  "preservation": "Moved prior bundle and hardlinked source executable; all three recorded SHA-256 values rechecked after lot 3 build began."
 }

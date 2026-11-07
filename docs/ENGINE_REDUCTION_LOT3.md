@@ -9,9 +9,18 @@ Pas de préparation Linux/macOS, de publication, de copie complète des moteurs
 ni de suppression des anciennes candidates ou des données utilisateur.
 
 Le point de départ est le setup vérifié de **513 064 488 octets** du lot 2.
-La candidate intermédiaire du lot 3 fait **498 966 911 octets**, mais elle est
-remplacée avant livraison par une reconstruction qui gère la réinstallation.
-La taille définitive doit être lue dans le reçu final de ce dossier d'audit.
+Le setup définitif fait **499 243 548 octets / 499,24 Mo** :
+**13 820 940 octets / 2,69 %** de moins que le lot 2 et
+**50,06 %** de moins que les 999 648 595 octets initiaux.
+La cible de 300 Mo n'est pas atteinte ; arrêt au profil validé, sans remplacement
+de modèles ou de bibliothèques d'inférence pour forcer ce chiffre.
+
+Le [reçu final](audits/2026-11-07/engine-lot3/windows-candidate.json) et le
+[contrôle complet du contenu](audits/2026-11-07/engine-lot3/windows-payload.json)
+portent sur la reconstruction issue de `1c066776`, avec compatibilité des anciens
+fichiers vérifiée. SHA-256 du setup : `af92620203820b683aa8d4c8ed03000c617aaaf8a05da5a8fa3fa94cf8a8f5ca`.
+La candidate intermédiaire de 498 966 911 octets, construite avant cette correction,
+reste archivée et n'est pas proposée à l'installation.
 
 ## Profils conservés
 
@@ -104,9 +113,12 @@ restaure la source après emballage. Le vérificateur reproduit cette unique
 transformation en mémoire et compare tous les autres octets. Un test refuse
 un marqueur ambigu et prouve qu'une modification ailleurs change le SHA attendu.
 
-Le paquet définitif doit passer le décodage SHA-256 de chaque ressource, le
-test du conteneur et la vérification cryptographique de sa signature updater.
-Cela ne lui confère pas de signature Windows Authenticode.
+Le paquet définitif a passé le décodage SHA-256 de **14 922
+fichiers / 1 905 642 479 octets**, le test du conteneur 7-Zip
+et la vérification cryptographique de sa signature updater. Les neuf tests de
+profil, 202 tests Rust (15 ignorés par défaut), Clippy et le contrôle général
+passent. Authenticode : `NotSigned`. Aucun installateur n'a été exécuté sur le
+profil utilisateur ; aucune publication ni préparation Linux/macOS n'est effectuée.
 
 ## Reproduction
 

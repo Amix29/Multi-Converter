@@ -27,6 +27,12 @@ npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp
 
 ## V1.0.7 Feature Gate
 
+For the slim OCR/Office v3 package, test both a fresh install and a same-version
+repair/updater installation over the previous full OCR distribution. Confirm
+OCR starts in each case, all five modules remain offline, and existing user data
+is preserved. The native hardlink-overlay integrity test proves hash compatibility
+with known leftover files; it does not prove the real NSIS GUI/updater flow.
+
 Before a V1.0.7 Windows release:
 
 - `docs/V1_0_7_VALIDATION.md` must mark the combined Windows feature and release gates passed;

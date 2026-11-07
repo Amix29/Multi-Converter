@@ -1,16 +1,16 @@
 {
-  "date": "2026-11-07T12:23:06.519Z",
-  "installerBytes": 498966911,
-  "installerSha256": "d1811e49521edab45b0142351031110f9bb8a6dd5fa908dce41fd4e621cefeb7",
+  "date": "2026-11-07T13:27:44.364Z",
+  "installerBytes": 499243548,
+  "installerSha256": "af92620203820b683aa8d4c8ed03000c617aaaf8a05da5a8fa3fa94cf8a8f5ca",
   "verifiedResourceFiles": 14922,
-  "verifiedResourceBytes": 1905189871,
+  "verifiedResourceBytes": 1905642479,
   "compression": "solid LZMA, 128 MiB dictionary",
   "applicationBinary": {
-    "bytes": 26711040,
-    "sha256": "9ae5ac81e1e4816dc7f2001a1da954767379630fd489e68a3bbbef20f0c5fd1d",
-    "sourceSha256": "abc6678916ea5c650609d602499628d19ff2503a5a3a52bef2f64d84f30ddabc",
+    "bytes": 27163648,
+    "sha256": "763c280a01fc1fad0213aa3ebb4e406386666a0ad4ee847dd1cabdea335c6218",
+    "sourceSha256": "57bf2b4fd3e8011413198729c6d4f1605fbf5cec62241672bf5e0c1ac00b839f",
     "transformation": "Exact Tauri UNK-to-NSS marker replacement",
-    "markerOffset": 22208544
+    "markerOffset": 22658176
   },
   "office": {
     "files": 9654,

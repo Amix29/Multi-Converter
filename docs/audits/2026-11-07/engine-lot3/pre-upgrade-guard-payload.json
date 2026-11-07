@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-07T12:23:06.519Z",
+  "installerBytes": 498966911,
+  "installerSha256": "d1811e49521edab45b0142351031110f9bb8a6dd5fa908dce41fd4e621cefeb7",
+  "verifiedResourceFiles": 14922,
+  "verifiedResourceBytes": 1905189871,
+  "compression": "solid LZMA, 128 MiB dictionary",
+  "applicationBinary": {
+    "bytes": 26711040,
+    "sha256": "9ae5ac81e1e4816dc7f2001a1da954767379630fd489e68a3bbbef20f0c5fd1d",
+    "sourceSha256": "abc6678916ea5c650609d602499628d19ff2503a5a3a52bef2f64d84f30ddabc",
+    "transformation": "Exact Tauri UNK-to-NSS marker replacement",
+    "markerOffset": 22208544
+  },
+  "office": {
+    "files": 9654,
+    "bytes": 606614990,
+    "aggregateSha256": "bb45fa9171375873ad4b5c1a347b4f4a4d62f733c8184a6c6161b06c5e280682"
+  },
+  "ocr": {
+    "runtime": {
+      "fileCount": 4990,
+      "totalBytes": 612271290,
+      "aggregateSha256": "ebea52247784cb9ff5ec5634882ce91f857c4377b20c456633bcaaf892887833"
+    },
+    "originalRuntime": {
+      "fileCount": 7246,
+      "totalBytes": 660643156,
+      "aggregateSha256": "d386f7923fbea6fe6efa407b2f00d3e99e31ee9778027a67ca32e6b14adf759c"
+    },
+    "models": {
+      "fileCount": 21,
+      "totalBytes": 185082003,
+      "aggregateSha256": "e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb"
+    }
+  },
+  "validation": "Every application/engine/OCR/model/notice file decoded into SHA-256 consumers and matched to source hashes or pinned aggregate; no engine tree extracted",
+  "limits": "Does not install or launch the graphical application; updater signature verified separately"
+}

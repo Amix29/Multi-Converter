@@ -30,15 +30,39 @@ See `MIGRATION_SVELTE_EXECUTION.md` for measured platform evidence and open gate
 `npm run test:engine-profiles` validates selective ZIP copying, bounded metadata
 reading, original-file preservation, dictionary policy and unsafe/duplicate path
 rejection. The canonical Windows engine validator checks the prepared direct
-profile and every unchanged OCR runtime/model file against the embedded locks.
+profile and every retained OCR runtime/model file against the embedded locks.
 The original `windows-headless-v1` archive remains a historical reproducible lot;
-Windows packaging now uses `windows-offline-direct-v2`.
+Windows packaging now uses the versioned `windows-x64/v3` resource tree with
+`windows-conversion-direct-v3` Office data and `windows-offline-ocr-v1`.
+The preceding v2 tree is preserved for older development processes.
 
 `npm run prepare:windows-resources` stages immutable resources through hardlinks
 or decodes each required ZIP entry once on a fresh host. `--check` is read-only
 and required before bundling. `python tools/engine-profiles/audit-dictionary-profile.py`
 independently checks dictionary XML semantics, including all retained hyphenation
 nodes. This Python audit is not a build dependency.
+
+`python -X utf8 tools/engine-profiles/audit-ui-profile.py` separately proves
+that the frozen v3 byte-range edits preserve every non-UI XML component and
+root attribute. Profile tests reject altered source/output hashes and unsafe
+ranges. Both independent audits read source archives without extracting trees.
+
+On Windows, `test:ocr:corpus` uses the prepared v3 worker when available;
+`MULTI_CONVERTER_OCR_CORPUS_EXECUTABLE` overrides it explicitly and
+`MULTI_CONVERTER_OCR_CORPUS_REPORT` preserves previous reports. All five model
+hashes remain pinned. The ignored Rust test
+`prepared_direct_ocr_verifies_without_archive_extraction` hashes the complete
+direct tree; `MULTI_CONVERTER_OCR_TEST_ROOT` enables an isolated upgrade overlay.
+Only the 2,256 known retired source files may remain, each at its original
+size/SHA-256, and only for the new Windows runtime identity. Modified or unknown
+leftovers fail; model verification is unchanged.
+
+`verify:windows-engine-package` hashes every decoded file without extracting
+the installed tree. Its executable comparison reproduces only Tauri 2.11.2's
+unique `__TAURI_BUNDLE_TYPE_VAR_UNK` to `NSS` marker patch, then checks the
+entire resulting SHA-256. Tests reject ambiguous markers and other mutations.
+Container CRC and cryptographic updater-signature checks are separate gates.
+None of these checks replaces installed GUI or actual updater acceptance.
 
 `npm run test:libreoffice-profile:native` requires Windows x64 and an original
 LibreOffice tree matching the pinned source archive. Set

@@ -1,5 +1,42 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-07 — Engine reduction lot 3: slim OCR and Office UI resources
+
+Application source `1c066776` keeps all five offline models and original
+inference/conversion binaries. The Windows OCR distribution retains 4,990 files
+and 612,271,290 bytes; Office retains 9,654 files and 606,614,990 bytes. Source
+artifacts, distribution locks and the preceding v2 tree remain separate.
+
+The complete 40-case native OCR corpus passes, with all 40 normalized texts
+identical to the reference (clean 100%, difficult 99.76%). Network observation
+records 296 samples and zero remote worker connections. Office comparison
+passes PDF/DOCX/DOC/ODT/RTF/HTML/TXT with exact text/page/200-DPI raster parity.
+An independent XML audit preserves all 3,198 non-UI nodes across 123 transformed
+locale registries. The final Office tree hash is unchanged after conversions.
+
+Canonical check, nine engine-profile tests, 202 Rust tests (15 ignored by
+default), Clippy with warnings denied, production frontend/native release build,
+all 11 conversion groups and the negative HTTP media control pass. Real native
+OCR integrity tests pass on both a fresh slim tree and an upgrade overlay with
+all 2,256 retired original files present. Only exact original paths/sizes/SHA
+are allowed as leftovers; modified or unknown data fail. A default-path worker
+probe also passes using the prepared v3 profile with zero archive extraction.
+
+The final NSIS setup is **499,243,548 bytes / 499.24 MB**, **2.69%** below
+lot 2 and **50.06%** below the original. All **14,922 files /
+1,905,642,479 bytes** are decoded to hash consumers without a disk
+extraction. Container CRC and cryptographic updater-signature checks pass;
+Authenticode is `NotSigned`. The executable hash comparison reproduces only
+Tauri 2.11.2's unique UNK-to-NSS bundle marker patch and hashes every byte.
+
+The 300 MB target is not reached. Stop at this validated profile; no model
+quantization, format/font removal or unproven engine replacement is adopted.
+The rejected same-version OpenCV headless trial saved only 235,520 raw bytes;
+its temporary files were moved to Recycle Bin, with originals preserved.
+No installed GUI/updater acceptance, public release or new Mac/Linux package
+is claimed. See [the lot report](ENGINE_REDUCTION_LOT3.md) and
+[final receipt](audits/2026-11-07/engine-lot3/windows-candidate.json).
+
 ## 2026-11-07 — Engine reduction lot 2: direct resources and solid compression
 
 Source gates and native validation pass for `windows-offline-direct-v2`:

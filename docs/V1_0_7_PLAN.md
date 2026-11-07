@@ -10,18 +10,23 @@
   The maintainer authorized execution afterwards. Lot 1 built a private setup
   of 845,749,678 bytes (15.4% smaller). The stronger Windows lot 2 stages raw
   Office/OCR resources for solid LZMA/128 MiB compression; its source, native
-  Office parity and unchanged OCR integrity checks pass. The final setup is
-  **513,064,488 bytes: 48.68% smaller than the original and 39.34% smaller than
-  lot 1**. All 17,178 packaged application files and its updater signature are
-  verified; installed-GUI acceptance remains pending. See [the reduction ledger](ENGINE_REDUCTION_EXECUTION.md).
-  All five OCR models and runtime bytes remain unchanged; no user-cache cleanup
-  or Linux/macOS preparation is included.
+  Office parity and unchanged OCR integrity checks pass. Lot 2 produced a
+  513,064,488-byte setup. Lot 3 now uses separately locked slim OCR/Office
+  profiles, retaining all five models and all inference/conversion binaries.
+  The 40 OCR texts match the original reference exactly; seven Office formats
+  retain exact text/page/raster parity. Native upgrade-overlay integrity passes,
+  including strict hashes for known leftover resources. See the
+  [current artifact measurements and proof limits](ENGINE_REDUCTION_EXECUTION.md)
+  and [lot 3 report](ENGINE_REDUCTION_LOT3.md).
+  The indicative 300 MB target is not reached; no quality-changing substitute
+  is adopted to force it. Installed-GUI acceptance remains pending. No
+  user-cache cleanup or Linux/macOS preparation is included.
 - Active migration architecture: desktop Svelte 5 + Tailwind 4 + shadcn-svelte,
   retaining Rust/Tauri/TypeScript/Vite. The maintainer approved it on 2026-11-01;
   [execution mandate and acceptance](MANDAT_MIGRATION_SVELTE.md). Source porting is complete on `codex/migrate-svelte`; see the
   [execution ledger](MIGRATION_SVELTE_EXECUTION.md). The site is outside this
   migration, and installed/final-source platform gates must be renewed.
-- Current application-source checkpoint: `9ae7321c` (Windows engine profile, retaining native title-bar themes), implementation branch
+- Current application-source checkpoint: `1c066776` (slim Windows OCR/Office profiles and verified upgrade compatibility, retaining native title-bar themes), implementation branch
   `codex/migrate-svelte`; locally integrated on `codex/test`. Documentation-only
   commits may follow this functional checkpoint.
 - Native title-bar appearance was verified in a Windows development window on
@@ -31,9 +36,9 @@
   [location, rules and worktree recovery](LOCAL_WORKSPACE.md).
 - Historical NSIS/AppImage/DMG candidates at `8b510138` and the initial Svelte
   NSIS candidate at `adf7b8ce` remain preserved. The current private Windows NSIS
-  candidate was refreshed on 2026-11-07 from `9ae7321c`, including the native
-  title-bar fix and the lighter LibreOffice payload;
-  [build/integrity receipt](audits/2026-11-07/engine-reduction/windows-candidate.json).
+  candidate was refreshed on 2026-11-07 from `1c066776`, including the native
+  title-bar fix and lighter OCR/LibreOffice resources;
+  [build/integrity receipt](audits/2026-11-07/engine-lot3/windows-candidate.json).
   The preceding 2026-11-06 candidate remains archived by move.
   Installed acceptance and new migrated AppImage/DMG packages remain open.
   No candidate is published.

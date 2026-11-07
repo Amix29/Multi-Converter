@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "platform": "windows-x64",
+  "runtimeArchiveSha256": null,
+  "directExecutable": "src-tauri/bundled-engine-profiles/windows-x64/v3/ocr/runtime/windows-x64/ocr-worker.exe",
+  "runtimeExtractionMs": 0,
+  "runtimeInitializationMs": 9789,
+  "peakWorkerWorkingSetBytes": 590827520,
+  "memoryMeasurement": "Maximum of sampled main-process RSS/working-set values; child processes excluded.",
+  "medianRecognitionMs": 75426,
+  "cleanMean": 1,
+  "difficultMean": null,
+  "networkSamples": 79,
+  "observedWorkerConnections": [],
+  "results": [
+    {
+      "id": "clean-fr-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 75426,
+      "workerWorkingSetBytes": 590827520,
+      "actual": "multi converter protège vos fichiers locaux"
+    }
+  ]
+}
