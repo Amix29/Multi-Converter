@@ -5,7 +5,18 @@
       "bundled-engines/pdfium/": "engines/pdfium/",
       "bundled-engines/pandoc/": "engines/pandoc/",
       "bundled-engines/libvips/": "engines/libvips/",
-      "bundled-engine-archives/windows-x64/libreoffice.headless.zip": "engine-archives/libreoffice.zip"
+      "bundled-engine-profiles/windows-x64/current/libreoffice/": "engines/libreoffice/compatible/",
+      "bundled-engine-profiles/windows-x64/current/ocr/": "ocr/",
+      "ocr-resources/licenses/": "ocr/licenses/",
+      "ocr-resources/README.md": "ocr/README.md"
+    },
+    "windows": {
+      "nsis": {
+        "compression": "lzma"
+      }
     }
+  },
+  "build": {
+    "beforeBundleCommand": "node scripts/prepare-windows-resources.mjs --check"
   }
 }

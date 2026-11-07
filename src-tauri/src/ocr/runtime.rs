@@ -190,6 +190,14 @@ fn resolve_runtime(
     let artifact = selection.artifact.as_ref().ok_or_else(|| {
         "OCR_RUNTIME_UNVERIFIED:Le runtime de cette plateforme n’est pas verrouillé.".to_string()
     })?;
+    if let Some(executable) = direct_runtime(&root, selection) {
+        // selected_runtime still verifies every file against the embedded locks.
+        return Ok(ResolvedRuntime {
+            executable,
+            models_dir: root.join("models"),
+            provider: selection.provider.clone(),
+        });
+    }
     let extracted = runtime_archive::ensure_extracted(
         app,
         &root,
@@ -222,14 +230,29 @@ fn runtime_available(app: &AppHandle, selection: &PlatformSelection) -> bool {
     }
     resource_root(app).is_ok_and(|root| {
         root.join("models").is_dir()
-            && runtime_archive::archive_path(&root, &selection.platform).is_file()
+            && (direct_runtime(&root, selection).is_some()
+                || runtime_archive::archive_path(&root, &selection.platform).is_file())
             && selection.artifact.is_some()
     })
+}
+
+fn direct_runtime(root: &Path, selection: &PlatformSelection) -> Option<PathBuf> {
+    let executable = root.join(&selection.executable);
+    (executable.is_file() && executable.parent()?.join("runtime-manifest.json").is_file())
+        .then_some(executable)
 }
 
 fn resource_root(app: &AppHandle) -> Result<PathBuf, String> {
     #[cfg(debug_assertions)]
     {
+        #[cfg(target_os = "windows")]
+        {
+            let direct = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("bundled-engine-profiles/windows-x64/current/ocr");
+            if direct.is_dir() {
+                return Ok(direct);
+            }
+        }
         let local = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("ocr-resources");
         if local.is_dir() {
             return Ok(local);

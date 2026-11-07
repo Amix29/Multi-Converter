@@ -9,6 +9,7 @@ const ignoredDirectories = new Set([
   ".git",
   "binaries",
   "bundled-engine-archives",
+  "bundled-engine-profiles",
   "bundled-engines",
   "gen",
   "installer-assets",

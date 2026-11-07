@@ -1,5 +1,31 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-07 — Engine reduction lot 2: direct resources and solid compression
+
+Source gates and native validation pass for `windows-offline-direct-v2`:
+200 Rust tests passed (15 heavy/platform tests ignored by default), Clippy with
+warnings denied, canonical check, five engine-profile tests, and production
+frontend build. A real Rust integrity gate also verifies every OCR runtime/model
+file from the direct resource tree without extracting any archive. The OCR
+smoke from that location reaches 100% character accuracy on the controlled
+French sentence and uses the same five local modules.
+
+Office reference/candidate comparison passes all seven formats at 200 DPI,
+including exact text/page/raster parity and a final hash proving the resource
+tree did not change. An independent XML audit preserves all non-spell/thesaurus
+registry semantics and 43 hyphenation data files. A dedicated hyphenation
+negative-control fixture was non-conclusive and is not counted as proof.
+
+One concurrent Rust run exceeded a five-second timing assertion; the isolated
+test and full serial suite passed afterwards. Packaging caught generated Python
+caches and MAX_PATH; cache creation is disabled and a short packaging-only
+junction avoids long paths without removing OCR files. A native NSIS package is
+being compressed and is not yet a verified installed-application candidate.
+The first solid-stream estimate is 512,075,710 bytes, not a measured setup size.
+The 40-case OCR corpus is not repeated for these byte-identical weights/runtime.
+No Windows installed-GUI acceptance, public release or Mac/Linux build is claimed.
+See [the execution ledger](ENGINE_REDUCTION_EXECUTION.md).
+
 ## 2026-11-07 â€” Engine reduction lot 1: Windows LibreOffice profile
 
 The deterministic Windows profile preserves all conversion binaries/filters,

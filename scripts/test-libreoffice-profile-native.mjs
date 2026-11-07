@@ -6,19 +6,44 @@ import { spawnSync } from "node:child_process";
 import { crc32 } from "node:zlib";
 import { createHash } from "node:crypto";
 import { inspectFilterableZip } from "./lib/filtered-zip.mjs";
+import { treeManifest } from "./lib/direct-engine-resources.mjs";
 
 if (process.platform !== "win32" || process.arch !== "x64") throw Error("Real Windows x64 host required");
 const root = process.cwd();
 const finalProfileSmoke = process.argv.includes("--final-profile-smoke");
 const reference = process.env.MULTI_CONVERTER_LO_REFERENCE ?? path.join(root, "src-tauri/bundled-engines/libreoffice/compatible");
-const archive = await inspectFilterableZip("src-tauri/bundled-engine-archives/windows-x64/libreoffice.headless.zip");
+const prepared = path.join(root, "src-tauri/bundled-engine-profiles/windows-x64/current/libreoffice");
+const borrowedCandidate = process.env.MULTI_CONVERTER_LO_CANDIDATE ?? ((await fs.stat(prepared).catch(() => null))?.isDirectory() ? prepared : null);
+const archive = borrowedCandidate ? null : await inspectFilterableZip("src-tauri/bundled-engine-archives/windows-x64/libreoffice.headless.zip");
 const temporary = process.env.MULTI_CONVERTER_LO_TEST_DIR ?? await fs.mkdtemp(path.join(root, "tmp/lo-profile-native-"));
 if (!path.resolve(temporary).startsWith(path.join(root, "tmp") + path.sep)) throw Error("Test directory must stay inside repository tmp");
-const candidate = path.join(temporary, "runtime");
+const candidate = borrowedCandidate ?? path.join(temporary, "runtime");
+let directProfile;
 const render = path.join(root, "src-tauri/bundled-engines/pdfium/compatible/bin/pdfium-render-x86_64-pc-windows-msvc.exe");
 const settings = /const SETTINGS: &str = r#"([\s\S]*?)"#;/.exec(await fs.readFile("src-tauri/src/converters/external/libreoffice_profile.rs", "utf8"))?.[1];
 if (!settings) throw Error("Production LibreOffice security profile missing");
-for (const entry of archive.entries.filter(entry => !entry.name.endsWith("/"))) {
+if (borrowedCandidate) {
+  directProfile = JSON.parse(await fs.readFile(path.join(candidate, "../libreoffice-profile.json"), "utf8"));
+  const files = [];
+  async function collect(directory, prefix = "") {
+    for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+      const relative = prefix + entry.name;
+      if (entry.isDirectory()) await collect(path.join(directory, entry.name), relative + "/");
+      else if (entry.isFile()) files.push(relative);
+      else throw Error("Non-regular direct profile entry");
+    }
+  }
+  await collect(candidate);
+  const aggregate = createHash("sha256");
+  let bytes = 0;
+  for (const relative of files.sort()) {
+    const file = path.join(candidate, relative), size = (await fs.stat(file)).size;
+    bytes += size;
+    aggregate.update(`${relative}\0${size}\0${await fileHash(file)}\n`);
+  }
+  if (files.length !== directProfile.files || bytes !== directProfile.bytes || aggregate.digest("hex") !== directProfile.aggregateSha256) throw Error("Direct profile integrity differs from preparation receipt");
+  console.log(`Verified direct profile: ${files.length} files, ${bytes} bytes`);
+} else for (const entry of archive.entries.filter(entry => !entry.name.endsWith("/"))) {
   const source = path.join(reference, entry.name);
   let actual = 0;
   for await (const chunk of createReadStream(source)) actual = crc32(chunk, actual);
@@ -29,7 +54,7 @@ for (const entry of archive.entries.filter(entry => !entry.name.endsWith("/"))) 
     if (error.code !== "EEXIST" || (await fs.stat(source)).ino !== (await fs.stat(destination)).ino) throw error;
   }
 }
-console.log(`Linked and CRC-verified ${archive.entries.length} retained files; no runtime bytes copied`);
+if (!borrowedCandidate) console.log(`Linked and CRC-verified ${archive.entries.length} retained files; no runtime bytes copied`);
 await fs.writeFile(path.join(temporary, "fixture.html"), `<!doctype html><html lang="fr"><meta charset="utf-8">
 <style>@page{size:A4;margin:18mm}body{font:11pt "Liberation Serif"}table{border-collapse:collapse;width:100%}td,th{border:1px solid #222;padding:5px}.next{page-break-before:always}p{hyphens:auto}</style>
 <h1>Multi-Converter — fidélité de conversion</h1><p>façade déjà été : € 1 234,56. Français, Español, Português, Deutsch, Italiano.</p>
@@ -64,21 +89,25 @@ for (const format of finalProfileSmoke ? ["pdf"] : ["pdf", "docx", "doc", "odt",
   results.push({ format, parity: "exact", ...pair[0] });
   console.log(`LibreOffice ${format}: exact text/page/raster parity`);
 }
+if (borrowedCandidate) {
+  const after = await treeManifest(candidate);
+  if (after.aggregateSha256 !== directProfile.aggregateSha256 || after.files !== directProfile.files || after.bytes !== directProfile.bytes) throw Error("Native Office test changed the prepared resource tree");
+}
 const receipt = {
-  date: new Date().toISOString(), platform: "windows-x64", profileId: "windows-headless-v1",
-  referenceSource: "Existing original LibreOffice tree; every retained file CRC matched to the pinned source archive",
-  candidate: "hardlink view of all retained files; no full tree copied or extracted",
-  profileArchiveSha256: await fileHash("src-tauri/bundled-engine-archives/windows-x64/libreoffice.headless.zip"),
-  sourceRetainedFilesVerified: archive.entries.length, sourceDocumentSha256: hash(await fs.readFile(fixture)),
+  date: new Date().toISOString(), platform: "windows-x64", profileId: directProfile?.profileId ?? "windows-headless-v1",
+  referenceSource: borrowedCandidate ? "Original LibreOffice tree from the pinned source ZIP" : "Existing original LibreOffice tree; every retained file CRC matched to the pinned source archive",
+  candidate: borrowedCandidate ? "SHA256-verified direct view; unchanged retained binaries/data plus documented dictionary registry overlays" : "hardlink view of all retained files; no full tree copied or extracted",
+  profileDigest: directProfile?.aggregateSha256 ?? await fileHash("src-tauri/bundled-engine-archives/windows-x64/libreoffice.headless.zip"),
+  sourceRetainedFilesVerified: directProfile?.files ?? archive.entries.length, sourceDocumentSha256: hash(await fs.readFile(fixture)),
   results, rasterDpi: 200, ocr: "Unchanged five models and runtime; not rerun by this Office-only gate",
   limitations: "Direct native engine comparison on controlled multipage fixture; not installed application acceptance or exhaustive real-world layout proof",
 };
 await fs.mkdir("docs/audits/2026-11-07/engine-reduction", { recursive: true });
-await fs.writeFile(`docs/audits/2026-11-07/engine-reduction/libreoffice-${finalProfileSmoke ? "final-profile-smoke" : "native"}.json`, JSON.stringify(receipt, null, 2) + "\n");
+await fs.writeFile(`docs/audits/2026-11-07/engine-reduction/libreoffice-${directProfile ? "v2-native" : finalProfileSmoke ? "final-profile-smoke" : "native"}.json`, JSON.stringify(receipt, null, 2) + "\n");
 console.log("LibreOffice profile native gate passed");
 
 function run(binary, args) {
-  const result = spawnSync(binary, args, { encoding: "utf8", windowsHide: true, timeout: 120000, maxBuffer: 8 * 1024 * 1024 });
+  const result = spawnSync(binary, args, { env: { ...process.env, PYTHONDONTWRITEBYTECODE: "1" }, encoding: "utf8", windowsHide: true, timeout: 120000, maxBuffer: 8 * 1024 * 1024 });
   if (result.error || result.status !== 0) throw Error(`Native engine failed: ${result.error?.message ?? result.stderr}`);
   return result.stdout;
 }

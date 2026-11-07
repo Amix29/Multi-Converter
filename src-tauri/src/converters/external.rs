@@ -39,6 +39,9 @@ pub(in crate::converters) fn convert_with_libreoffice(
         other => other,
     };
     let mut command = engine_command(&soffice);
+    // Keep the installed engine tree immutable; Python extensions may otherwise
+    // write bytecode caches beside the bundled conversion resources.
+    command.env("PYTHONDONTWRITEBYTECODE", "1");
     command
         .arg("--headless")
         .arg("--invisible")

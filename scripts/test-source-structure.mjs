@@ -11,6 +11,7 @@ const ignoredDirectories = new Set([
   ".next",
   "binaries",
   "bundled-engine-archives",
+  "bundled-engine-profiles",
   "bundled-engines",
   "dist",
   "dist-engines",

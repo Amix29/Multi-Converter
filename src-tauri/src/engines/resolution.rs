@@ -19,6 +19,14 @@ pub fn resolve_tool(app: Option<&AppHandle>, id: &str) -> Option<PathBuf> {
 fn bundled_engine_binary(app: Option<&AppHandle>, id: &str) -> Option<PathBuf> {
     let manifest = engine_distribution::load_manifest().ok()?;
     let engine = engine_distribution::manifest_for_platform(&manifest, id)?;
+    #[cfg(all(debug_assertions, target_os = "windows"))]
+    if id == "libreoffice" {
+        let candidate = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("bundled-engine-profiles/windows-x64/current/libreoffice/program/soffice.com");
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
     if let Some(root) = bundled_engines_root(app)
         && let Some(binary) =
             engine_distribution::installed_binary(&root, id, &engine.version, &engine.binary_paths)

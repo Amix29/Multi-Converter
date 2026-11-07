@@ -1,0 +1,584 @@
+{
+  "schemaVersion": 1,
+  "profileId": "windows-offline-direct-v2",
+  "sourceArchiveSha256": "dcd78e44960098bb34ed2db3d752087f1a5975ed7e8ea8938afadf2b571a4801",
+  "omitFiles": [
+    "share/extensions/dict-af/af_ZA.aff",
+    "share/extensions/dict-af/af_ZA.dic",
+    "share/extensions/dict-an/an_ES.aff",
+    "share/extensions/dict-an/an_ES.dic",
+    "share/extensions/dict-ar/ar.aff",
+    "share/extensions/dict-ar/ar.dic",
+    "share/extensions/dict-ar/th_ar.dat",
+    "share/extensions/dict-ar/th_ar.idx",
+    "share/extensions/dict-be/be-official.aff",
+    "share/extensions/dict-be/be-official.dic",
+    "share/extensions/dict-bg/bg_BG.aff",
+    "share/extensions/dict-bg/bg_BG.dic",
+    "share/extensions/dict-bg/th_bg_BG_v2.dat",
+    "share/extensions/dict-bg/th_bg_BG_v2.idx",
+    "share/extensions/dict-bn/bn_BD.aff",
+    "share/extensions/dict-bn/bn_BD.dic",
+    "share/extensions/dict-bo/bo.aff",
+    "share/extensions/dict-bo/bo.dic",
+    "share/extensions/dict-br/br_FR.aff",
+    "share/extensions/dict-br/br_FR.dic",
+    "share/extensions/dict-bs/bs_BA.aff",
+    "share/extensions/dict-bs/bs_BA.dic",
+    "share/extensions/dict-ca/ca-valencia.aff",
+    "share/extensions/dict-ca/ca-valencia.dic",
+    "share/extensions/dict-ca/ca.aff",
+    "share/extensions/dict-ca/ca.dic",
+    "share/extensions/dict-ca/th_ca_ES_v3.dat",
+    "share/extensions/dict-ca/th_ca_ES_v3.idx",
+    "share/extensions/dict-ckb/ckb.aff",
+    "share/extensions/dict-ckb/ckb.dic",
+    "share/extensions/dict-cs/cs_CZ.aff",
+    "share/extensions/dict-cs/cs_CZ.dic",
+    "share/extensions/dict-cs/thes_cs_CZ.dat",
+    "share/extensions/dict-cs/thes_cs_CZ.idx",
+    "share/extensions/dict-da/da_DK.aff",
+    "share/extensions/dict-da/da_DK.dic",
+    "share/extensions/dict-da/th_da_DK.dat",
+    "share/extensions/dict-da/th_da_DK.idx",
+    "share/extensions/dict-de/de_AT_frami.aff",
+    "share/extensions/dict-de/de_AT_frami.dic",
+    "share/extensions/dict-de/de_CH_frami.aff",
+    "share/extensions/dict-de/de_CH_frami.dic",
+    "share/extensions/dict-de/de_DE_frami.aff",
+    "share/extensions/dict-de/de_DE_frami.dic",
+    "share/extensions/dict-de/th_de_CH_v2.dat",
+    "share/extensions/dict-de/th_de_CH_v2.idx",
+    "share/extensions/dict-de/th_de_DE_v2.dat",
+    "share/extensions/dict-de/th_de_DE_v2.idx",
+    "share/extensions/dict-el/el_GR.aff",
+    "share/extensions/dict-el/el_GR.dic",
+    "share/extensions/dict-en/en_AU.aff",
+    "share/extensions/dict-en/en_AU.dic",
+    "share/extensions/dict-en/en_CA.aff",
+    "share/extensions/dict-en/en_CA.dic",
+    "share/extensions/dict-en/en_GB.aff",
+    "share/extensions/dict-en/en_GB.dic",
+    "share/extensions/dict-en/en_US.aff",
+    "share/extensions/dict-en/en_US.dic",
+    "share/extensions/dict-en/en_ZA.aff",
+    "share/extensions/dict-en/en_ZA.dic",
+    "share/extensions/dict-en/th_en_US_v2.dat",
+    "share/extensions/dict-en/th_en_US_v2.idx",
+    "share/extensions/dict-eo/eo.aff",
+    "share/extensions/dict-eo/eo.dic",
+    "share/extensions/dict-eo/th_eo.dat",
+    "share/extensions/dict-eo/th_eo.idx",
+    "share/extensions/dict-es/es_AR.aff",
+    "share/extensions/dict-es/es_AR.dic",
+    "share/extensions/dict-es/es_BO.aff",
+    "share/extensions/dict-es/es_BO.dic",
+    "share/extensions/dict-es/es_CL.aff",
+    "share/extensions/dict-es/es_CL.dic",
+    "share/extensions/dict-es/es_CO.aff",
+    "share/extensions/dict-es/es_CO.dic",
+    "share/extensions/dict-es/es_CR.aff",
+    "share/extensions/dict-es/es_CR.dic",
+    "share/extensions/dict-es/es_CU.aff",
+    "share/extensions/dict-es/es_CU.dic",
+    "share/extensions/dict-es/es_DO.aff",
+    "share/extensions/dict-es/es_DO.dic",
+    "share/extensions/dict-es/es_EC.aff",
+    "share/extensions/dict-es/es_EC.dic",
+    "share/extensions/dict-es/es_ES.aff",
+    "share/extensions/dict-es/es_ES.dic",
+    "share/extensions/dict-es/es_GQ.aff",
+    "share/extensions/dict-es/es_GQ.dic",
+    "share/extensions/dict-es/es_GT.aff",
+    "share/extensions/dict-es/es_GT.dic",
+    "share/extensions/dict-es/es_HN.aff",
+    "share/extensions/dict-es/es_HN.dic",
+    "share/extensions/dict-es/es_MX.aff",
+    "share/extensions/dict-es/es_MX.dic",
+    "share/extensions/dict-es/es_NI.aff",
+    "share/extensions/dict-es/es_NI.dic",
+    "share/extensions/dict-es/es_PA.aff",
+    "share/extensions/dict-es/es_PA.dic",
+    "share/extensions/dict-es/es_PE.aff",
+    "share/extensions/dict-es/es_PE.dic",
+    "share/extensions/dict-es/es_PH.aff",
+    "share/extensions/dict-es/es_PH.dic",
+    "share/extensions/dict-es/es_PR.aff",
+    "share/extensions/dict-es/es_PR.dic",
+    "share/extensions/dict-es/es_PY.aff",
+    "share/extensions/dict-es/es_PY.dic",
+    "share/extensions/dict-es/es_SV.aff",
+    "share/extensions/dict-es/es_SV.dic",
+    "share/extensions/dict-es/es_US.aff",
+    "share/extensions/dict-es/es_US.dic",
+    "share/extensions/dict-es/es_UY.aff",
+    "share/extensions/dict-es/es_UY.dic",
+    "share/extensions/dict-es/es_VE.aff",
+    "share/extensions/dict-es/es_VE.dic",
+    "share/extensions/dict-es/th_es_v2.dat",
+    "share/extensions/dict-es/th_es_v2.idx",
+    "share/extensions/dict-et/et_EE.aff",
+    "share/extensions/dict-et/et_EE.dic",
+    "share/extensions/dict-fa/fa-IR.aff",
+    "share/extensions/dict-fa/fa-IR.dic",
+    "share/extensions/dict-fr/fr.aff",
+    "share/extensions/dict-fr/fr.dic",
+    "share/extensions/dict-fr/thes_fr.dat",
+    "share/extensions/dict-fr/thes_fr.idx",
+    "share/extensions/dict-gd/gd_GB.aff",
+    "share/extensions/dict-gd/gd_GB.dic",
+    "share/extensions/dict-gl/gl_ES.aff",
+    "share/extensions/dict-gl/gl_ES.dic",
+    "share/extensions/dict-gl/thesaurus_gl.dat",
+    "share/extensions/dict-gl/thesaurus_gl.idx",
+    "share/extensions/dict-gu/gu_IN.aff",
+    "share/extensions/dict-gu/gu_IN.dic",
+    "share/extensions/dict-he/he_IL.aff",
+    "share/extensions/dict-he/he_IL.dic",
+    "share/extensions/dict-hi/hi_IN.aff",
+    "share/extensions/dict-hi/hi_IN.dic",
+    "share/extensions/dict-hr/hr_HR.aff",
+    "share/extensions/dict-hr/hr_HR.dic",
+    "share/extensions/dict-hu/hu_HU.aff",
+    "share/extensions/dict-hu/hu_HU.dic",
+    "share/extensions/dict-hu/th_hu_HU_v2.dat",
+    "share/extensions/dict-hu/th_hu_HU_v2.idx",
+    "share/extensions/dict-id/id_ID.aff",
+    "share/extensions/dict-id/id_ID.dic",
+    "share/extensions/dict-id/th_id_ID_v2.dat",
+    "share/extensions/dict-id/th_id_ID_v2.idx",
+    "share/extensions/dict-is/is.aff",
+    "share/extensions/dict-is/is.dic",
+    "share/extensions/dict-is/th_is.dat",
+    "share/extensions/dict-is/th_is.idx",
+    "share/extensions/dict-it/it_IT.aff",
+    "share/extensions/dict-it/it_IT.dic",
+    "share/extensions/dict-it/th_it_IT_v2.dat",
+    "share/extensions/dict-it/th_it_IT_v2.idx",
+    "share/extensions/dict-ko/ko_KR.aff",
+    "share/extensions/dict-ko/ko_KR.dic",
+    "share/extensions/dict-lo/lo_LA.aff",
+    "share/extensions/dict-lo/lo_LA.dic",
+    "share/extensions/dict-lt/lt.aff",
+    "share/extensions/dict-lt/lt.dic",
+    "share/extensions/dict-lv/lv_LV.aff",
+    "share/extensions/dict-lv/lv_LV.dic",
+    "share/extensions/dict-lv/th_lv_LV_v2.dat",
+    "share/extensions/dict-lv/th_lv_LV_v2.idx",
+    "share/extensions/dict-mn/mn_MN.aff",
+    "share/extensions/dict-mn/mn_MN.dic",
+    "share/extensions/dict-ne/ne_NP.aff",
+    "share/extensions/dict-ne/ne_NP.dic",
+    "share/extensions/dict-ne/th_ne_NP_v2.dat",
+    "share/extensions/dict-ne/th_ne_NP_v2.idx",
+    "share/extensions/dict-nl/nl_NL.aff",
+    "share/extensions/dict-nl/nl_NL.dic",
+    "share/extensions/dict-no/nb_NO.aff",
+    "share/extensions/dict-no/nb_NO.dic",
+    "share/extensions/dict-no/nn_NO.aff",
+    "share/extensions/dict-no/nn_NO.dic",
+    "share/extensions/dict-no/th_nb_NO_v2.dat",
+    "share/extensions/dict-no/th_nb_NO_v2.idx",
+    "share/extensions/dict-no/th_nn_NO_v2.dat",
+    "share/extensions/dict-no/th_nn_NO_v2.idx",
+    "share/extensions/dict-oc/oc_FR.aff",
+    "share/extensions/dict-oc/oc_FR.dic",
+    "share/extensions/dict-pl/pl_PL.aff",
+    "share/extensions/dict-pl/pl_PL.dic",
+    "share/extensions/dict-pl/th_pl_PL_v2.dat",
+    "share/extensions/dict-pl/th_pl_PL_v2.idx",
+    "share/extensions/dict-pt-BR/pt_BR.aff",
+    "share/extensions/dict-pt-BR/pt_BR.dic",
+    "share/extensions/dict-pt-BR/th_pt_BR.dat",
+    "share/extensions/dict-pt-BR/th_pt_BR.idx",
+    "share/extensions/dict-pt-PT/pt_PT.aff",
+    "share/extensions/dict-pt-PT/pt_PT.dic",
+    "share/extensions/dict-pt-PT/th_pt_PT.dat",
+    "share/extensions/dict-pt-PT/th_pt_PT.idx",
+    "share/extensions/dict-ro/ro_RO.aff",
+    "share/extensions/dict-ro/ro_RO.dic",
+    "share/extensions/dict-ro/th_ro_RO_v2.dat",
+    "share/extensions/dict-ro/th_ro_RO_v2.idx",
+    "share/extensions/dict-ru/ru_RU.aff",
+    "share/extensions/dict-ru/ru_RU.dic",
+    "share/extensions/dict-ru/th_ru_RU_M_aot_and_v2.dat",
+    "share/extensions/dict-ru/th_ru_RU_M_aot_and_v2.idx",
+    "share/extensions/dict-si/si_LK.aff",
+    "share/extensions/dict-si/si_LK.dic",
+    "share/extensions/dict-sk/sk_SK.aff",
+    "share/extensions/dict-sk/sk_SK.dic",
+    "share/extensions/dict-sk/th_sk_SK_v2.dat",
+    "share/extensions/dict-sk/th_sk_SK_v2.idx",
+    "share/extensions/dict-sl/sl_SI.aff",
+    "share/extensions/dict-sl/sl_SI.dic",
+    "share/extensions/dict-sl/th_sl_SI_v2.dat",
+    "share/extensions/dict-sl/th_sl_SI_v2.idx",
+    "share/extensions/dict-sq/sq_AL.aff",
+    "share/extensions/dict-sq/sq_AL.dic",
+    "share/extensions/dict-sr/sr-Latn.aff",
+    "share/extensions/dict-sr/sr-Latn.dic",
+    "share/extensions/dict-sr/sr.aff",
+    "share/extensions/dict-sr/sr.dic",
+    "share/extensions/dict-sv/sv_FI.aff",
+    "share/extensions/dict-sv/sv_FI.dic",
+    "share/extensions/dict-sv/sv_SE.aff",
+    "share/extensions/dict-sv/sv_SE.dic",
+    "share/extensions/dict-sv/th_sv_SE.dat",
+    "share/extensions/dict-sv/th_sv_SE.idx",
+    "share/extensions/dict-te/te_IN.aff",
+    "share/extensions/dict-te/te_IN.dic",
+    "share/extensions/dict-th/th_TH.aff",
+    "share/extensions/dict-th/th_TH.dic",
+    "share/extensions/dict-tr/tr_TR.aff",
+    "share/extensions/dict-tr/tr_TR.dic",
+    "share/extensions/dict-uk/th_uk_UA.dat",
+    "share/extensions/dict-uk/th_uk_UA.idx",
+    "share/extensions/dict-uk/uk_UA.aff",
+    "share/extensions/dict-uk/uk_UA.dic",
+    "share/extensions/dict-vi/vi_VN.aff",
+    "share/extensions/dict-vi/vi_VN.dic"
+  ],
+  "replacements": [
+    {
+      "path": "share/extensions/dict-af/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-af.xcu",
+      "sourceSha256": "01b05b7fdba0581e4b7943e75ce6a51a34b64da99bb50acad94e429d58724272",
+      "sha256": "e6d644d3d940916329ed8b6994f5379a9fd279a9f070f8a8023a22f26922667d"
+    },
+    {
+      "path": "share/extensions/dict-an/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-an.xcu",
+      "sourceSha256": "1692ba2497fc734b2fab19d25eaf6feeaa251ef75d75d62ad2eddfa2b20c16a2",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-ar/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-ar.xcu",
+      "sourceSha256": "7fbae54278afdd4a2fad85ac984077661d526f0526188b2d4390739005e9b714",
+      "sha256": "07797ef92c24bbf51412436ea6fdb70a4cccfaaaefa8eca860167b3e50478f5c"
+    },
+    {
+      "path": "share/extensions/dict-be/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-be.xcu",
+      "sourceSha256": "c62d5a37c8ce345c5cff9ec8ea2fd214efbba07b97944d958b6913502f549478",
+      "sha256": "42b521d3d850b9f5b6a945f79e83a45fb0f53d35503189609a1e1cfadeb139dd"
+    },
+    {
+      "path": "share/extensions/dict-bg/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-bg.xcu",
+      "sourceSha256": "15f113b066ab793a13ba63a2944b2aed209dd25aafc84e9bb206addbc0b5cfb1",
+      "sha256": "2c84ad5d214fa2d76e3493ba597341460743f4f12c0d2852eb3215e8b2f38d48"
+    },
+    {
+      "path": "share/extensions/dict-bn/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-bn.xcu",
+      "sourceSha256": "fdf53a9f7c9ec67751bf1592b52b4f2c7b6a8e65b82757bc581784f28fdda26d",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-bo/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-bo.xcu",
+      "sourceSha256": "43bf979b0b486ffa3ef73e6fdf7b9624bf86b51880fc145d669b395993671d89",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-br/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-br.xcu",
+      "sourceSha256": "d9883ad31cb223830cf6e836b433e88bb874bcf9eb0dee9e2f58a372d6916a5d",
+      "sha256": "9331c9fff566ff1df37b5018108f1edf822344d51fa06158f9e1802256dd845e"
+    },
+    {
+      "path": "share/extensions/dict-bs/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-bs.xcu",
+      "sourceSha256": "69325c51782140e51671cfa993f802f501b50af3aabd3265e93948a135458e0e",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-ca/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-ca.xcu",
+      "sourceSha256": "02e251ffae3538e31f5ede106d79c1652f970f23b2da1a50fc11df20e3004524",
+      "sha256": "a6f2481b53e55339dfd1380832f871bb38eac57119e26ccc905b78f861d39852"
+    },
+    {
+      "path": "share/extensions/dict-ckb/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-ckb.xcu",
+      "sourceSha256": "9b7140ecb1d109cccee84f3c3aff0e064bc323890391a34afe84aca3542097d1",
+      "sha256": "5e221c1ff3a0922ba61b8e3cc022d62ecd65f3194290ef287f9b53a59cc2e68b"
+    },
+    {
+      "path": "share/extensions/dict-cs/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-cs.xcu",
+      "sourceSha256": "a2c2171a8804d2358a10c6e8e595f4bfedd855c87c68b22bc545fe3b4197d5b6",
+      "sha256": "8fccd9044aa71b5bee8161f2180674af01f8e7e04a091f483a6c961475af333e"
+    },
+    {
+      "path": "share/extensions/dict-da/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-da.xcu",
+      "sourceSha256": "0376b7fbc8fa2c5762a5db3fcf417f85448f6dc4cad65bb838816e1f6d4b0e9a",
+      "sha256": "12801d1d8e6f97c897782c2b8a244ce68683645baff2251d849423dacea7cf80"
+    },
+    {
+      "path": "share/extensions/dict-de/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-de.xcu",
+      "sourceSha256": "722a8921a3aba513d572cb6fd766c3f0cce9eca5378432edccb373e7c352c607",
+      "sha256": "2a6c2fac3127cbd4e3fcdec2c380fbe21b0fc2b5fa1c789aea2ee0a78a4a91b4"
+    },
+    {
+      "path": "share/extensions/dict-el/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-el.xcu",
+      "sourceSha256": "42fa57a3ad6b561ad2a0021f31bc2596285b7750a341a995a85bfeca142cb8e4",
+      "sha256": "f2711709f71f56605fdaab25a7d9d5e45548d54136018fb85b83bb93555d7a67"
+    },
+    {
+      "path": "share/extensions/dict-en/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-en.xcu",
+      "sourceSha256": "98eb8d10fa40e69b23e36465c972f806e629a0f305f7e61b3cfb5d3fba10c403",
+      "sha256": "2ad2156b03575a1dd51bf47f791fc5dbdeb02a6348b2168d9a82abe8dd154abe"
+    },
+    {
+      "path": "share/extensions/dict-eo/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-eo.xcu",
+      "sourceSha256": "267c01b1308bc66871f0cf7080fa8fdff3524fc65011bd508601cbf232dafb22",
+      "sha256": "12e30cf1cbb3282d91ea481b5fc530d2a9feef99db23d5979a349050466d6ccf"
+    },
+    {
+      "path": "share/extensions/dict-es/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-es.xcu",
+      "sourceSha256": "f4c3e3fb47c84e830df17b05aee93a2bc0ea8420d3b7378abcdb5d70b49f46cb",
+      "sha256": "89fe95e500eac83f5bbe532ca8e8f550cadc467138c218a2f94ce55dc5c22d05"
+    },
+    {
+      "path": "share/extensions/dict-et/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-et.xcu",
+      "sourceSha256": "7bfb136011fccc9a79bdd06aab3930d98375dc85cf42e0f6a97b45a56b52c32d",
+      "sha256": "c1956696b8f75d03bdb0a87744a932ea35e8fae040c00e1a74a973f28a02395c"
+    },
+    {
+      "path": "share/extensions/dict-fa/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-fa.xcu",
+      "sourceSha256": "ab66643416721f8db27e49509f67496983bea90ade54cad225e2a9cc57758aef",
+      "sha256": "f6a590a57811a8aa62aa5fddd96e2b387279fece1a17962adcd1e6acc7246fda"
+    },
+    {
+      "path": "share/extensions/dict-fr/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-fr.xcu",
+      "sourceSha256": "e70daba4054293a11f2632d247af781baa2e0e12966644a30e8bcd33dfb20307",
+      "sha256": "828ad8f49f25af1710fb3870f257b4046d0727c6638a026425a14db8744f36a8"
+    },
+    {
+      "path": "share/extensions/dict-gd/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-gd.xcu",
+      "sourceSha256": "a1390b653d2fd1093b5ef4f47c079381333f94202a1c8bb5e5e1a483da17ff4e",
+      "sha256": "790ac303a6fe73c49b8856e7e10a1523614c7af7b08c96c6504a65e288ad3031"
+    },
+    {
+      "path": "share/extensions/dict-gl/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-gl.xcu",
+      "sourceSha256": "03db3524a19b5b8af60ec39d0084c1c6cefa9d814c92fc8a47d1447a5b39add5",
+      "sha256": "fc0d0b1db825485a219fff2844d85450dd88afa75562adb4324337a4d4a6319c"
+    },
+    {
+      "path": "share/extensions/dict-gu/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-gu.xcu",
+      "sourceSha256": "892c70f0ed353b2299434d139b3e478ba757c4bacaf12c688d1ae2b4c5f92872",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-he/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-he.xcu",
+      "sourceSha256": "cdd80cf395b2e6b72d9e0cc974a8a82d5ecfaa1421397aa0fb3c20e6ceac9496",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-hi/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-hi.xcu",
+      "sourceSha256": "8fe2ff0e0466882b31e7b5d35bcf9d70f618eee4c7efd01ff3d00fecd3fab4b2",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-hr/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-hr.xcu",
+      "sourceSha256": "812f4815274d9e6a3ae9712e10d1ee524ebfaa2fc2404e169b5976dd84ed9e5e",
+      "sha256": "fa6ed2906870159a35dd1c9a292bad9e6a0b7442fcbd22f273b0238db56dc67e"
+    },
+    {
+      "path": "share/extensions/dict-hu/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-hu.xcu",
+      "sourceSha256": "d903bc15cbd8b7a718816598ddce083488cc3412dbbad98de10d50125d373d0d",
+      "sha256": "b4cbe16ca90b52ee86fc558cc98a2e5c236977a4818326e551ffe9c0aaba894c"
+    },
+    {
+      "path": "share/extensions/dict-id/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-id.xcu",
+      "sourceSha256": "2a5cfc216855dc9ae5e50a88e2cd1561169cec7e50d9914dfcf99934eb55bfc1",
+      "sha256": "40f333241eae5bbb86c56cd2940a8472c9241a666a1cbfc79f0231ffbe799949"
+    },
+    {
+      "path": "share/extensions/dict-is/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-is.xcu",
+      "sourceSha256": "c6ebcc14ac2ea4de31057f8dba2a71ca2514a036883b81027a19cdf51db68a9f",
+      "sha256": "ae92a83c1a130be5e89ec23cd8434d81430bef3d5c817117e097d33d1ac27e98"
+    },
+    {
+      "path": "share/extensions/dict-it/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-it.xcu",
+      "sourceSha256": "f23e75c942b92ebb9ca68ecc39de08ab1a07731228ecd3aa0c4703f67be2f49e",
+      "sha256": "0e5ff9f4f9fe92e48272c9c2fb43db73b24e4fe57f9ef870fe686d87fbecdeb1"
+    },
+    {
+      "path": "share/extensions/dict-ko/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-ko.xcu",
+      "sourceSha256": "c00abd4f10515a4c664c6e31f10ae87b42c921d1aec60ba524d92ca38a27b5a7",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-lo/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-lo.xcu",
+      "sourceSha256": "6d46a0451b78b54412927fb491a2b7ab3dc8ce4e705dd5da65c66cf954b5ae8b",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-lt/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-lt.xcu",
+      "sourceSha256": "d9744688f7e86907d1ba318adc63decebeb4965a627e46f75a6d43dea220c0d1",
+      "sha256": "18e69108d974b0ec0bfd6d50ae01646a8c152ca29ade6ef34a5c916240ad640f"
+    },
+    {
+      "path": "share/extensions/dict-lv/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-lv.xcu",
+      "sourceSha256": "3c27c9e8a53ee3f514d94cc97482ccbb100773b00e226b7bdb6f2c4dd39cc2cc",
+      "sha256": "74cc22d72606e11a8caaf78f88b7278b96bad45a0625125855c9e0430514906e"
+    },
+    {
+      "path": "share/extensions/dict-mn/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-mn.xcu",
+      "sourceSha256": "ad0b5327b6675b18b065900a391f35e4a0dee59403c91be2e39ce0ab79ef1812",
+      "sha256": "889ad6268bfaf818cbca73f58b04e088d8edf3c2c388476b7fe6cfafcf622f8d"
+    },
+    {
+      "path": "share/extensions/dict-ne/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-ne.xcu",
+      "sourceSha256": "7d0b29ca239a53be6e93fc9b214acab0183eb35221286425d261dfd9d9afd40d",
+      "sha256": "07797ef92c24bbf51412436ea6fdb70a4cccfaaaefa8eca860167b3e50478f5c"
+    },
+    {
+      "path": "share/extensions/dict-nl/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-nl.xcu",
+      "sourceSha256": "9595b08b71dc8a20b641e96bd1730f6ac369b8c0851104ca1f8e69721d0978cc",
+      "sha256": "fcd7f86d67b87233b2c23ff2b6101c551b8f032cd9c3b1c2e32f5029220d4bdd"
+    },
+    {
+      "path": "share/extensions/dict-no/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-no.xcu",
+      "sourceSha256": "02abc1399dde1fd186aaffea09288e4a11163f80415d2fd59eb19876751fa144",
+      "sha256": "e6dea7113659e3d335db33be029a7abef678aa8c5af1aa76d1f148d402f4b5dd"
+    },
+    {
+      "path": "share/extensions/dict-oc/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-oc.xcu",
+      "sourceSha256": "efc424625e6addc8eac7f8b1766b3fbf9d316f2979c4ce2e7e45031ee678a7d2",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-pl/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-pl.xcu",
+      "sourceSha256": "7c53e0ee22c21e8b5038c7c9fc8c1cb2420ceb5c0a89e01df760f48cd7111ed9",
+      "sha256": "09f25ae10620b23a7909c47b9216a76023790c46dbef4fa2b67bb63594048d7c"
+    },
+    {
+      "path": "share/extensions/dict-pt-BR/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-pt-BR.xcu",
+      "sourceSha256": "88ca9700539efeaec245d8c7d73e8aa2fd2a7a7125adcd668c7c715ddbc0d8bb",
+      "sha256": "d37fd2786e7d9299d01738c84870da3d56b13613f1dabe7fd09d9f538ece21d0"
+    },
+    {
+      "path": "share/extensions/dict-pt-PT/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-pt-PT.xcu",
+      "sourceSha256": "ea4756a2b3ff564be840066578cc047f7bb102a881a877b151625eb83975cc72",
+      "sha256": "cb6c5010131412e42e7e84e9930100b3b0a2312005287e2264cf66c56c61776b"
+    },
+    {
+      "path": "share/extensions/dict-ro/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-ro.xcu",
+      "sourceSha256": "090fa686a93292a550c582c8c48a18144395374b77f431ed3484de7aa399a70c",
+      "sha256": "d5099ba09922d821a5528c0e5a4ae22f4f74acc53704bafaa02627312f148879"
+    },
+    {
+      "path": "share/extensions/dict-ru/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-ru.xcu",
+      "sourceSha256": "d7677a4b755e410f98aaff892a0b4d6bbbdb9fe9da322964d53eb7920e3f8060",
+      "sha256": "28c0478b4d23f59b3027acc31cefcba201cd795516df40ed55569438c1a40470"
+    },
+    {
+      "path": "share/extensions/dict-si/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-si.xcu",
+      "sourceSha256": "5cfdaa6d898f2acfba87b8e1499eab794425f3c8da04d9dd7ab98bd7c04dddec",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-sk/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-sk.xcu",
+      "sourceSha256": "5075febc48e7644cd3bdc785a8291d94dd826fb7aebcec458a8e3a05487199d1",
+      "sha256": "6a921745272eb2dc2038c885f73e0e272b876a4e790c5ee66dfb7e5131a20647"
+    },
+    {
+      "path": "share/extensions/dict-sl/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-sl.xcu",
+      "sourceSha256": "e652a6b7e6d5073d5666648534e70d9501fd66560950cfc90abd5ae304db2b40",
+      "sha256": "06de1fac09c6b9f1a3c7a0ef99a8e727d2cd95fa2387b2398df01c2da22d89fa"
+    },
+    {
+      "path": "share/extensions/dict-sq/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-sq.xcu",
+      "sourceSha256": "32341f4f5e8ce4836a11d623cf41ee17c1d4372a7986f5da7fb39e718c9d15b3",
+      "sha256": "13ee6e9e8b0a391b7e4791794707eb18cfaf526d9f21331be533835387f43daa"
+    },
+    {
+      "path": "share/extensions/dict-sr/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-sr.xcu",
+      "sourceSha256": "e49282a265a3d0645ccf93843251518b86c39c41fb554fd466f6be1c2212305e",
+      "sha256": "9ebad2366add3a73e5db4abd78e6a8d610030229ce8de0aeb5ac7be50faa8098"
+    },
+    {
+      "path": "share/extensions/dict-sv/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-sv.xcu",
+      "sourceSha256": "a8c8dd622b745cc523cc010e8ab3cb773d66e3206bbf4131a3fd145d633a64fa",
+      "sha256": "49aaeee31eb6186c99cd719212a5db6141cf0116899ea8206a3a073da031c40d"
+    },
+    {
+      "path": "share/extensions/dict-te/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-te.xcu",
+      "sourceSha256": "6023cb97390da1e9bf8fe7dc5e2e96c865e2c4cefbc5d024b19d63863bd5d26f",
+      "sha256": "5f61aafa47372455e1982eb35cf0cf87fdac3bd3ab0562bf6bc1b821ec560a60"
+    },
+    {
+      "path": "share/extensions/dict-th/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-th.xcu",
+      "sourceSha256": "2a6ed170d116650a257f184930dbc72b3287264ed1f4c9e0aafc369ba9e6bb5c",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-tr/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-tr.xcu",
+      "sourceSha256": "c66eb0bea54778f002f7088e8344798f6db6970fe23551d75e85b0318ea5f7a0",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    },
+    {
+      "path": "share/extensions/dict-uk/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-uk.xcu",
+      "sourceSha256": "9fdd0233ad10015d780f1e2fa52f2cb79cba02ba1fa3c2fb2736a81d271541da",
+      "sha256": "7d246b90d47c4c6dfd4f6083615a3639becde4f46bbc5f02a84853fa41c02164"
+    },
+    {
+      "path": "share/extensions/dict-vi/dictionaries.xcu",
+      "file": "libreoffice-dictionaries/dict-vi.xcu",
+      "sourceSha256": "8776113693d9792405c3f7f192192c53511f2b1f27d0e2ff3cf5c962f26c7f75",
+      "sha256": "5e9d5032864f5a05908e3e051ae4c043d27c1909a7584db1a46eae093c5c777e"
+    }
+  ],
+  "expectedLibreOffice": {
+    "files": 9654,
+    "bytes": 682221962,
+    "aggregateSha256": "07f93cd73bb207da30f6b0d82246ab65db706bc13aeda3d30daa4a2e99a26a1c"
+  }
+}

@@ -162,7 +162,10 @@
     "test:production-bundle": "node scripts/test-production-bundle.mjs",
     "prepare:libreoffice-profile": "node scripts/prepare-libreoffice-profile.mjs",
     "test:engine-profiles": "node --test scripts/test-engine-profiles.mjs",
-    "test:libreoffice-profile:native": "node scripts/test-libreoffice-profile-native.mjs"
+    "test:libreoffice-profile:native": "node scripts/test-libreoffice-profile-native.mjs",
+    "prepare:windows-resources": "node scripts/prepare-windows-resources.mjs",
+    "tauri:bundle:windows": "node scripts/run-tauri.mjs bundle",
+    "verify:windows-engine-package": "node scripts/verify-windows-engine-package.mjs"
   },
   "keywords": [
     "tauri",

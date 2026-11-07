@@ -5,13 +5,25 @@ import path from "node:path";
 import { test } from "node:test";
 import { execFileSync } from "node:child_process";
 import { crc32, deflateRawSync, inflateRawSync } from "node:zlib";
-import { filterZip, inspectFilterableZip } from "./lib/filtered-zip.mjs";
+import { filterZip, inspectFilterableZip, readZipEntry } from "./lib/filtered-zip.mjs";
+import { safeResourcePath } from "./lib/direct-engine-resources.mjs";
 import { retainLibreOfficeFile } from "./lib/libreoffice-profile.mjs";
 
 test("Engine preparation entrypoints remain valid executable ES modules", () => {
-  for (const name of ["prepare-bundled-engines.mjs", "prepare-libreoffice-profile.mjs", "validate-bundled-engines.mjs", "test-libreoffice-profile-native.mjs"]) {
+  for (const name of ["prepare-bundled-engines.mjs", "prepare-libreoffice-profile.mjs", "prepare-windows-resources.mjs", "validate-bundled-engines.mjs", "test-libreoffice-profile-native.mjs"]) {
     execFileSync(process.execPath, ["--check", path.join(import.meta.dirname, name)], { windowsHide: true });
   }
+});
+
+test("Direct profile excludes only editing dictionaries and preserves hyphenation and notices", async () => {
+  const policy = JSON.parse(await fs.readFile(new URL("../tools/engine-profiles/windows-libreoffice-v2.json", import.meta.url), "utf8"));
+  assert.equal(policy.omitFiles.length, 234);
+  for (const file of policy.omitFiles) {
+    assert.match(file, /^share\/extensions\/dict-[^/]+\/.+\.(aff|dic|dat|idx)$/);
+    assert.doesNotMatch(file, /hyph|licen[cs]e|copying|notice/i);
+    safeResourcePath(file);
+  }
+  for (const file of ["../outside", "/absolute", "a//b", "a\\b", "C:/a", "a/./b"]) assert.throws(() => safeResourcePath(file));
 });
 
 test("Office profile preserves document language, filters, fonts and licensing", () => {
@@ -39,6 +51,7 @@ test("Filtered ZIP preserves compressed payload and decodes after offset changes
   for (const entry of archive.entries) {
     const start = entry.start + 30 + bytes.readUInt16LE(entry.start + 26) + bytes.readUInt16LE(entry.start + 28);
     const decoded = inflateRawSync(bytes.subarray(start, start + entry.compressedBytes));
+    assert.deepEqual(await readZipEntry(output, entry), decoded);
     assert.equal(crc32(decoded), entry.record.readUInt32LE(16));
     assert.equal(decoded.toString(), entry.name.startsWith("program/") ? "native payload" : "license");
   }

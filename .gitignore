@@ -19,6 +19,7 @@ src-tauri/bundled-engine-archives/
 !src-tauri/bundled-engine-archives/
 src-tauri/bundled-engine-archives/*
 !src-tauri/bundled-engine-archives/README.md
+src-tauri/bundled-engine-profiles/
 src-tauri/ocr-resources/
 !src-tauri/ocr-resources/
 src-tauri/ocr-resources/*

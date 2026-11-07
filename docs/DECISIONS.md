@@ -331,3 +331,15 @@ boundaries, established stack and Vellum Paper design. Repair linked-worktree
 metadata after the physical move; never reset or prune preserved work. Source
 relocation does not migrate installed user data or imply publication. See
 `LOCAL_WORKSPACE.md` and the current audit handoff for checks and recovery.
+# 2026-11-07 — Windows direct engine resources
+
+After the first 15.4% setup reduction was judged insufficient, use a conversion-only
+LibreOffice profile without spellchecking/thesaurus data, preserving hyphenation,
+fonts, filters, locales and notices. Version and hash all registry overlays;
+independently audit their XML semantics. Install Office and the unchanged locked
+OCR runtime directly, then compress the entire NSIS payload with solid LZMA and
+a 128 MiB dictionary. Keep all five PP-OCRv6_medium models unchanged and offline.
+Split Windows compilation from bundling to avoid copying full resource trees into
+the Cargo output. Preserve previous installers by move. No Linux/macOS build or
+user-cache cleanup is authorized by this change. Evidence and measurements:
+[engine reduction ledger](ENGINE_REDUCTION_EXECUTION.md).

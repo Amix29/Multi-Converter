@@ -9,7 +9,10 @@ import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath, ocrRu
 const root = process.cwd();
 const platform = hostOcrPlatform();
 const runtimeArchive = ocrRuntimeArchivePath(root, platform);
-const models = path.join(root, "src-tauri", "ocr-resources", "models");
+const directRoot = platform === "windows-x64" ? path.join(root, "src-tauri/bundled-engine-profiles/windows-x64/current/ocr") : null;
+const directWorker = directRoot && path.join(directRoot, "runtime/windows-x64/ocr-worker.exe");
+const useDirect = directWorker && (await fs.stat(directWorker).catch(() => null))?.isFile();
+const models = useDirect ? path.join(directRoot, "models") : path.join(root, "src-tauri", "ocr-resources", "models");
 await assertFile(runtimeArchive, "archive du runtime OCR préparé");
 await assertDirectory(models, "modèles OCR préparés");
 
@@ -18,7 +21,7 @@ const input = path.join(temporary, "clean-french.png");
 const output = path.join(temporary, "result.json");
 const expected = "Multi-Converter OCR local 2026 - façade déjà été";
 try {
-  const executable = await extractOcrRuntimeArchive(runtimeArchive, path.join(temporary, "runtime"), platform);
+  const executable = useDirect ? directWorker : await extractOcrRuntimeArchive(runtimeArchive, path.join(temporary, "runtime"), platform);
   if (["linux", "darwin"].includes(process.platform)) {
     await assertDirectory(
       path.join(path.dirname(executable), "_internal", "paddle", "libs"),

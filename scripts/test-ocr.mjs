@@ -122,9 +122,9 @@ const capabilities = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "ca
 const clipboardPermissions = capabilities.permissions.filter((value) => value.startsWith("clipboard-manager:"));
 expect(JSON.stringify(clipboardPermissions) === JSON.stringify(["clipboard-manager:allow-write-text"]), "le presse-papiers OCR doit autoriser uniquement write-text");
 
-for (const configName of ["tauri.conf.json", "tauri.macos.conf.json", "tauri.linux.conf.json"]) {
+for (const configName of ["tauri.windows.conf.json", "tauri.macos.conf.json", "tauri.linux.conf.json"]) {
   const config = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", configName), "utf8"));
-  expect(config.bundle?.resources?.["ocr-resources/"] === "ocr/", `${configName}: ressources OCR absentes`);
+  expect(config.bundle?.resources?.[configName === "tauri.windows.conf.json" ? "bundled-engine-profiles/windows-x64/current/ocr/" : "ocr-resources/"] === "ocr/", `${configName}: ressources OCR absentes`);
 }
 
 if (failures.length) {

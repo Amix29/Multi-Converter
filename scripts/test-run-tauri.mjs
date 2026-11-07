@@ -22,13 +22,33 @@ try {
   assert.ok(!fs.existsSync(unsignedBundleRoot), "build must clean stale bundle artifacts before invoking Tauri");
 
   let invocation = readInvocation(fakeLog);
-  assert.equal(invocation.cargoTargetDir, unsignedTargetDir, "run-tauri must pass the selected CARGO_TARGET_DIR to Tauri");
-  assert.equal(invocation.args[0], "build");
-  assert.ok(invocation.args.includes("--config"), "unsigned Windows builds must disable updater artifacts through a temporary config");
-  const unsignedConfigPath = invocation.args[invocation.args.indexOf("--config") + 1];
-  assert.deepEqual(JSON.parse(fs.readFileSync(unsignedConfigPath, "utf8")), {
-    bundle: { createUpdaterArtifacts: false },
-  });
+  assert.equal(invocation.cargoTargetDir, unsignedTargetDir);
+  const history = JSON.parse(fs.readFileSync(fakeLog + ".history", "utf8"));
+  if (process.platform === "win32") {
+    assert.deepEqual(history.map(item => item.args[0]), ["build", "bundle"]);
+    assert.ok(history[0].args.includes("--no-bundle"));
+    assert.deepEqual(history[0].config.bundle, { resources: [], externalBin: [], createUpdaterArtifacts: false });
+    assert.equal(history[1].config.bundle.createUpdaterArtifacts, false);
+    const resources = history[1].config.bundle.resources;
+    assert.equal(resources["bundled-engine-profiles/windows-x64/current/ocr/"], null);
+    assert.equal(resources["bundled-engine-profiles/windows-x64/current/libreoffice/"], null);
+    assert.equal(Object.values(resources).filter(Boolean).length, 2);
+    assert.ok(Object.keys(resources).filter(key => resources[key]).every(key => path.isAbsolute(key) && key.includes("mc-pack-")));
+  } else {
+    assert.equal(invocation.args[0], "build");
+    assert.deepEqual(invocation.config, { bundle: { createUpdaterArtifacts: false } });
+  }
+  const preserved = fs.readdirSync(path.dirname(unsignedBundleRoot)).find(name => name.startsWith("bundle-preserved-"));
+  assert.ok(preserved, "Previous installer must be preserved by move");
+  assert.equal(fs.readFileSync(path.join(path.dirname(unsignedBundleRoot), preserved, "nsis/old-installer.exe"), "utf8"), "stale\n");
+
+  if (process.platform === "win32") {
+    const failed = runTauri(["build"], fakeBin, fakeLog, unsignedTargetDir, { FAKE_TAURI_FAIL_BUILD: "1" });
+    assert.equal(failed.status, 17, "Compile failure must propagate");
+    const failedHistory = JSON.parse(fs.readFileSync(fakeLog + ".history", "utf8"));
+    assert.equal(failedHistory.length, 1, "A failed compile must never bundle a stale executable");
+    assert.equal(failedHistory[0].args[0], "build");
+  }
 
   const macosTargetDir = path.join(fixtureRoot, "macos-target");
   const macosBundleRoot = path.join(macosTargetDir, "release", "bundle");
@@ -92,6 +112,7 @@ console.log("Tauri wrapper tests passed.");
 
 function runTauri(args, fakeBin, fakeLog, targetDir, extraEnv = {}) {
   fs.rmSync(fakeLog, { force: true });
+  fs.rmSync(fakeLog + ".history", { force: true });
   return spawnSync(process.execPath, ["scripts/run-tauri.mjs", ...args], {
     cwd: root,
     env: {
@@ -121,8 +142,16 @@ function writeFakeTauri(fakeBin, fakeLog) {
     fakeScript,
     [
       'import fs from "node:fs";',
+      'const args = process.argv.slice(2);',
+      'const index = args.indexOf("--config");',
+      'const config = index >= 0 ? JSON.parse(fs.readFileSync(args[index + 1], "utf8")) : null;',
+      'const historyPath = process.env.FAKE_TAURI_LOG + ".history";',
+      'const history = fs.existsSync(historyPath) ? JSON.parse(fs.readFileSync(historyPath, "utf8")) : [];',
+      'history.push({ args, config });',
+      'fs.writeFileSync(historyPath, JSON.stringify(history));',
+      'if (process.env.FAKE_TAURI_FAIL_BUILD === "1" && args[0] === "build") process.exit(17);',
       "fs.writeFileSync(process.env.FAKE_TAURI_LOG, JSON.stringify({",
-      "  args: process.argv.slice(2),",
+      "  args, config,",
       "  cargoTargetDir: process.env.CARGO_TARGET_DIR,",
       "}, null, 2));",
     ].join("\n"),

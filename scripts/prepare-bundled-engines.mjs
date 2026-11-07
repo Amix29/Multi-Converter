@@ -191,7 +191,7 @@ async function stageCompressedBundledEngine(engine) {
     await downloadVerified(engine.downloadUrl, source, engine.sha256, engine.id);
     await fs.copyFile(source, target);
   }
-  const result = spawnSync(process.execPath, ["scripts/prepare-libreoffice-profile.mjs"], {
+  const result = spawnSync(process.execPath, ["scripts/prepare-windows-resources.mjs"], {
     cwd: root, stdio: "inherit", windowsHide: true,
   });
   if (result.error || result.status !== 0) throw new Error("LibreOffice profile preparation failed");

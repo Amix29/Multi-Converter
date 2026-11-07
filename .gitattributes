@@ -10,6 +10,8 @@
 branding-kit/08_design-system/** text eol=lf
 src-tauri/ocr-resources/licenses/*.txt text eol=lf
 tools/ocr-runtime/*.lock.txt text eol=lf
+# Generated overlays preserve upstream whitespace and pinned byte hashes.
+tools/engine-profiles/**/*.xcu text eol=lf -whitespace
 *.nsh text eol=crlf
 
 *.png binary

@@ -146,3 +146,16 @@ Before publishing V1 engine archives:
 - 7-Zip FAQ/license notice: https://www.7-zip.org/faq.html
 - PaddleOCR repository/license: https://github.com/PaddlePaddle/PaddleOCR
 - PP-OCRv6 documentation: https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/algorithm/PP-OCRv6/PP-OCRv6.md
+
+## Windows direct-resource profile (2026-11-07)
+
+The unreleased `windows-offline-direct-v2` payload keeps conversion executables,
+filters, fonts, locales, hyphenation data, licenses and notices. Its Office
+spellchecking/thesaurus data and registrations are omitted because the desktop
+has no editing workspace. Frozen source hashes and small XML overlays live in
+`tools/engine-profiles/`; an independent XML audit checks preservation of all
+other registry semantics. OCR runtime/model files retain their exact original
+locks. Their notices and the additional OCR license folder remain bundled.
+Solid LZMA changes transport compression only; the public engine origin manifest
+and historical release archives remain unchanged. See the
+[reduction ledger](ENGINE_REDUCTION_EXECUTION.md) for evidence and proof limits.

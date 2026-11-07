@@ -1,3 +1,6 @@
+; Lossless solid compression across raw engine resources. Decoder needs 128 MiB.
+SetCompressorDictSize 128
+
 !macro NSIS_HOOK_POSTINSTALL
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     CreateDirectory "$SMPROGRAMS\$AppStartMenuFolder"

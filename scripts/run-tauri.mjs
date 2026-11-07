@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { bundleWindows } from "./lib/windows-bundle.mjs";
 
 const command = process.argv[2];
 const extraArgs = process.argv.slice(3);
@@ -35,9 +36,25 @@ if (isMacosBuild && (process.platform !== "darwin" || process.arch !== "arm64") 
   process.exit(1);
 }
 
-if (command === "build") {
-  removeBundleArtifacts(env.CARGO_TARGET_DIR);
+if (command === "build" || command === "bundle") {
+  preserveBundleArtifacts(env.CARGO_TARGET_DIR);
 }
+
+// Compile without copying gigabytes into target/release; the standalone
+// bundler reads the verified resources directly from their staging roots.
+if (process.platform === "win32" && command === "build" && extraArgs.length === 0) {
+  const compileConfig = path.join(os.tmpdir(), `mc-tauri-compile-${process.pid}.json`);
+  fs.writeFileSync(compileConfig, JSON.stringify({ bundle: { resources: [], externalBin: [], createUpdaterArtifacts: false } }));
+  try {
+    const compile = invoke(["build", "--no-bundle", "--config", compileConfig]);
+    if (compile.status !== 0) process.exitCode = compile.status ?? 1;
+    else process.exitCode = bundleWindows(invoke, env).status ?? 1;
+  } finally {
+    fs.unlinkSync(compileConfig);
+  }
+} else if (process.platform === "win32" && command === "bundle" && extraArgs.length === 0) {
+  process.exitCode = bundleWindows(invoke, env).status ?? 1;
+} else {
 
 if (command === "build" && !hasSigningKey && !hasConfigOverride) {
   console.warn(
@@ -54,7 +71,11 @@ if (command === "build" && !hasSigningKey && !hasConfigOverride) {
   tauriArgs.push("--config", unsignedBuildConfigPath);
 }
 
-function removeBundleArtifacts(targetDir) {
+const result = invoke(tauriArgs);
+process.exitCode = result.status ?? 1;
+}
+
+function preserveBundleArtifacts(targetDir) {
   const bundleRoot = path.join(targetDir, "release", "bundle");
   if (!fs.existsSync(bundleRoot)) return;
   const resolvedBundleRoot = path.resolve(bundleRoot);
@@ -66,7 +87,9 @@ function removeBundleArtifacts(targetDir) {
   if (!isExpectedBundleDir) {
     throw new Error(`Refusing to clean unexpected Tauri bundle directory: ${resolvedBundleRoot}`);
   }
-  fs.rmSync(resolvedBundleRoot, { recursive: true, force: true });
+  const preserved = `${resolvedBundleRoot}-preserved-${Date.now()}`;
+  fs.renameSync(resolvedBundleRoot, preserved);
+  console.log(`Preserved previous bundle by moving it to ${preserved}`);
 }
 
 function isPathInside(child, parent) {
@@ -84,10 +107,10 @@ function optionValue(args, longName, shortName) {
   return "";
 }
 
-const result = spawnSync("tauri", tauriArgs, {
+function invoke(args) {
+  return spawnSync("tauri", args, {
   env,
   shell: true,
   stdio: "inherit",
 });
-
-process.exit(result.status ?? 1);
+}

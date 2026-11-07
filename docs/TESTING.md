@@ -27,10 +27,18 @@ See `MIGRATION_SVELTE_EXECUTION.md` for measured platform evidence and open gate
 
 ### Engine-size profiles
 
-`npm run test:engine-profiles` validates selective ZIP copying, decompression
-after directory-offset changes, original-file preservation and unsafe/duplicate
-path rejection. The canonical check also validates the real profiled archive
-against `src-tauri/windows-libreoffice-profile.json` without generating it.
+`npm run test:engine-profiles` validates selective ZIP copying, bounded metadata
+reading, original-file preservation, dictionary policy and unsafe/duplicate path
+rejection. The canonical Windows engine validator checks the prepared direct
+profile and every unchanged OCR runtime/model file against the embedded locks.
+The original `windows-headless-v1` archive remains a historical reproducible lot;
+Windows packaging now uses `windows-offline-direct-v2`.
+
+`npm run prepare:windows-resources` stages immutable resources through hardlinks
+or decodes each required ZIP entry once on a fresh host. `--check` is read-only
+and required before bundling. `python tools/engine-profiles/audit-dictionary-profile.py`
+independently checks dictionary XML semantics, including all retained hyphenation
+nodes. This Python audit is not a build dependency.
 
 `npm run test:libreoffice-profile:native` requires Windows x64 and an original
 LibreOffice tree matching the pinned source archive. Set

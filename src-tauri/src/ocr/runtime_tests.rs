@@ -1,6 +1,49 @@
 use super::*;
 
 #[test]
+fn directly_installed_runtime_requires_worker_and_manifest() {
+    let temporary = tempfile::tempdir().unwrap();
+    let selected = selection(&parse_lock().unwrap()).unwrap();
+    let worker = temporary.path().join(&selected.executable);
+    fs::create_dir_all(worker.parent().unwrap()).unwrap();
+    assert!(direct_runtime(temporary.path(), &selected).is_none());
+    fs::write(&worker, b"fixture").unwrap();
+    assert!(direct_runtime(temporary.path(), &selected).is_none());
+    fs::write(
+        worker.parent().unwrap().join("runtime-manifest.json"),
+        b"{}",
+    )
+    .unwrap();
+    assert_eq!(direct_runtime(temporary.path(), &selected), Some(worker));
+    // Presence does not establish integrity: selected_runtime always runs the
+    // existing full manifest/hash/architecture verification before inference.
+}
+
+#[cfg(target_os = "windows")]
+#[test]
+#[ignore = "requires the prepared real Windows direct resources"]
+fn prepared_direct_ocr_verifies_without_archive_extraction() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("bundled-engine-profiles/windows-x64/current/ocr");
+    let lock = parse_lock().unwrap();
+    let selected = selection(&lock).unwrap();
+    let resolved = ResolvedRuntime {
+        executable: direct_runtime(&root, &selected).expect("prepared direct worker"),
+        models_dir: root.join("models"),
+        provider: selected.provider.clone(),
+    };
+    verify_resources(
+        &resolved,
+        &selected,
+        &lock.model_artifact,
+        &AtomicBool::new(false),
+        &mut |_, _| {},
+    )
+    .unwrap();
+    assert!(!runtime_archive::archive_path(&root, &selected.platform).exists());
+}
+
+#[test]
 fn worker_blas_environment_overrides_unbounded_command_settings() {
     let mut command = std::process::Command::new("worker-must-not-run");
     command

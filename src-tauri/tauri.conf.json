@@ -44,7 +44,6 @@
       "binaries/ffprobe"
     ],
     "resources": {
-      "ocr-resources/": "ocr/",
       "../LICENSE": "licenses/LICENSE.txt",
       "../NOTICE": "licenses/NOTICE.txt"
     },

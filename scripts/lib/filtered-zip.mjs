@@ -1,4 +1,7 @@
 import fs from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { Readable } from "node:stream";
+import { createInflateRaw } from "node:zlib";
 
 // Reuse verified compressed records. Never inflate a runtime tree to repackage it.
 export async function inspectFilterableZip(file) {
@@ -53,9 +56,35 @@ export async function inspectFilterableZip(file) {
       await readExact(input, header, entry.start);
       if (header.readUInt32LE(0) !== 0x04034b50
         || entry.start + 30 + header.readUInt16LE(26) + header.readUInt16LE(28) + entry.compressedBytes > entry.end) throw Error("Invalid ZIP local record");
+      entry.dataStart = entry.start + 30 + header.readUInt16LE(26) + header.readUInt16LE(28);
+      entry.method = entry.record.readUInt16LE(10);
     }
     return { entries, ordered, comment: tail.subarray(end + 22), size };
   } finally { await input.close(); }
+}
+
+export function zipEntryStream(source, entry) {
+  if (![0, 8].includes(entry.method)) throw Error("Unsupported ZIP compression");
+  if (!entry.compressedBytes) return Readable.from([]);
+  const input = createReadStream(source, { start: entry.dataStart, end: entry.dataStart + entry.compressedBytes - 1 });
+  if (entry.method === 0) return input;
+  const decoded = createInflateRaw();
+  input.on("error", error => decoded.destroy(error));
+  decoded.on("close", () => input.destroy());
+  return input.pipe(decoded);
+}
+
+export async function readZipEntry(source, entry, limit = 8 * 1024 * 1024) {
+  if (!entry || entry.bytes > limit) throw Error("Missing or oversized ZIP metadata");
+  const blocks = [];
+  let size = 0;
+  for await (const block of zipEntryStream(source, entry)) {
+    size += block.length;
+    if (size > limit) throw Error("ZIP metadata exceeds bound");
+    blocks.push(block);
+  }
+  if (size !== entry.bytes) throw Error("ZIP metadata size mismatch");
+  return Buffer.concat(blocks);
 }
 
 export async function filterZip(source, destination, keep) {

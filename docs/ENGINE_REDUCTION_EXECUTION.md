@@ -12,7 +12,7 @@ fichiers utilisateur sont conservés.
 Lot 1 : **profil LibreOffice Windows et setup privé construits et validés**.
 Les autres moteurs n'ont pas encore été transformés.
 
-Le setup fait **845 749 678 octets**, contre 999 648 595 octets :
+Le setup historique du lot 1 fait **845 749 678 octets**, contre 999 648 595 octets :
 **153 898 917 octets de moins (15,4 %)**. Sa signature updater est vérifiée
 cryptographiquement ; il n'a pas de signature Windows Authenticode.
 Le [reçu de la candidate](audits/2026-11-07/engine-reduction/windows-candidate.json)
@@ -147,3 +147,78 @@ gardées sans copier les fichiers moteur ; leur volume logique inclut les liens.
    et ressources embarquées ; mesurer séparément gains disque et setup.
 
 Ces lots restent ouverts et ne sont pas déclarés implémentés par le lot 1.
+
+## Lot 2 — ressources Windows directes et compression solide
+
+Le mainteneur juge le setup de 845,75 Mo encore trop lourd. Le profil
+`windows-offline-direct-v2` conserve les exécutables LibreOffice du ZIP verrouillé,
+ses filtres, polices, locales et données de césure. Il retire 234 fichiers de
+correction orthographique/thésaurus, inutilisés par les conversions sans éditeur,
+et retire leurs 117 inscriptions des registres de dictionnaires. Les 56 petits
+registres dérivés sont versionnés avec les hashes avant/après. Un audit XML
+indépendant confirme que toutes les autres sémantiques restent identiques :
+41 inscriptions de césure et les 43 fichiers `hyph*.dic` restent présents.
+
+La vue LibreOffice finale compte **9 654 fichiers / 682 221 962 octets**, contre
+1 513 332 017 octets dans la distribution initiale. Son agrégat SHA-256 est
+`07f93cd73bb207da30f6b0d82246ab65db706bc13aeda3d30daa4a2e99a26a1c`.
+Les cinq modèles et tous les fichiers du runtime OCR restent identiques aux
+verrous initiaux. Les licences et notices des moteurs restent embarquées.
+
+Windows installe désormais les fichiers LibreOffice et OCR directement, au lieu
+d'embarquer leurs ZIP puis de conserver une extraction séparée dans le profil
+utilisateur. Un seul flux solide LZMA avec dictionnaire de 128 Mio peut donc
+compresser ensemble les moteurs. C'est une compression sans perte ; elle ne
+change ni les codecs ni les poids OCR. Le démarrage conserve la vérification
+cryptographique OCR avant inférence. Les chemins ZIP historiques restent lisibles
+et les configurations Linux/macOS gardent leurs ressources antérieures.
+
+La compilation Windows par défaut sépare `tauri build --no-bundle`, avec
+ressources/sidecars exclus de la copie de compilation, puis `tauri bundle` sur
+les sources préparées. La préparation réutilise les fichiers existants par liens
+physiques ; un hôte neuf décompresse chaque entrée nécessaire une seule fois
+vers la vue finale. Aucun double runtime temporaire n'est créé. Les bundles
+précédents sont déplacés et conservés, jamais effacés par le lanceur de build.
+Les caches utilisateurs existants restent intacts ; ce changement n'autorise
+aucune suppression ni récupération automatique de leur espace.
+
+Mesure exploratoire : un compteur de sortie LZMA1/128 Mio, sans fichier archive,
+donne 512 075 710 octets pour 2 029 593 386 octets sources. Ce chiffre est une
+**estimation du flux**, pas la taille du setup NSIS. L'ordre des fichiers et les
+paramètres du véritable installateur peuvent produire un résultat différent.
+
+Reproduction des nouveaux contrôles :
+
+```powershell
+node scripts/prepare-windows-resources.mjs
+node scripts/prepare-windows-resources.mjs --check
+python tools/engine-profiles/audit-dictionary-profile.py
+npm run test:engine-profiles
+npm run test:libreoffice-profile:native
+npm run test:ocr:runtime
+npm run tauri:build
+```
+
+L'audit XML utilise uniquement la bibliothèque standard Python ; la préparation
+et le build de l'application restent en Node/Rust. Le test OCR réutilise la vue
+directe lorsqu'elle est présente, sans extraire une autre copie de 662 Mo.
+Un essai de fixture de césure avec contrôle négatif n'a pas activé la césure dans
+la référence : il est **non concluant**, exclu des preuves de parité. La
+préservation des registres/données de césure est vérifiée séparément. La parité
+des sept formats reste une preuve native sur corpus contrôlé ; elle ne remplace
+pas l'acceptation GUI du setup installé ni tous les documents réels possibles.
+
+Deux �checs de pr�paration ont �t� conserv�s dans le journal local : caches
+Python cr��s par le test LibreOffice, puis limite MAX_PATH de NSIS sur les
+headers Paddle dans le long chemin du worktree. Les 42 caches g�n�r�s (717 078
+octets) ont �t� d�plac�s hors du paquet, sans suppression ; les conversions
+LibreOffice d�sactivent d�sormais leur �criture. Le wrapper utilise une jonction
+temporaire courte pour les seules adresses sources de l'empaquetage. Les cibles
+install�es restent identiques ; la jonction est retir�e sans parcourir sa cible.
+Aucun fichier OCR n'a �t� retir� pour contourner les chemins longs.
+
+`npm run verify:windows-engine-package -- --installer "<setup.exe>" --report "<receipt.json>"`
+v�rifie le setup r�el avec 7-Zip : il d�code les ressources vers des consommateurs
+SHA-256 en m�moire et compare les fichiers des moteurs, mod�les, licences et de
+l'application aux sources ou agr�gats verrouill�s. Il ne produit pas de copie
+install�e des moteurs. La signature updater est v�rifi�e s�par�ment.

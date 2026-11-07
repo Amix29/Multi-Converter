@@ -7,21 +7,24 @@ const viteConfig = fs.readFileSync(path.join(root, "vite.config.ts"), "utf8");
 const tauriConfig = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "tauri.conf.json"), "utf8"));
 const platformConfig = (platform) => JSON.parse(fs.readFileSync(path.join(root, "src-tauri", `tauri.${platform}.conf.json`), "utf8"));
 const windowsConfig = platformConfig("windows");
-const windowsArchive = "bundled-engine-archives/windows-x64/libreoffice.headless.zip";
+const directRoot = "bundled-engine-profiles/windows-x64/current";
 const commonResources = {
-  "ocr-resources/": "ocr/",
   "../LICENSE": "licenses/LICENSE.txt",
   "../NOTICE": "licenses/NOTICE.txt",
 };
 assert.deepEqual(tauriConfig.bundle.resources, commonResources, "common configuration must include project notices without leaking Windows engines into Mac/Linux merges");
 const windowsResources = { ...tauriConfig.bundle.resources, ...windowsConfig.bundle.resources };
-assert.equal(windowsResources[windowsArchive], "engine-archives/libreoffice.zip", "Windows must retain its compressed LibreOffice payload");
+assert.equal(windowsResources[`${directRoot}/libreoffice/`], "engines/libreoffice/compatible/");
+assert.equal(windowsResources[`${directRoot}/ocr/`], "ocr/");
+assert.ok(!Object.values(windowsResources).some(value => value.includes("engine-archives")));
+assert.equal(windowsConfig.bundle.windows.nsis.compression, "lzma");
+assert.match(fs.readFileSync(path.join(root, "src-tauri/nsis-hooks.nsh"), "utf8"), /SetCompressorDictSize 128/);
 assert.equal(windowsResources["bundled-engine-archives/windows-x64/libreoffice.zip"], undefined, "Windows must not ship both original and profiled archives");
 assert.equal(windowsResources["bundled-engines/pdfium/"], "engines/pdfium/");
 assert.equal(windowsResources["bundled-engines/"], undefined, "Windows must not also ship an uncompressed LibreOffice tree");
 for (const platform of ["linux", "macos"]) {
   const resources = { ...tauriConfig.bundle.resources, ...platformConfig(platform).bundle.resources };
-  assert.deepEqual(resources, { ...commonResources, "bundled-engines/": "engines/" }, `${platform} merged resources must contain project notices, native engines and OCR`);
+  assert.deepEqual(resources, { ...commonResources, "bundled-engines/": "engines/", "ocr-resources/": "ocr/" }, `${platform} merged resources must contain project notices, native engines and OCR`);
 }
 const frontendFiles = ["src/App.svelte", "src/lib/api.ts"]
   .map((relative) => fs.readFileSync(path.join(root, relative), "utf8"))
