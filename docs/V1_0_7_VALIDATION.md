@@ -1,6 +1,6 @@
 # Multi-Converter V1.0.7 Validation
 
-## 2026-11-07 — Engine reduction lot 2: direct resources and solid compression
+## 2026-11-07 â€” Engine reduction lot 2: direct resources and solid compression
 
 Source gates and native validation pass for `windows-offline-direct-v2`:
 200 Rust tests passed (15 heavy/platform tests ignored by default), Clippy with
@@ -19,9 +19,14 @@ negative-control fixture was non-conclusive and is not counted as proof.
 One concurrent Rust run exceeded a five-second timing assertion; the isolated
 test and full serial suite passed afterwards. Packaging caught generated Python
 caches and MAX_PATH; cache creation is disabled and a short packaging-only
-junction avoids long paths without removing OCR files. A native NSIS package is
-being compressed and is not yet a verified installed-application candidate.
-The first solid-stream estimate is 512,075,710 bytes, not a measured setup size.
+junction avoids long paths without removing OCR files. The native NSIS setup is
+**513,064,488 bytes** (48.68% below the original, 39.34% below lot 1).
+All 17,178 application resource files (2,029,601,083 bytes) are decoded into
+SHA-256 consumers and matched to source/pinned hashes without extracting a tree.
+The complete container test and updater signature verification pass. Native
+Authenticode status is `NotSigned`. The candidate is not installed-GUI accepted.
+The separate 512,075,710-byte stream estimate remains historical. See the
+[final artifact receipt](audits/2026-11-07/engine-reduction/windows-solid-candidate.json).
 The 40-case OCR corpus is not repeated for these byte-identical weights/runtime.
 No Windows installed-GUI acceptance, public release or Mac/Linux build is claimed.
 See [the execution ledger](ENGINE_REDUCTION_EXECUTION.md).

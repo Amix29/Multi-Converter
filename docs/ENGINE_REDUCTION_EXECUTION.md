@@ -9,15 +9,25 @@ Pas de changement de modèle, de téléchargement OCR à l'exécution, de conver
 cloud, de publication ni de préparation Linux/macOS. Les anciens artefacts et
 fichiers utilisateur sont conservés.
 
-Lot 1 : **profil LibreOffice Windows et setup privé construits et validés**.
-Les autres moteurs n'ont pas encore été transformés.
+Lot 2 : **setup Windows construit, contenu complet et signature updater validés**.
 
-Le setup historique du lot 1 fait **845 749 678 octets**, contre 999 648 595 octets :
-**153 898 917 octets de moins (15,4 %)**. Sa signature updater est vérifiée
-cryptographiquement ; il n'a pas de signature Windows Authenticode.
-Le [reçu de la candidate](audits/2026-11-07/engine-reduction/windows-candidate.json)
-verrouille les fichiers et leurs hashes. Cette candidate n'est ni publiée ni
-acceptée comme installation finale ; aucun installateur n'a été exécuté ici.
+| Candidate Windows | Setup (octets) | Taille décimale |
+| --- | ---: | ---: |
+| Original avant allègement | 999 648 595 | 999,65 Mo |
+| Lot 1, profil Office ZIP | 845 749 678 | 845,75 Mo |
+| Lot 2, ressources directes + LZMA solide | **513 064 488** | **513,06 Mo** |
+
+Le gain est de **486 584 107 octets / 48,68 %** face à l'original, et **39,34 %**
+face au lot 1. Le [reçu final](audits/2026-11-07/engine-reduction/windows-solid-candidate.json)
+lie le setup, sa signature et le binaire aux mesures. Le [contrôle du contenu](audits/2026-11-07/engine-reduction/windows-solid-payload.json)
+confirme **17 178 fichiers / 2 029 601 083 octets** de ressources décodées et
+hashées sans extraction sur disque. Ce total concerne les fichiers applicatifs,
+pas une mesure physique du répertoire installé et de ses métadonnées.
+
+La signature updater est vérifiée cryptographiquement ; le setup n'a pas de
+signature Windows Authenticode. Il reste privé, non publié et **non validé par
+le protocole d'installation GUI**. Les anciennes candidates sont conservées ;
+aucun installateur n'a été exécuté ici.
 
 ## Lot 1 — LibreOffice Windows, profil de distribution headless
 
@@ -208,17 +218,60 @@ préservation des registres/données de césure est vérifiée séparément. La 
 des sept formats reste une preuve native sur corpus contrôlé ; elle ne remplace
 pas l'acceptation GUI du setup installé ni tous les documents réels possibles.
 
-Deux �checs de pr�paration ont �t� conserv�s dans le journal local : caches
-Python cr��s par le test LibreOffice, puis limite MAX_PATH de NSIS sur les
-headers Paddle dans le long chemin du worktree. Les 42 caches g�n�r�s (717 078
-octets) ont �t� d�plac�s hors du paquet, sans suppression ; les conversions
-LibreOffice d�sactivent d�sormais leur �criture. Le wrapper utilise une jonction
+Deux échecs de préparation ont été conservés dans le journal local : caches
+Python créés par le test LibreOffice, puis limite MAX_PATH de NSIS sur les
+headers Paddle dans le long chemin du worktree. Les 42 caches générés (717 078
+octets) ont été déplacés hors du paquet, sans suppression ; les conversions
+LibreOffice désactivent désormais leur écriture. Le wrapper utilise une jonction
 temporaire courte pour les seules adresses sources de l'empaquetage. Les cibles
-install�es restent identiques ; la jonction est retir�e sans parcourir sa cible.
-Aucun fichier OCR n'a �t� retir� pour contourner les chemins longs.
+installées restent identiques ; la jonction est retirée sans parcourir sa cible.
+Aucun fichier OCR n'a été retiré pour contourner les chemins longs.
 
 `npm run verify:windows-engine-package -- --installer "<setup.exe>" --report "<receipt.json>"`
-v�rifie le setup r�el avec 7-Zip : il d�code les ressources vers des consommateurs
-SHA-256 en m�moire et compare les fichiers des moteurs, mod�les, licences et de
-l'application aux sources ou agr�gats verrouill�s. Il ne produit pas de copie
-install�e des moteurs. La signature updater est v�rifi�e s�par�ment.
+vérifie le setup réel avec 7-Zip : il décode les ressources vers des consommateurs
+SHA-256 en mémoire et compare les fichiers des moteurs, modèles, licences et de
+l'application aux sources ou agrégats verrouillés. Il ne produit pas de copie
+installée des moteurs. La signature updater est vérifiée séparément.
+
+Le script NSIS généré confirme 9 654 fichiers Office et 7 247 fichiers OCR
+runtime (manifeste compris), sans ZIP moteur supplémentaire. Les sources
+passant par la jonction font au maximum 215 caractères, sous la limite qui
+avait bloqué l'essai précédent. La seconde invocation de bundling avertit que
+le marqueur Tauri a déjà été patché ; une inspection binaire confirme
+`__TAURI_BUNDLE_TYPE_VAR_NSS`, interprété comme NSIS par la version Tauri utilisée.
+Cela ne constitue pas une validation du parcours updater installé.
+
+Le contrôle général du checkpoint intégré passe à nouveau. La suite Rust finale
+série compte 200 succès / 15 tests lourds ignorés ; le contrôle direct OCR ignoré
+par défaut est exécuté séparément et passe, ainsi que les 11 groupes natifs et
+le refus HTTP des médias. Clippy et le format Rust passent. Les sept formats
+Office passent encore avec écriture des caches désactivée ; le hash de la vue
+après les conversions correspond exactement à celui d'avant.
+
+Le compteur exploratoire est reproductible avec
+`python tools/engine-profiles/benchmark-solid-stream.py`. Il ne crée aucune
+archive et écrit seulement un petit rapport JSON sous `tmp/`. Le rapport initial
+est conservé dans `audits/2026-11-07/engine-reduction/lzma-estimate.json` ; il
+utilisait l'exécutable du lot 1 et ne remplace pas la taille du setup final.
+
+### Résultat final du lot 2
+
+Le véritable NSIS mesure **513 064 488 octets**, SHA-256
+`48b73cbb75b3657ad422554114535807b7fe16c7abb5617b92a8a6068806b2b5`.
+Les 17 178 fichiers applicatifs du conteneur correspondent aux hashes des
+sources, des modèles et du profil verrouillé. `7z t` passe sur le fichier
+complet, puis la signature updater est vérifiée avec la clé publique configurée.
+Le statut Authenticode natif est `NotSigned` ; le contrôle a été effectué avec
+PowerShell 7 après un échec d'auto-chargement du module dans PowerShell 5.
+
+Les artefacts du lot 1 sont dans `bundle-9ae7321c-before-engine-lot2` ; leurs trois
+hashes (setup, signature, exécutable) sont revérifiés inchangés et le reçu
+historique référence ces nouveaux chemins. La préparation du checkout
+`codex/test` utilise aussi les liens physiques, sans copie supplémentaire des
+runtimes. La jonction courte de packaging est retirée après compilation.
+Le téléchargement Node 27 provoqué par une invocation npm erronée a été écarté
+vers la Corbeille ; l'empaquetage final utilise bien Node 24 du projet.
+
+Il reste à exécuter l'acceptation GUI du setup installé avant toute déclaration
+de release prête. Linux/macOS restent arrêtés ; les caches utilisateur et
+anciens artefacts ne sont pas supprimés pour embellir la mesure.

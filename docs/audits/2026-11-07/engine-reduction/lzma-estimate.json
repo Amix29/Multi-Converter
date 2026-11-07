@@ -1,0 +1,54 @@
+{
+  "method": "Streaming LZMA1 with 128 MiB dictionary into an output byte counter; no archive or engine copy written",
+  "rawBytes": 2029593386,
+  "compressedStreamBytes": 512075710,
+  "seconds": 2054.79,
+  "groups": [
+    {
+      "name": "application",
+      "rawBytes": 26685952,
+      "incrementalCompressedBytes": 6513624
+    },
+    {
+      "name": "project-notices",
+      "rawBytes": 47298,
+      "incrementalCompressedBytes": 13866
+    },
+    {
+      "name": "libreoffice-headless-v2",
+      "rawBytes": 682221962,
+      "incrementalCompressedBytes": 137816810
+    },
+    {
+      "name": "ocr-models",
+      "rawBytes": 185087503,
+      "incrementalCompressedBytes": 144596391
+    },
+    {
+      "name": "identical-ocr-runtime",
+      "rawBytes": 662035027,
+      "incrementalCompressedBytes": 158972191
+    },
+    {
+      "name": "libvips",
+      "rawBytes": 28468129,
+      "incrementalCompressedBytes": 7515197
+    },
+    {
+      "name": "pandoc",
+      "rawBytes": 231066543,
+      "incrementalCompressedBytes": 23886716
+    },
+    {
+      "name": "pdfium",
+      "rawBytes": 11271980,
+      "incrementalCompressedBytes": 3917375
+    },
+    {
+      "name": "ffmpeg-ffprobe",
+      "rawBytes": 202708992,
+      "incrementalCompressedBytes": 28832155
+    }
+  ],
+  "limits": "Estimator for solid installer compression, not a measured setup. NSIS instructions, exact file order and encoder settings may change the result."
+}

@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-07T11:18:52.252Z",
+  "applicationSourceCheckpoint": "4a0167cc",
+  "platform": "windows-x64",
+  "version": "1.0.7",
+  "files": [
+    {
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe",
+      "bytes": 513064488,
+      "sha256": "48b73cbb75b3657ad422554114535807b7fe16c7abb5617b92a8a6068806b2b5"
+    },
+    {
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
+      "bytes": 428,
+      "sha256": "83f6e20982491d0b356ec33a7f30180af8c6c510446c29dfb94bce9514a791ed"
+    },
+    {
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/multi-converter.exe",
+      "bytes": 26681856,
+      "sha256": "a2409f6c5ea32e0381d7e20d1ad817537a7aedd80830dce4ab81928dde0e37f4"
+    }
+  ],
+  "comparison": {
+    "baselineSetupBytes": 999648595,
+    "lot1SetupBytes": 845749678,
+    "currentSetupBytes": 513064488,
+    "reductionFromBaselineBytes": 486584107,
+    "reductionFromBaselinePercent": 48.68,
+    "reductionFromLot1Percent": 39.34
+  },
+  "payloadVerification": {
+    "date": "2026-11-07T11:16:29.287Z",
+    "installerBytes": 513064488,
+    "installerSha256": "48b73cbb75b3657ad422554114535807b7fe16c7abb5617b92a8a6068806b2b5",
+    "verifiedResourceFiles": 17178,
+    "verifiedResourceBytes": 2029601083,
+    "compression": "solid LZMA, 128 MiB dictionary",
+    "office": {
+      "files": 9654,
+      "bytes": 682221962,
+      "aggregateSha256": "07f93cd73bb207da30f6b0d82246ab65db706bc13aeda3d30daa4a2e99a26a1c"
+    },
+    "ocr": {
+      "runtime": {
+        "fileCount": 7246,
+        "totalBytes": 660643156,
+        "aggregateSha256": "d386f7923fbea6fe6efa407b2f00d3e99e31ee9778027a67ca32e6b14adf759c"
+      },
+      "models": {
+        "fileCount": 21,
+        "totalBytes": 185082003,
+        "aggregateSha256": "e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb"
+      }
+    },
+    "validation": "Every application/engine/OCR/model/notice file decoded into SHA-256 consumers and matched to source hashes or pinned aggregate; no engine tree extracted",
+    "limits": "Does not install or launch the graphical application; updater signature verified separately"
+  },
+  "containerTest": "7-Zip t passed without extracting files",
+  "updaterSignature": "Cryptographically verified against the configured production updater public key",
+  "authenticode": "NotSigned",
+  "nsisScriptSha256": "63de98b063cba73c322d5b895f2bab3e67ab39770d6945d97290586ecfcb36df",
+  "validation": {
+    "canonicalCheck": "passed",
+    "rust": "200 passed, 15 ignored by default; direct OCR integrity test separately passed",
+    "conversions": "11 native groups and negative HTTP control passed",
+    "nativeOffice": "7 formats exact text/page/200-DPI raster parity; resource tree unchanged after conversion",
+    "ocr": "100% character accuracy on clean French smoke using all five original modules; every runtime/model byte matches pinned lock; 40-case corpus not repeated",
+    "clippy": "all targets, warnings denied, passed",
+    "installedApplicationAcceptance": "not performed"
+  },
+  "bundleMarker": "__TAURI_BUNDLE_TYPE_VAR_NSS verified; repeated patch warning comes from reusing the already patched NSIS binary",
+  "storage": "Source runtimes linked, not duplicated. Previous installers/caches preserved; no installed-tree extraction for package verification",
+  "publication": "none; no push, release or updater metadata publication",
+  "otherPlatforms": "Linux/macOS preparations remain stopped"
+}

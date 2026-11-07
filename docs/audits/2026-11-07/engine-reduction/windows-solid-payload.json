@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-07T11:16:29.287Z",
+  "installerBytes": 513064488,
+  "installerSha256": "48b73cbb75b3657ad422554114535807b7fe16c7abb5617b92a8a6068806b2b5",
+  "verifiedResourceFiles": 17178,
+  "verifiedResourceBytes": 2029601083,
+  "compression": "solid LZMA, 128 MiB dictionary",
+  "office": {
+    "files": 9654,
+    "bytes": 682221962,
+    "aggregateSha256": "07f93cd73bb207da30f6b0d82246ab65db706bc13aeda3d30daa4a2e99a26a1c"
+  },
+  "ocr": {
+    "runtime": {
+      "fileCount": 7246,
+      "totalBytes": 660643156,
+      "aggregateSha256": "d386f7923fbea6fe6efa407b2f00d3e99e31ee9778027a67ca32e6b14adf759c"
+    },
+    "models": {
+      "fileCount": 21,
+      "totalBytes": 185082003,
+      "aggregateSha256": "e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb"
+    }
+  },
+  "validation": "Every application/engine/OCR/model/notice file decoded into SHA-256 consumers and matched to source hashes or pinned aggregate; no engine tree extracted",
+  "limits": "Does not install or launch the graphical application; updater signature verified separately"
+}

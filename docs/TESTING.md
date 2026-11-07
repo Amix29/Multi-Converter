@@ -43,8 +43,10 @@ nodes. This Python audit is not a build dependency.
 `npm run test:libreoffice-profile:native` requires Windows x64 and an original
 LibreOffice tree matching the pinned source archive. Set
 `MULTI_CONVERTER_LO_REFERENCE` when the matching tree is outside source staging.
-It CRC-verifies retained files, builds a hardlink-only candidate view and
-compares PDF/DOCX/DOC/ODT/RTF/HTML/TXT text and paginated raster output. It never
+It uses the prepared direct profile by default and SHA-verifies its complete
+file set before and after PDF/DOCX/DOC/ODT/RTF/HTML/TXT text and paginated raster
+comparison. The optional historical ZIP path CRC-verifies retained files and
+creates a hardlink-only view. Python bytecode writes are disabled. It never
 falls back to copying a full engine if hardlinks are unavailable. This is direct
 engine parity evidence, not installed-application acceptance.
 
@@ -755,3 +757,16 @@ http://127.0.0.1:1420/?mockUpdate=1&mockWelcomeSeen=1
 This shows the update reminder and the topbar feedback action together without
 the welcome dialog. Feedback must remain in normal navigation flow; only the
 update reminder and transient notices use floating presentation.
+
+## Compact Windows installer verification
+
+After the normal `npm run tauri:build`, run
+`npm run verify:windows-engine-package -- --installer "<setup.exe>" --report "<receipt.json>"`
+on Windows with 7-Zip available. It checks solid LZMA/128 MiB, rejects nested
+Office/OCR ZIPs and missing/unexpected engine resources, then hashes every
+application resource decoded directly from the exact installer. Office uses
+its pinned aggregate; OCR uses the embedded runtime/model locks. The remaining
+engines, executable and notices are compared with source bytes. No installed
+engine tree is created. This checks payload integrity, not GUI installation,
+updater behavior on an installed app or a public release. Updater signatures
+and Windows Authenticode status are separate checks.

@@ -5,17 +5,17 @@
   "version": "1.0.7",
   "files": [
     {
-      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe",
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-9ae7321c-before-engine-lot2/nsis/Multi-Converter_1.0.7_x64-setup.exe",
       "bytes": 845749678,
       "sha256": "48697411125f898e47d0980014cf61a36ec4bc4603e5fca5aca6f7e2d03934a2"
     },
     {
-      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-9ae7321c-before-engine-lot2/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
       "bytes": 428,
       "sha256": "d34844e8bf92623ccea336e38f45ed1005edba00fa5312d3a9964d9dbe5a42aa"
     },
     {
-      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/multi-converter.exe",
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-9ae7321c-before-engine-lot2/multi-converter-source.exe",
       "bytes": 26685952,
       "sha256": "1dedc46001ee893d4e79f53bc8d12ed8adc6e7d9e8f3e70f703ba267d035f5a6"
     }
@@ -67,5 +67,6 @@
   "publication": "none; no push, release or updater metadata generated",
   "otherPlatforms": "Linux/macOS staging remains stopped",
   "warning": "Existing STATIC_VCRUNTIME deprecation from Tauri build tooling",
-  "buildProcedure": "Production frontend and direct Tauri NSIS build with existing resources; source 9ae7321c. Preparation-entrypoint syntax fix afterwards does not change native/frontend/config/profile build inputs."
+  "buildProcedure": "Production frontend and direct Tauri NSIS build with existing resources; source 9ae7321c. Preparation-entrypoint syntax fix afterwards does not change native/frontend/config/profile build inputs.",
+  "preservedAfterLot2": "Installer, updater signature and native executable moved/linked into bundle-9ae7321c-before-engine-lot2; every original SHA256 rechecked unchanged"
 }

@@ -331,7 +331,7 @@ boundaries, established stack and Vellum Paper design. Repair linked-worktree
 metadata after the physical move; never reset or prune preserved work. Source
 relocation does not migrate installed user data or imply publication. See
 `LOCAL_WORKSPACE.md` and the current audit handoff for checks and recovery.
-# 2026-11-07 — Windows direct engine resources
+## 2026-11-07 — Windows direct engine resources
 
 After the first 15.4% setup reduction was judged insufficient, use a conversion-only
 LibreOffice profile without spellchecking/thesaurus data, preserving hyphenation,

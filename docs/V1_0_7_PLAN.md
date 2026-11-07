@@ -11,7 +11,9 @@
   of 845,749,678 bytes (15.4% smaller). The stronger Windows lot 2 stages raw
   Office/OCR resources for solid LZMA/128 MiB compression; its source, native
   Office parity and unchanged OCR integrity checks pass. The final setup is
-  being built and measured. See [the reduction ledger](ENGINE_REDUCTION_EXECUTION.md).
+  **513,064,488 bytes: 48.68% smaller than the original and 39.34% smaller than
+  lot 1**. All 17,178 packaged application files and its updater signature are
+  verified; installed-GUI acceptance remains pending. See [the reduction ledger](ENGINE_REDUCTION_EXECUTION.md).
   All five OCR models and runtime bytes remain unchanged; no user-cache cleanup
   or Linux/macOS preparation is included.
 - Active migration architecture: desktop Svelte 5 + Tailwind 4 + shadcn-svelte,

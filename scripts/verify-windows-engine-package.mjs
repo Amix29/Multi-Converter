@@ -50,7 +50,8 @@ if (entries.some(item => item.name === "ocr/runtime/windows-x64.zip" || item.nam
 if (entries.some(item => /^(engines|ocr|licenses)\//.test(item.name) && !expected.has(item.name) && !item.name.startsWith(officePrefix))) throw Error("Unexpected packaged engine/OCR resource");
 const resources = entries.filter(item => expected.has(item.name) || item.name?.startsWith(officePrefix));
 if (resources.filter(item => item.name.startsWith(officePrefix)).length !== profile.expectedLibreOffice.files) throw Error("Incorrect Office membership");
-for (const name of expected.keys()) if (!resources.some(item => item.name === name)) throw Error(`Missing packaged file: ${name}`);
+const present = new Set(resources.map(item => item.name));
+for (const name of expected.keys()) if (!present.has(name)) throw Error(`Missing packaged file: ${name}`);
 for (const entry of resources) {
   entry.bytes ??= expected.get(entry.name)?.bytes;
   if (!Number.isSafeInteger(entry.bytes) || entry.bytes < 0) throw Error(`Unknown resource size: ${entry.name}`);

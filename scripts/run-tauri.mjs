@@ -55,24 +55,23 @@ if (process.platform === "win32" && command === "build" && extraArgs.length === 
 } else if (process.platform === "win32" && command === "bundle" && extraArgs.length === 0) {
   process.exitCode = bundleWindows(invoke, env).status ?? 1;
 } else {
+  if (command === "build" && !hasSigningKey && !hasConfigOverride) {
+    console.warn(
+      "TAURI_SIGNING_PRIVATE_KEY is not set; building without updater signature artifacts.",
+    );
+    const unsignedBuildConfigPath = path.join(
+      os.tmpdir(),
+      "mc-tauri-unsigned-build.config.json",
+    );
+    fs.writeFileSync(
+      unsignedBuildConfigPath,
+      JSON.stringify({ bundle: { createUpdaterArtifacts: false } }),
+    );
+    tauriArgs.push("--config", unsignedBuildConfigPath);
+  }
 
-if (command === "build" && !hasSigningKey && !hasConfigOverride) {
-  console.warn(
-    "TAURI_SIGNING_PRIVATE_KEY is not set; building without updater signature artifacts.",
-  );
-  const unsignedBuildConfigPath = path.join(
-    os.tmpdir(),
-    "mc-tauri-unsigned-build.config.json",
-  );
-  fs.writeFileSync(
-    unsignedBuildConfigPath,
-    JSON.stringify({ bundle: { createUpdaterArtifacts: false } }),
-  );
-  tauriArgs.push("--config", unsignedBuildConfigPath);
-}
-
-const result = invoke(tauriArgs);
-process.exitCode = result.status ?? 1;
+  const result = invoke(tauriArgs);
+  process.exitCode = result.status ?? 1;
 }
 
 function preserveBundleArtifacts(targetDir) {
@@ -85,7 +84,7 @@ function preserveBundleArtifacts(targetDir) {
     resolvedBundleRoot.endsWith(`${path.sep}release${path.sep}bundle`) &&
     (isPathInside(resolvedBundleRoot, resolvedTemp) || isPathInside(resolvedBundleRoot, resolvedWorkspaceTarget));
   if (!isExpectedBundleDir) {
-    throw new Error(`Refusing to clean unexpected Tauri bundle directory: ${resolvedBundleRoot}`);
+    throw new Error(`Refusing to move unexpected Tauri bundle directory: ${resolvedBundleRoot}`);
   }
   const preserved = `${resolvedBundleRoot}-preserved-${Date.now()}`;
   fs.renameSync(resolvedBundleRoot, preserved);

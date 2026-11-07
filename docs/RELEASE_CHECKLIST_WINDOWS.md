@@ -20,6 +20,7 @@ npm run clippy:pdfium-wrapper
 npm run test:conversions
 npm run build
 npm run tauri:build
+npm run verify:windows-engine-package -- --installer "<exact-built-setup.exe>" --report "<payload-receipt.json>"
 npm run test:windows:native
 npm run validate:release-assets -- --version X.Y.Z --dir "$env:LOCALAPPDATA\Temp\mc-release-assets\vX.Y.Z"
 ```
