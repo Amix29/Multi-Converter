@@ -3,9 +3,16 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
+import { execFileSync } from "node:child_process";
 import { crc32, deflateRawSync, inflateRawSync } from "node:zlib";
 import { filterZip, inspectFilterableZip } from "./lib/filtered-zip.mjs";
 import { retainLibreOfficeFile } from "./lib/libreoffice-profile.mjs";
+
+test("Engine preparation entrypoints remain valid executable ES modules", () => {
+  for (const name of ["prepare-bundled-engines.mjs", "prepare-libreoffice-profile.mjs", "validate-bundled-engines.mjs", "test-libreoffice-profile-native.mjs"]) {
+    execFileSync(process.execPath, ["--check", path.join(import.meta.dirname, name)], { windowsHide: true });
+  }
+});
 
 test("Office profile preserves document language, filters, fonts and licensing", () => {
   for (const file of ["share/extensions/dict-fr/fr.dic", "share/extensions/dict-fr/hyph_fr.dic",

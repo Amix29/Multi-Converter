@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-07T09:23:06.125Z",
+  "sourceCheckpoint": "9ae7321c3bddc658d6eb71f23bb939a0992d4bb4",
+  "platform": "windows-x64",
+  "version": "1.0.7",
+  "files": [
+    {
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe",
+      "bytes": 845749678,
+      "sha256": "48697411125f898e47d0980014cf61a36ec4bc4603e5fca5aca6f7e2d03934a2"
+    },
+    {
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
+      "bytes": 428,
+      "sha256": "d34844e8bf92623ccea336e38f45ed1005edba00fa5312d3a9964d9dbe5a42aa"
+    },
+    {
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/multi-converter.exe",
+      "bytes": 26685952,
+      "sha256": "1dedc46001ee893d4e79f53bc8d12ed8adc6e7d9e8f3e70f703ba267d035f5a6"
+    }
+  ],
+  "updaterSignature": "cryptographically verified against configured production updater public key",
+  "authenticode": "NotSigned (Windows Authenticode); separate from verified updater signature",
+  "libreOffice": {
+    "schemaVersion": 1,
+    "profileId": "windows-headless-v1",
+    "engineId": "libreoffice",
+    "platform": "windows-x64",
+    "sourceArchiveSha256": "dcd78e44960098bb34ed2db3d752087f1a5975ed7e8ea8938afadf2b571a4801",
+    "archiveSha256": "d521a61c1c5fa175fc60871f872b221dcce858b20968b27a8708df3d7f8e7d70",
+    "compressedSizeBytes": 328694744,
+    "installedSizeBytes": 1142267215,
+    "fileCount": 9888,
+    "archiveFileName": "libreoffice.headless.zip"
+  },
+  "unchangedOcr": {
+    "runtime": {
+      "bytes": 236811152,
+      "sha256": "77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac"
+    },
+    "models": {
+      "fileCount": 21,
+      "totalBytes": 185082003,
+      "aggregateSha256": "e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb"
+    }
+  },
+  "nsisScriptSha256": "72580ae341c207cccc5028535a1916332c3726b4bd0d329bdb8a82b8f9b2b5cc",
+  "comparison": {
+    "baselineSetupBytes": 999648595,
+    "currentSetupBytes": 845749678,
+    "reductionBytes": 153898917,
+    "reductionPercent": 15.4
+  },
+  "validation": {
+    "canonicalCheck": "passed",
+    "rust": "199 passed; 14 ignored; separate real matrix 11 groups and ZIP streaming passed",
+    "frontend": "64 tests and production build passed",
+    "nativeOffice": "7 formats reference/candidate text/page/raster parity; final profile CRC and PDF smoke passed",
+    "installedApplicationAcceptance": "not performed",
+    "ocrInference": "unchanged runtime/models; full inference corpus not repeated",
+    "engineProfileTests": "4 Node tests passed, including entrypoint syntax and ZIP/path safeguards",
+    "standardPreparation": "prepare:bundled-engines passed by reusing the verified existing archive"
+  },
+  "previousCandidate": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-334bd2a5-before-engine-lot1",
+  "storage": "Original candidate moved, not copied; candidate engine validation used hardlinks; archive filtering never extracted a runtime tree",
+  "publication": "none; no push, release or updater metadata generated",
+  "otherPlatforms": "Linux/macOS staging remains stopped",
+  "warning": "Existing STATIC_VCRUNTIME deprecation from Tauri build tooling",
+  "buildProcedure": "Production frontend and direct Tauri NSIS build with existing resources; source 9ae7321c. Preparation-entrypoint syntax fix afterwards does not change native/frontend/config/profile build inputs."
+}

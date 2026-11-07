@@ -9,7 +9,7 @@
   [measurements and optimization proposals](ENGINE_SIZE_AUDIT_2026_11.md).
   The maintainer authorized execution afterwards. The Windows LibreOffice
   headless profile reduces its archive to 328,694,744 bytes; native parity and
-  source gates pass, with a new private setup being built. See
+  source gates pass, and the new private setup is 845,749,678 bytes (15.4% smaller). See
   [the reduction ledger](ENGINE_REDUCTION_EXECUTION.md). No OCR runtime/model
   substitution, user-data cleanup or distribution-policy change is applied.
 - Active migration architecture: desktop Svelte 5 + Tailwind 4 + shadcn-svelte,
@@ -17,7 +17,7 @@
   [execution mandate and acceptance](MANDAT_MIGRATION_SVELTE.md). Source porting is complete on `codex/migrate-svelte`; see the
   [execution ledger](MIGRATION_SVELTE_EXECUTION.md). The site is outside this
   migration, and installed/final-source platform gates must be renewed.
-- Current application-source checkpoint: `0b003d33` (native title-bar themes), implementation branch
+- Current application-source checkpoint: `9ae7321c` (Windows engine profile, retaining native title-bar themes), implementation branch
   `codex/migrate-svelte`; locally integrated on `codex/test`. Documentation-only
   commits may follow this functional checkpoint.
 - Native title-bar appearance was verified in a Windows development window on
@@ -27,8 +27,10 @@
   [location, rules and worktree recovery](LOCAL_WORKSPACE.md).
 - Historical NSIS/AppImage/DMG candidates at `8b510138` and the initial Svelte
   NSIS candidate at `adf7b8ce` remain preserved. The current private Windows NSIS
-  candidate was refreshed on 2026-11-06 from `334bd2a5`, including the native
-  title-bar fix; [build/integrity receipt](audits/2026-11-06/windows-svelte-installer.json).
+  candidate was refreshed on 2026-11-07 from `9ae7321c`, including the native
+  title-bar fix and the lighter LibreOffice payload;
+  [build/integrity receipt](audits/2026-11-07/engine-reduction/windows-candidate.json).
+  The preceding 2026-11-06 candidate remains archived by move.
   Installed acceptance and new migrated AppImage/DMG packages remain open.
   No candidate is published.
 - macOS targets Apple Silicon on macOS 15 and later; Windows x64 and Linux x64 remain supported.

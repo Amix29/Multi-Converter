@@ -9,8 +9,15 @@ Pas de changement de modèle, de téléchargement OCR à l'exécution, de conver
 cloud, de publication ni de préparation Linux/macOS. Les anciens artefacts et
 fichiers utilisateur sont conservés.
 
-Lot 1 : **profil LibreOffice Windows réalisé ; validation du setup en cours**.
+Lot 1 : **profil LibreOffice Windows et setup privé construits et validés**.
 Les autres moteurs n'ont pas encore été transformés.
+
+Le setup fait **845 749 678 octets**, contre 999 648 595 octets :
+**153 898 917 octets de moins (15,4 %)**. Sa signature updater est vérifiée
+cryptographiquement ; il n'a pas de signature Windows Authenticode.
+Le [reçu de la candidate](audits/2026-11-07/engine-reduction/windows-candidate.json)
+verrouille les fichiers et leurs hashes. Cette candidate n'est ni publiée ni
+acceptée comme installation finale ; aucun installateur n'a été exécuté ici.
 
 ## Lot 1 — LibreOffice Windows, profil de distribution headless
 
@@ -22,7 +29,7 @@ Les autres moteurs n'ont pas encore été transformés.
 
 Gain de l'archive : **155 101 397 octets**, environ 32,1 % du bloc LibreOffice.
 Gain du runtime extrait : **371 064 802 octets**. Ces chiffres sont mesurés sur
-les moteurs ; le gain du setup complet doit être mesuré séparément.
+les moteurs ; le gain du setup complet est mesuré séparément ci-dessus.
 
 Le profil retire l'aide locale, la galerie, les thèmes d'icônes autres que
 Colibre et les catalogues traduits de l'interface interne LibreOffice, avec
@@ -75,7 +82,7 @@ modifier le code ni les données de conversion. Le smoke final revérifie les
 Voir les [sept sorties](audits/2026-11-07/engine-reduction/libreoffice-native.json)
 et le [smoke final](audits/2026-11-07/engine-reduction/libreoffice-final-profile-smoke.json).
 
-Autres contrôles exécutés : trois tests Node du profil/ZIP et refus des chemins
+Autres contrôles exécutés : quatre tests Node du profil/ZIP et refus des chemins
 dangereux ; contrôle CRC ZIP indépendant ; lecture/décompression complète par
 le lecteur ZIP Rust vers un puits, **sans extraire de fichiers** ; tests Rust,
 matrice des 11 groupes de conversions réelles, contrôle HTTP négatif des médias
@@ -83,11 +90,21 @@ et Clippy avec avertissements refusés. Le contrôle général complet passe,
 dont 64 tests frontend et les sept tests du wrapper PDFium ; la dernière passe
 Rust compte 199 succès et 14 tests lourds ignorés par défaut. Les 11 groupes de
 conversions et le test de flux ZIP sont exécutés séparément avec succès.
+La préparation standard des moteurs est également exécutée avec succès et
+réutilise le profil existant ; un contrôle de syntaxe des quatre points d'entrée
+de préparation/validation protège contre les erreurs d'import dans ces scripts.
 
 Le runtime OCR et les cinq modèles restent identiques et embarqués. Le corpus
 OCR historique de 40 cas n'est pas rejoué pour ce changement LibreOffice ;
-les contrats OCR et leurs verrous font partie des contrôles généraux. Aucun
+les contrats OCR et leurs verrous font partie des contrôles généraux. La
+vérification finale du paquet recalcule aussi les hashes du runtime OCR et des
+21 fichiers des cinq modèles, qui correspondent aux verrous d'origine. Aucun
 test CLI moteur ne remplace l'acceptation GUI/installée de l'application finale.
+
+Le setup précédent et son exécutable sont conservés par déplacement dans
+`bundle-334bd2a5-before-engine-lot1`, sans copie supplémentaire. Les anciens
+caches installés restent conservés : la réduction du runtime concerne une
+nouvelle installation/extraction, pas une suppression de données anciennes.
 
 ## Distributions légères examinées
 

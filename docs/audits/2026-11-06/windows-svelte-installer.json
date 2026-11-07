@@ -7,17 +7,17 @@
   "purpose": "Private refreshed Svelte installer requested by maintainer, including native title-bar theme sync",
   "files": [
     {
-      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe",
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-334bd2a5-before-engine-lot1/nsis/Multi-Converter_1.0.7_x64-setup.exe",
       "bytes": 999648595,
       "sha256": "9d65095a042c0d18ae2e446fea2f438a8b46669aecee0aef4d7c45072fa7e1d4"
     },
     {
-      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-334bd2a5-before-engine-lot1/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
       "bytes": 428,
       "sha256": "a1d20d2a6b051a21836093b87dcb556bf19ff9785f8dd1f1f2093c32434126bf"
     },
     {
-      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/multi-converter.exe",
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle-334bd2a5-before-engine-lot1/multi-converter-source.exe",
       "bytes": 26635264,
       "sha256": "562b52d6104277f732d66d88975c4497f088414a5e2c1b684160ddf88dec9c84"
     }
@@ -57,5 +57,6 @@
   "publication": "No upload, tag, public release or latest.json generated",
   "buildWarnings": [
     "Existing STATIC_VCRUNTIME deprecation from Tauri build tooling"
-  ]
+  ],
+  "archivedOn": "2026-11-07; moved without copying before engine lot 1"
 }

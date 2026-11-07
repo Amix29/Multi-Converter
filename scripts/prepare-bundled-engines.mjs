@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
-import { spawnSync } from "node:child_process";
 import { readRequiredFfmpegVersion } from "./lib/ffmpeg-version.mjs";
 import { createBundledEngineHelpers, hostEnginePlatform } from "./lib/bundled-engine-files.mjs";
 import {

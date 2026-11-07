@@ -17,8 +17,14 @@ Canonical check, 199 Rust tests (14 ignored), all 11 heavy conversion groups,
 media offline control, formatting and Clippy pass. See
 [the execution ledger](ENGINE_REDUCTION_EXECUTION.md) and its dated receipts.
 
-The new Windows setup is being built; no installed-application acceptance,
-public release, new OCR inference corpus or Mac/Linux package is claimed.
+The Windows NSIS build passes: 845,749,678 bytes versus 999,648,595 bytes,
+a measured 153,898,917-byte / 15.4% reduction. The updater signature is
+cryptographically verified; Authenticode remains NotSigned. Final resource
+checks confirm the profiled Office archive and unchanged OCR runtime/model
+hashes. See the [package receipt](audits/2026-11-07/engine-reduction/windows-candidate.json).
+The standard engine preparer reuses the verified archive without extracting
+another tree. No installed-application acceptance, public release, new OCR
+inference corpus or Mac/Linux package is claimed; the previous setup is preserved.
 
 ## 2026-11-07 — Engine/package size audit, no product optimization
 
