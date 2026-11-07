@@ -1,0 +1,26 @@
+{
+  "candidate": {
+    "filename": "opencv_contrib_python_headless-4.10.0.84-cp37-abi3-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/01/d4/dacf890940cb22279e1513b7ea41d97825a723153a5efce68bc52e7b3b6e/opencv_contrib_python_headless-4.10.0.84-cp37-abi3-win_amd64.whl",
+    "bytes": 45449488,
+    "sha256": "660ded6b77b07f875f56065016677bbb6a3abca13903b9320164691a46474a7d"
+  },
+  "originalCv2Bytes": 89814528,
+  "headlessCv2Bytes": 89579008,
+  "savingBytes": 235520,
+  "decision": "Rejected: only 235520 bytes saved on Windows; retain original OpenCV executable code",
+  "runtimePruning": {
+    "sourceBytes": 660643156,
+    "profileBytes": 612271290,
+    "rawSavingBytes": 48371866,
+    "sourceFiles": 7246,
+    "profileFiles": 4990
+  },
+  "officePruning": {
+    "sourceBytes": 682221962,
+    "profileBytes": 606614990,
+    "rawSavingBytes": 75606972
+  },
+  "goalBytes": 300000000,
+  "scope": "Best effort under exact inference code/model, formats, locale, fonts and offline constraints; no unsafe removals to force the goal"
+}

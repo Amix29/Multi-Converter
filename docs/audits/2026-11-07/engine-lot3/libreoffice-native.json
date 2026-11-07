@@ -1,0 +1,88 @@
+{
+  "date": "2026-11-07T11:50:08.291Z",
+  "platform": "windows-x64",
+  "profileId": "windows-conversion-direct-v3",
+  "referenceSource": "Original LibreOffice tree from the pinned source ZIP",
+  "candidate": "SHA256-verified view; same conversion binaries/data, approved dictionary overlays and UI-only registry ranges",
+  "profileDigest": "bb45fa9171375873ad4b5c1a347b4f4a4d62f733c8184a6c6161b06c5e280682",
+  "sourceRetainedFilesVerified": 9654,
+  "sourceDocumentSha256": "b0d7fce6b801b03f779985900ac3d9643d9238d9c87aad626e0caab33386cf1f",
+  "results": [
+    {
+      "format": "pdf",
+      "parity": "exact",
+      "pageCount": 3,
+      "textSha256": "436f6d39a046b2594674d7d88e923b2c6f4e035930e42eb506d356b1bbfc977f",
+      "pageRasterSha256": [
+        "fe5c47365aa04b9d33d60614b70c5dc0995f4ebe4ba6be923cd89accceb4de24",
+        "0272af1828f4f1396267073989e6560846986046832916ed3b5104fa78e4359c",
+        "605d46e436b9512dd4dba5bf4d722710f1002d159a8f7061ec4f34d3f65d9c96"
+      ]
+    },
+    {
+      "format": "docx",
+      "parity": "exact",
+      "pageCount": 3,
+      "textSha256": "436f6d39a046b2594674d7d88e923b2c6f4e035930e42eb506d356b1bbfc977f",
+      "pageRasterSha256": [
+        "fe5c47365aa04b9d33d60614b70c5dc0995f4ebe4ba6be923cd89accceb4de24",
+        "0272af1828f4f1396267073989e6560846986046832916ed3b5104fa78e4359c",
+        "605d46e436b9512dd4dba5bf4d722710f1002d159a8f7061ec4f34d3f65d9c96"
+      ]
+    },
+    {
+      "format": "doc",
+      "parity": "exact",
+      "pageCount": 3,
+      "textSha256": "51c2d557c56ceb368d44ab6f99a97ba5a55147f449681a7364282772b90d57a5",
+      "pageRasterSha256": [
+        "8e330d51f5f499bcbd43032154168a2161eb61e559da9dbea579899633a462d2",
+        "0272af1828f4f1396267073989e6560846986046832916ed3b5104fa78e4359c",
+        "605d46e436b9512dd4dba5bf4d722710f1002d159a8f7061ec4f34d3f65d9c96"
+      ]
+    },
+    {
+      "format": "odt",
+      "parity": "exact",
+      "pageCount": 3,
+      "textSha256": "436f6d39a046b2594674d7d88e923b2c6f4e035930e42eb506d356b1bbfc977f",
+      "pageRasterSha256": [
+        "7da624b7c1cd531d103f8606de044c9c05781e62abc8e8d205ed7db85e8072b5",
+        "0272af1828f4f1396267073989e6560846986046832916ed3b5104fa78e4359c",
+        "605d46e436b9512dd4dba5bf4d722710f1002d159a8f7061ec4f34d3f65d9c96"
+      ]
+    },
+    {
+      "format": "rtf",
+      "parity": "exact",
+      "pageCount": 3,
+      "textSha256": "9b7e50670dd09f74428f10eee721d32f6b7d51878e7f0330e608d3ab86aa1479",
+      "pageRasterSha256": [
+        "f2e234f8297ec23c88414fa680a90c69549ad4a3ebcd0d99beabcffa203535bc",
+        "0272af1828f4f1396267073989e6560846986046832916ed3b5104fa78e4359c",
+        "cbcf0f3b85f478f4577eb7514d15948d2672355bf443afb01d3420a1d5fceb8a"
+      ]
+    },
+    {
+      "format": "html",
+      "parity": "exact",
+      "pageCount": 5,
+      "textSha256": "6a5b90319eed045cce09c8e70f98ef54a638b7920bcc0961afc8a6cfd7db6d9b",
+      "pageRasterSha256": [
+        "bf25edd47cd9e0042c41686949df4fb7e7c533a8c87a749ec9c323c63cb68a27",
+        "5d5178e221f07376a9a2a04481f148522f33428c7de094ba54c3a61b414423bf",
+        "fd6959e7304be876241cc93bf128a33280c2a7efe6929c6d1cc284bf5d84cbfe",
+        "5d5178e221f07376a9a2a04481f148522f33428c7de094ba54c3a61b414423bf",
+        "03c2ab56870ab2ff0857253ad638d080e9480a034df8ae11977df484d446ddd5"
+      ]
+    },
+    {
+      "format": "txt",
+      "parity": "exact",
+      "textSha256": "212f07e0a8f42fc39dc38e209825dc2d450a5d7d3a45d03cda0b20f7e72bf738"
+    }
+  ],
+  "rasterDpi": 200,
+  "ocr": "Unchanged five models and runtime; not rerun by this Office-only gate",
+  "limitations": "Direct native engine comparison on controlled multipage fixture; not installed application acceptance or exhaustive real-world layout proof"
+}

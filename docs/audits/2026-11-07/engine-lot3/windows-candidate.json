@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-07T12:25:10.581Z",
+  "platform": "windows-x64",
+  "version": "1.0.7",
+  "files": [
+    {
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe",
+      "bytes": 498966911,
+      "sha256": "d1811e49521edab45b0142351031110f9bb8a6dd5fa908dce41fd4e621cefeb7"
+    },
+    {
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe.sig",
+      "bytes": 428,
+      "sha256": "27747ed0328be4b2891c776d7298edec4c6009078e0716f861cce7857f4029bb"
+    },
+    {
+      "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/multi-converter.exe",
+      "bytes": 26711040,
+      "sha256": "abc6678916ea5c650609d602499628d19ff2503a5a3a52bef2f64d84f30ddabc"
+    }
+  ],
+  "goal": {
+    "targetBytes": 300000000,
+    "achieved": false,
+    "decision": "Stop at validated profile; no model/core library removal or quality compromise to force 300 MB"
+  },
+  "comparison": {
+    "previousSetupBytes": 513064488,
+    "currentSetupBytes": 498966911,
+    "reductionBytes": 14097577,
+    "reductionPercent": 2.75,
+    "reductionFromOriginalPercent": 50.09,
+    "previousResourceBytes": 2029601083,
+    "currentResourceBytes": 1905189871
+  },
+  "verifiedResourceFiles": 14922,
+  "container": "7-Zip t passed, no extraction",
+  "updaterSignature": "Verified against configured production public key",
+  "applicationBinary": {
+    "bytes": 26711040,
+    "sha256": "9ae5ac81e1e4816dc7f2001a1da954767379630fd489e68a3bbbef20f0c5fd1d",
+    "sourceSha256": "abc6678916ea5c650609d602499628d19ff2503a5a3a52bef2f64d84f30ddabc",
+    "transformation": "Exact Tauri UNK-to-NSS marker replacement",
+    "markerOffset": 22208544
+  },
+  "validation": {
+    "rust": "201 passed, 15 ignored; real OCR integrity separately passed",
+    "ocr": "40 cases passed; all 40 normalized texts identical to reference; 296 samples, zero remote connections",
+    "office": "7 formats exact text/page/raster parity and unchanged tree after conversion",
+    "conversions": "11 native groups and negative HTTP control passed",
+    "canonicalCheck": "passed; targeted marker/metadata guards rerun after additional verifier changes",
+    "clippy": "all targets warnings denied passed",
+    "installedGuiAcceptance": "not performed"
+  },
+  "preservation": "Previous 513 MB installer and native exe preserved in bundle-ceafb3f7-before-engine-lot3; v2 resource view kept for running older apps",
+  "scope": "Windows only; no Linux/macOS preparation or publication"
+}

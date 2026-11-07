@@ -6,15 +6,15 @@ import path from "node:path";
 // changes only the packaging address, not the resource bytes or installed paths.
 export function bundleWindows(invoke, env) {
   const alias = path.join(os.tmpdir(), `mc-pack-${process.pid}`);
-  const target = path.resolve("src-tauri/bundled-engine-profiles/windows-x64/current");
+  const target = path.resolve("src-tauri/bundled-engine-profiles/windows-x64/v3");
   const config = path.join(os.tmpdir(), `mc-tauri-bundle-${process.pid}.json`);
   fs.symlinkSync(target, alias, "junction");
   try {
     fs.writeFileSync(config, JSON.stringify({ bundle: {
       createUpdaterArtifacts: Boolean(env.TAURI_SIGNING_PRIVATE_KEY?.trim()),
       resources: {
-        "bundled-engine-profiles/windows-x64/current/libreoffice/": null,
-        "bundled-engine-profiles/windows-x64/current/ocr/": null,
+        "bundled-engine-profiles/windows-x64/v3/libreoffice/": null,
+        "bundled-engine-profiles/windows-x64/v3/ocr/": null,
         [path.join(alias, "libreoffice/")]: "engines/libreoffice/compatible/",
         [path.join(alias, "ocr/")]: "ocr/",
       },

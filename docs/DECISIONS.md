@@ -343,3 +343,16 @@ Split Windows compilation from bundling to avoid copying full resource trees int
 the Cargo output. Preserve previous installers by move. No Linux/macOS build or
 user-cache cleanup is authorized by this change. Evidence and measurements:
 [engine reduction ledger](ENGINE_REDUCTION_EXECUTION.md).
+
+## 2026-11-07 — Preserve inference code while slimming Windows runtime data
+
+Use the exact original OCR worker/OpenCV/Paddle binaries and five model weights.
+Remove only build SDK data and the unused private OCR video plugin; keep all
+base media converters. Derive UI-only LibreOffice configuration ranges under
+source/output hashes, retaining every non-UI locale/configuration component.
+Store the new source views under v3 so older running development apps keep their
+previous resources. Keep source and profile locks separate. Handle NSIS update
+leftovers with an embedded exact-hash retirement list instead of deleting files
+or allowing arbitrary extras. Preserve strict model and active runtime checks.
+Treat 300 MB as an optional target; stop at validated parity instead of forcing
+model/format changes. See [lot 3](ENGINE_REDUCTION_LOT3.md).

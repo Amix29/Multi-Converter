@@ -12,6 +12,12 @@ use tauri::{AppHandle, Manager};
 const RUNTIME_LOCK: &str = include_str!("../../ocr-runtime-lock.json");
 const MAX_MANIFEST_BYTES: u64 = 16 * 1024 * 1024;
 
+#[path = "runtime_files.rs"]
+mod files;
+#[path = "runtime_profile.rs"]
+#[cfg(target_os = "windows")]
+mod profile;
+
 // Native Apple Silicon cold initialization measured 36.4 s; warm startup 1.5 s.
 // The supervisor keeps checking cancellation throughout this bounded wait.
 pub(super) const STARTUP_TIMEOUT: std::time::Duration = if cfg!(target_os = "macos") {
@@ -248,7 +254,7 @@ fn resource_root(app: &AppHandle) -> Result<PathBuf, String> {
         #[cfg(target_os = "windows")]
         {
             let direct = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("bundled-engine-profiles/windows-x64/current/ocr");
+                .join("bundled-engine-profiles/windows-x64/v3/ocr");
             if direct.is_dir() {
                 return Ok(direct);
             }
@@ -289,13 +295,17 @@ fn verify_resources(
         .executable
         .parent()
         .ok_or_else(|| "OCR_RUNTIME_UNVERIFIED:Dossier du runtime OCR invalide.".to_string())?;
-    let expected_runtime = selection.artifact.as_ref().ok_or_else(|| {
-        "OCR_RUNTIME_UNVERIFIED:Le runtime de cette plateforme n’est pas verrouillé.".to_string()
-    })?;
+    #[cfg(target_os = "windows")]
+    let expected_runtime = profile::expectation(runtime_root, selection)?;
+    #[cfg(not(target_os = "windows"))]
+    let expected_runtime = selection
+        .artifact
+        .clone()
+        .ok_or_else(|| "OCR_RUNTIME_UNVERIFIED:Runtime platform is not locked.".to_string())?;
     verify_content_manifest(
         runtime_root,
         &runtime_root.join("runtime-manifest.json"),
-        expected_runtime,
+        &expected_runtime,
         canceled,
         &mut |value| progress("verifying-runtime", value),
     )?;
@@ -406,7 +416,11 @@ fn verify_content_manifest(
     {
         return Err("OCR_RUNTIME_UNVERIFIED:Le manifeste OCR a été modifié.".to_string());
     }
-    let actual_count = count_regular_files(root, manifest_path, canceled)?;
+    #[cfg(target_os = "windows")]
+    let retired = profile::retired_files(expected)?;
+    #[cfg(not(target_os = "windows"))]
+    let retired = None;
+    let actual_count = files::count_regular_files(root, manifest_path, retired, canceled)?;
     if actual_count != manifest.file_count {
         return Err(
             "OCR_RUNTIME_UNVERIFIED:Le paquet OCR contient des fichiers inattendus.".to_string(),
@@ -441,38 +455,6 @@ fn verify_content_manifest(
 fn safe_relative_path(value: &str) -> Result<PathBuf, String> {
     crate::path_safety::resource_relative(value)
         .ok_or_else(|| "OCR_RUNTIME_UNVERIFIED:Chemin de ressource OCR dangereux.".to_string())
-}
-
-fn count_regular_files(
-    root: &Path,
-    manifest_path: &Path,
-    canceled: &AtomicBool,
-) -> Result<usize, String> {
-    let mut count = 0usize;
-    let mut pending = vec![root.to_path_buf()];
-    while let Some(directory) = pending.pop() {
-        ensure_not_canceled(canceled)?;
-        for entry in
-            fs::read_dir(directory).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?
-        {
-            ensure_not_canceled(canceled)?;
-            let entry = entry.map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
-            let path = entry.path();
-            let kind = entry
-                .file_type()
-                .map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
-            if kind.is_dir() {
-                pending.push(path);
-            } else if kind.is_file() {
-                if path != manifest_path {
-                    count += 1;
-                }
-            } else {
-                return Err("OCR_RUNTIME_UNVERIFIED:Entrée OCR non régulière.".to_string());
-            }
-        }
-    }
-    Ok(count)
 }
 
 fn sha256(path: &Path, canceled: &AtomicBool) -> Result<String, String> {

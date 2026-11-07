@@ -7,7 +7,7 @@ const viteConfig = fs.readFileSync(path.join(root, "vite.config.ts"), "utf8");
 const tauriConfig = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", "tauri.conf.json"), "utf8"));
 const platformConfig = (platform) => JSON.parse(fs.readFileSync(path.join(root, "src-tauri", `tauri.${platform}.conf.json`), "utf8"));
 const windowsConfig = platformConfig("windows");
-const directRoot = "bundled-engine-profiles/windows-x64/current";
+const directRoot = "bundled-engine-profiles/windows-x64/v3";
 const commonResources = {
   "../LICENSE": "licenses/LICENSE.txt",
   "../NOTICE": "licenses/NOTICE.txt",

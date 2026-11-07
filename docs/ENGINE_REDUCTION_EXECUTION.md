@@ -11,6 +11,10 @@ fichiers utilisateur sont conservés.
 
 Lot 2 : **setup Windows construit, contenu complet et signature updater validés**.
 
+Le lot 3 poursuit maintenant le profilage OCR/LibreOffice avec une cible indicative
+de 300 Mo et arrêt autorisé pour préserver les garanties. Voir
+[le contrat, les preuves et les limites du lot 3](ENGINE_REDUCTION_LOT3.md).
+
 | Candidate Windows | Setup (octets) | Taille décimale |
 | --- | ---: | ---: |
 | Original avant allègement | 999 648 595 | 999,65 Mo |

@@ -23,8 +23,12 @@ fn directly_installed_runtime_requires_worker_and_manifest() {
 #[test]
 #[ignore = "requires the prepared real Windows direct resources"]
 fn prepared_direct_ocr_verifies_without_archive_extraction() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("bundled-engine-profiles/windows-x64/current/ocr");
+    let root = std::env::var_os("MULTI_CONVERTER_OCR_TEST_ROOT")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| {
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("bundled-engine-profiles/windows-x64/v3/ocr")
+        });
     let lock = parse_lock().unwrap();
     let selected = selection(&lock).unwrap();
     let resolved = ResolvedRuntime {

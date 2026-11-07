@@ -7,6 +7,25 @@ including editor-only OCR layers, was cancelled. Earlier editor references in
 this record are historical; the retained PDF flow extracts text for conversion.
 Runtime locks, packaged models and original-file protection are unchanged.
 
+## 2026-11-07 — Windows distribution profile
+
+The original runtime remains the authenticated 7,246-file source artifact.
+`windows-offline-ocr-v1` ships 4,990 files / 612,271,290 bytes, omitting only
+Paddle development headers, two link-time archives and the unused OpenCV video
+plugin. The worker, original OpenCV, Paddle inference libraries, all image
+codecs and all five model weights remain byte-identical. Model tier and
+numerical options are unchanged. The profile lock is separate from the source
+lock; original archives remain supported.
+
+All 40 corpus cases pass, with the same normalized texts as the authenticated
+reference report, 100% clean mean and 99.76% difficult mean. The native worker
+has zero observed remote connections across 296 samples. Rust verifies the
+new artifact and the unchanged models before inference. Known leftovers from
+the original installer are accepted only with their exact original size/hash;
+modified/unknown extras are rejected. A full hardlinked upgrade overlay passes
+the real Rust verifier. Installed-GUI acceptance is still pending. See
+[lot 3 evidence and limits](ENGINE_REDUCTION_LOT3.md).
+
 ## Status — current audit implementation, 2026-10-30
 
 - Target release: **V1.0.7**

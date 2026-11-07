@@ -1,0 +1,11 @@
+{
+  "kind": "Native Rust verifier on an overlay representing a same-version NSIS reinstall",
+  "referenceArchiveSha256": "77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac",
+  "activeFiles": 4990,
+  "originalLegacyFilesPresent": 2256,
+  "dataPreparation": "Hardlinked original tree and unchanged model files; only the new runtime manifest written",
+  "command": "MULTI_CONVERTER_OCR_TEST_ROOT=<repo>/tmp/engine-lot3/upgrade-ocr node scripts/cargo-test-temp.mjs test --manifest-path src-tauri/Cargo.toml prepared_direct_ocr_verifies_without_archive_extraction -- --ignored --nocapture",
+  "result": "passed; complete runtime and model hashes verified, including exact known legacy hashes",
+  "negativeControls": "unit test rejects modified legacy bytes; unknown files remain counted and fail expected membership; model manifests have no legacy exception",
+  "userFiles": "No installed profile or user data modified"
+}

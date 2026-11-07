@@ -4,24 +4,28 @@ import os from "node:os";
 import { spawn, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { fileHash } from "./lib/direct-engine-resources.mjs";
+import { readWindowsProfiles, validateOcrProfileMarker } from "./lib/windows-engine-profile.mjs";
+import { nsisBinaryExpectation } from "./lib/tauri-bundle-binary.mjs";
 
 // Decode the exact installer into a hash consumer, never an installed tree.
 const argument = name => process.argv[process.argv.indexOf(name) + 1];
 if (!process.argv.includes("--installer")) throw Error("Usage: --installer <setup.exe> [--report <json>]");
 const installer = path.resolve(argument("--installer"));
 const sevenZip = process.env.MULTI_CONVERTER_7ZIP ?? path.join(process.env.ProgramFiles ?? "C:/Program Files", "7-Zip/7z.exe");
-const profile = JSON.parse(await fs.readFile("tools/engine-profiles/windows-libreoffice-v2.json", "utf8"));
+const { office: profile, ocr: ocrProfile } = await readWindowsProfiles(process.cwd());
 const lock = JSON.parse(await fs.readFile("src-tauri/ocr-runtime-lock.json", "utf8"));
 const selected = lock.platformSelections.find(item => item.platform === "windows-x64");
 const officePrefix = "engines/libreoffice/compatible/";
 const expected = new Map();
-const direct = "src-tauri/bundled-engine-profiles/windows-x64/current";
+const direct = "src-tauri/bundled-engine-profiles/windows-x64/v3";
 
 for (const [folder, prefix, manifestName, artifact] of [
   [`${direct}/ocr/models`, "ocr/models/", "models-lock.json", lock.modelArtifact],
-  [`${direct}/ocr/runtime/windows-x64`, "ocr/runtime/windows-x64/", "runtime-manifest.json", selected.artifact],
+  [`${direct}/ocr/runtime/windows-x64`, "ocr/runtime/windows-x64/", "runtime-manifest.json", ocrProfile.artifact],
 ]) {
   const manifest = JSON.parse(await fs.readFile(path.join(folder, manifestName), "utf8"));
+  if (manifestName === "runtime-manifest.json") validateOcrProfileMarker(manifest, ocrProfile);
+  for (const key of ["fileCount", "totalBytes", "aggregateSha256"]) if (manifest[key] !== artifact[key]) throw Error("Packaged manifest metadata differs from embedded expectation");
   const hash = createHash("sha256");
   for (const entry of manifest.files) {
     hash.update(`${entry.path}\0${entry.bytes}\0${entry.sha256}\n`);
@@ -36,7 +40,8 @@ await addFile("src-tauri/ocr-resources/README.md", "ocr/README.md");
 await addFile("LICENSE", "licenses/LICENSE.txt");
 await addFile("NOTICE", "licenses/NOTICE.txt");
 for (const tool of ["ffmpeg", "ffprobe"]) await addFile(`src-tauri/binaries/${tool}-x86_64-pc-windows-msvc.exe`, `${tool}.exe`);
-await addFile(path.join(path.dirname(installer), "../../multi-converter.exe"), "multi-converter.exe");
+const applicationBinary = nsisBinaryExpectation(await fs.readFile(path.join(path.dirname(installer), "../../multi-converter.exe")));
+expected.set("multi-converter.exe", applicationBinary);
 
 const listing = execFileSync(sevenZip, ["l", "-slt", installer], { encoding: "utf8", windowsHide: true, maxBuffer: 32 * 1024 * 1024 });
 if (!/Method = LZMA:27/.test(listing) || !/Solid = \+/.test(listing)) throw Error("Expected solid LZMA with 128 MiB dictionary");
@@ -91,8 +96,8 @@ for (const entry of office.sort((a, b) => a.path < b.path ? -1 : a.path > b.path
 if (aggregate.digest("hex") !== profile.expectedLibreOffice.aggregateSha256) throw Error("Packaged Office bytes differ from approved profile");
 const report = { date: new Date().toISOString(), installerBytes: (await fs.stat(installer)).size,
   installerSha256: await fileHash(installer), verifiedResourceFiles: index, verifiedResourceBytes: total,
-  compression: "solid LZMA, 128 MiB dictionary", office: profile.expectedLibreOffice,
-  ocr: { runtime: selected.artifact, models: lock.modelArtifact },
+  compression: "solid LZMA, 128 MiB dictionary", applicationBinary, office: profile.expectedLibreOffice,
+  ocr: { runtime: ocrProfile.artifact, originalRuntime: selected.artifact, models: lock.modelArtifact },
   validation: "Every application/engine/OCR/model/notice file decoded into SHA-256 consumers and matched to source hashes or pinned aggregate; no engine tree extracted",
   limits: "Does not install or launch the graphical application; updater signature verified separately" };
 if (process.argv.includes("--report")) await fs.writeFile(argument("--report"), JSON.stringify(report, null, 2) + "\n");

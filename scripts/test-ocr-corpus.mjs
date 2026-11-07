@@ -12,14 +12,19 @@ import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath, ocrRu
 const root = process.cwd();
 const platform = hostOcrPlatform();
 const runtimeArchive = ocrRuntimeArchivePath(root, platform);
+const preparedExecutable = platform === "windows-x64"
+  ? path.join(root, "src-tauri/bundled-engine-profiles/windows-x64/v3/ocr/runtime/windows-x64/ocr-worker.exe")
+  : null;
 const directExecutable = process.env.MULTI_CONVERTER_OCR_CORPUS_EXECUTABLE
   ? path.resolve(process.env.MULTI_CONVERTER_OCR_CORPUS_EXECUTABLE)
-  : null;
+  : preparedExecutable && (await fs.stat(preparedExecutable).catch(() => null))?.isFile() ? preparedExecutable : null;
 const models = path.join(root, "src-tauri", "ocr-resources", "models");
 const manifestPath = path.join(root, "tests", "fixtures", "ocr", "corpus-manifest.json");
 const requestedIds = new Set((process.env.MULTI_CONVERTER_OCR_CORPUS_CASES ?? "").split(",").map((value) => value.trim()).filter(Boolean));
 const partial = requestedIds.size > 0;
-const reportPath = path.join(root, "test-results", "phase-6", partial ? "ocr-corpus-partial.json" : "ocr-corpus.json");
+const reportPath = process.env.MULTI_CONVERTER_OCR_CORPUS_REPORT
+  ? path.resolve(process.env.MULTI_CONVERTER_OCR_CORPUS_REPORT)
+  : path.join(root, "test-results", "phase-6", partial ? "ocr-corpus-partial.json" : "ocr-corpus.json");
 
 if (directExecutable) await assertFile(directExecutable, "exécutable OCR direct");
 else await assertFile(runtimeArchive, "archive du runtime OCR préparé");

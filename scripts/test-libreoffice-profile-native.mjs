@@ -12,7 +12,7 @@ if (process.platform !== "win32" || process.arch !== "x64") throw Error("Real Wi
 const root = process.cwd();
 const finalProfileSmoke = process.argv.includes("--final-profile-smoke");
 const reference = process.env.MULTI_CONVERTER_LO_REFERENCE ?? path.join(root, "src-tauri/bundled-engines/libreoffice/compatible");
-const prepared = path.join(root, "src-tauri/bundled-engine-profiles/windows-x64/current/libreoffice");
+const prepared = path.join(root, "src-tauri/bundled-engine-profiles/windows-x64/v3/libreoffice");
 const borrowedCandidate = process.env.MULTI_CONVERTER_LO_CANDIDATE ?? ((await fs.stat(prepared).catch(() => null))?.isDirectory() ? prepared : null);
 const archive = borrowedCandidate ? null : await inspectFilterableZip("src-tauri/bundled-engine-archives/windows-x64/libreoffice.headless.zip");
 const temporary = process.env.MULTI_CONVERTER_LO_TEST_DIR ?? await fs.mkdtemp(path.join(root, "tmp/lo-profile-native-"));
@@ -96,14 +96,19 @@ if (borrowedCandidate) {
 const receipt = {
   date: new Date().toISOString(), platform: "windows-x64", profileId: directProfile?.profileId ?? "windows-headless-v1",
   referenceSource: borrowedCandidate ? "Original LibreOffice tree from the pinned source ZIP" : "Existing original LibreOffice tree; every retained file CRC matched to the pinned source archive",
-  candidate: borrowedCandidate ? "SHA256-verified direct view; unchanged retained binaries/data plus documented dictionary registry overlays" : "hardlink view of all retained files; no full tree copied or extracted",
+  candidate: borrowedCandidate ? "SHA256-verified direct view; unchanged conversion binaries/data plus approved configuration overlays" : "hardlink view of all retained files; no full tree copied or extracted",
   profileDigest: directProfile?.aggregateSha256 ?? await fileHash("src-tauri/bundled-engine-archives/windows-x64/libreoffice.headless.zip"),
   sourceRetainedFilesVerified: directProfile?.files ?? archive.entries.length, sourceDocumentSha256: hash(await fs.readFile(fixture)),
   results, rasterDpi: 200, ocr: "Unchanged five models and runtime; not rerun by this Office-only gate",
   limitations: "Direct native engine comparison on controlled multipage fixture; not installed application acceptance or exhaustive real-world layout proof",
 };
 await fs.mkdir("docs/audits/2026-11-07/engine-reduction", { recursive: true });
-await fs.writeFile(`docs/audits/2026-11-07/engine-reduction/libreoffice-${directProfile ? "v2-native" : finalProfileSmoke ? "final-profile-smoke" : "native"}.json`, JSON.stringify(receipt, null, 2) + "\n");
+const defaultReport = directProfile?.profileId === "windows-conversion-direct-v3"
+  ? "docs/audits/2026-11-07/engine-lot3/libreoffice-native.json"
+  : `docs/audits/2026-11-07/engine-reduction/libreoffice-${directProfile ? "v2-native" : finalProfileSmoke ? "final-profile-smoke" : "native"}.json`;
+const reportPath = process.env.MULTI_CONVERTER_LO_REPORT ?? defaultReport;
+await fs.mkdir(path.dirname(reportPath), { recursive: true });
+await fs.writeFile(reportPath, JSON.stringify(receipt, null, 2) + "\n");
 console.log("LibreOffice profile native gate passed");
 
 function run(binary, args) {

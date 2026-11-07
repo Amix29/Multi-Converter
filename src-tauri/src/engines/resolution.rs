@@ -22,7 +22,7 @@ fn bundled_engine_binary(app: Option<&AppHandle>, id: &str) -> Option<PathBuf> {
     #[cfg(all(debug_assertions, target_os = "windows"))]
     if id == "libreoffice" {
         let candidate = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("bundled-engine-profiles/windows-x64/current/libreoffice/program/soffice.com");
+            .join("bundled-engine-profiles/windows-x64/v3/libreoffice/program/soffice.com");
         if candidate.is_file() {
             return Some(candidate);
         }

@@ -59,6 +59,7 @@ export async function verifyContent(root, manifestName, expected) {
   if (manifest.files.length !== expected.fileCount || bytes !== expected.totalBytes
     || hash.digest("hex") !== expected.aggregateSha256) throw Error("Resource manifest differs from embedded lock");
   if ((await treeFileNames(root)).length !== names.size) throw Error("Unexpected resource files");
+  return manifest;
 }
 
 async function treeFileNames(root) {

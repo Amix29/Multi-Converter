@@ -124,7 +124,7 @@ expect(JSON.stringify(clipboardPermissions) === JSON.stringify(["clipboard-manag
 
 for (const configName of ["tauri.windows.conf.json", "tauri.macos.conf.json", "tauri.linux.conf.json"]) {
   const config = JSON.parse(fs.readFileSync(path.join(root, "src-tauri", configName), "utf8"));
-  expect(config.bundle?.resources?.[configName === "tauri.windows.conf.json" ? "bundled-engine-profiles/windows-x64/current/ocr/" : "ocr-resources/"] === "ocr/", `${configName}: ressources OCR absentes`);
+  expect(config.bundle?.resources?.[configName === "tauri.windows.conf.json" ? "bundled-engine-profiles/windows-x64/v3/ocr/" : "ocr-resources/"] === "ocr/", `${configName}: ressources OCR absentes`);
 }
 
 if (failures.length) {

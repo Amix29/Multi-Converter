@@ -5,13 +5,14 @@ import { randomUUID, createHash } from "node:crypto";
 import { inspectFilterableZip, readZipEntry } from "./lib/filtered-zip.mjs";
 import { retainLibreOfficeFile } from "./lib/libreoffice-profile.mjs";
 import { fileHash, stageEntry, treeManifest, verifyContent } from "./lib/direct-engine-resources.mjs";
+import { readWindowsProfiles, retainOcrFile, deriveOcrManifest, filterRegistryBytes, validateOcrProfileMarker } from "./lib/windows-engine-profile.mjs";
 
 const root = process.cwd();
 const sourceRoot = path.join(root, "src-tauri");
 const profileRoot = path.join(sourceRoot, "bundled-engine-profiles/windows-x64");
-const current = path.join(profileRoot, "current");
+const current = path.join(profileRoot, "v3");
 const policyRoot = path.join(import.meta.dirname, "../tools/engine-profiles");
-const policy = await json(path.join(policyRoot, "windows-libreoffice-v2.json"));
+const { office: policy, ocr: ocrProfile } = await readWindowsProfiles(root);
 const lock = await json(path.join(sourceRoot, "ocr-runtime-lock.json"));
 const selection = lock.platformSelections.find(item => item.platform === "windows-x64");
 const checkOnly = process.argv.includes("--check");
@@ -19,7 +20,7 @@ if (process.platform !== "win32" || process.arch !== "x64") throw Error("Windows
 
 if (await exists(current)) {
   await verify(current);
-  console.log("Windows direct resources verified: Office profile, identical OCR runtime and all five models");
+  console.log("Windows direct resources verified: Office/UI profile, slim OCR runtime and unchanged five models");
 } else {
   if (checkOnly) throw Error("Prepare Windows direct resources before validation/bundling");
   await fs.mkdir(profileRoot, { recursive: true });
@@ -39,13 +40,19 @@ async function stageOffice(destination) {
   const archive = await inspectFilterableZip(source);
   const omit = new Set(policy.omitFiles);
   const overlays = new Map(policy.replacements.map(item => [item.path, item]));
+  const transforms = new Map(policy.uiRegistryTransforms.map(item => [item.path, item]));
   const references = [process.env.MULTI_CONVERTER_LO_REFERENCE,
     path.join(process.env.LOCALAPPDATA ?? os.tmpdir(), "Multi-Converter/tool-env/bundled/libreoffice/compatible"),
     path.join(sourceRoot, "bundled-engines/libreoffice/compatible")].filter(Boolean);
   for (const entry of archive.entries.filter(item => !item.name.endsWith("/") && retainLibreOfficeFile(item.name) && !omit.has(item.name))) {
     const target = path.join(destination, "libreoffice", entry.name);
     const overlay = overlays.get(entry.name);
-    if (overlay) {
+    const transform = transforms.get(entry.name);
+    if (transform) {
+      const replacement = filterRegistryBytes(await readZipEntry(source, entry), transform);
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await fs.writeFile(target, replacement, { flag: "wx" });
+    } else if (overlay) {
       const original = await readZipEntry(source, entry);
       if (digest(original) !== overlay.sourceSha256) throw Error(`Dictionary registry source changed: ${entry.name}`);
       const replacement = await fs.readFile(path.join(policyRoot, overlay.file));
@@ -66,9 +73,12 @@ async function stageOcr(destination) {
   if (await fileHash(source) !== selection.archive.sha256) throw Error("OCR source ZIP differs from embedded lock");
   const archive = await inspectFilterableZip(source);
   const reference = path.join(process.env.LOCALAPPDATA ?? os.tmpdir(), "com.multiconverter.desktop/ocr-runtime", `windows-x64-${selection.artifact.aggregateSha256}`);
-  for (const entry of archive.entries.filter(item => !item.name.endsWith("/"))) {
+  const originalManifest = JSON.parse((await readZipEntry(source, archive.entries.find(item => item.name === "runtime-manifest.json"))).toString("utf8"));
+  const derived = deriveOcrManifest(originalManifest, ocrProfile);
+  for (const entry of archive.entries.filter(item => !item.name.endsWith("/") && item.name !== "runtime-manifest.json" && retainOcrFile(item.name, ocrProfile))) {
     await stageEntry(source, entry, path.join(destination, "ocr/runtime/windows-x64", entry.name), [reference]);
   }
+  await fs.writeFile(path.join(destination, "ocr/runtime/windows-x64/runtime-manifest.json"), JSON.stringify(derived, null, 2) + "\n", { flag: "wx" });
   const models = path.join(sourceRoot, "ocr-resources/models");
   const manifest = await json(path.join(models, "models-lock.json"));
   for (const relative of ["models-lock.json", ...manifest.files.map(item => item.path)]) {
@@ -81,7 +91,9 @@ async function stageOcr(destination) {
 async function verify(destination) {
   const office = await treeManifest(path.join(destination, "libreoffice"));
   if (JSON.stringify(office) !== JSON.stringify(policy.expectedLibreOffice)) throw Error(`Office direct profile integrity mismatch: ${JSON.stringify(office)}`);
-  await verifyContent(path.join(destination, "ocr/runtime/windows-x64"), "runtime-manifest.json", selection.artifact);
+  for (const key of ["fileCount", "totalBytes", "aggregateSha256"]) if (selection.artifact[key] !== ocrProfile.sourceArtifact[key]) throw Error("OCR profile source lock changed");
+  const runtimeManifest = await verifyContent(path.join(destination, "ocr/runtime/windows-x64"), "runtime-manifest.json", ocrProfile.artifact);
+  validateOcrProfileMarker(runtimeManifest, ocrProfile);
   await verifyContent(path.join(destination, "ocr/models"), "models-lock.json", lock.modelArtifact);
 }
 

@@ -9,7 +9,7 @@ import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath, ocrRu
 const root = process.cwd();
 const platform = hostOcrPlatform();
 const runtimeArchive = ocrRuntimeArchivePath(root, platform);
-const directRoot = platform === "windows-x64" ? path.join(root, "src-tauri/bundled-engine-profiles/windows-x64/current/ocr") : null;
+const directRoot = platform === "windows-x64" ? path.join(root, "src-tauri/bundled-engine-profiles/windows-x64/v3/ocr") : null;
 const directWorker = directRoot && path.join(directRoot, "runtime/windows-x64/ocr-worker.exe");
 const useDirect = directWorker && (await fs.stat(directWorker).catch(() => null))?.isFile();
 const models = useDirect ? path.join(directRoot, "models") : path.join(root, "src-tauri", "ocr-resources", "models");

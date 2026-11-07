@@ -7,12 +7,55 @@ import { execFileSync } from "node:child_process";
 import { crc32, deflateRawSync, inflateRawSync } from "node:zlib";
 import { filterZip, inspectFilterableZip, readZipEntry } from "./lib/filtered-zip.mjs";
 import { safeResourcePath } from "./lib/direct-engine-resources.mjs";
+import { filterRegistryBytes, retainOcrFile, deriveOcrManifest, validateOcrProfileMarker } from "./lib/windows-engine-profile.mjs";
+import { createHash } from "node:crypto";
+import { nsisBinaryExpectation } from "./lib/tauri-bundle-binary.mjs";
 import { retainLibreOfficeFile } from "./lib/libreoffice-profile.mjs";
 
 test("Engine preparation entrypoints remain valid executable ES modules", () => {
   for (const name of ["prepare-bundled-engines.mjs", "prepare-libreoffice-profile.mjs", "prepare-windows-resources.mjs", "validate-bundled-engines.mjs", "test-libreoffice-profile-native.mjs"]) {
     execFileSync(process.execPath, ["--check", path.join(import.meta.dirname, name)], { windowsHide: true });
   }
+});
+
+test("Package executable hash allows only the documented Tauri NSIS marker", () => {
+  const source = Buffer.from("prefix__TAURI_BUNDLE_TYPE_VAR_UNKsuffix");
+  const original = Buffer.from(source);
+  const expected = nsisBinaryExpectation(source);
+  const patched = Buffer.from("prefix__TAURI_BUNDLE_TYPE_VAR_NSSsuffix");
+  assert.equal(expected.sha256, createHash("sha256").update(patched).digest("hex"));
+  assert.deepEqual(source, original);
+  patched[0] ^= 1;
+  assert.notEqual(expected.sha256, createHash("sha256").update(patched).digest("hex"));
+  assert.throws(() => nsisBinaryExpectation(Buffer.from("missing")), /marker/);
+  assert.throws(() => nsisBinaryExpectation(Buffer.concat([source, source])), /Ambiguous/);
+});
+
+test("OCR profile preserves all inference libraries, codecs, weights and notices", async () => {
+  const profile = JSON.parse(await fs.readFile(new URL("../src-tauri/windows-ocr-profile.json", import.meta.url), "utf8"));
+  for (const name of ["ocr-worker.exe", "_internal/paddle/base/libpaddle.pyd", "_internal/paddle/libs/mkldnn.dll", "_internal/paddle/libs/mklml.dll", "_internal/cv2/cv2.pyd", "_internal/PIL/_avif.cp312-win_amd64.pyd", "_internal/paddle/include/COPYING"]) assert.ok(retainOcrFile(name, profile), name);
+  for (const name of [...profile.omitFiles, "_internal/paddle/include/api.h"]) assert.equal(retainOcrFile(name, profile), false);
+  assert.equal(profile.artifact.fileCount, 4990);
+  assert.equal(profile.sourceArtifact.fileCount, 7246);
+});
+
+test("Frozen UI byte ranges reject changed input, output and overlaps", () => {
+  const sha = input => createHash("sha256").update(input).digest("hex");
+  const input = Buffer.from("keepUIkeep"), output = Buffer.from("keepkeep");
+  const transform = { sourceSha256: sha(input), sha256: sha(output), ranges: [[4, 6]] };
+  assert.deepEqual(filterRegistryBytes(input, transform), output);
+  assert.throws(() => filterRegistryBytes(Buffer.from("changed"), transform), /source/);
+  assert.throws(() => filterRegistryBytes(input, { ...transform, sha256: "wrong" }), /result/);
+  assert.throws(() => filterRegistryBytes(input, { ...transform, ranges: [[4, 6], [5, 8]] }), /range/);
+});
+
+test("OCR derivation fails closed when origin metadata differs", () => {
+  assert.throws(() => deriveOcrManifest({ fileCount: 1 }, { sourceArtifact: { fileCount: 2 } }), /origin/);
+  const profile = { profileId: "known", sourceArtifact: { aggregateSha256: "origin" }, artifact: { fileCount: 2, totalBytes: 3, aggregateSha256: "approved" } };
+  const marker = { distributionProfile: "known", sourceAggregateSha256: "origin", ...profile.artifact };
+  validateOcrProfileMarker(marker, profile);
+  assert.throws(() => validateOcrProfileMarker({ ...marker, distributionProfile: undefined }, profile), /marker/);
+  assert.throws(() => validateOcrProfileMarker({ ...marker, fileCount: 99 }, profile), /metadata/);
 });
 
 test("Direct profile excludes only editing dictionaries and preserves hyphenation and notices", async () => {

@@ -1,0 +1,10 @@
+{
+  "referenceArchiveSha256": "77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac",
+  "referenceCases": 40,
+  "candidateCases": 40,
+  "identicalRecognizedTexts": 40,
+  "differences": [],
+  "networkSamples": 296,
+  "observedWorkerConnections": [],
+  "runtimeCore": "Original worker, Paddle, OpenCV and all five models; retained files match reference hashes"
+}

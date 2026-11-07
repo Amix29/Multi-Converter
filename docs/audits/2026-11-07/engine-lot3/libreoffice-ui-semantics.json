@@ -1,0 +1,6 @@
+{
+  "filesAudited": 123,
+  "removedUiComponentNodes": 4182,
+  "preservedNonUiComponentNodes": 3198,
+  "assertion": "All non-UI component data serialized identically; original root attributes, fonts, locales, filters and hyphenation unchanged"
+}
