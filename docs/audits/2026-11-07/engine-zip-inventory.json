@@ -1,0 +1,1176 @@
+[
+  {
+    "methods": "ZIP central directory only; no extraction or mutation",
+    "path": "src-tauri/bundled-engine-archives/windows-x64/libreoffice.zip",
+    "groups": [
+      {
+        "name": "share/extensions",
+        "fileCount": 4196,
+        "bytes": 482829535,
+        "compressedBytes": 121007158
+      },
+      {
+        "name": "program/resource",
+        "fileCount": 3905,
+        "bytes": 274412287,
+        "compressedBytes": 81267632
+      },
+      {
+        "name": "program/mergedlo.dll",
+        "fileCount": 1,
+        "bytes": 147729832,
+        "compressedBytes": 53148161
+      },
+      {
+        "name": "share/config",
+        "fileCount": 1943,
+        "bytes": 109104350,
+        "compressedBytes": 62054621
+      },
+      {
+        "name": "share/registry",
+        "fileCount": 412,
+        "bytes": 98940762,
+        "compressedBytes": 9251565
+      },
+      {
+        "name": "program/icudt78.dll",
+        "fileCount": 1,
+        "bytes": 33121192,
+        "compressedBytes": 12806651
+      },
+      {
+        "name": "program/python-core-3.12.13",
+        "fileCount": 1295,
+        "bytes": 32755366,
+        "compressedBytes": 10386265
+      },
+      {
+        "name": "program/swlo.dll",
+        "fileCount": 1,
+        "bytes": 24705960,
+        "compressedBytes": 9267792
+      },
+      {
+        "name": "program/sclo.dll",
+        "fileCount": 1,
+        "bytes": 24502696,
+        "compressedBytes": 8885878
+      },
+      {
+        "name": "share/gallery",
+        "fileCount": 175,
+        "bytes": 13245888,
+        "compressedBytes": 9316951
+      },
+      {
+        "name": "share/xpdfimport",
+        "fileCount": 267,
+        "bytes": 12948285,
+        "compressedBytes": 4650521
+      },
+      {
+        "name": "program/mwaw.dll",
+        "fileCount": 1,
+        "bytes": 11417000,
+        "compressedBytes": 4339900
+      },
+      {
+        "name": "program/sdlo.dll",
+        "fileCount": 1,
+        "bytes": 10849192,
+        "compressedBytes": 3835631
+      },
+      {
+        "name": "help/media",
+        "fileCount": 5322,
+        "bytes": 10436225,
+        "compressedBytes": 5152976
+      },
+      {
+        "name": "program/skialo.dll",
+        "fileCount": 1,
+        "bytes": 9337768,
+        "compressedBytes": 3593678
+      },
+      {
+        "name": "program/Engine12.dll",
+        "fileCount": 1,
+        "bytes": 9183656,
+        "compressedBytes": 2584319
+      },
+      {
+        "name": "program/classes",
+        "fileCount": 36,
+        "bytes": 8273799,
+        "compressedBytes": 7155156
+      },
+      {
+        "name": "program/scfiltlo.dll",
+        "fileCount": 1,
+        "bytes": 8188328,
+        "compressedBytes": 2800556
+      },
+      {
+        "name": "share/template",
+        "fileCount": 139,
+        "bytes": 8063832,
+        "compressedBytes": 8022470
+      },
+      {
+        "name": "program/python312.dll",
+        "fileCount": 1,
+        "bytes": 7490472,
+        "compressedBytes": 2649467
+      },
+      {
+        "name": "program/libcrypto-3.dll",
+        "fileCount": 1,
+        "bytes": 7223720,
+        "compressedBytes": 2249430
+      },
+      {
+        "name": "program/pdfiumlo.dll",
+        "fileCount": 1,
+        "bytes": 6605736,
+        "compressedBytes": 3041203
+      },
+      {
+        "name": "program/etonyek.dll",
+        "fileCount": 1,
+        "bytes": 5074856,
+        "compressedBytes": 1407127
+      },
+      {
+        "name": "share/wizards",
+        "fileCount": 124,
+        "bytes": 4945969,
+        "compressedBytes": 1016723
+      },
+      {
+        "name": "program/xpdfimport.exe",
+        "fileCount": 1,
+        "bytes": 4785064,
+        "compressedBytes": 1671068
+      },
+      {
+        "name": "share/xslt",
+        "fileCount": 55,
+        "bytes": 4512493,
+        "compressedBytes": 508339
+      },
+      {
+        "name": "share/basic",
+        "fileCount": 186,
+        "bytes": 4394177,
+        "compressedBytes": 876748
+      },
+      {
+        "name": "program/mswordlo.dll",
+        "fileCount": 1,
+        "bytes": 4280744,
+        "compressedBytes": 1585096
+      },
+      {
+        "name": "program/sw_writerfilterlo.dll",
+        "fileCount": 1,
+        "bytes": 4156840,
+        "compressedBytes": 1436463
+      },
+      {
+        "name": "program/swuilo.dll",
+        "fileCount": 1,
+        "bytes": 4006824,
+        "compressedBytes": 1279505
+      },
+      {
+        "name": "program/vclplug_winlo.dll",
+        "fileCount": 1,
+        "bytes": 3913640,
+        "compressedBytes": 1425177
+      },
+      {
+        "name": "program/icuin78.dll",
+        "fileCount": 1,
+        "bytes": 3664808,
+        "compressedBytes": 1190988
+      },
+      {
+        "name": "program/CoinMP.dll",
+        "fileCount": 1,
+        "bytes": 3639208,
+        "compressedBytes": 1771895
+      },
+      {
+        "name": "program/wps.dll",
+        "fileCount": 1,
+        "bytes": 3513768,
+        "compressedBytes": 1356837
+      },
+      {
+        "name": "program/staroffice.dll",
+        "fileCount": 1,
+        "bytes": 3445160,
+        "compressedBytes": 1232642
+      },
+      {
+        "name": "share/autotext",
+        "fileCount": 171,
+        "bytes": 3318679,
+        "compressedBytes": 2346966
+      },
+      {
+        "name": "program/intl",
+        "fileCount": 2,
+        "bytes": 3186709,
+        "compressedBytes": 905127
+      },
+      {
+        "name": "program/smlo.dll",
+        "fileCount": 1,
+        "bytes": 3179944,
+        "compressedBytes": 1001586
+      },
+      {
+        "name": "program/soffice.bin",
+        "fileCount": 1,
+        "bytes": 2730920,
+        "compressedBytes": 189999
+      },
+      {
+        "name": "program/clucene.dll",
+        "fileCount": 1,
+        "bytes": 2547624,
+        "compressedBytes": 882314
+      },
+      {
+        "name": "program/localedata_others.dll",
+        "fileCount": 1,
+        "bytes": 2482600,
+        "compressedBytes": 315798
+      },
+      {
+        "name": "program/orcus.dll",
+        "fileCount": 1,
+        "bytes": 2442152,
+        "compressedBytes": 884838
+      },
+      {
+        "name": "program/icuuc78.dll",
+        "fileCount": 1,
+        "bytes": 2415528,
+        "compressedBytes": 789380
+      },
+      {
+        "name": "program/sduilo.dll",
+        "fileCount": 1,
+        "bytes": 2290600,
+        "compressedBytes": 744885
+      },
+      {
+        "name": "program/ifbclient.dll",
+        "fileCount": 1,
+        "bytes": 2285480,
+        "compressedBytes": 634441
+      }
+    ],
+    "largestFiles": [
+      {
+        "path": "program/mergedlo.dll",
+        "bytes": 147729832,
+        "compressedBytes": 53148161,
+        "group": "program/mergedlo.dll"
+      },
+      {
+        "path": "share/extensions/dict-tr/tr_TR.dic",
+        "bytes": 36136702,
+        "compressedBytes": 13978222,
+        "group": "share/extensions"
+      },
+      {
+        "path": "program/icudt78.dll",
+        "bytes": 33121192,
+        "compressedBytes": 12806651,
+        "group": "program/icudt78.dll"
+      },
+      {
+        "path": "share/extensions/dict-de/th_de_DE_v2.dat",
+        "bytes": 31662751,
+        "compressedBytes": 7141187,
+        "group": "share/extensions"
+      },
+      {
+        "path": "share/extensions/dict-de/th_de_CH_v2.dat",
+        "bytes": 31662751,
+        "compressedBytes": 7133244,
+        "group": "share/extensions"
+      },
+      {
+        "path": "program/swlo.dll",
+        "bytes": 24705960,
+        "compressedBytes": 9267792,
+        "group": "program/swlo.dll"
+      },
+      {
+        "path": "program/sclo.dll",
+        "bytes": 24502696,
+        "compressedBytes": 8885878,
+        "group": "program/sclo.dll"
+      },
+      {
+        "path": "share/extensions/dict-en/th_en_US_v2.dat",
+        "bytes": 18553257,
+        "compressedBytes": 4018101,
+        "group": "share/extensions"
+      },
+      {
+        "path": "share/extensions/dict-mn/mn_MN.dic",
+        "bytes": 17976154,
+        "compressedBytes": 1742125,
+        "group": "share/extensions"
+      },
+      {
+        "path": "share/config/images_karasa_jaga_svg.zip",
+        "bytes": 16487754,
+        "compressedBytes": 15945808,
+        "group": "share/config"
+      },
+      {
+        "path": "share/extensions/dict-pt-BR/th_pt_BR.dat",
+        "bytes": 15193736,
+        "compressedBytes": 4258658,
+        "group": "share/extensions"
+      },
+      {
+        "path": "program/mwaw.dll",
+        "bytes": 11417000,
+        "compressedBytes": 4339900,
+        "group": "program/mwaw.dll"
+      },
+      {
+        "path": "share/extensions/dict-ca/th_ca_ES_v3.dat",
+        "bytes": 11289695,
+        "compressedBytes": 3376796,
+        "group": "share/extensions"
+      },
+      {
+        "path": "share/extensions/dict-ko/ko_KR.aff",
+        "bytes": 11094418,
+        "compressedBytes": 497082,
+        "group": "share/extensions"
+      },
+      {
+        "path": "program/sdlo.dll",
+        "bytes": 10849192,
+        "compressedBytes": 3835631,
+        "group": "program/sdlo.dll"
+      },
+      {
+        "path": "share/extensions/dict-be/be-official.dic",
+        "bytes": 10607006,
+        "compressedBytes": 1950663,
+        "group": "share/extensions"
+      },
+      {
+        "path": "share/extensions/dict-el/el_GR.dic",
+        "bytes": 10125390,
+        "compressedBytes": 2111435,
+        "group": "share/extensions"
+      },
+      {
+        "path": "program/skialo.dll",
+        "bytes": 9337768,
+        "compressedBytes": 3593678,
+        "group": "program/skialo.dll"
+      },
+      {
+        "path": "program/Engine12.dll",
+        "bytes": 9183656,
+        "compressedBytes": 2584319,
+        "group": "program/Engine12.dll"
+      },
+      {
+        "path": "share/extensions/dict-uk/uk_UA.dic",
+        "bytes": 8919324,
+        "compressedBytes": 1538593,
+        "group": "share/extensions"
+      },
+      {
+        "path": "share/extensions/dict-gl/gl_ES.dic",
+        "bytes": 8325262,
+        "compressedBytes": 1550314,
+        "group": "share/extensions"
+      },
+      {
+        "path": "program/scfiltlo.dll",
+        "bytes": 8188328,
+        "compressedBytes": 2800556,
+        "group": "program/scfiltlo.dll"
+      },
+      {
+        "path": "share/extensions/dict-he/he_IL.dic",
+        "bytes": 7796259,
+        "compressedBytes": 1163747,
+        "group": "share/extensions"
+      },
+      {
+        "path": "program/python312.dll",
+        "bytes": 7490472,
+        "compressedBytes": 2649467,
+        "group": "program/python312.dll"
+      },
+      {
+        "path": "program/libcrypto-3.dll",
+        "bytes": 7223720,
+        "compressedBytes": 2249430,
+        "group": "program/libcrypto-3.dll"
+      },
+      {
+        "path": "program/python-core-3.12.13/lib/libcrypto-3.dll",
+        "bytes": 7223720,
+        "compressedBytes": 2249428,
+        "group": "program/python-core-3.12.13"
+      },
+      {
+        "path": "share/extensions/dict-ar/ar.dic",
+        "bytes": 7217161,
+        "compressedBytes": 1506308,
+        "group": "share/extensions"
+      },
+      {
+        "path": "program/pdfiumlo.dll",
+        "bytes": 6605736,
+        "compressedBytes": 3041203,
+        "group": "program/pdfiumlo.dll"
+      },
+      {
+        "path": "share/extensions/dict-sr/sr.dic",
+        "bytes": 5878745,
+        "compressedBytes": 1027738,
+        "group": "share/extensions"
+      },
+      {
+        "path": "share/config/images_elementary_svg.zip",
+        "bytes": 5617428,
+        "compressedBytes": 5219878,
+        "group": "share/config"
+      },
+      {
+        "path": "share/extensions/dict-no/nb_NO.dic",
+        "bytes": 5274030,
+        "compressedBytes": 1379959,
+        "group": "share/extensions"
+      },
+      {
+        "path": "program/etonyek.dll",
+        "bytes": 5074856,
+        "compressedBytes": 1407127,
+        "group": "program/etonyek.dll"
+      },
+      {
+        "path": "share/config/images_karasa_jaga.zip",
+        "bytes": 5024233,
+        "compressedBytes": 3942810,
+        "group": "share/config"
+      },
+      {
+        "path": "share/extensions/dict-hi/hi_IN.dic",
+        "bytes": 5004835,
+        "compressedBytes": 1338206,
+        "group": "share/extensions"
+      },
+      {
+        "path": "share/extensions/dict-bg/th_bg_BG_v2.dat",
+        "bytes": 4828961,
+        "compressedBytes": 1081023,
+        "group": "share/extensions"
+      }
+    ],
+    "compressedEntryBytes": 480518283,
+    "name": "libreoffice",
+    "pruningCandidateInventory": {
+      "gallery": {
+        "samplePaths": [
+          "share/gallery/apples.gif",
+          "share/gallery/arrows.sdg",
+          "share/gallery/arrows.sdv",
+          "share/gallery/arrows.str",
+          "share/gallery/arrows.thm",
+          "share/gallery/backgrounds.sdg"
+        ],
+        "compressedBytes": 9316951,
+        "bytes": 13245888,
+        "fileCount": 175
+      },
+      "thesaurus": {
+        "samplePaths": [
+          "share/extensions/dict-ar/th_ar.dat",
+          "share/extensions/dict-ar/th_ar.idx",
+          "share/extensions/dict-bg/th_bg_BG_v2.dat",
+          "share/extensions/dict-bg/th_bg_BG_v2.idx",
+          "share/extensions/dict-ca/th_ca_ES_v3.dat",
+          "share/extensions/dict-ca/th_ca_ES_v3.idx"
+        ],
+        "compressedBytes": 43254146,
+        "bytes": 162919474,
+        "fileCount": 52
+      },
+      "localizedResources": {
+        "samplePaths": [
+          "program/resource/ab/LC_MESSAGES/avmedia.mo",
+          "program/resource/ab/LC_MESSAGES/basctl.mo",
+          "program/resource/ab/LC_MESSAGES/chart.mo",
+          "program/resource/ab/LC_MESSAGES/cnr.mo",
+          "program/resource/ab/LC_MESSAGES/cui.mo",
+          "program/resource/ab/LC_MESSAGES/dba.mo"
+        ],
+        "compressedBytes": 81267632,
+        "bytes": 274412287,
+        "fileCount": 3905
+      },
+      "iconThemes": {
+        "samplePaths": [
+          "share/config/images_breeze.zip",
+          "share/config/images_breeze_dark.zip",
+          "share/config/images_breeze_dark_svg.zip",
+          "share/config/images_breeze_svg.zip",
+          "share/config/images_colibre.zip",
+          "share/config/images_colibre_dark.zip"
+        ],
+        "compressedBytes": 59369455,
+        "bytes": 75146758,
+        "fileCount": 21
+      },
+      "dictionaries": {
+        "samplePaths": [
+          "share/extensions/dict-af/af_ZA.aff",
+          "share/extensions/dict-af/af_ZA.dic",
+          "share/extensions/dict-af/description.xml",
+          "share/extensions/dict-af/dictionaries.xcu",
+          "share/extensions/dict-af/hyph_af_ZA.dic",
+          "share/extensions/dict-af/README_af_ZA.txt"
+        ],
+        "compressedBytes": 117165741,
+        "bytes": 475505816,
+        "fileCount": 1182
+      },
+      "hyphenation": {
+        "samplePaths": [
+          "share/extensions/dict-af/hyph_af_ZA.dic",
+          "share/extensions/dict-be/hyph_be_BY.dic",
+          "share/extensions/dict-bg/hyph_bg_BG.dic",
+          "share/extensions/dict-ca/hyph_ca.dic",
+          "share/extensions/dict-cs/hyph_cs_CZ.dic",
+          "share/extensions/dict-da/hyph_da_DK.dic"
+        ],
+        "compressedBytes": 2006274,
+        "bytes": 6109601,
+        "fileCount": 43
+      },
+      "fonts": {
+        "samplePaths": [
+          "program/resource/common/fonts/opens___.ttf"
+        ],
+        "compressedBytes": 122299,
+        "bytes": 207992,
+        "fileCount": 1
+      },
+      "spelling": {
+        "samplePaths": [
+          "share/extensions/dict-af/af_ZA.aff",
+          "share/extensions/dict-af/af_ZA.dic",
+          "share/extensions/dict-an/an_ES.aff",
+          "share/extensions/dict-an/an_ES.dic",
+          "share/extensions/dict-ar/ar.aff",
+          "share/extensions/dict-ar/ar.dic"
+        ],
+        "compressedBytes": 66268897,
+        "bytes": 286410237,
+        "fileCount": 176
+      },
+      "python": {
+        "samplePaths": [
+          "program/python-core-3.12.13/bin/python.exe",
+          "program/python-core-3.12.13/bin/pythonw.exe",
+          "program/python-core-3.12.13/bin/venvlauncher.exe",
+          "program/python-core-3.12.13/lib/abc.py",
+          "program/python-core-3.12.13/lib/aifc.py",
+          "program/python-core-3.12.13/lib/antigravity.py"
+        ],
+        "compressedBytes": 10386265,
+        "bytes": 32755366,
+        "fileCount": 1295
+      },
+      "help": {
+        "samplePaths": [
+          "help/a11y-toggle.js",
+          "help/default.css",
+          "help/flexsearch.debug.js",
+          "help/help.html",
+          "help/help.js",
+          "help/help2.js"
+        ],
+        "compressedBytes": 5340205,
+        "bytes": 11423338,
+        "fileCount": 5339
+      }
+    },
+    "archiveBytes": 483796141,
+    "fileCount": 19325,
+    "expandedBytes": 1513332017
+  },
+  {
+    "methods": "ZIP central directory only; no extraction or mutation",
+    "path": "src-tauri/ocr-resources/runtime/windows-x64.zip",
+    "groups": [
+      {
+        "name": "paddle",
+        "fileCount": 3497,
+        "bytes": 376975343,
+        "compressedBytes": 103986140
+      },
+      {
+        "name": "cv2",
+        "fileCount": 14,
+        "bytes": 116231880,
+        "compressedBytes": 43845875
+      },
+      {
+        "name": "ocr-worker.exe",
+        "fileCount": 1,
+        "bytes": 37243241,
+        "compressedBytes": 36797341
+      },
+      {
+        "name": "numpy.libs",
+        "fileCount": 2,
+        "bytes": 20978768,
+        "compressedBytes": 6684801
+      },
+      {
+        "name": "PIL",
+        "fileCount": 6,
+        "bytes": 13512192,
+        "compressedBytes": 6725757
+      },
+      {
+        "name": "pandas",
+        "fileCount": 53,
+        "bytes": 13099156,
+        "compressedBytes": 4627237
+      },
+      {
+        "name": "hf_xet",
+        "fileCount": 1,
+        "bytes": 9393664,
+        "compressedBytes": 3817621
+      },
+      {
+        "name": "pypdfium2_raw",
+        "fileCount": 2,
+        "bytes": 7217816,
+        "compressedBytes": 3594042
+      },
+      {
+        "name": "paddlex",
+        "fileCount": 1325,
+        "bytes": 6945820,
+        "compressedBytes": 1888034
+      },
+      {
+        "name": "python312.dll",
+        "fileCount": 1,
+        "bytes": 6945272,
+        "compressedBytes": 2568652
+      },
+      {
+        "name": "numpy",
+        "fileCount": 13,
+        "bytes": 6891520,
+        "compressedBytes": 2444372
+      },
+      {
+        "name": "pydantic_core",
+        "fileCount": 1,
+        "bytes": 5253120,
+        "compressedBytes": 1937737
+      },
+      {
+        "name": "libcrypto-3.dll",
+        "fileCount": 1,
+        "bytes": 5231472,
+        "compressedBytes": 1868426
+      },
+      {
+        "name": "Shapely.libs",
+        "fileCount": 3,
+        "bytes": 3573384,
+        "compressedBytes": 1278781
+      },
+      {
+        "name": "_tcl_data",
+        "fileCount": 832,
+        "bytes": 3162778,
+        "compressedBytes": 841463
+      },
+      {
+        "name": "tcl86t.dll",
+        "fileCount": 1,
+        "bytes": 1841896,
+        "compressedBytes": 894426
+      },
+      {
+        "name": "Crypto",
+        "fileCount": 42,
+        "bytes": 1613312,
+        "compressedBytes": 1011091
+      },
+      {
+        "name": "tk86t.dll",
+        "fileCount": 1,
+        "bytes": 1590776,
+        "compressedBytes": 729154
+      },
+      {
+        "name": "sqlite3.dll",
+        "fileCount": 1,
+        "bytes": 1583608,
+        "compressedBytes": 847631
+      },
+      {
+        "name": "chardet",
+        "fileCount": 25,
+        "bytes": 1431885,
+        "compressedBytes": 873449
+      },
+      {
+        "name": "runtime-manifest.json",
+        "fileCount": 1,
+        "bytes": 1391871,
+        "compressedBytes": 363488
+      },
+      {
+        "name": "ucrtbase.dll",
+        "fileCount": 1,
+        "bytes": 1362264,
+        "compressedBytes": 652597
+      },
+      {
+        "name": "base_library.zip",
+        "fileCount": 1,
+        "bytes": 1333717,
+        "compressedBytes": 403952
+      },
+      {
+        "name": "unicodedata.pyd",
+        "fileCount": 1,
+        "bytes": 1140592,
+        "compressedBytes": 420951
+      },
+      {
+        "name": "_tk_data",
+        "fileCount": 89,
+        "bytes": 851433,
+        "compressedBytes": 263319
+      },
+      {
+        "name": "libssl-3.dll",
+        "fileCount": 1,
+        "bytes": 794992,
+        "compressedBytes": 284674
+      },
+      {
+        "name": "safetensors",
+        "fileCount": 1,
+        "bytes": 734720,
+        "compressedBytes": 314185
+      },
+      {
+        "name": "google",
+        "fileCount": 1,
+        "bytes": 728649,
+        "compressedBytes": 268131
+      },
+      {
+        "name": "msvcp140.dll",
+        "fileCount": 1,
+        "bytes": 643512,
+        "compressedBytes": 202959
+      },
+      {
+        "name": "aiohttp",
+        "fileCount": 4,
+        "bytes": 532992,
+        "compressedBytes": 225954
+      },
+      {
+        "name": "tzdata",
+        "fileCount": 605,
+        "bytes": 513630,
+        "compressedBytes": 237157
+      },
+      {
+        "name": "paddleocr",
+        "fileCount": 72,
+        "bytes": 488045,
+        "compressedBytes": 117118
+      },
+      {
+        "name": "shapely",
+        "fileCount": 3,
+        "bytes": 430592,
+        "compressedBytes": 188195
+      },
+      {
+        "name": "paddlepaddle-3.3.1.dist-info",
+        "fileCount": 8,
+        "bytes": 407807,
+        "compressedBytes": 168971
+      },
+      {
+        "name": "modelscope-1.39.0.dist-info",
+        "fileCount": 8,
+        "bytes": 388325,
+        "compressedBytes": 140411
+      },
+      {
+        "name": "hf_xet-1.5.2.dist-info",
+        "fileCount": 7,
+        "bytes": 307625,
+        "compressedBytes": 42817
+      },
+      {
+        "name": "_testcapi.pyd",
+        "fileCount": 1,
+        "bytes": 307192,
+        "compressedBytes": 112110
+      },
+      {
+        "name": "tcl8",
+        "fileCount": 5,
+        "bytes": 276516,
+        "compressedBytes": 75206
+      },
+      {
+        "name": "yaml",
+        "fileCount": 1,
+        "bytes": 263680,
+        "compressedBytes": 110762
+      },
+      {
+        "name": "_decimal.pyd",
+        "fileCount": 1,
+        "bytes": 262000,
+        "compressedBytes": 125776
+      },
+      {
+        "name": "bidi",
+        "fileCount": 1,
+        "bytes": 255488,
+        "compressedBytes": 120610
+      },
+      {
+        "name": "paddlex-3.7.0.dist-info",
+        "fileCount": 8,
+        "bytes": 246229,
+        "compressedBytes": 76242
+      },
+      {
+        "name": "certifi",
+        "fileCount": 2,
+        "bytes": 238856,
+        "compressedBytes": 131291
+      },
+      {
+        "name": "ada92cb5d92a588d1b93__mypyc.cp312-win_amd64.pyd",
+        "fileCount": 1,
+        "bytes": 227328,
+        "compressedBytes": 88169
+      },
+      {
+        "name": "pyclipper",
+        "fileCount": 1,
+        "bytes": 222720,
+        "compressedBytes": 98570
+      }
+    ],
+    "largestFiles": [
+      {
+        "path": "_internal/paddle/base/libpaddle.pyd",
+        "bytes": 134131712,
+        "compressedBytes": 39097267,
+        "group": "paddle"
+      },
+      {
+        "path": "_internal/paddle/libs/mklml.dll",
+        "bytes": 92649344,
+        "compressedBytes": 28406927,
+        "group": "paddle"
+      },
+      {
+        "path": "_internal/cv2/cv2.pyd",
+        "bytes": 89814528,
+        "compressedBytes": 32908307,
+        "group": "cv2"
+      },
+      {
+        "path": "_internal/paddle/libs/mkldnn.dll",
+        "bytes": 47322112,
+        "compressedBytes": 9773763,
+        "group": "paddle"
+      },
+      {
+        "path": "_internal/paddle/libs/phi.dll",
+        "bytes": 44302336,
+        "compressedBytes": 12902060,
+        "group": "paddle"
+      },
+      {
+        "path": "ocr-worker.exe",
+        "bytes": 37243241,
+        "compressedBytes": 36797341,
+        "group": "ocr-worker.exe"
+      },
+      {
+        "path": "_internal/cv2/opencv_videoio_ffmpeg4100_64.dll",
+        "bytes": 26391552,
+        "compressedBytes": 10930768,
+        "group": "cv2"
+      },
+      {
+        "path": "_internal/numpy.libs/libscipy_openblas64_-9e3e5a4229c1ca39f10dc82bba9e2b2b.dll",
+        "bytes": 20403712,
+        "compressedBytes": 6499507,
+        "group": "numpy.libs"
+      },
+      {
+        "path": "_internal/hf_xet/hf_xet.pyd",
+        "bytes": 9393664,
+        "compressedBytes": 3817621,
+        "group": "hf_xet"
+      },
+      {
+        "path": "_internal/paddle/libs/liblapack.dll",
+        "bytes": 7895054,
+        "compressedBytes": 3241600,
+        "group": "paddle"
+      },
+      {
+        "path": "_internal/PIL/_avif.cp312-win_amd64.pyd",
+        "bytes": 7893504,
+        "compressedBytes": 4323266,
+        "group": "PIL"
+      },
+      {
+        "path": "_internal/pypdfium2_raw/pdfium.dll",
+        "bytes": 7217664,
+        "compressedBytes": 3593936,
+        "group": "pypdfium2_raw"
+      },
+      {
+        "path": "_internal/python312.dll",
+        "bytes": 6945272,
+        "compressedBytes": 2568652,
+        "group": "python312.dll"
+      },
+      {
+        "path": "_internal/pydantic_core/_pydantic_core.cp312-win_amd64.pyd",
+        "bytes": 5253120,
+        "compressedBytes": 1937737,
+        "group": "pydantic_core"
+      },
+      {
+        "path": "_internal/libcrypto-3.dll",
+        "bytes": 5231472,
+        "compressedBytes": 1868426,
+        "group": "libcrypto-3.dll"
+      },
+      {
+        "path": "_internal/numpy/_core/_multiarray_umath.cp312-win_amd64.pyd",
+        "bytes": 4529152,
+        "compressedBytes": 1434214,
+        "group": "numpy"
+      },
+      {
+        "path": "_internal/paddle/base/libpaddle.lib",
+        "bytes": 3762028,
+        "compressedBytes": 316562,
+        "group": "paddle"
+      },
+      {
+        "path": "_internal/paddle/include/build/paddle/fluid/pir/dialect/operator/ir/pd_op.h",
+        "bytes": 2886619,
+        "compressedBytes": 108631,
+        "group": "paddle"
+      },
+      {
+        "path": "_internal/PIL/_imaging.cp312-win_amd64.pyd",
+        "bytes": 2662400,
+        "compressedBytes": 1034088,
+        "group": "PIL"
+      },
+      {
+        "path": "_internal/Shapely.libs/geos-ae6efa0782962b98e358f10ea539ae5f.dll",
+        "bytes": 2564608,
+        "compressedBytes": 951712,
+        "group": "Shapely.libs"
+      },
+      {
+        "path": "_internal/PIL/_imagingft.cp312-win_amd64.pyd",
+        "bytes": 2250752,
+        "compressedBytes": 1028951,
+        "group": "PIL"
+      },
+      {
+        "path": "_internal/tcl86t.dll",
+        "bytes": 1841896,
+        "compressedBytes": 894426,
+        "group": "tcl86t.dll"
+      },
+      {
+        "path": "_internal/paddle/libs/libiomp5md.dll",
+        "bytes": 1726848,
+        "compressedBytes": 680233,
+        "group": "paddle"
+      },
+      {
+        "path": "_internal/pandas/_libs/groupby.cp312-win_amd64.pyd",
+        "bytes": 1705472,
+        "compressedBytes": 490229,
+        "group": "pandas"
+      },
+      {
+        "path": "_internal/tk86t.dll",
+        "bytes": 1590776,
+        "compressedBytes": 729154,
+        "group": "tk86t.dll"
+      },
+      {
+        "path": "_internal/sqlite3.dll",
+        "bytes": 1583608,
+        "compressedBytes": 847631,
+        "group": "sqlite3.dll"
+      },
+      {
+        "path": "_internal/pandas/_libs/hashtable.cp312-win_amd64.pyd",
+        "bytes": 1541120,
+        "compressedBytes": 431315,
+        "group": "pandas"
+      },
+      {
+        "path": "runtime-manifest.json",
+        "bytes": 1391871,
+        "compressedBytes": 363488,
+        "group": "runtime-manifest.json"
+      },
+      {
+        "path": "_internal/pandas/_libs/algos.cp312-win_amd64.pyd",
+        "bytes": 1391104,
+        "compressedBytes": 376278,
+        "group": "pandas"
+      },
+      {
+        "path": "_internal/ucrtbase.dll",
+        "bytes": 1362264,
+        "compressedBytes": 652597,
+        "group": "ucrtbase.dll"
+      },
+      {
+        "path": "_internal/base_library.zip",
+        "bytes": 1333717,
+        "compressedBytes": 403952,
+        "group": "base_library.zip"
+      },
+      {
+        "path": "_internal/paddle/libs/libgfortran-3.dll",
+        "bytes": 1316352,
+        "compressedBytes": 388826,
+        "group": "paddle"
+      },
+      {
+        "path": "_internal/unicodedata.pyd",
+        "bytes": 1140592,
+        "compressedBytes": 420951,
+        "group": "unicodedata.pyd"
+      },
+      {
+        "path": "_internal/paddle/_typing/libs/libpaddle/pir/__init__.pyi",
+        "bytes": 947798,
+        "compressedBytes": 133656,
+        "group": "paddle"
+      },
+      {
+        "path": "_internal/libssl-3.dll",
+        "bytes": 794992,
+        "compressedBytes": 284674,
+        "group": "libssl-3.dll"
+      }
+    ],
+    "compressedEntryBytes": 235432240,
+    "name": "ocr-runtime",
+    "pruningCandidateInventory": {
+      "developmentHeadersAndStaticLibraries": {
+        "samplePaths": [
+          "_internal/paddle/_C_ops.pyi",
+          "_internal/paddle/_typing/libs/libpaddle/__init__.pyi",
+          "_internal/paddle/_typing/libs/libpaddle/eager/__init__.pyi",
+          "_internal/paddle/_typing/libs/libpaddle/eager/ops/__init__.pyi",
+          "_internal/paddle/_typing/libs/libpaddle/eager/ops/legacy.pyi",
+          "_internal/paddle/_typing/libs/libpaddle/op_proto_and_checker_maker.pyi"
+        ],
+        "compressedBytes": 4238557,
+        "bytes": 24657179,
+        "fileCount": 2285
+      },
+      "hfXet": {
+        "samplePaths": [
+          "_internal/hf_xet/hf_xet.pyd"
+        ],
+        "compressedBytes": 3817621,
+        "bytes": 9393664,
+        "fileCount": 1
+      },
+      "pythonPdfium": {
+        "samplePaths": [
+          "_internal/pypdfium2_raw/pdfium.dll",
+          "_internal/pypdfium2_raw/version.json"
+        ],
+        "compressedBytes": 3594042,
+        "bytes": 7217816,
+        "fileCount": 2
+      },
+      "paddleHeaders": {
+        "samplePaths": [
+          "_internal/paddle/include/build/paddle/fluid/pir/dialect/operator/ir/pd_op.h",
+          "_internal/paddle/include/paddle/common/adt_type_id.h",
+          "_internal/paddle/include/paddle/common/array.h",
+          "_internal/paddle/include/paddle/common/backend_header.h",
+          "_internal/paddle/include/paddle/common/bfs_walker.h",
+          "_internal/paddle/include/paddle/common/call_before_main.h"
+        ],
+        "compressedBytes": 3460357,
+        "bytes": 17575550,
+        "fileCount": 2253
+      },
+      "opencvVideo": {
+        "samplePaths": [
+          "_internal/cv2/opencv_videoio_ffmpeg4100_64.dll"
+        ],
+        "compressedBytes": 10930768,
+        "bytes": 26391552,
+        "fileCount": 1
+      },
+      "avifCodec": {
+        "samplePaths": [
+          "_internal/PIL/_avif.cp312-win_amd64.pyd"
+        ],
+        "compressedBytes": 4323266,
+        "bytes": 7893504,
+        "fileCount": 1
+      }
+    },
+    "archiveBytes": 236811152,
+    "fileCount": 7247,
+    "expandedBytes": 662035027
+  }
+]

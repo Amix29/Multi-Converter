@@ -1,0 +1,113 @@
+{
+  "source": "src-tauri\\bundled-engines\\pandoc\\compatible\\bin\\pandoc.exe",
+  "bytes": 231056136,
+  "coffSymbolCount": 527273,
+  "coffSymbolTableBytes": 9490914,
+  "coffStringTableBytes": 52514768,
+  "coffCombinedBytes": 62005682,
+  "trailingDataBytes": 12118,
+  "certificateOffset": 231044096,
+  "certificateBytes": 12040,
+  "sections": [
+    {
+      "name": ".text",
+      "rawBytes": 132182016,
+      "fileOffset": 1536
+    },
+    {
+      "name": ".rdata",
+      "rawBytes": 17297408,
+      "fileOffset": 132183552
+    },
+    {
+      "name": ".buildid",
+      "rawBytes": 512,
+      "fileOffset": 149480960
+    },
+    {
+      "name": ".data",
+      "rawBytes": 15046656,
+      "fileOffset": 149481472
+    },
+    {
+      "name": ".pdata",
+      "rawBytes": 32768,
+      "fileOffset": 164528128
+    },
+    {
+      "name": ".rdata",
+      "rawBytes": 1555968,
+      "fileOffset": 164560896
+    },
+    {
+      "name": ".tls",
+      "rawBytes": 512,
+      "fileOffset": 166116864
+    },
+    {
+      "name": ".rsrc",
+      "rawBytes": 1024,
+      "fileOffset": 166117376
+    },
+    {
+      "name": ".reloc",
+      "rawBytes": 2562048,
+      "fileOffset": 166118400
+    },
+    {
+      "name": ".debug_abbrev",
+      "rawBytes": 17408,
+      "fileOffset": 168680448
+    },
+    {
+      "name": ".debug_aranges",
+      "rawBytes": 512,
+      "fileOffset": 168697856
+    },
+    {
+      "name": ".debug_frame",
+      "rawBytes": 512,
+      "fileOffset": 168698368
+    },
+    {
+      "name": ".debug_info",
+      "rawBytes": 74240,
+      "fileOffset": 168698880
+    },
+    {
+      "name": ".debug_line",
+      "rawBytes": 65536,
+      "fileOffset": 168773120
+    },
+    {
+      "name": ".debug_loc",
+      "rawBytes": 145920,
+      "fileOffset": 168838656
+    },
+    {
+      "name": ".debug_ranges",
+      "rawBytes": 15872,
+      "fileOffset": 168984576
+    },
+    {
+      "name": ".debug_str",
+      "rawBytes": 37888,
+      "fileOffset": 169000448
+    }
+  ],
+  "originalCompression": {
+    "inputBytes": 231056136,
+    "zlib9Bytes": 40032310,
+    "inputSha256": "e83f8354c0f507222b5684797b9c5ae766f03889785995d14aac27816ec456ba",
+    "durationSeconds": 15.392
+  },
+  "prefixCompression": {
+    "inputBytes": 169038336,
+    "zlib9Bytes": 35230662,
+    "inputSha256": "595db050f7ea2d76d230c11d24844b48df51196ed1e841afe7633e4cccea6228",
+    "durationSeconds": 14.746
+  },
+  "compressedDifferenceBytes": 4801648,
+  "method": "Read-only PE headers/COFF tables and streaming zlib compression to a byte counter. No archive or executable created or modified.",
+  "limits": "Prefix is a compression simulation, not a valid stripped executable or NSIS measurement. Proper tool-based stripping and functional conversion parity still required."
+}

@@ -1,5 +1,22 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-07 — Engine/package size audit, no product optimization
+
+Read-only NSIS input inventory measures 1,405,904,795 bytes before installer
+compression; the current setup remains 999,648,595 bytes. ZIP central-directory
+inspection identifies LibreOffice and OCR pruning candidates without extracting
+them. PE/COFF inspection plus streaming compression confirms 62,005,682 bytes
+of Pandoc symbol/string tables, but only about 4.80 MB of compressed difference
+in a prefix simulation, which is not a valid stripped executable. Historical
+Zlib/LZMA results remain scoped to their original 2026-10-30 receipt.
+
+The [audit](ENGINE_SIZE_AUDIT_2026_11.md) documents proposals, source-backed
+competitor comparisons, disk duplication and acceptance gates. Raw inventories
+and reproduction scripts are under `audits/2026-11-07/`. No engines/models,
+installed caches or user files were removed or replaced, no optimized installer
+was built, and Linux/macOS preparation remains stopped. Proposed size budgets
+are targets, not measured optimized results or release acceptance.
+
 ## 2026-11-06 — Refreshed private Windows Svelte installer
 
 At the maintainer's request, a new Windows x64 NSIS installer was built from

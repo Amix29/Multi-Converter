@@ -1,0 +1,605 @@
+{
+  "date": "2026-11-07T08:17:36.164Z",
+  "platform": "win32",
+  "source": "19561e1e443b2f1361c42076ff02874afba762eb",
+  "method": "Read-only stat of NSIS source file declarations; ZIP inspection performed separately without extraction. No copied engine trees or rebuilt installers.",
+  "installer": {
+    "path": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/bundle/nsis/Multi-Converter_1.0.7_x64-setup.exe",
+    "bytes": 999648595
+  },
+  "packagedBytesBeforeInstallerCompression": 1405904795,
+  "categories": {
+    "licenses-other": {
+      "bytes": 59091,
+      "fileCount": 4
+    },
+    "libreoffice-archive": {
+      "bytes": 483796141,
+      "fileCount": 1
+    },
+    "libvips": {
+      "bytes": 28468129,
+      "fileCount": 222
+    },
+    "pandoc": {
+      "bytes": 231066543,
+      "fileCount": 4
+    },
+    "pdfium": {
+      "bytes": 11271980,
+      "fileCount": 22
+    },
+    "ocr-models": {
+      "bytes": 185087503,
+      "fileCount": 22
+    },
+    "ocr-runtime-archive": {
+      "bytes": 236811152,
+      "fileCount": 1
+    },
+    "ffmpeg-ffprobe": {
+      "bytes": 202708992,
+      "fileCount": 2
+    },
+    "application": {
+      "bytes": 26635264,
+      "fileCount": 1
+    }
+  },
+  "largestPackagedFiles": [
+    {
+      "destination": "engine-archives/libreoffice.zip",
+      "source": "<repo>/src-tauri/bundled-engine-archives/windows-x64/libreoffice.zip",
+      "bytes": 483796141,
+      "group": "libreoffice-archive"
+    },
+    {
+      "destination": "ocr/runtime/windows-x64.zip",
+      "source": "<repo>/src-tauri/ocr-resources/runtime/windows-x64.zip",
+      "bytes": 236811152,
+      "group": "ocr-runtime-archive"
+    },
+    {
+      "destination": "engines/pandoc/compatible/bin/pandoc.exe",
+      "source": "<repo>/src-tauri/bundled-engines/pandoc/compatible/bin/pandoc.exe",
+      "bytes": 231056136,
+      "group": "pandoc"
+    },
+    {
+      "destination": "ffmpeg.exe",
+      "source": "<repo>/src-tauri/binaries/ffmpeg-x86_64-pc-windows-msvc.exe",
+      "bytes": 101457920,
+      "group": "ffmpeg-ffprobe"
+    },
+    {
+      "destination": "ffprobe.exe",
+      "source": "<repo>/src-tauri/binaries/ffprobe-x86_64-pc-windows-msvc.exe",
+      "bytes": 101251072,
+      "group": "ffmpeg-ffprobe"
+    },
+    {
+      "destination": "ocr/models/text-recognition/inference.pdiparams",
+      "source": "<repo>/src-tauri/ocr-resources/models/text-recognition/inference.pdiparams",
+      "bytes": 76465087,
+      "group": "ocr-models"
+    },
+    {
+      "destination": "ocr/models/text-detection/inference.pdiparams",
+      "source": "<repo>/src-tauri/ocr-resources/models/text-detection/inference.pdiparams",
+      "bytes": 61960476,
+      "group": "ocr-models"
+    },
+    {
+      "destination": "ocr/models/document-unwarping/inference.pdiparams",
+      "source": "<repo>/src-tauri/ocr-resources/models/document-unwarping/inference.pdiparams",
+      "bytes": 32054311,
+      "group": "ocr-models"
+    },
+    {
+      "destination": "multi-converter.exe",
+      "source": "%LOCALAPPDATA%/Temp/mc-cargo-target-svelte-migration/release/multi-converter.exe",
+      "bytes": 26635264,
+      "group": "application"
+    },
+    {
+      "destination": "engines/pdfium/compatible/bin/pdfium.dll",
+      "source": "<repo>/src-tauri/bundled-engines/pdfium/compatible/bin/pdfium.dll",
+      "bytes": 7178240,
+      "group": "pdfium"
+    },
+    {
+      "destination": "ocr/models/document-orientation/inference.pdiparams",
+      "source": "<repo>/src-tauri/ocr-resources/models/document-orientation/inference.pdiparams",
+      "bytes": 6754166,
+      "group": "ocr-models"
+    },
+    {
+      "destination": "ocr/models/textline-orientation/inference.pdiparams",
+      "source": "<repo>/src-tauri/ocr-resources/models/textline-orientation/inference.pdiparams",
+      "bytes": 6743918,
+      "group": "ocr-models"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libaom.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libaom.dll",
+      "bytes": 5530112,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/pdfium/compatible/bin/pdfium-render-x86_64-pc-windows-msvc.exe",
+      "source": "<repo>/src-tauri/bundled-engines/pdfium/compatible/bin/pdfium-render-x86_64-pc-windows-msvc.exe",
+      "bytes": 3982336,
+      "group": "pdfium"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/librsvg-2-2.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/librsvg-2-2.dll",
+      "bytes": 2619392,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libvips-42.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libvips-42.dll",
+      "bytes": 2553344,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libheif.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libheif.dll",
+      "bytes": 1329664,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libc++.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libc++.dll",
+      "bytes": 1209856,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libgio-2.0-0.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libgio-2.0-0.dll",
+      "bytes": 1154048,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libglib-2.0-0.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libglib-2.0-0.dll",
+      "bytes": 1030656,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/lib/libc++.lib",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/lib/libc++.lib",
+      "bytes": 960652,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libharfbuzz-0.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libharfbuzz-0.dll",
+      "bytes": 884224,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libjpeg-62.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libjpeg-62.dll",
+      "bytes": 816128,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libpixman-1-0.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libpixman-1-0.dll",
+      "bytes": 634368,
+      "group": "libvips"
+    },
+    {
+      "destination": "engines/libvips/compatible/bin/libarchive-13.dll",
+      "source": "<repo>/src-tauri/bundled-engines/libvips/compatible/bin/libarchive-13.dll",
+      "bytes": 597504,
+      "group": "libvips"
+    }
+  ],
+  "engines": [
+    {
+      "root": "src-tauri/bundled-engines/pdfium",
+      "exists": true,
+      "bytes": 11271980,
+      "fileCount": 22,
+      "children": {
+        "compatible": {
+          "bytes": 11271980,
+          "fileCount": 22
+        }
+      },
+      "largestFiles": [
+        {
+          "relative": "compatible/bin/pdfium.dll",
+          "bytes": 7178240
+        },
+        {
+          "relative": "compatible/bin/pdfium-render-x86_64-pc-windows-msvc.exe",
+          "bytes": 3982336
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/icu.txt",
+          "bytes": 28286
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/llvm-libc.txt",
+          "bytes": 15418
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/libjpeg_turbo.ijg",
+          "bytes": 13059
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/pdfium.txt",
+          "bytes": 12818
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/abseil.txt",
+          "bytes": 11564
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/freetype.txt",
+          "bytes": 6741
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/libjpeg_turbo.md",
+          "bytes": 5755
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/libpng.txt",
+          "bytes": 5479
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/libopenjpeg.txt",
+          "bytes": 1794
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/lcms.txt",
+          "bytes": 1354
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/zlib.txt",
+          "bytes": 1332
+        },
+        {
+          "relative": "compatible/licenses/LICENSE.txt",
+          "bytes": 1184
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/libtiff.txt",
+          "bytes": 1139
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/fast_float.txt",
+          "bytes": 1106
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/simdutf.txt",
+          "bytes": 1077
+        },
+        {
+          "relative": "compatible/licenses/lopdf-LICENSE.txt",
+          "bytes": 1068
+        },
+        {
+          "relative": "compatible/licenses/THIRD_PARTY_NOTICES.txt",
+          "bytes": 749
+        },
+        {
+          "relative": "compatible/licenses/pdfium-third-party/agg23.txt",
+          "bytes": 725
+        }
+      ]
+    },
+    {
+      "root": "src-tauri/bundled-engines/pandoc",
+      "exists": true,
+      "bytes": 231066543,
+      "fileCount": 4,
+      "children": {
+        "compatible": {
+          "bytes": 231066543,
+          "fileCount": 4
+        }
+      },
+      "largestFiles": [
+        {
+          "relative": "compatible/bin/pandoc.exe",
+          "bytes": 231056136
+        },
+        {
+          "relative": "compatible/licenses/LICENSE.txt",
+          "bytes": 9598
+        },
+        {
+          "relative": "compatible/engine.json",
+          "bytes": 436
+        },
+        {
+          "relative": "compatible/licenses/THIRD_PARTY_NOTICES.txt",
+          "bytes": 373
+        }
+      ]
+    },
+    {
+      "root": "src-tauri/bundled-engines/libvips",
+      "exists": true,
+      "bytes": 28468129,
+      "fileCount": 222,
+      "children": {
+        "compatible": {
+          "bytes": 28468129,
+          "fileCount": 222
+        }
+      },
+      "largestFiles": [
+        {
+          "relative": "compatible/bin/libaom.dll",
+          "bytes": 5530112
+        },
+        {
+          "relative": "compatible/bin/librsvg-2-2.dll",
+          "bytes": 2619392
+        },
+        {
+          "relative": "compatible/bin/libvips-42.dll",
+          "bytes": 2553344
+        },
+        {
+          "relative": "compatible/bin/libheif.dll",
+          "bytes": 1329664
+        },
+        {
+          "relative": "compatible/bin/libc++.dll",
+          "bytes": 1209856
+        },
+        {
+          "relative": "compatible/bin/libgio-2.0-0.dll",
+          "bytes": 1154048
+        },
+        {
+          "relative": "compatible/bin/libglib-2.0-0.dll",
+          "bytes": 1030656
+        },
+        {
+          "relative": "compatible/lib/libc++.lib",
+          "bytes": 960652
+        },
+        {
+          "relative": "compatible/bin/libharfbuzz-0.dll",
+          "bytes": 884224
+        },
+        {
+          "relative": "compatible/bin/libjpeg-62.dll",
+          "bytes": 816128
+        },
+        {
+          "relative": "compatible/bin/libpixman-1-0.dll",
+          "bytes": 634368
+        },
+        {
+          "relative": "compatible/bin/libarchive-13.dll",
+          "bytes": 597504
+        },
+        {
+          "relative": "compatible/bin/libcairo-2.dll",
+          "bytes": 588288
+        },
+        {
+          "relative": "compatible/bin/libfreetype-6.dll",
+          "bytes": 574976
+        },
+        {
+          "relative": "compatible/lib/libgio-2.0.lib",
+          "bytes": 562044
+        },
+        {
+          "relative": "compatible/bin/liblcms2-2.dll",
+          "bytes": 476160
+        },
+        {
+          "relative": "compatible/lib/libglib-2.0.lib",
+          "bytes": 432758
+        },
+        {
+          "relative": "compatible/bin/libtiff-6.dll",
+          "bytes": 430080
+        },
+        {
+          "relative": "compatible/bin/libwebp-7.dll",
+          "bytes": 381952
+        },
+        {
+          "relative": "compatible/bin/libpango-1.0-0.dll",
+          "bytes": 333312
+        }
+      ]
+    }
+  ],
+  "frontend": {
+    "root": "dist",
+    "exists": true,
+    "bytes": 643417,
+    "fileCount": 10,
+    "children": {
+      "assets": {
+        "bytes": 642574,
+        "fileCount": 9
+      },
+      "index.html": {
+        "bytes": 843,
+        "fileCount": 1
+      }
+    },
+    "largestFiles": [
+      {
+        "relative": "assets/scroll-lock-BYrjcUsk.js",
+        "bytes": 215932
+      },
+      {
+        "relative": "assets/index-BaW7RS8A.js",
+        "bytes": 198728
+      },
+      {
+        "relative": "assets/index-CK5vtXj5.css",
+        "bytes": 88861
+      },
+      {
+        "relative": "assets/FormatOptions-DIwVKU8Z.js",
+        "bytes": 68405
+      },
+      {
+        "relative": "assets/marked.esm-BtO3-ueZ.js",
+        "bytes": 40511
+      },
+      {
+        "relative": "assets/window-DoVb-PU_.js",
+        "bytes": 12636
+      },
+      {
+        "relative": "assets/SettingsPanel-Fo_TMBll.js",
+        "bytes": 9500
+      },
+      {
+        "relative": "assets/ImageOcrDialog-C-YqhJxU.js",
+        "bytes": 7454
+      },
+      {
+        "relative": "index.html",
+        "bytes": 843
+      },
+      {
+        "relative": "assets/FormatOptions-BrYkvJaa.css",
+        "bytes": 547
+      }
+    ]
+  },
+  "existingInstalledAndDataDirectories": [
+    {
+      "root": "%LOCALAPPDATA%/Temp/mc-deep-qa-20260807-0020/install",
+      "exists": true,
+      "bytes": 1406011813,
+      "fileCount": 280,
+      "children": {
+        "engine-archives": {
+          "bytes": 483796141,
+          "fileCount": 1
+        },
+        "engines": {
+          "bytes": 270806652,
+          "fileCount": 248
+        },
+        "ffmpeg.exe": {
+          "bytes": 101457920,
+          "fileCount": 1
+        },
+        "ffprobe.exe": {
+          "bytes": 101251072,
+          "fileCount": 1
+        },
+        "licenses": {
+          "bytes": 47298,
+          "fileCount": 2
+        },
+        "multi-converter.exe": {
+          "bytes": 26635264,
+          "fileCount": 1
+        },
+        "ocr": {
+          "bytes": 421910448,
+          "fileCount": 25
+        },
+        "uninstall.exe": {
+          "bytes": 107018,
+          "fileCount": 1
+        }
+      }
+    },
+    {
+      "root": "%LOCALAPPDATA%/Programs/Multi-Converter",
+      "exists": false,
+      "bytes": 0,
+      "fileCount": 0,
+      "children": {}
+    },
+    {
+      "root": "%LOCALAPPDATA%/com.multiconverter.desktop",
+      "exists": true,
+      "bytes": 3044929920,
+      "fileCount": 34733,
+      "children": {
+        "batch-recovery": {
+          "bytes": 53,
+          "fileCount": 1
+        },
+        "EBWebView": {
+          "bytes": 310840250,
+          "fileCount": 5020
+        },
+        "ocr-runtime": {
+          "bytes": 2734089617,
+          "fileCount": 29712
+        }
+      }
+    },
+    {
+      "root": "%LOCALAPPDATA%/Multi-Converter",
+      "exists": true,
+      "bytes": 5315104004,
+      "fileCount": 58602,
+      "children": {
+        "editor": {
+          "bytes": 911,
+          "fileCount": 1
+        },
+        "engines": {
+          "bytes": 1786663166,
+          "fileCount": 19613
+        },
+        "ffmpeg.exe": {
+          "bytes": 101457920,
+          "fileCount": 1
+        },
+        "ffprobe.exe": {
+          "bytes": 101251072,
+          "fileCount": 1
+        },
+        "logs": {
+          "bytes": 791779,
+          "fileCount": 1
+        },
+        "multi-converter.exe": {
+          "bytes": 23946752,
+          "fileCount": 1
+        },
+        "tool-env": {
+          "bytes": 3300709076,
+          "fileCount": 38982
+        },
+        "uninstall.exe": {
+          "bytes": 283317,
+          "fileCount": 1
+        },
+        "welcome-install.marker": {
+          "bytes": 11,
+          "fileCount": 1
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Per-category compressed bytes cannot be inferred from uncompressed sizes; NSIS compresses different inputs differently.",
+    "Existing installation/data directories may belong to earlier candidates and are not final-candidate installed acceptance."
+  ],
+  "existingInstallationExecutable": {
+    "path": "%LOCALAPPDATA%/Temp/mc-deep-qa-20260807-0020/install/multi-converter.exe",
+    "sha256": "4f62b92e6c50d35326848ce759fe5e15ebbab83c14d64839bf39a37919ea549d",
+    "matchesCurrentReleaseExecutable": false
+  },
+  "derived": {
+    "archiveDuplicationBytes": 720607293,
+    "allEnginesAfterExtractionBudgetBytes": 3581271839
+  }
+}
