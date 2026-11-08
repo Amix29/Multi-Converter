@@ -14,7 +14,7 @@ test("Bits select supports keyboard, typeahead, dismissal and stream-copy state"
   await page.setViewportSize({ width: 375, height: 900 });
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/?mockWelcomeSeen=1&mockMediaFiles=1");
+  await page.goto("/?mockMediaFiles=1");
   await page.getByRole("button", { name: "Parcourir" }).click();
   await page.getByRole("button", { name: "Préparer la conversion" }).click();
   await page.locator(".format-card").first().click();
@@ -49,7 +49,7 @@ test("all six language preferences persist and both themes follow their owner", 
   page,
 }) => {
   await page.emulateMedia({ colorScheme: "dark" });
-  await page.goto("/?mockWelcomeSeen=1");
+  await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.getByRole("button", { name: "Paramètres" }).click();
   const settings = page.locator(".settings-panel");
@@ -130,7 +130,7 @@ test("twenty overlay cycles release focus traps, DOM and owned global listeners"
         window as unknown as { migrationListenerCount(): number }
       ).migrationListenerCount(),
     );
-  await page.goto("/?mockWelcomeSeen=1&mockOcrImage=1&mockSlowOcr=1");
+  await page.goto("/?mockOcrImage=1&mockSlowOcr=1");
   await page.getByRole("button", { name: "Parcourir" }).click();
   const trigger = page.getByRole("button", { name: "Paramètres" });
   for (let cycle = 0; cycle < 2; cycle++) {
@@ -167,14 +167,14 @@ test("dark and light product captures preserve actions at reference widths", asy
   page,
 }) => {
   for (const theme of ["light", "dark"]) {
-    await page.goto("/?mockWelcomeSeen=1");
+    await page.goto("/");
     await page.evaluate(
       (value) => localStorage.setItem("multi-converter.theme", value),
       theme,
     );
     for (const width of [375, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });
-      await page.goto("/?mockWelcomeSeen=1&mockMediaFiles=1");
+      await page.goto("/?mockMediaFiles=1");
       await page.getByRole("button", { name: "Parcourir" }).click();
       await page
         .getByRole("button", { name: "Préparer la conversion" })

@@ -161,10 +161,6 @@ export interface DependencyCheck {
   actionLabel: string;
 }
 
-export interface WelcomeState {
-  show: boolean;
-}
-
 export interface OcrRuntimeInfoV1 {
   schemaVersion: 1;
   available: boolean;
@@ -227,8 +223,6 @@ export interface OcrProgressV1 {
 }
 
 export interface MultiConverterApi {
-  welcomeState(): Promise<WelcomeState>;
-  markWelcomeSeen(): Promise<boolean>;
   bootstrapDependencies(): Promise<DependencyBootstrap>;
   refreshEngineDiagnostics(): Promise<DependencyBootstrap>;
   pickFilePaths(): Promise<string[]>;

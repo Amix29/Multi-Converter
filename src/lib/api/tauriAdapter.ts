@@ -11,14 +11,11 @@ import type {
   OcrRuntimeInfoV1,
   ProgressPayload,
   ConversionResult,
-  WelcomeState,
   RecoveryState,
 } from "./contracts";
 
 export function createTauriApi(): MultiConverterApi {
   return {
-    welcomeState: () => invoke<WelcomeState>("welcome_state"),
-    markWelcomeSeen: () => invoke<boolean>("mark_welcome_seen"),
     bootstrapDependencies: () => invoke<DependencyBootstrap>("bootstrap_dependencies"),
     refreshEngineDiagnostics: () => invoke<DependencyBootstrap>("bootstrap_dependencies"),
     pickFilePaths: () => invoke<string[]>("pick_file_paths"),

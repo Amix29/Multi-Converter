@@ -10,16 +10,6 @@
   }
 }
 
-@keyframes welcomePanelIn {
-  from {
-    transform: translateY(7px);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
-
 @keyframes noticeIn {
   from {
     opacity: 0;

@@ -132,7 +132,7 @@
 /* Reduce movement by interaction, preserving text/ARIA progress updates. */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .screen, .modal-backdrop, [data-dialog-panel], .welcome-panel,
+  .screen, .modal-backdrop, [data-dialog-panel],
   .drop-zone, .file-ticket, .format-card, .primary-button, .secondary-button,
   .ghost-button, .feedback-launcher, .feedback-launcher span, .update-reminder, .import-toast,
   .choice-trigger, .choice-trigger svg, .choice-menu, .progress-fill,

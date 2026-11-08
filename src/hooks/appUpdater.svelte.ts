@@ -26,7 +26,6 @@ type UpdateNoticeTone = "success" | "error";
 interface AppUpdaterOptions {
   bootInfoLoaded: boolean;
   isTauriRuntime: boolean;
-  isWelcomeOpen: boolean;
   language: LanguageCode;
   showNotice(tone: UpdateNoticeTone, message: string): void;
 }
@@ -138,11 +137,7 @@ export function createAppUpdater(options: AppUpdaterOptions) {
       setAppUpdateStatus("available");
       setUpdateCheckStartedAt(null);
       setUpdateReminderVisible(false);
-      if (manual || !options.isWelcomeOpen) {
-        setIsUpdateDialogOpen(true);
-      } else {
-        setUpdateReminderVisible(true);
-      }
+      setIsUpdateDialogOpen(true);
     } catch (error) {
       if (checkId !== updateCheckSequence.current) return;
       if (isMissingUpdateReleaseError(error)) {
@@ -267,11 +262,6 @@ export function createAppUpdater(options: AppUpdaterOptions) {
   const cancelUpdateDialog = () => {
     setIsUpdateDialogOpen(false);
     setUpdateReminderVisible(Boolean(updateInfo));
-  };
-  const showAvailableUpdateReminder = () => {
-    if (updateInfo && updateStatus === "available") {
-      setUpdateReminderVisible(true);
-    }
   };
   $effect(() => {
     void [options.isTauriRuntime];
@@ -474,7 +464,6 @@ export function createAppUpdater(options: AppUpdaterOptions) {
     },
     setInternetAvailable,
     setIsUpdateDialogOpen,
-    showAvailableUpdateReminder,
     get updateDownloadProgress() {
       return updateDownloadProgress;
     },

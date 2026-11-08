@@ -5,7 +5,6 @@ import path from "node:path";
 const root = process.cwd();
 const composition = fs.readFileSync(path.join(root, "src", "app", "application.svelte.ts"), "utf8");
 const app = fs.readFileSync(path.join(root, "src", "App.svelte"), "utf8").replaceAll("application.", "");
-const appModel = fs.readFileSync(path.join(root, "src", "app", "conversion", "model.ts"), "utf8");
 const appTopbar = fs.readFileSync(path.join(root, "src", "app", "layout", "AppTopbar.svelte"), "utf8");
 const filesScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "FilesScreen.svelte"), "utf8");
 const formatScreen = fs.readFileSync(path.join(root, "src", "app", "screens", "FormatScreen.svelte"), "utf8");
@@ -35,8 +34,6 @@ assert.match(app, /<div\s+class="floating-corner"\s+data-testid="floating-corner
 assert.match(app, /updateReminderActive\s*\?\s*"has-update-reminder"\s*:\s*""/, "app shell must expose update reminder state for layout collision avoidance");
 assert.doesNotMatch(app, /has-feedback-launcher/, "topbar feedback must not reserve space as a floating control");
 assert.match(app, /importToastActive\s*\?\s*"has-import-toast"\s*:\s*""/, "app shell must expose import toast state for notice collision avoidance");
-assert.match(appModel, /mockWelcomeSeen"\)\s*!==\s*"1"/, "dev QA hook for skipping the welcome dialog is missing");
-assert.match(api, /mockWelcomeSeen"\)\s*!==\s*"1"/, "preview API must honor the welcome-skip QA hook");
 assert.match(updaterHook, /mockUpdate"\)\s*!==\s*"1"/, "update reminder QA hook is missing");
 assert.match(updaterHook, /import\.meta\.env\.DEV\s*\|\|\s*import\.meta\.env\.MODE\s*===\s*"preview"/, "mock update UI must be compiled only for dev or explicit built previews");
 assert.match(app, /feedbackVisible={feedbackLauncherActive}/, "app shell must pass the current feedback visibility rules to the topbar");

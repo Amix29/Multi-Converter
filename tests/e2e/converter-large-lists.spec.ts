@@ -2,7 +2,7 @@ import { expect, test, type Page, type TestInfo } from "@playwright/test";
 
 test("removes unsupported imports in bulk before the Formats step", async ({ page }, testInfo) => {
   skipUnlessDesktop(testInfo);
-  await openPreview(page, "/?mockWelcomeSeen=1&mockUnsupportedFiles=1");
+  await openPreview(page, "/?mockUnsupportedFiles=1");
 
   await page.getByRole("button", { name: "Parcourir" }).click();
   await expect(page.locator(".file-ticket")).toHaveCount(3);
@@ -19,7 +19,7 @@ test("removes unsupported imports in bulk before the Formats step", async ({ pag
 
 test("virtualizes a large output list while keeping filters and cancellation available", async ({ page }, testInfo) => {
   skipUnlessDesktop(testInfo);
-  await openPreview(page, "/?mockWelcomeSeen=1&mockLargeBatch=120&mockSlowConversion=1");
+  await openPreview(page, "/?mockLargeBatch=120&mockSlowConversion=1");
 
   await page.getByRole("button", { name: "Parcourir" }).click();
   const lane = page.locator(".file-lane");
@@ -48,7 +48,7 @@ test("virtualizes a large output list while keeping filters and cancellation ava
 
 test("keeps the 2,000-file Formats rail bounded on a narrow viewport", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile-chromium", "Covered by mobile-chromium.");
-  await openPreview(page, "/?mockWelcomeSeen=1&mockLargeBatch=2000");
+  await openPreview(page, "/?mockLargeBatch=2000");
 
   await page.getByRole("button", { name: "Parcourir" }).click();
   await page.getByRole("button", { name: "Préparer la conversion" }).click();

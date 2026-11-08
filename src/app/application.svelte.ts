@@ -7,8 +7,6 @@ import {
   notificationsStorageKey,
   readStoredFeedbackPrivacyAccepted,
   readStoredNotificationsEnabled,
-  shouldShowWelcome,
-  welcomeStorageKey,
 } from "./conversion/model";
 import { createConversionWorkflow } from "./conversion/conversionWorkflow.svelte.js";
 import { createFileWorkflow } from "./conversion/fileWorkflow.svelte.js";
@@ -44,10 +42,6 @@ export function createApplication() {
   let dependencies = $state.raw<DependencyBootstrap | null>(null);
   const setDependencies: StateSetter<typeof dependencies> = (value) => {
     dependencies = resolveStateUpdate(value, dependencies);
-  };
-  let isWelcomeOpen = $state.raw(shouldShowWelcome());
-  const setIsWelcomeOpen: StateSetter<typeof isWelcomeOpen> = (value) => {
-    isWelcomeOpen = resolveStateUpdate(value, isWelcomeOpen);
   };
   let isSettingsOpen = $state.raw(false);
   const setIsSettingsOpen: StateSetter<boolean> = (value) => {
@@ -165,9 +159,6 @@ export function createApplication() {
     get isTauriRuntime() {
       return isTauriRuntime;
     },
-    get isWelcomeOpen() {
-      return isWelcomeOpen;
-    },
     get language() {
       return language;
     },
@@ -228,13 +219,11 @@ export function createApplication() {
     updater.updateReminderVisible &&
       Boolean(updater.updateInfo) &&
       !isSettingsOpen &&
-      !isWelcomeOpen &&
       !updater.isUpdateDialogOpen,
   );
   let feedbackLauncherActive = $derived(
     fileWorkflow.step === 1 &&
       !isSettingsOpen &&
-      !isWelcomeOpen &&
       !updater.isUpdateDialogOpen &&
       updater.updateStatus !== "installing" &&
       !isFeedbackOpen &&
@@ -266,10 +255,6 @@ export function createApplication() {
       if (bootStarted.current) return;
       bootStarted.current = true;
       api
-        .welcomeState()
-        .then((state) => setIsWelcomeOpen(state.show))
-        .catch(() => setIsWelcomeOpen(shouldShowWelcome()));
-      api
         .bootstrapDependencies()
         .then((result) => {
           setDependencies(result);
@@ -279,12 +264,6 @@ export function createApplication() {
         .finally(() => setBootInfoLoaded(true));
     });
   });
-  function closeWelcome() {
-    localStorage.setItem(welcomeStorageKey, "true");
-    void api.markWelcomeSeen().catch(() => undefined);
-    setIsWelcomeOpen(false);
-    updater.showAvailableUpdateReminder();
-  }
   const openFeedback = () => {
     if (feedbackPrivacyAccepted) setIsFeedbackOpen(true);
     else setIsFeedbackPrivacyOpen(true);
@@ -323,10 +302,6 @@ export function createApplication() {
     get openSettings() {
       return openSettings;
     },
-    get isWelcomeOpen() {
-      return isWelcomeOpen;
-    },
-    closeWelcome,
     get sessionGuard() {
       return sessionGuard;
     },

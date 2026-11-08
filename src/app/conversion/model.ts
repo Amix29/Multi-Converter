@@ -3,7 +3,6 @@ import type { ClipboardFileInput, ExportResult, FileDescription, TargetFormat } 
 import { pluralKey, t, translateCategory, type LanguageCode, type TranslationKey } from "../../i18n";
 import type { ConversionIntent, ExportKind, FileItem } from "../types";
 
-export const welcomeStorageKey = "multi-converter-welcome-seen";
 export const notificationsStorageKey = "multi-converter-notifications-enabled";
 export const feedbackPrivacyStorageKey = "multi-converter-feedback-public-warning-seen";
 
@@ -326,10 +325,6 @@ export function readStoredFeedbackPrivacyAccepted() {
   return localStorage.getItem(feedbackPrivacyStorageKey) === "true";
 }
 
-export function shouldShowWelcome() {
-  if (import.meta.env.DEV) return new URLSearchParams(window.location.search).get("mockWelcomeSeen") !== "1";
-  return false;
-}
 
 export function conversionConcurrency(jobs: FileItem[]) {
   const total = jobs.length;

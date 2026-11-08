@@ -52,8 +52,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            welcome_state,
-            mark_welcome_seen,
             pick_file_paths,
             describe_paths,
             save_clipboard_files,

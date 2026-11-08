@@ -48,7 +48,7 @@ def next_scenario():
         return finish()
     theme, width = scenarios.pop(0)
     window.resize(width, 900)
-    view.load_uri(f'http://127.0.0.1:4189/?mockWelcomeSeen=1&mockMediaFiles=1&probeTheme={theme}&probeWidth={width}')
+    view.load_uri(f'http://127.0.0.1:4189/?mockMediaFiles=1&probeTheme={theme}&probeWidth={width}')
     return False
 
 def loaded(widget, event):

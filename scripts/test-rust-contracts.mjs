@@ -13,8 +13,6 @@ const commands = handler[1]
   .filter(Boolean);
 
 assert.deepEqual(commands, [
-  "welcome_state",
-  "mark_welcome_seen",
   "pick_file_paths",
   "describe_paths",
   "save_clipboard_files",
@@ -112,8 +110,6 @@ assert.deepEqual(
 );
 const actualSignatures = new Map(actualSignatureEntries);
 const expectedSignatures = new Map([
-  ["welcome_state", "fn welcome_state()->CommandResult<WelcomeState>"],
-  ["mark_welcome_seen", "fn mark_welcome_seen()->CommandResult<bool>"],
   ["pick_file_paths", "async fn pick_file_paths()->CommandResult<Vec<String>>"],
   ["describe_paths", "async fn describe_paths(app:AppHandle,paths:Vec<String>)->CommandResult<ImportBatchResult>"],
   ["save_clipboard_files", "async fn save_clipboard_files(files:Vec<ClipboardFile>)->CommandResult<Vec<String>>"],

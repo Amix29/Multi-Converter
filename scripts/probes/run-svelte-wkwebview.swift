@@ -33,7 +33,7 @@ final class MigrationProbe: NSObject, NSApplicationDelegate, WKNavigationDelegat
         guard index < scenarios.count else { finish(); return }
         let (theme, width) = scenarios[index]
         window.setContentSize(NSSize(width: width, height: 900))
-        let url = URL(string: "/?mockWelcomeSeen=1&mockMediaFiles=1&probeTheme=\(theme)&probeWidth=\(width)", relativeTo: base)!.absoluteURL
+        let url = URL(string: "/?mockMediaFiles=1&probeTheme=\(theme)&probeWidth=\(width)", relativeTo: base)!.absoluteURL
         view.load(URLRequest(url: url))
     }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { finish(fatal: String(describing: error)) }

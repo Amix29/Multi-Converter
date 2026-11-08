@@ -11,7 +11,6 @@
   import FilesScreen from "./app/screens/FilesScreen.svelte";
   import FormatScreen from "./app/screens/FormatScreen.svelte";
   import ProgressScreen from "./app/screens/ProgressScreen.svelte";
-  import WelcomePanel from "./app/welcome/WelcomePanel.svelte";
   import UpdateDialog from "./components/UpdateDialog.svelte";
   import UpdateInstallDialog from "./components/UpdateInstallDialog.svelte";
   import UpdateReminder from "./components/UpdateReminder.svelte";
@@ -30,11 +29,6 @@
     onFeedback={application.openFeedback}
     onSettings={application.openSettings}
     onStep={application.fileWorkflow.setStep}
-  />
-  <WelcomePanel
-    isOpen={application.isWelcomeOpen}
-    language={application.language}
-    onClose={application.closeWelcome}
   />
   <SessionGuardDialog
     isOpen={application.sessionGuard.isOpen}

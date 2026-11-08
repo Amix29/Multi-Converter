@@ -6,7 +6,6 @@ mod files;
 mod recovery;
 mod system;
 mod temp_output;
-mod welcome;
 
 type CommandResult<T> = std::result::Result<T, String>;
 
@@ -23,4 +22,3 @@ use temp_output::is_managed_temp_output_folder;
 pub(crate) use temp_output::{
     cleanup_stale_temp_output_folders, cleanup_temp_output_folder, create_temp_output_folder,
 };
-pub(crate) use welcome::{mark_welcome_seen, welcome_state};

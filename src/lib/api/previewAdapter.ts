@@ -19,12 +19,6 @@ export function createPreviewApi(): MultiConverterApi {
     setBatchRecoveryEnabled: previewRecovery.setEnabled,
     saveBatchRecovery: previewRecovery.save,
     clearBatchRecovery: previewRecovery.clear,
-    async welcomeState() {
-      return { show: previewParams.get("mockWelcomeSeen") !== "1" };
-    },
-    async markWelcomeSeen() {
-      return true;
-    },
     async bootstrapDependencies() {
       await new Promise((resolve) => window.setTimeout(resolve, 900));
       return {

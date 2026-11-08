@@ -880,12 +880,12 @@ npm run build
 For visual QA in dev preview, use:
 
 ```text
-http://127.0.0.1:1420/?mockUpdate=1&mockWelcomeSeen=1
+http://127.0.0.1:1420/?mockUpdate=1
 ```
 
-This shows the update reminder and the topbar feedback action together without
-the welcome dialog. Feedback must remain in normal navigation flow; only the
-update reminder and transient notices use floating presentation.
+This shows the update reminder and the topbar feedback action together.
+Feedback stays in the topbar. The update reminder and transient notices float
+above the content.
 
 ## Compact Windows installer verification
 

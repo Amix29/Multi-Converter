@@ -2,7 +2,7 @@ import { expect, test, type Page, type TestInfo } from "@playwright/test";
 
 test("opens the converter even when an older version saved editor mode", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("multi-converter-app-mode", "editor"));
-  await openPreview(page, "/?mockWelcomeSeen=1&mockOcrImage=1");
+  await openPreview(page, "/?mockOcrImage=1");
   await expect(page.getByRole("tab", { name: "Éditeur" })).toHaveCount(0);
   await expect(page.locator(".document-editor-shell, .pdf-editor-shell")).toHaveCount(0);
   await page.getByRole("button", { name: "Parcourir" }).click();
@@ -20,7 +20,7 @@ test("opens the converter even when an older version saved editor mode", async (
 test("the mobile prepare action receives a real touch at 390 x 844", async ({ page }, testInfo) => {
   skipUnlessProject(testInfo, "mobile-chromium");
   const consoleErrors = captureConsoleErrors(page);
-  await openPreview(page, "/?mockWelcomeSeen=1&mockSingleFile=1");
+  await openPreview(page, "/?mockSingleFile=1");
 
   await page.getByRole("button", { name: "Parcourir" }).tap();
   await expect(page.locator(".file-ticket")).toHaveCount(1);
@@ -41,7 +41,7 @@ test("runs cancellation, failure retry and export through the preview API", asyn
   const consoleErrors = captureConsoleErrors(page);
   await openPreview(
     page,
-    "/?mockWelcomeSeen=1&mockSingleFile=1&mockSlowConversion=1&mockConversionFailure=once",
+    "/?mockSingleFile=1&mockSlowConversion=1&mockConversionFailure=once",
   );
 
   await page.getByRole("button", { name: "Parcourir" }).click();
@@ -79,7 +79,7 @@ test("runs cancellation, failure retry and export through the preview API", asyn
 test("extracts and copies image text with cancellation, focus and Escape", async ({ page }, testInfo) => {
   skipUnlessProject(testInfo, "desktop-chromium");
   const consoleErrors = captureConsoleErrors(page);
-  await openPreview(page, "/?mockWelcomeSeen=1&mockOcrImage=1&mockSlowOcr=1");
+  await openPreview(page, "/?mockOcrImage=1&mockSlowOcr=1");
 
   await page.getByRole("button", { name: "Parcourir" }).click();
   const extract = page.getByRole("button", { name: "Extraire le texte" });
@@ -119,7 +119,7 @@ test("extracts and copies image text with cancellation, focus and Escape", async
 
 test("reports a truly empty OCR result without enabling copy", async ({ page }, testInfo) => {
   skipUnlessProject(testInfo, "desktop-chromium");
-  await openPreview(page, "/?mockWelcomeSeen=1&mockOcrImage=1&mockEmptyOcr=1");
+  await openPreview(page, "/?mockOcrImage=1&mockEmptyOcr=1");
   await page.getByRole("button", { name: "Parcourir" }).click();
   await page.getByRole("button", { name: "Extraire le texte" }).click();
   const dialog = page.getByRole("dialog", { name: "Texte de l’image" });
@@ -131,7 +131,7 @@ test("keeps the OCR dialog responsive at the four reference widths", async ({ pa
   skipUnlessProject(testInfo, "desktop-chromium");
   for (const width of [375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: width === 375 ? 844 : 900 });
-    await openPreview(page, "/?mockWelcomeSeen=1&mockOcrImage=1&mockSlowOcr=1");
+    await openPreview(page, "/?mockOcrImage=1&mockSlowOcr=1");
     await page.getByRole("button", { name: "Parcourir" }).click();
     await page.getByRole("button", { name: "Extraire le texte" }).click();
     const dialog = page.getByRole("dialog", { name: "Texte de l’image" });
@@ -144,20 +144,15 @@ test("keeps the OCR dialog responsive at the four reference widths", async ({ pa
   }
 });
 
-test("supports welcome, settings and feedback with keyboard focus and Escape", async ({ page }, testInfo) => {
+test("opens directly on file import and supports settings and feedback by keyboard", async ({ page }, testInfo) => {
   skipUnlessProject(testInfo, "desktop-chromium");
   const consoleErrors = captureConsoleErrors(page);
   await page.addInitScript(() => localStorage.setItem("multi-converter-feedback-public-warning-seen", "true"));
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  const welcome = page.getByRole("dialog", { name: "Bonjour, bienvenue sur Multi-Converter." });
-  await expect(welcome).toBeVisible();
-  await expect(welcome.getByRole("button", { name: "Fermer" })).toBeFocused();
-  await page.keyboard.press("ArrowRight");
-  await expect(page.getByRole("heading", { name: "Langue" })).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(welcome).toBeHidden();
+  await expect(page.getByRole("button", { name: "Parcourir" })).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 
   const settingsButton = page.getByRole("button", { name: "Paramètres" });
   await settingsButton.click();
@@ -201,7 +196,6 @@ test("has no horizontal overflow at the four target widths and 200 percent zoom"
   await page.addInitScript(() => {
     localStorage.setItem("multi-converter-feedback-public-warning-seen", "true");
     localStorage.setItem("multi-converter-app-mode", "converter");
-    localStorage.removeItem("multi-converter-welcome-seen");
   });
 
   for (const width of [375, 768, 1024, 1440]) {
@@ -238,16 +232,6 @@ async function runResponsiveJourney(
 ) {
   await page.setViewportSize({ width: options.width, height: options.height });
   await openPreview(page, "/?mockSingleFile=1");
-
-  await test.step(`${options.label} - welcome`, async () => {
-    const welcome = page.getByRole("dialog", {
-      name: "Bonjour, bienvenue sur Multi-Converter.",
-    });
-    await expect(welcome).toBeVisible();
-    await expectResponsiveState(page, `${options.label} welcome`);
-    await page.keyboard.press("Escape");
-    await expect(welcome).toBeHidden();
-  });
 
   await test.step(`${options.label} - files and global dialogs`, async () => {
     await expect(page.getByRole("heading", { name: "Fichiers" })).toBeAttached();
@@ -295,7 +279,7 @@ async function runResponsiveJourney(
 
 }
 
-async function openPreview(page: Page, url = "/?mockWelcomeSeen=1") {
+async function openPreview(page: Page, url = "/") {
   await page.emulateMedia({ reducedMotion: "reduce" });
   const response = await page.goto(url);
   expect(response?.ok()).toBe(true);

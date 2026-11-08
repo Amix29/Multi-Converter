@@ -13,7 +13,7 @@ test("recovery consent, report, folder export and re-export preserve the complet
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/?mockWelcomeSeen=1&mockSingleFile=1");
+  await page.goto("/?mockSingleFile=1");
   await page.getByRole("button", { name: "Paramètres" }).click();
   const consent = page.getByRole("checkbox", {
     name: "Retrouver le dernier lot lancé (24 h)",
@@ -60,7 +60,7 @@ test("recovery consent, report, folder export and re-export preserve the complet
 test("implicit paste imports only in Files and Formats and ignores editable fields and output", async ({
   page,
 }) => {
-  await page.goto("/?mockWelcomeSeen=1&mockSlowConversion=1");
+  await page.goto("/?mockSlowConversion=1");
   const paste = async (selector: string, text: string) =>
     page.locator(selector).evaluate((target, value) => {
       const data = new DataTransfer();
