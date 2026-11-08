@@ -223,7 +223,7 @@ async function prepareFormatCases() {
       kind: "rust-normalization",
       language: "en",
       input: output,
-      expected: "Local conversion keeps every document private",
+      expected: cleanTexts.en.join("\n"),
       threshold: 1,
     }));
   }

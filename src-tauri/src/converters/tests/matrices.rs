@@ -150,7 +150,7 @@ fn conversion_matrix_audio_quality_profiles_encode_real_media() {
             profile,
         );
         run_ffmpeg_conversion(&input, &output, args);
-        assert_media_file_is_probeable(&output, name);
+        assert_decoded_media_streams(&output, false, name);
         sizes.push(fs::metadata(output).unwrap().len());
     }
     assert!(
@@ -165,23 +165,17 @@ fn conversion_matrix_image_png_to_webp_fixture() {
     let dir = tempfile::tempdir().unwrap();
     let input = dir.path().join("pixel.png");
     let output = dir.path().join("pixel.webp");
-    let image = image::DynamicImage::new_rgba8(8, 8);
+    write_image_fixture(&input, "png");
+    let original = fs::read(&input).unwrap();
+    let expected = image::load_from_memory(&original).unwrap().into_rgba8();
 
-    image
-        .write_to(&mut File::create(&input).unwrap(), ImageFormat::Png)
-        .unwrap();
-    image
-        .write_to(&mut File::create(&output).unwrap(), ImageFormat::WebP)
-        .unwrap();
+    convert_image(&input, &output, "webp", QualityProfile::Balanced, |_, _| {}).unwrap();
 
-    let decoded = image::ImageReader::open(&output)
-        .unwrap()
-        .with_guessed_format()
-        .unwrap()
-        .decode()
-        .unwrap();
-    assert_eq!(decoded.width(), 8);
-    assert_eq!(decoded.height(), 8);
+    let bytes = fs::read(&output).unwrap();
+    assert_eq!(image::guess_format(&bytes).unwrap(), ImageFormat::WebP);
+    let decoded = image::load_from_memory_with_format(&bytes, ImageFormat::WebP).unwrap();
+    assert_eq!(decoded.into_rgba8(), expected, "lossless pixels and alpha");
+    assert_eq!(fs::read(&input).unwrap(), original);
 }
 
 #[test]
@@ -236,13 +230,13 @@ fn conversion_matrix_all_integrated_image_targets_decode() {
 fn conversion_matrix_text_to_pdf_fixture() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("fixture.pdf");
-    let source = "Fixture texte Multi-Converter 2026\nDeuxième ligne accentuée.";
+    let source = "Fixture texte Multi-Converter 2026\nDeuxiÃ¨me ligne accentuÃ©e.";
 
     fs::write(&output, simple_pdf("fixture.txt", source)).unwrap();
 
     let extracted = pdf_extract::extract_text(&output).unwrap();
     assert!(extracted.contains("Fixture texte Multi-Converter 2026"));
-    assert!(extracted.contains("Deuxième ligne accentuée"));
+    assert!(extracted.contains("DeuxiÃ¨me ligne accentuÃ©e"));
 }
 
 #[test]
@@ -257,7 +251,7 @@ fn conversion_matrix_all_ffmpeg_audio_targets_probe() {
             extension_for_test_source(source_format)
         ));
         generate_audio_fixture(&input, source_format);
-        assert_media_file_is_probeable(&input, source_format);
+        assert_decoded_media_streams(&input, false, source_format);
 
         for target in crate::registry::get_targets_for_extension(source_format)
             .into_iter()
@@ -275,8 +269,9 @@ fn conversion_matrix_all_ffmpeg_audio_targets_probe() {
             });
 
             run_ffmpeg_conversion(&input, &output, args);
-            assert_media_file_is_probeable(
+            assert_decoded_media_streams(
                 &output,
+                false,
                 &format!("{} -> {}", source_format, target.format),
             );
         }
@@ -298,7 +293,7 @@ fn conversion_matrix_all_ffmpeg_video_and_extraction_targets_probe() {
             extension_for_test_source(source_format)
         ));
         generate_video_fixture(&input, source_format);
-        assert_media_file_is_probeable(&input, source_format);
+        assert_decoded_media_streams(&input, true, source_format);
 
         for target in crate::registry::get_targets_for_extension(source_format)
             .into_iter()
@@ -327,8 +322,9 @@ fn conversion_matrix_all_ffmpeg_video_and_extraction_targets_probe() {
                 run_ffmpeg_conversion(&input, &output, args);
             }
 
-            assert_media_file_is_probeable(
+            assert_decoded_media_streams(
                 &output,
+                target.category_id == "video",
                 &format!("{} -> {}", source_format, target.format),
             );
         }
@@ -445,35 +441,53 @@ fn run_ffmpeg_args(args: &[String], context: &str) {
     );
 }
 
-fn assert_media_file_is_probeable(path: &Path, context: &str) {
+fn assert_decoded_media_streams(path: &Path, expect_video: bool, context: &str) {
     let mut command = Command::new(ffprobe_test_path());
     configure_child_process(&mut command);
     let output = command
         .args([
             "-v",
             "error",
+            "-count_frames",
             "-show_entries",
-            "format=duration",
+            "format=duration:stream=codec_type,nb_read_frames",
             "-of",
-            "default=noprint_wrappers=1:nokey=1",
+            "json",
         ])
         .arg(path)
         .output()
-        .unwrap_or_else(|error| {
-            panic!("ffprobe could not start for {context}: {error}");
-        });
-    let duration = String::from_utf8_lossy(&output.stdout);
+        .unwrap_or_else(|error| panic!("ffprobe could not start for {context}: {error}"));
     assert!(
-        output.status.success()
-            && duration
-                .trim()
-                .parse::<f64>()
-                .is_ok_and(|value| value.is_finite() && value > 0.0),
-        "ffprobe rejected {context} at {}: stdout={} stderr={}",
-        path.display(),
-        duration,
+        output.status.success() && output.stderr.is_empty(),
+        "ffprobe could not decode {context}: {}",
         String::from_utf8_lossy(&output.stderr)
     );
+    let probe: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert!(
+        probe["format"]["duration"]
+            .as_str()
+            .and_then(|value| value.parse::<f64>().ok())
+            .is_some_and(|value| value.is_finite() && value > 0.0),
+        "{context}: invalid duration in {probe}"
+    );
+    let streams = probe["streams"].as_array().unwrap();
+    for (kind, expected) in [("audio", 1), ("video", usize::from(expect_video))] {
+        let matching: Vec<_> = streams.iter().filter(|s| s["codec_type"] == kind).collect();
+        assert_eq!(
+            matching.len(),
+            expected,
+            "{context}: unexpected {kind} tracks in {probe}"
+        );
+        for stream in matching {
+            assert!(
+                stream["nb_read_frames"]
+                    .as_str()
+                    .and_then(|value| value.parse::<u64>().ok())
+                    .is_some_and(|frames| frames > 0),
+                "{context}: empty {kind} track in {probe}"
+            );
+        }
+    }
 }
 
 fn ffmpeg_test_path() -> PathBuf {

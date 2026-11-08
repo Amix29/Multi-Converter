@@ -12,21 +12,20 @@ mod svg_resources;
 mod svg_security_tests;
 
 pub(in crate::converters) fn convert_image(
-    app: &AppHandle,
-    job_id: &str,
     input_path: &Path,
     output_path: &Path,
     target_format: &str,
     quality: QualityProfile,
+    progress: impl Fn(u8, &str),
 ) -> Result<Vec<ConversionWarning>> {
     ensure_integrated_memory_budget(input_path, "image")?;
-    emit_progress(app, job_id, 18, "Lecture de l'image");
+    progress(18, "Lecture de l'image");
     let (image, profile, has_exif) = read_integrated_image_with_profile(input_path)?;
     let warnings = fidelity::output_warnings(&image, target_format, profile.as_deref(), has_exif);
 
-    emit_progress(app, job_id, 52, "Encodage de l'image");
+    progress(52, "Encodage de l'image");
     write_image_with_profile(output_path, image, target_format, quality, profile)?;
-    emit_progress(app, job_id, 88, "Finalisation");
+    progress(88, "Finalisation");
     Ok(warnings)
 }
 

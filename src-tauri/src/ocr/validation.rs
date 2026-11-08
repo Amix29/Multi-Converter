@@ -158,6 +158,8 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(fixtures.len(), 5);
 
+        let output_dir =
+            std::env::var_os("MULTI_CONVERTER_OCR_NORMALIZED_OUTPUT").map(PathBuf::from);
         for fixture in fixtures {
             let source = repository.join(fixture["input"].as_str().unwrap());
             let original = fs::read(&source).unwrap();
@@ -173,6 +175,11 @@ mod tests {
                     .format(),
                 Some(ImageFormat::Png)
             );
+            if let Some(directory) = &output_dir {
+                let name = Path::new(source.file_name().unwrap()).with_extension("png");
+                let mut target = File::create_new(directory.join(name)).unwrap();
+                std::io::copy(&mut File::open(&prepared.path).unwrap(), &mut target).unwrap();
+            }
         }
     }
 

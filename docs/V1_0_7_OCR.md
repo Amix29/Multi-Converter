@@ -454,7 +454,10 @@ retained report from the following successful Windows gate records clean mean
 100%, difficult mean 99.76%, median measured recognition 43,878 ms and peak
 worker working set 750,030,848 bytes (715.3 MiB). The noise fixture scored
 97.62% against its 95% threshold; every other fixture scored 100%. Native,
-scanned and mixed PDFs all scored 100%, as did the five Rust input normalizers.
+scanned and mixed PDFs all scored 100%. The five format cases in that historical
+report checked Rust normalization and source preservation. Their text scores
+were populated from the reference. The current harness scores worker output
+for each of those five normalized images.
 PDF results used the current source-built wrapper; they must not be confused
 with the historical packaged artifact.
 

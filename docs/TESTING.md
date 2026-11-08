@@ -79,6 +79,20 @@ that the frozen v3 byte-range edits preserve every non-UI XML component and
 root attribute. Profile tests reject altered source/output hashes and unsafe
 ranges. Both independent audits read source archives without extracting trees.
 
+The OCR corpus scores 40 cases across 20 distinct input files. The 21 clean
+cases score three text blocks from each of seven language images. For the five
+format cases, the Rust test verifies source integrity and produces normalized
+PNGs. The worker reads each PNG separately and must recognize all three
+reference lines at the manifest threshold. The JSON report records the number
+of distinct inputs by SHA-256, worker requests and whether the run was partial.
+
+The native PNG-to-WebP matrix case runs the integrated image converter on a
+nonuniform, partially transparent PNG and checks the output format from its
+bytes, every decoded RGBA pixel and the original input bytes. The FFmpeg matrix
+uses ffprobe to decode and count frames in every expected audio/video track.
+Audio extraction must produce one audio track, while the video fixtures and
+video outputs must retain one decodable audio track and one decodable video track.
+
 On Windows, `test:ocr:corpus` prefers the prepared native worker/model pair,
 then the preserved v3 pair when the native profile is absent;
 `MULTI_CONVERTER_OCR_CORPUS_EXECUTABLE` overrides it explicitly and

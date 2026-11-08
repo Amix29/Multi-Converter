@@ -62,24 +62,38 @@ try {
     validateAccuracy(fixture, result, failures);
     logResult(result);
   }
-  const pdfium = await pdfiumExecutable();
-  for (const fixture of selectedCases.filter(({ kind }) => kind === "pdf-hybrid")) {
+  const pdfCases = selectedCases.filter(({ kind }) => kind === "pdf-hybrid");
+  const pdfium = pdfCases.length ? await pdfiumExecutable() : null;
+  for (const fixture of pdfCases) {
     const result = await recognizePdfFixture(worker, pdfium, fixture, temporary);
     results.push(result);
     validateAccuracy(fixture, result, failures);
     logResult(result);
   }
-  if (selectedCases.some(({ kind }) => kind === "rust-normalization")) runRustNormalizationTest();
-  for (const fixture of selectedCases.filter(({ kind }) => kind === "rust-normalization")) {
-    results.push({ id: fixture.id, kind: fixture.kind, accuracy: 1, elapsedMs: 0, actual: fixture.expected });
+  const formatCases = selectedCases.filter(({ kind }) => kind === "rust-normalization");
+  if (formatCases.length) {
+    const normalized = await fs.mkdtemp(path.join(temporary, "normalized-"));
+    runRustNormalizationTest(normalized);
+    for (const fixture of formatCases) {
+      const input = path.join(normalized, path.parse(fixture.input).name + ".png");
+      await assertFile(input, "image normalisée par Rust");
+      const result = await recognizeFixture(worker, fixture, temporary, recognitionCache, input);
+      results.push(result);
+      validateAccuracy(fixture, result, failures);
+      logResult(result);
+    }
   }
   const clean = results.filter(({ id }) => id.startsWith("clean-"));
   const difficult = results.filter(({ kind, id }) => kind === "ocr-image" && !id.startsWith("clean-") && id !== "blank");
   const measured = results.filter(({ elapsedMs }) => elapsedMs > 0);
   const memorySamples = results.map(({ workerWorkingSetBytes }) => workerWorkingSetBytes)
     .filter((value) => Number.isFinite(value) && value > 0);
+  const distinctInputFiles = new Set(selectedCases.map(({ sha256 }) => sha256)).size;
   const report = {
     schemaVersion: 1,
+    partial,
+    distinctInputFiles,
+    recognitionRequests: worker.recognitionRequests,
     platform,
     runtimeArchiveSha256: directExecutable ? null : await sha256(runtimeArchive),
     directExecutable: directExecutable ? path.relative(root, directExecutable).replaceAll("\\", "/") : null,
@@ -104,12 +118,9 @@ try {
   }
   if (failures.length) throw new Error(`Corpus OCR insuffisant:\n- ${failures.join("\n- ")}`);
   console.log(
-    `OCR ${partial ? "corpus probe" : "corpus"} passed: ${selectedCases.length} cases, clean mean ${formatAccuracy(report.cleanMean)}, difficult mean ${formatAccuracy(report.difficultMean)}, median ${report.medianRecognitionMs} ms, peak ${formatBytes(report.peakWorkerWorkingSetBytes)} (${platform}, CPU).`,
+    `OCR ${partial ? "corpus probe" : "corpus"} passed: ${results.length} cases on ${distinctInputFiles} distinct input files, ${worker.recognitionRequests} worker requests, clean mean ${formatAccuracy(report.cleanMean)}, difficult mean ${formatAccuracy(report.difficultMean)}, median ${report.medianRecognitionMs} ms, peak ${formatBytes(report.peakWorkerWorkingSetBytes)} (${platform}, CPU).`,
   );
   console.log(`OCR worker network observation: ${worker.network.samples} samples, 0 remote connections.`);
-  for (const result of results) {
-    if (result.kind === "rust-normalization") logResult(result);
-  }
 } catch (error) {
   runFailed = true;
   throw error;
@@ -123,17 +134,26 @@ async function validateManifest(manifest) {
   if (manifest.schemaVersion !== 1) failures.push("schemaVersion doit valoir 1");
   if (manifest.cases?.length < 40) failures.push("au moins 40 cas sont requis");
   const counts = countBy(manifest.cases ?? [], ({ category }) => category);
-  if (counts.clean !== 21) failures.push("21 documents propres sont requis");
+  if (counts.clean !== 21) failures.push("21 blocs de texte propres sont requis");
   if ((counts.difficult ?? 0) < 9) failures.push("au moins 9 cas difficiles sont requis");
   if (counts["image-format"] !== 5) failures.push("les cinq formats image sont requis");
   if (counts.pdf !== 3) failures.push("les PDF natif, scanné et mixte sont requis");
   const cleanLanguages = countBy(manifest.cases.filter(({ category }) => category === "clean"), ({ language }) => language);
   for (const language of ["fr", "en", "es", "de", "it", "pt", "ja"]) {
-    if (cleanLanguages[language] !== 3) failures.push(`trois documents propres ${language} sont requis`);
+    if (cleanLanguages[language] !== 3) failures.push(`trois blocs propres ${language} sont requis`);
   }
+  const ids = new Set();
   const fixtureRoot = `${path.resolve(root, "tests", "fixtures", "ocr")}${path.sep}`.toLowerCase();
   for (const fixture of manifest.cases ?? []) {
-    if (!fixture.id || !fixture.input || fixture.expected === undefined || !fixture.language || fixture.threshold === undefined) {
+    if (!/^[a-z0-9][a-z0-9-]*$/u.test(fixture.id ?? "") || ids.has(fixture.id)) {
+      failures.push(`identifiant invalide ou dupliqué: ${fixture.id}`);
+    }
+    ids.add(fixture.id);
+    if (!["ocr-image", "pdf-hybrid", "rust-normalization"].includes(fixture.kind)) {
+      failures.push(`${fixture.id}: type de cas inconnu`);
+    }
+    if (!fixture.input || typeof fixture.expected !== "string" || !fixture.language ||
+        !Number.isFinite(fixture.threshold) || fixture.threshold <= 0 || fixture.threshold > 1) {
       failures.push(`${fixture.id ?? "cas inconnu"}: contrat incomplet`);
       continue;
     }
@@ -145,24 +165,24 @@ async function validateManifest(manifest) {
   if (failures.length) throw new Error(`Manifeste OCR invalide:\n- ${failures.join("\n- ")}`);
 }
 
-async function recognizeFixture(workerInstance, fixture, temporaryRoot, cache) {
-  let recognized = cache.get(fixture.input);
+async function recognizeFixture(workerInstance, fixture, temporaryRoot, cache, input = path.resolve(root, fixture.input)) {
+  let recognized = cache.get(input);
   const cacheHit = Boolean(recognized);
   if (!recognized) {
     const output = path.join(temporaryRoot, `${fixture.id}.json`);
     const started = performance.now();
-    await workerInstance.recognize(fixture.id, path.resolve(root, fixture.input), output);
+    const payload = await workerInstance.recognize(fixture.id, input, output);
     recognized = {
-      payload: JSON.parse(await fs.readFile(output, "utf8")),
+      payload,
       elapsedMs: Math.round(performance.now() - started),
       workerWorkingSetBytes: await workingSet(workerInstance.pid),
     };
-    cache.set(fixture.input, recognized);
+    cache.set(input, recognized);
   }
-  const blocks = recognized.payload.pages?.[0]?.blocks ?? [];
   const actual = fixture.blockIndex === undefined
-    ? recognized.payload.text ?? ""
-    : blocks[fixture.blockIndex]?.text ?? "";
+    ? recognized.payload.text
+    : recognized.payload.pages[0].blocks[fixture.blockIndex]?.text;
+  if (typeof actual !== "string") throw new Error(`${fixture.id}: bloc OCR absent`);
   return scoredResult(fixture, actual, cacheHit ? 0 : recognized.elapsedMs, recognized.workerWorkingSetBytes);
 }
 
@@ -187,8 +207,8 @@ async function recognizePdfFixture(workerInstance, pdfium, fixture, temporaryRoo
     const output = path.join(temporaryRoot, `${fixture.id}-page-${page.pageNumber}.json`);
     run(pdfium, ["--render", input, rendered, "--page", String(page.pageNumber), "--format", "png", "--dpi", "300"], "rendu PDFium");
     cropLightPageBorder(rendered, cropped);
-    await workerInstance.recognize(`${fixture.id}-${page.pageNumber}`, cropped, output);
-    pages.push(JSON.parse(await fs.readFile(output, "utf8")).text ?? "");
+    const result = await workerInstance.recognize(`${fixture.id}-${page.pageNumber}`, cropped, output);
+    pages.push(result.text);
   }
   return scoredResult(fixture, pages.join(" "), Math.round(performance.now() - started), await workingSet(workerInstance.pid));
 }
@@ -229,7 +249,9 @@ async function startWorker(workerPath, modelsPath) {
     pid: child.pid,
     initializationMs: Math.round(performance.now() - started),
     network,
+    recognitionRequests: 0,
     async recognize(jobId, input, output) {
+      this.recognitionRequests += 1;
       child.stdin.write(`${JSON.stringify({ schemaVersion: 1, jobId, input, output })}\n`);
       let message;
       try {
@@ -239,6 +261,12 @@ async function startWorker(workerPath, modelsPath) {
       }
       if (message.type === "failed") throw new Error(`${jobId}: ${message.message}`);
       if (message.type !== "completed" || message.jobId !== jobId) throw new Error(`${jobId}: réponse OCR inattendue ${JSON.stringify(message)}`);
+      const payload = JSON.parse(await fs.readFile(output, "utf8"));
+      if (payload?.schemaVersion !== 1 || payload.jobId !== jobId || typeof payload.text !== "string" ||
+          payload.pages?.length !== 1 || !Array.isArray(payload.pages[0]?.blocks)) {
+        throw new Error(`${jobId}: résultat OCR incomplet ou associé à une autre requête`);
+      }
+      return payload;
     },
     async close(force = false) {
       network.stop();
@@ -312,9 +340,10 @@ function run(executable, args, label) {
   if (result.status !== 0) throw new Error(`${label} en échec (${result.status ?? "sans code"}).`);
 }
 
-function runRustNormalizationTest() {
-  const result = spawnSync("node", ["scripts/cargo-test-temp.mjs", "test", "--manifest-path", "src-tauri/Cargo.toml", "ocr::validation::tests::phase_6_manifest_image_formats_are_normalized_without_touching_sources", "--", "--exact"], {
+function runRustNormalizationTest(outputDirectory) {
+  const result = spawnSync("node", ["scripts/cargo-test-temp.mjs", "test", "--manifest-path", "src-tauri/Cargo.toml", "--lib", "ocr::validation::tests::phase_6_manifest_image_formats_are_normalized_without_touching_sources", "--", "--exact"], {
     cwd: root, stdio: "inherit", windowsHide: true,
+    env: { ...process.env, MULTI_CONVERTER_OCR_NORMALIZED_OUTPUT: outputDirectory },
   });
   if (result.status !== 0) throw new Error("La normalisation Rust des cinq formats a échoué.");
 }

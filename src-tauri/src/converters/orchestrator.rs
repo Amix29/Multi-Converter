@@ -132,12 +132,11 @@ fn convert_impl(app: &AppHandle, job: ConversionJob) -> Result<ConversionResult>
         }
         engine_id if uses_integrated_image_pipeline(engine_id) => {
             warnings = convert_image(
-                app,
-                &job.id,
                 &input_path,
                 &output_path,
                 target.id,
                 job.quality_profile,
+                |percent, phase| emit_progress(app, &job.id, percent, phase),
             )?
         }
         "rust-text" | "pdf-extract" | "text" => {
