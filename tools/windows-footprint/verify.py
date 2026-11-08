@@ -68,8 +68,6 @@ def digest(p):
 
 before, base_size, base_sensitive = inventory(args.baseline)
 after, install_size, installed_sensitive = inventory(args.installed)
-if base_sensitive != installed_sensitive:
-    raise ValueError("Application, OCR or libvips file allocation differs from baseline")
 if before.keys() != after.keys():
     raise ValueError(f"Installed file membership differs: {before.keys() ^ after.keys()}")
 aggregate = hashlib.sha256()
@@ -108,7 +106,8 @@ for model in json.loads(locks.read_text(encoding="utf8")):
 caches = [inventory(p)[1] for p in args.cache]
 total = install_size["clusterRoundedStoredBytes"] + sum(c["clusterRoundedStoredBytes"] for c in caches)
 report = {"baseline": base_size, "installed": install_size, "measuredData": caches,
-          "identicalAppOcrVipsAllocations": len(installed_sensitive),
+          "appOcrVipsFilesMeasured": len(installed_sensitive),
+          "appOcrVipsFilesWithSameAllocation": sum(base_sensitive.get(name) == n for name, n in installed_sensitive.items()),
           "windowsAllocationWithCaches": install_size["windowsFileAllocationBytes"] + sum(c["windowsFileAllocationBytes"] for c in caches),
           "installedAndCacheBytes": total, "limitBytes": 750_000_000,
           "byteIdenticalFiles": len(after)-1-len(notice_line_endings),

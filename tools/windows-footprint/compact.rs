@@ -103,16 +103,7 @@ fn optimize(root: PathBuf) -> io::Result<()> {
             return Err(io::Error::other("expected installed regular file"));
         }
         let before = stored_bytes(&path)?;
-        // Keep the application's startup, OCR and libvips reads on their original storage path.
-        let engine = relative.starts_with("engines/libreoffice/")
-            || relative.starts_with("engines/pandoc/")
-            || relative.starts_with("engines/pdfium/")
-            || matches!(relative, "ffmpeg.exe" | "ffprobe.exe");
-        if engine
-            && meta.len() >= MIN_BYTES
-            && before >= meta.len()
-            && !meta.permissions().readonly()
-        {
+        if meta.len() >= MIN_BYTES && before >= meta.len() && !meta.permissions().readonly() {
             let _ = compress(&path); // Locked files and unsupported volumes retain their original allocation.
         }
         stored += stored_bytes(&path)?;

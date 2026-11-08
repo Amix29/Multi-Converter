@@ -29,9 +29,9 @@ See `MIGRATION_SVELTE_EXECUTION.md` for measured platform evidence and open gate
 
 The NSIS post-install hook runs an installer-only Rust helper as the installing
 user. Its compiled file list comes from the desktop and Windows resource maps.
-It requests Windows Overlay Filter XPRESS16K on FFmpeg, ffprobe and the
-LibreOffice, PDFium and Pandoc files of at least 32 KiB. The application,
-OCR worker, five FP32 models and libvips use their original file storage.
+It requests Windows Overlay Filter XPRESS16K on eligible packaged files of
+at least 32 KiB. The application reads its ordinary bytes directly, including
+the five full-precision OCR modules. Restored FP32 model hashes are checked.
 The helper measures the resulting storage for the Installed Apps estimate.
 Locked, read-only, multiply-linked or redirected files may keep their original
 allocation. A filesystem without WOF can still run the app.
