@@ -6,6 +6,7 @@ import { inspectFilterableZip, readZipEntry } from "./lib/filtered-zip.mjs";
 import { retainLibreOfficeFile } from "./lib/libreoffice-profile.mjs";
 import { fileHash, stageEntry, treeManifest, verifyContent } from "./lib/direct-engine-resources.mjs";
 import { readWindowsProfiles, retainOcrFile, deriveOcrManifest, filterRegistryBytes, validateOcrProfileMarker } from "./lib/windows-engine-profile.mjs";
+import { verifyNativeOcr } from "./lib/native-ocr-profile.mjs";
 
 const root = process.cwd();
 const sourceRoot = path.join(root, "src-tauri");
@@ -33,6 +34,9 @@ if (await exists(current)) {
   await fs.rename(staging, current);
   console.log("Prepared and verified Windows direct resources without full temporary engine copies");
 }
+
+const native = await verifyNativeOcr();
+console.log(`Native offline OCR verified: ${native.artifact.fileCount} runtime files, ${native.modelArtifact.fileCount} model files`);
 
 async function stageOffice(destination) {
   const source = path.join(sourceRoot, "bundled-engine-archives/windows-x64/libreoffice.zip");

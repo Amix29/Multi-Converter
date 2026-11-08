@@ -1,0 +1,13 @@
+{
+  "package": "oar-ocr-derive",
+  "version": "0.10.2",
+  "repository": "greatv/oar-ocr",
+  "revision": "16ee0599a12a477178b8495918f99e1ed92e5e4e",
+  "files": [
+    {
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/greatv/oar-ocr/16ee0599a12a477178b8495918f99e1ed92e5e4e/LICENSE",
+      "sha256": "8a7ec3e5de8c98ead49da38ca820edb995102e95093da040b304413e37b6c607"
+    }
+  ]
+}

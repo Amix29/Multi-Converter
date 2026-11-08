@@ -7,9 +7,32 @@ struct ProfileLock {
     source_artifact: ArtifactLock,
     artifact: ArtifactLock,
     retired_files: Vec<ContentFile>,
+    #[serde(default)]
+    source_model_artifact: Option<ArtifactLock>,
+    #[serde(default)]
+    model_artifact: Option<ArtifactLock>,
+    #[serde(default)]
+    retired_model_files: Vec<ContentFile>,
 }
 
 static APPROVED: OnceLock<Result<ProfileLock, String>> = OnceLock::new();
+static NATIVE: OnceLock<Result<ProfileLock, String>> = OnceLock::new();
+
+fn native() -> Result<&'static ProfileLock, String> {
+    NATIVE
+        .get_or_init(|| {
+            serde_json::from_str(include_str!("../../windows-native-ocr-profile.json"))
+                .map_err(|error| format!("OCR_RUNTIME_LOCK:{error}"))
+        })
+        .as_ref()
+        .map_err(Clone::clone)
+}
+
+fn same(left: &ArtifactLock, right: &ArtifactLock) -> bool {
+    left.file_count == right.file_count
+        && left.total_bytes == right.total_bytes
+        && left.aggregate_sha256 == right.aggregate_sha256
+}
 
 fn approved() -> Result<&'static ProfileLock, String> {
     APPROVED
@@ -24,13 +47,19 @@ fn approved() -> Result<&'static ProfileLock, String> {
 pub(super) fn retired_files(
     expected: &ArtifactLock,
 ) -> Result<Option<&'static [ContentFile]>, String> {
-    let profile = approved()?;
-    Ok(
-        (expected.aggregate_sha256 == profile.artifact.aggregate_sha256
-            && expected.file_count == profile.artifact.file_count
-            && expected.total_bytes == profile.artifact.total_bytes)
-            .then_some(profile.retired_files.as_slice()),
-    )
+    for profile in [approved()?, native()?] {
+        if same(expected, &profile.artifact) {
+            return Ok(Some(&profile.retired_files));
+        }
+        if profile
+            .model_artifact
+            .as_ref()
+            .is_some_and(|models| same(expected, models))
+        {
+            return Ok(Some(&profile.retired_model_files));
+        }
+    }
+    Ok(None)
 }
 
 #[derive(Deserialize)]
@@ -51,40 +80,106 @@ pub(super) fn expectation(
     if selection.platform != "windows-x64" {
         return Ok(original.clone());
     }
-    let mut bytes = Vec::new();
-    File::open(root.join("runtime-manifest.json"))
-        .and_then(|file| file.take(MAX_MANIFEST_BYTES + 1).read_to_end(&mut bytes))
-        .map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
-    if bytes.len() as u64 > MAX_MANIFEST_BYTES {
-        return Err("OCR_RUNTIME_UNVERIFIED:Manifest exceeds size limit.".to_string());
-    }
-    let marker: Marker = serde_json::from_slice(&bytes)
-        .map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
+    let marker = read_marker(root, "runtime-manifest.json")?;
     let Some(id) = marker.distribution_profile else {
         return Ok(original.clone());
     };
-    let profile = approved()?;
+    let profile = if id == native()?.profile_id {
+        native()?
+    } else {
+        approved()?
+    };
     if id != profile.profile_id
         || marker.source_aggregate_sha256.as_deref()
             != Some(profile.source_artifact.aggregate_sha256.as_str())
-        || original.file_count != profile.source_artifact.file_count
-        || original.total_bytes != profile.source_artifact.total_bytes
-        || original.aggregate_sha256 != profile.source_artifact.aggregate_sha256
+        || !same(original, &profile.source_artifact)
     {
         return Err(
             "OCR_RUNTIME_UNVERIFIED:Unknown runtime profile or changed origin.".to_string(),
         );
     }
-    // This selects an embedded approved expectation, never a hash supplied by
-    // the resource. The existing verifier still hashes every file and rejects
-    // unknown files and incorrect architecture before inference. Leftovers from
-    // the previous installer must match the embedded original hashes exactly.
+    // Expectations come from compiled approved profiles, never the resource.
     Ok(profile.artifact.clone())
+}
+
+fn read_marker(root: &Path, name: &str) -> Result<Marker, String> {
+    let mut bytes = Vec::new();
+    File::open(root.join(name))
+        .and_then(|file| file.take(MAX_MANIFEST_BYTES + 1).read_to_end(&mut bytes))
+        .map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))?;
+    if bytes.len() as u64 > MAX_MANIFEST_BYTES {
+        return Err("OCR_RUNTIME_UNVERIFIED:Manifest exceeds size limit.".to_string());
+    }
+    serde_json::from_slice(&bytes).map_err(|error| format!("OCR_RUNTIME_UNVERIFIED:{error}"))
+}
+
+pub(super) fn native_selected(root: &Path, selected: &PlatformSelection) -> Result<bool, String> {
+    Ok(same(&expectation(root, selected)?, &native()?.artifact))
+}
+
+pub(super) fn model_expectation(
+    root: &Path,
+    original: &ArtifactLock,
+    runtime: &ArtifactLock,
+) -> Result<ArtifactLock, String> {
+    let marker = read_marker(root, "models-lock.json")?;
+    let profile = native()?;
+    if !same(runtime, &profile.artifact) {
+        if marker.distribution_profile.is_some() {
+            return Err("OCR_RUNTIME_UNVERIFIED:Native models require the native runtime.".into());
+        }
+        return Ok(original.clone());
+    }
+    if marker.distribution_profile.as_deref() != Some(profile.profile_id.as_str())
+        || marker.source_aggregate_sha256.as_deref() != Some(original.aggregate_sha256.as_str())
+        || !profile
+            .source_model_artifact
+            .as_ref()
+            .is_some_and(|source| same(source, original))
+    {
+        return Err("OCR_RUNTIME_UNVERIFIED:Model profile or origin changed.".into());
+    }
+    profile
+        .model_artifact
+        .clone()
+        .ok_or_else(|| "OCR_RUNTIME_LOCK:Missing native model lock.".into())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn native_models_require_matching_runtime_and_unchanged_embedded_origin() {
+        let temp = tempfile::tempdir().unwrap();
+        let original = parse_lock().unwrap().model_artifact;
+        let profile = native().unwrap();
+        let file = temp.path().join("models-lock.json");
+        let marker = serde_json::json!({"distributionProfile":profile.profile_id,
+            "sourceAggregateSha256":original.aggregate_sha256});
+        fs::write(&file, marker.to_string()).unwrap();
+        assert_eq!(
+            model_expectation(temp.path(), &original, &profile.artifact)
+                .unwrap()
+                .aggregate_sha256,
+            profile.model_artifact.as_ref().unwrap().aggregate_sha256
+        );
+        assert!(model_expectation(temp.path(), &original, &approved().unwrap().artifact).is_err());
+        fs::write(
+            &file,
+            r#"{"distributionProfile":"windows-native-ocr-v1","sourceAggregateSha256":"wrong"}"#,
+        )
+        .unwrap();
+        assert!(model_expectation(temp.path(), &original, &profile.artifact).is_err());
+        fs::write(&file, "{}").unwrap();
+        assert!(model_expectation(temp.path(), &original, &profile.artifact).is_err());
+        assert_eq!(
+            model_expectation(temp.path(), &original, &approved().unwrap().artifact)
+                .unwrap()
+                .aggregate_sha256,
+            original.aggregate_sha256
+        );
+    }
 
     #[test]
     fn profiles_preserve_original_archive_expectations_and_reject_unknown_variants() {

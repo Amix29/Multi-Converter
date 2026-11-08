@@ -150,8 +150,8 @@ assert.match(testingDocs, /macOS Conversion Matrix[\s\S]*requires actual ARM FFm
 assert.match(v107Plan, /file converter[\s\S]*PP-OCRv6_medium/, "V1.0.7 plan must preserve the conversion and local OCR scope");
 assert.match(v107Plan, /repository metadata is synchronized to `1\.0\.7`[\s\S]*version change is not a release-readiness claim/, "V1.0.7 plan must distinguish development metadata from release readiness");
 assert.match(v107Validation, /Overall gate:\s*\*\*blocked\*\*/, "V1.0.7 validation must not claim release readiness");
-assert.match(v107Ocr, /Windows implementation:\s*\*\*patched reference runtime built and packaged; smoke and full 40-case corpus passed\*\*/, "OCR documentation must record the verified Windows runtime boundary");
-assert.match(v107Ocr, /Windows NSIS build:\s*\*\*local 8b510138 candidate built; unsigned; installed acceptance pending\*\*/, "OCR documentation must distinguish the current unsigned local package from earlier signed checkpoints");
+assert.match(v107Ocr, /Windows implementation:\s*\*\*native Rust\/ONNX CPU profile integrated; [^*\r\n]*40-case corpus passed at 100%; [^*\r\n]+\*\*/, "OCR documentation must record native worker corpus proof separately from integrated gates");
+assert.match(v107Ocr, /Windows NSIS build:\s*\*\*native-profile (?:setup pending|local NSIS built and payload verified); installed acceptance pending\*\*/, "OCR documentation must keep native-package evidence distinct from installed acceptance");
 assert.match(v107Ocr, /Windows packaged application smoke:\s*\*\*previous checkpoint only; current application acceptance pending\*\*/, "OCR documentation must distinguish packaged smoke evidence from the installed matrix");
 assert.match(v107Ocr, /macOS Apple Silicon runtime:\s*\*\*official runtime built and packaged reproducibly; license inventory and full 40-case corpus passed; installed application acceptance pending/, "Mac OCR worker proof must remain distinct from installed application acceptance");
 const macSelection = JSON.parse(fs.readFileSync(path.join(root, "docs", "audits", "2026-10-30", "macos-ocr-runtime-selection.json"), "utf8"));

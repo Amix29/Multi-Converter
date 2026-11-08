@@ -9,11 +9,17 @@ import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath, ocrRu
 const root = process.cwd();
 const platform = hostOcrPlatform();
 const runtimeArchive = ocrRuntimeArchivePath(root, platform);
-const directRoot = platform === "windows-x64" ? path.join(root, "src-tauri/bundled-engine-profiles/windows-x64/v3/ocr") : null;
+let directRoot = null;
+if (platform === "windows-x64") {
+  for (const profile of ["native-v1", "v3"]) {
+    const candidate = path.join(root, `src-tauri/bundled-engine-profiles/windows-x64/${profile}/ocr`);
+    if ((await fs.stat(path.join(candidate, "runtime/windows-x64/ocr-worker.exe")).catch(() => null))?.isFile()) { directRoot = candidate; break; }
+  }
+}
 const directWorker = directRoot && path.join(directRoot, "runtime/windows-x64/ocr-worker.exe");
 const useDirect = directWorker && (await fs.stat(directWorker).catch(() => null))?.isFile();
 const models = useDirect ? path.join(directRoot, "models") : path.join(root, "src-tauri", "ocr-resources", "models");
-await assertFile(runtimeArchive, "archive du runtime OCR préparé");
+if (!useDirect) await assertFile(runtimeArchive, "archive du runtime OCR préparé");
 await assertDirectory(models, "modèles OCR préparés");
 
 const temporary = await fs.mkdtemp(path.join(os.tmpdir(), "multi-converter-ocr-smoke-"));

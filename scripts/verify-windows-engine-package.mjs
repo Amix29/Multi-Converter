@@ -6,22 +6,24 @@ import { createHash } from "node:crypto";
 import { fileHash } from "./lib/direct-engine-resources.mjs";
 import { readWindowsProfiles, validateOcrProfileMarker } from "./lib/windows-engine-profile.mjs";
 import { nsisBinaryExpectation } from "./lib/tauri-bundle-binary.mjs";
+import { nativeOcrRoot, verifyNativeOcr } from "./lib/native-ocr-profile.mjs";
 
 // Decode the exact installer into a hash consumer, never an installed tree.
 const argument = name => process.argv[process.argv.indexOf(name) + 1];
 if (!process.argv.includes("--installer")) throw Error("Usage: --installer <setup.exe> [--report <json>]");
 const installer = path.resolve(argument("--installer"));
 const sevenZip = process.env.MULTI_CONVERTER_7ZIP ?? path.join(process.env.ProgramFiles ?? "C:/Program Files", "7-Zip/7z.exe");
-const { office: profile, ocr: ocrProfile } = await readWindowsProfiles(process.cwd());
+const { office: profile } = await readWindowsProfiles(process.cwd());
+const ocrProfile = await verifyNativeOcr();
 const lock = JSON.parse(await fs.readFile("src-tauri/ocr-runtime-lock.json", "utf8"));
 const selected = lock.platformSelections.find(item => item.platform === "windows-x64");
 const officePrefix = "engines/libreoffice/compatible/";
 const expected = new Map();
-const direct = "src-tauri/bundled-engine-profiles/windows-x64/v3";
+const direct = nativeOcrRoot;
 
 for (const [folder, prefix, manifestName, artifact] of [
-  [`${direct}/ocr/models`, "ocr/models/", "models-lock.json", lock.modelArtifact],
-  [`${direct}/ocr/runtime/windows-x64`, "ocr/runtime/windows-x64/", "runtime-manifest.json", ocrProfile.artifact],
+  [`${direct}/models`, "ocr/models/", "models-lock.json", ocrProfile.modelArtifact],
+  [`${direct}/runtime/windows-x64`, "ocr/runtime/windows-x64/", "runtime-manifest.json", ocrProfile.artifact],
 ]) {
   const manifest = JSON.parse(await fs.readFile(path.join(folder, manifestName), "utf8"));
   if (manifestName === "runtime-manifest.json") validateOcrProfileMarker(manifest, ocrProfile);
@@ -66,6 +68,13 @@ for (const entry of resources) {
 const listFile = path.join(os.tmpdir(), `mc-setup-hash-${process.pid}.txt`);
 await fs.writeFile(listFile, resources.map(item => item.name.replaceAll("/", "\\")).join("\n"), "utf8");
 const office = [];
+const originalModels = JSON.parse(await fs.readFile("tools/ocr-runtime/native-worker/model-sources.json", "utf8"));
+const modelSources = new Map(originalModels.map(model => {
+  const file = model.files.find(file => file.rfilename === "inference.onnx");
+  return [`ocr/models/${model.id}/inference.onnx`, { id: model.id, bytes: file.size, sha256: file.lfs.sha256 }];
+}));
+const restoredModels = [];
+let encodedModel = null;
 let index = 0, consumed = 0, total = 0, hash = createHash("sha256");
 try {
   const child = spawn(sevenZip, ["x", "-so", "-bd", "-y", "-scsUTF-8", installer, `@${listFile}`], { windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
@@ -81,6 +90,10 @@ try {
         const entry = resources[index];
         if (!entry) throw Error("Installer decoder returned unexpected bytes");
         const take = Math.min(entry.bytes - consumed, block.length - cursor);
+        if (modelSources.has(entry.name)) {
+          encodedModel ??= Buffer.alloc(entry.bytes);
+          block.copy(encodedModel, consumed, cursor, cursor + take);
+        }
         hash.update(block.subarray(cursor, cursor + take));
         consumed += take; cursor += take; total += take;
         if (consumed === entry.bytes) { finish(); finishEmpty(); }
@@ -97,7 +110,8 @@ if (aggregate.digest("hex") !== profile.expectedLibreOffice.aggregateSha256) thr
 const report = { date: new Date().toISOString(), installerBytes: (await fs.stat(installer)).size,
   installerSha256: await fileHash(installer), verifiedResourceFiles: index, verifiedResourceBytes: total,
   compression: "solid LZMA, 128 MiB dictionary", applicationBinary, office: profile.expectedLibreOffice,
-  ocr: { runtime: ocrProfile.artifact, originalRuntime: selected.artifact, models: lock.modelArtifact },
+  ocr: { runtime: ocrProfile.artifact, originalRuntime: selected.artifact, models: ocrProfile.modelArtifact,
+    originalModels: lock.modelArtifact, encoding: "byte-shuffle4-v1", restoredModels },
   validation: "Every application/engine/OCR/model/notice file decoded into SHA-256 consumers and matched to source hashes or pinned aggregate; no engine tree extracted",
   limits: "Does not install or launch the graphical application; updater signature verified separately" };
 if (process.argv.includes("--report")) await fs.writeFile(argument("--report"), JSON.stringify(report, null, 2) + "\n");
@@ -115,6 +129,19 @@ function finishEmpty() { while (resources[index]?.bytes === 0) finish(); }
 function finish() {
   const entry = resources[index], digest = hash.digest("hex");
   if (expected.has(entry.name) && expected.get(entry.name).sha256 !== digest) throw Error(`Packaged content mismatch: ${entry.name}`);
+  if (modelSources.has(entry.name)) {
+    const source = modelSources.get(entry.name);
+    if (encodedModel?.length !== source.bytes + 16 || encodedModel.subarray(0,8).toString("ascii") !== "MCOSHF01"
+      || encodedModel.readBigUInt64LE(8) !== BigInt(source.bytes)) throw Error("Invalid stored model framing");
+    const raw = Buffer.alloc(source.bytes);
+    const aligned = source.bytes - source.bytes % 4;
+    const stride = aligned / 4;
+    for (let channel = 0; channel < 4; channel++) for (let i = 0; i < stride; i++) raw[i * 4 + channel] = encodedModel[16 + channel * stride + i];
+    encodedModel.copy(raw, aligned, 16 + aligned);
+    if (createHash("sha256").update(raw).digest("hex") !== source.sha256) throw Error(`Restored packaged model differs: ${source.id}`);
+    restoredModels.push({ id: source.id, originalBytes: source.bytes, originalSha256: source.sha256 });
+    encodedModel = null;
+  }
   if (entry.name.startsWith(officePrefix)) office.push({ path: entry.name.slice(officePrefix.length), bytes: entry.bytes, sha256: digest });
   index++; consumed = 0; hash = createHash("sha256");
 }

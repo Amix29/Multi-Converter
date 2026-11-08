@@ -4,6 +4,7 @@ const locks = [
   "src-tauri/Cargo.lock",
   "tools/pdfium-render-wrapper/Cargo.lock",
   "tools/updater-signature-verifier/Cargo.lock",
+  "tools/ocr-runtime/native-worker/Cargo.lock",
 ];
 const failures = [];
 for (const lock of locks) {

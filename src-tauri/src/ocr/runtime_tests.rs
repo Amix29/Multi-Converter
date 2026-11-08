@@ -27,7 +27,7 @@ fn prepared_direct_ocr_verifies_without_archive_extraction() {
         .map(PathBuf::from)
         .unwrap_or_else(|| {
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join("bundled-engine-profiles/windows-x64/v3/ocr")
+                .join("bundled-engine-profiles/windows-x64/native-v1/ocr")
         });
     let lock = parse_lock().unwrap();
     let selected = selection(&lock).unwrap();

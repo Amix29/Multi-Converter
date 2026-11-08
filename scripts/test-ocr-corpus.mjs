@@ -12,13 +12,24 @@ import { extractOcrRuntimeArchive, hostOcrPlatform, ocrRuntimeArchivePath, ocrRu
 const root = process.cwd();
 const platform = hostOcrPlatform();
 const runtimeArchive = ocrRuntimeArchivePath(root, platform);
-const preparedExecutable = platform === "windows-x64"
-  ? path.join(root, "src-tauri/bundled-engine-profiles/windows-x64/v3/ocr/runtime/windows-x64/ocr-worker.exe")
-  : null;
+let preparedRoot = null;
+if (platform === "windows-x64") {
+  for (const profile of ["native-v1", "v3"]) {
+    const candidate = path.join(root, `src-tauri/bundled-engine-profiles/windows-x64/${profile}/ocr`);
+    if ((await fs.stat(path.join(candidate, "runtime/windows-x64/ocr-worker.exe")).catch(() => null))?.isFile()) { preparedRoot = candidate; break; }
+  }
+}
+const preparedExecutable = preparedRoot && path.join(preparedRoot, "runtime/windows-x64/ocr-worker.exe");
 const directExecutable = process.env.MULTI_CONVERTER_OCR_CORPUS_EXECUTABLE
   ? path.resolve(process.env.MULTI_CONVERTER_OCR_CORPUS_EXECUTABLE)
   : preparedExecutable && (await fs.stat(preparedExecutable).catch(() => null))?.isFile() ? preparedExecutable : null;
-const models = path.join(root, "src-tauri", "ocr-resources", "models");
+const models = process.env.MULTI_CONVERTER_OCR_CORPUS_MODELS
+  ? path.resolve(process.env.MULTI_CONVERTER_OCR_CORPUS_MODELS)
+  : preparedRoot ? path.join(preparedRoot, "models") : path.join(root, "src-tauri", "ocr-resources", "models");
+const workerPrefix = JSON.parse(process.env.MULTI_CONVERTER_OCR_CORPUS_PREFIX ?? "[]");
+if (!Array.isArray(workerPrefix) || workerPrefix.length > 8 || workerPrefix.some(value => typeof value !== "string" || value.length > 4096)) {
+  throw new Error("Invalid explicit OCR corpus executable prefix");
+}
 const manifestPath = path.join(root, "tests", "fixtures", "ocr", "corpus-manifest.json");
 const requestedIds = new Set((process.env.MULTI_CONVERTER_OCR_CORPUS_CASES ?? "").split(",").map((value) => value.trim()).filter(Boolean));
 const partial = requestedIds.size > 0;
@@ -72,6 +83,9 @@ try {
     platform,
     runtimeArchiveSha256: directExecutable ? null : await sha256(runtimeArchive),
     directExecutable: directExecutable ? path.relative(root, directExecutable).replaceAll("\\", "/") : null,
+    directExecutableSha256: directExecutable ? await sha256(directExecutable) : null,
+    workerPrefix,
+    modelsDirectory: path.relative(root, models).replaceAll("\\", "/"),
     runtimeExtractionMs: extractionMs,
     runtimeInitializationMs: worker.initializationMs,
     peakWorkerWorkingSetBytes: memorySamples.length ? Math.max(...memorySamples) : null,
@@ -195,7 +209,7 @@ function scoredResult(fixture, rawActual, elapsedMs, workerWorkingSetBytes) {
 
 async function startWorker(workerPath, modelsPath) {
   const started = performance.now();
-  const child = spawn(workerPath, ["--serve", "--models", modelsPath, "--provider", "cpu"], {
+  const child = spawn(workerPath, [...workerPrefix, "--serve", "--models", modelsPath, "--provider", "cpu"], {
     windowsHide: true,
     stdio: ["pipe", "pipe", "pipe"],
     env: { ...process.env, ...ocrRuntimeLibraryEnvironment(workerPath), HF_HUB_OFFLINE: "1", PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: "true", NO_PROXY: "*" },

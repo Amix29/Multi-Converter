@@ -14,6 +14,8 @@ const MAX_MANIFEST_BYTES: u64 = 16 * 1024 * 1024;
 
 #[path = "runtime_files.rs"]
 mod files;
+#[path = "runtime_info.rs"]
+mod info;
 #[path = "runtime_profile.rs"]
 #[cfg(target_os = "windows")]
 mod profile;
@@ -101,25 +103,7 @@ pub(super) struct ResolvedRuntime {
 }
 
 pub(super) fn runtime_info(app: &AppHandle) -> Result<OcrRuntimeInfoV1, String> {
-    let lock = parse_lock()?;
-    let selection = selection(&lock)?;
-    let available = runtime_available(app, &selection);
-    Ok(OcrRuntimeInfoV1 {
-        schema_version: 1,
-        available,
-        model: lock.model,
-        runtime: selection.runtime,
-        runtime_version: format!(
-            "PaddlePaddle {} / PaddleOCR {} / PaddleX {} / ONNX Runtime {}",
-            lock.versions.paddlepaddle,
-            lock.versions.paddleocr,
-            lock.versions.paddlex,
-            lock.versions.onnxruntime
-        ),
-        provider: selection.provider,
-        provider_fallback_reason: selection.provider_fallback_reason,
-        languages: lock.languages,
-    })
+    info::runtime_info(app)
 }
 
 pub(super) fn selected_runtime(
@@ -253,6 +237,11 @@ fn resource_root(app: &AppHandle) -> Result<PathBuf, String> {
     {
         #[cfg(target_os = "windows")]
         {
+            let native = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("bundled-engine-profiles/windows-x64/native-v1/ocr");
+            if native.is_dir() {
+                return Ok(native);
+            }
             let direct = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join("bundled-engine-profiles/windows-x64/v3/ocr");
             if direct.is_dir() {
@@ -309,10 +298,15 @@ fn verify_resources(
         canceled,
         &mut |value| progress("verifying-runtime", value),
     )?;
+    #[cfg(target_os = "windows")]
+    let expected_models =
+        profile::model_expectation(&runtime.models_dir, models_lock, &expected_runtime)?;
+    #[cfg(not(target_os = "windows"))]
+    let expected_models = models_lock.clone();
     verify_content_manifest(
         &runtime.models_dir,
         &runtime.models_dir.join("models-lock.json"),
-        models_lock,
+        &expected_models,
         canceled,
         &mut |value| progress("verifying-models", value),
     )?;

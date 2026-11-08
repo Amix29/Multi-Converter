@@ -164,6 +164,7 @@
     "test:engine-profiles": "node --test scripts/test-engine-profiles.mjs",
     "test:libreoffice-profile:native": "node scripts/test-libreoffice-profile-native.mjs",
     "prepare:windows-resources": "node scripts/prepare-windows-resources.mjs",
+    "prepare:windows-native-ocr": "node scripts/prepare-windows-native-ocr.mjs",
     "tauri:bundle:windows": "node scripts/run-tauri.mjs bundle",
     "verify:windows-engine-package": "node scripts/verify-windows-engine-package.mjs"
   },

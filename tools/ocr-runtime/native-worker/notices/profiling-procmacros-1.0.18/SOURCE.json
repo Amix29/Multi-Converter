@@ -1,0 +1,13 @@
+{
+  "package": "profiling-procmacros",
+  "version": "1.0.18",
+  "repository": "aclysma/profiling",
+  "revision": "8271551172eb6fa4cba47369aedd93790c623df9",
+  "files": [
+    {
+      "path": "LICENSE-MIT",
+      "url": "https://raw.githubusercontent.com/aclysma/profiling/8271551172eb6fa4cba47369aedd93790c623df9/LICENSE-MIT",
+      "sha256": "c8167fdeeed46d3f244d3f85c5bf998ce889343691c32be2c61a8bc4b5c08333"
+    }
+  ]
+}

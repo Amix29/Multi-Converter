@@ -30,7 +30,8 @@ try {
     assert.deepEqual(history[0].config.bundle, { resources: [], externalBin: [], createUpdaterArtifacts: false });
     assert.equal(history[1].config.bundle.createUpdaterArtifacts, false);
     const resources = history[1].config.bundle.resources;
-    assert.equal(resources["bundled-engine-profiles/windows-x64/v3/ocr/"], null);
+    assert.equal(resources["bundled-engine-profiles/windows-x64/native-v1/ocr/"], null);
+    assert.equal(resources["bundled-engine-profiles/windows-x64/v3/ocr/"], undefined);
     assert.equal(resources["bundled-engine-profiles/windows-x64/v3/libreoffice/"], null);
     assert.equal(Object.values(resources).filter(Boolean).length, 2);
     assert.ok(Object.keys(resources).filter(key => resources[key]).every(key => path.isAbsolute(key) && key.includes("mc-pack-")));

@@ -6,7 +6,7 @@
       "bundled-engines/pandoc/": "engines/pandoc/",
       "bundled-engines/libvips/": "engines/libvips/",
       "bundled-engine-profiles/windows-x64/v3/libreoffice/": "engines/libreoffice/compatible/",
-      "bundled-engine-profiles/windows-x64/v3/ocr/": "ocr/",
+      "bundled-engine-profiles/windows-x64/native-v1/ocr/": "ocr/",
       "ocr-resources/licenses/": "ocr/licenses/",
       "ocr-resources/README.md": "ocr/README.md"
     },

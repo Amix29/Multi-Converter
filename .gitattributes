@@ -10,6 +10,10 @@
 branding-kit/08_design-system/** text eol=lf
 src-tauri/ocr-resources/licenses/*.txt text eol=lf
 tools/ocr-runtime/*.lock.txt text eol=lf
+# Keep checksum-pinned native source/license inputs stable on Windows checkouts.
+tools/ocr-runtime/native-worker/** text=auto eol=lf
+vendor/oar-ocr/** text=auto eol=lf
+vendor/oar-ocr-core/** text=auto eol=lf
 # Generated overlays preserve upstream whitespace and pinned byte hashes.
 tools/engine-profiles/**/*.xcu text eol=lf -whitespace
 *.nsh text eol=crlf
