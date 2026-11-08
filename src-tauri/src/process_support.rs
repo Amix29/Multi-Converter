@@ -164,6 +164,13 @@ pub(crate) fn run_command_bounded(
             .spawn()
             .map_err(ProcessRunError::Io)?,
     );
+    wait_bounded(&mut child, timeout)
+}
+
+fn wait_bounded(
+    child: &mut Child,
+    timeout: Duration,
+) -> Result<BoundedCommandOutput, ProcessRunError> {
     let mut stdout_reader = child.stdout.take().map(drain_child_output);
     let mut stderr_reader = child.stderr.take().map(drain_child_output);
     let started = Instant::now();
@@ -172,14 +179,14 @@ pub(crate) fn run_command_bounded(
         match child.try_wait() {
             Ok(Some(status)) => break status,
             Ok(None) if started.elapsed() >= timeout => {
-                terminate_child_process(&mut child);
+                terminate_child_process(child);
                 let _ = join_child_output(stdout_reader.take());
                 let _ = join_child_output(stderr_reader.take());
                 return Err(ProcessRunError::TimedOut);
             }
             Ok(None) => std::thread::sleep(Duration::from_millis(20)),
             Err(error) => {
-                terminate_child_process(&mut child);
+                terminate_child_process(child);
                 let _ = join_child_output(stdout_reader.take());
                 let _ = join_child_output(stderr_reader.take());
                 return Err(ProcessRunError::Io(error));
@@ -309,12 +316,22 @@ mod tests {
             command.args(["-c", "sleep 10"]);
             command
         };
-        let started = Instant::now();
-
-        let error = run_command_bounded(&mut command, Duration::from_millis(100)).unwrap_err();
+        configure_child_process(&mut command);
+        let mut child = ManagedChild::new(
+            command
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()
+                .unwrap(),
+        );
+        let error = wait_bounded(&mut child, Duration::from_millis(100)).unwrap_err();
 
         assert!(matches!(error, ProcessRunError::TimedOut));
-        assert!(started.elapsed() < Duration::from_secs(5));
+        let status = child
+            .try_wait()
+            .unwrap()
+            .expect("timed-out process still running");
+        assert!(!status.success(), "the process reached its normal exit");
     }
 
     #[cfg(unix)]

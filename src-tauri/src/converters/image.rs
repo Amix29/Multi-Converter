@@ -5,6 +5,8 @@ pub(super) mod fidelity;
 #[cfg(test)]
 #[path = "image/fidelity_tests.rs"]
 mod fidelity_tests;
+#[path = "image/ico_png.rs"]
+mod ico_png;
 #[path = "image/svg_resources.rs"]
 mod svg_resources;
 #[cfg(test)]
@@ -50,6 +52,11 @@ fn read_integrated_image_with_profile(
         Ok((read_svg_image(input_path)?, None, false))
     } else {
         let reader = image::ImageReader::open(input_path)?.with_guessed_format()?;
+        if reader.format() == Some(ImageFormat::Ico)
+            && let Some(frame) = ico_png::read_frame(input_path)?
+        {
+            return Ok((frame, None, false));
+        }
         let (width, height) = reader.into_dimensions()?;
         ensure_image_dimensions(width, height, "image")?;
         use ::image::ImageDecoder;

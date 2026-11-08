@@ -96,6 +96,14 @@ jobs:
         if: steps.cargo-audit-cache.outputs.cache-hit != 'true'
       - run: npm run test:windows:ci
 
+      - name: Retain native format-pair results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: format-pairs-windows-x64
+          path: test-results/native-formats/windows-x64.json
+          if-no-files-found: error
+
   macos-code-check:
     name: macOS code check (${{ matrix.rust-target }})
     runs-on: macos-latest

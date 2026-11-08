@@ -8,13 +8,22 @@ pub(in crate::converters) fn convert_text_to_pdf_content(
     content: &str,
 ) -> Result<()> {
     emit_progress(app, job_id, 35, "Composition du PDF");
+    write_pdf_content_file(input_path, output_path, content)?;
+    emit_progress(app, job_id, 88, "Finalisation du PDF");
+    Ok(())
+}
+
+pub(in crate::converters) fn write_pdf_content_file(
+    input_path: &Path,
+    output_path: &Path,
+    content: &str,
+) -> Result<()> {
     let title = input_path
         .file_name()
         .and_then(OsStr::to_str)
         .unwrap_or("Document");
     let pdf = simple_pdf(title, &normalize_pdf_text(content));
     fs::write(output_path, pdf)?;
-    emit_progress(app, job_id, 88, "Finalisation du PDF");
     Ok(())
 }
 

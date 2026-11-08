@@ -1,5 +1,30 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-08 — Advertised format pairs
+
+The first full Windows x64 run reported 28 failing pairs out of 589. Investigation
+found conversion defects in document engine selection, encoded text export,
+XML packaging, animated GIF timing and ICO decoding. It also identified a
+fragment in the RTF test input. The replacement is a complete RTF document.
+
+After the corrections the full Windows gate passed all 589 expected pairs
+across 44 format IDs and 45 inputs. All 100 video outputs passed the additional
+early/late source-frame comparisons. Both rendered PDF archives passed the
+page-content checks. A valid moving video with inverted colors and its original
+audio was rejected. All 219 Rust library tests passed with ignored tests
+enabled, as did 64 frontend unit tests and Clippy with the native driver enabled.
+
+Additional fault injections used actual Windows conversion results. Hiding WebP
+from the targets returned for JPEG failed the expected-route check. Replacing
+a genuine JPEG-to-WebP output with a PNG and updating its reported byte count
+failed the format assertion. The other five JPEG outputs passed during that
+injection. Swapping the two rendered PDF pages while preserving their original
+archive entry names was detected in both PNG and JPEG archives.
+
+The CI conversion jobs retain one full JSON report per native host. Apple
+Silicon and Linux x64 execution of this new matrix awaits those jobs. Installed
+package acceptance and OCR have their own gates.
+
 ## 2026-11-08 — Native conversion and OCR test coverage
 
 On Windows x64 at `aaf914d4`, the standard Rust suite passed 203 tests and

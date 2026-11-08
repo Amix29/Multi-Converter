@@ -324,7 +324,9 @@ pub(in crate::converters) fn write_odt(
     zip.write_all(b"application/vnd.oasis.opendocument.text")?;
     zip.add_directory("META-INF/", deflated)?;
     zip.start_file("META-INF/manifest.xml", deflated)?;
-    zip.write_all(b"<?xml version=\"1.0\" encoding=\"UTF-8\"?><manifest:manifest xmlns:manifest=\"urn:oasis:names:tc:opendocument:xmlns:manifest:1.0\"><manifest:file-entry manifest:media-type=\"application/vnd.oasis.opendocument.text\" manifest:full-path=\"/\"/><manifest:file-entry manifest:media-type=\"text/xml\" manifest:full-path=\"content.xml\"/></manifest:manifest>")?;
+    zip.write_all(b"<?xml version=\"1.0\" encoding=\"UTF-8\"?><manifest:manifest xmlns:manifest=\"urn:oasis:names:tc:opendocument:xmlns:manifest:1.0\"><manifest:file-entry manifest:media-type=\"application/vnd.oasis.opendocument.text\" manifest:full-path=\"/\"/><manifest:file-entry manifest:media-type=\"text/xml\" manifest:full-path=\"content.xml\"/><manifest:file-entry manifest:media-type=\"text/xml\" manifest:full-path=\"styles.xml\"/></manifest:manifest>")?;
+    zip.start_file("styles.xml", deflated)?;
+    zip.write_all(br#"<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" office:version="1.2"><office:styles/></office:document-styles>"#)?;
     zip.start_file("content.xml", deflated)?;
     zip.write_all(format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?><office:document-content xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\" office:version=\"1.2\"><office:body><office:text>{}</office:text></office:body></office:document-content>", paragraphs).as_bytes())?;
     zip.finish()?;
@@ -340,7 +342,10 @@ pub(in crate::converters) fn write_epub(
     let stored = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
     let deflated =
         SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
-    let html = to_html(content, source_format).replace("<!doctype html>", "");
+    let paragraphs = to_plain_text(content, source_format)
+        .lines()
+        .map(|line| format!("<p>{}</p>", escape_xml(line)))
+        .collect::<String>();
     let identifier = format!("urn:uuid:{}", uuid::Uuid::new_v4());
     zip.start_file("mimetype", stored)?;
     zip.write_all(b"application/epub+zip")?;
@@ -349,9 +354,19 @@ pub(in crate::converters) fn write_epub(
     zip.write_all(b"<?xml version=\"1.0\"?><container version=\"1.0\" xmlns=\"urn:oasis:names:tc:opendocument:xmlns:container\"><rootfiles><rootfile full-path=\"OEBPS/content.opf\" media-type=\"application/oebps-package+xml\"/></rootfiles></container>")?;
     zip.add_directory("OEBPS/", deflated)?;
     zip.start_file("OEBPS/chapter.xhtml", deflated)?;
-    zip.write_all(format!("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n{}", html).as_bytes())?;
+    write!(
+        zip,
+        r#"<html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><title>Document</title></head><body>{paragraphs}</body></html>"#
+    )?;
+    zip.start_file("OEBPS/nav.xhtml", deflated)?;
+    zip.write_all(br#"<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Sommaire</title></head><body><nav epub:type="toc"><ol><li><a href="chapter.xhtml">Document</a></li></ol></nav></body></html>"#)?;
+    let modified = time::OffsetDateTime::now_utc()
+        .replace_nanosecond(0)
+        .expect("zero nanoseconds")
+        .format(&time::format_description::well_known::Rfc3339)
+        .map_err(|error| ConvertError::Message(error.to_string()))?;
     zip.start_file("OEBPS/content.opf", deflated)?;
-    zip.write_all(format!("<?xml version=\"1.0\" encoding=\"utf-8\"?><package xmlns=\"http://www.idpf.org/2007/opf\" version=\"3.0\" unique-identifier=\"bookid\"><metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:identifier id=\"bookid\">{}</dc:identifier><dc:title>Document</dc:title><dc:language>fr</dc:language></metadata><manifest><item id=\"chapter\" href=\"chapter.xhtml\" media-type=\"application/xhtml+xml\"/></manifest><spine><itemref idref=\"chapter\"/></spine></package>", identifier).as_bytes())?;
+    zip.write_all(format!("<?xml version=\"1.0\" encoding=\"utf-8\"?><package xmlns=\"http://www.idpf.org/2007/opf\" version=\"3.0\" unique-identifier=\"bookid\"><metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:identifier id=\"bookid\">{}</dc:identifier><dc:title>Document</dc:title><dc:language>fr</dc:language><meta property=\"dcterms:modified\">{modified}</meta></metadata><manifest><item id=\"nav\" href=\"nav.xhtml\" media-type=\"application/xhtml+xml\" properties=\"nav\"/><item id=\"chapter\" href=\"chapter.xhtml\" media-type=\"application/xhtml+xml\"/></manifest><spine><itemref idref=\"chapter\"/></spine></package>", identifier).as_bytes())?;
     zip.finish()?;
     Ok(())
 }
@@ -365,7 +380,10 @@ pub(in crate::converters) fn escape_html(value: &str) -> String {
 }
 
 pub(in crate::converters) fn escape_xml(value: &str) -> String {
+    // XML 1.0 cannot represent a form-feed page separator or other C0 controls.
     value
+        .replace('\u{000c}', "\n")
+        .replace(|c: char| matches!(c, '\0'..='\u{8}' | '\u{b}' | '\u{e}'..='\u{1f}' | '\u{fffe}' | '\u{ffff}'), "�")
         .replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")

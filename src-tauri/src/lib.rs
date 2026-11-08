@@ -16,6 +16,24 @@ mod window_theme;
 
 use commands::*;
 
+// Only the opt-in native test binary needs access to these desktop entry points.
+#[cfg(feature = "native-format-tests")]
+pub mod format_test_api {
+    pub use crate::converters::describe_file_with_app;
+    pub use crate::engines::resolve_tool;
+    pub use crate::ocr::OcrState;
+    pub use crate::registry::formats;
+
+    pub async fn convert(
+        app: tauri::AppHandle,
+        job: serde_json::Value,
+    ) -> Result<serde_json::Value, String> {
+        let job = serde_json::from_value(job).map_err(|e| e.to_string())?;
+        let result = crate::commands::start_conversion(app, job).await?;
+        serde_json::to_value(result).map_err(|e| e.to_string())
+    }
+}
+
 pub fn run() {
     runtime_log::install_panic_hook();
     tauri::Builder::default()

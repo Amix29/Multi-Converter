@@ -230,13 +230,13 @@ fn conversion_matrix_all_integrated_image_targets_decode() {
 fn conversion_matrix_text_to_pdf_fixture() {
     let dir = tempfile::tempdir().unwrap();
     let output = dir.path().join("fixture.pdf");
-    let source = "Fixture texte Multi-Converter 2026\nDeuxiÃ¨me ligne accentuÃ©e.";
+    let source = "Fixture texte Multi-Converter 2026\nDeuxième ligne accentuée.";
 
-    fs::write(&output, simple_pdf("fixture.txt", source)).unwrap();
+    write_pdf_content_file(&dir.path().join("fixture.txt"), &output, source).unwrap();
 
     let extracted = pdf_extract::extract_text(&output).unwrap();
     assert!(extracted.contains("Fixture texte Multi-Converter 2026"));
-    assert!(extracted.contains("DeuxiÃ¨me ligne accentuÃ©e"));
+    assert!(extracted.contains("Deuxième ligne accentuée"));
 }
 
 #[test]

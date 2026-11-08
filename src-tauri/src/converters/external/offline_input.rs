@@ -10,7 +10,10 @@ pub(super) fn prepare(
 ) -> Result<PathBuf> {
     let extension = input.extension().and_then(OsStr::to_str).unwrap_or("");
     office_resources::validate(input, extension)?;
-    if !extension.eq_ignore_ascii_case("html") && !extension.eq_ignore_ascii_case("htm") {
+    if !matches!(
+        extension.to_ascii_lowercase().as_str(),
+        "html" | "htm" | "epub"
+    ) {
         return Ok(input.to_path_buf());
     }
     let pandoc = engine_path(app, "pandoc")?;
@@ -32,5 +35,6 @@ pub(super) fn prepare(
             max: 22,
         },
     )?;
+    office_resources::validate(&output, "odt")?;
     Ok(output)
 }

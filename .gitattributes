@@ -19,6 +19,9 @@ tools/engine-profiles/**/*.xcu text eol=lf -whitespace
 *.nsh text eol=crlf
 
 *.png binary
+tests/fixtures/formats/sample.* -text
+tests/fixtures/formats/sample.rtf whitespace=trailing-space,cr-at-eol
+tests/fixtures/formats/animated.gif -text
 *.ico binary
 *.icns binary
 *.bmp binary

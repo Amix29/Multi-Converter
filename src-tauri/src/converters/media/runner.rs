@@ -18,6 +18,21 @@ pub(super) fn run_ffmpeg<T: AsRef<str>>(
         input_path.to_string_lossy().to_string(),
     ];
     args.extend(codec_args.iter().map(|item| item.as_ref().to_string()));
+    if input_path
+        .extension()
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("gif"))
+    {
+        // GIF frames carry individual delays. Materialize them so muxers keep
+        // the last frame on screen for its full delay, even without audio.
+        if let Some(index) = args.iter().position(|arg| arg == "-vf") {
+            args[index + 1].push_str(",fps=50");
+        } else {
+            args.extend(owned_args(&["-vf", "fps=50"]));
+        }
+        if args.iter().any(|arg| arg == "libvpx-vp9") {
+            args.extend(owned_args(&["-pix_fmt", "yuva420p"]));
+        }
+    }
     args.push("-threads".to_string());
     args.push(ffmpeg_threads(options.batch_concurrency));
     args.extend([

@@ -143,13 +143,12 @@ fn conversion_matrix_document_outputs_preserve_french_characters() {
                 "{}-to-{}.{}",
                 source_format, target.format, target.extension
             ));
-            write_document_target(
-                &output,
-                source_format,
-                &target.format,
-                &source_content,
-                marker,
-            );
+            if target.format == "pdf" {
+                write_pdf_content_file(&input, &output, &source_content).unwrap();
+            } else {
+                write_text_content_file(&output, source_format, &target.format, &source_content)
+                    .unwrap();
+            }
             let readable = read_document_target(&output, &target.format);
             assert_text_is_clean(&readable, source_format, &format!("to {}", target.format));
         }
@@ -414,29 +413,6 @@ fn build_pdf_fixture(objects: Vec<Vec<u8>>) -> Vec<u8> {
     pdf
 }
 
-fn write_document_target(
-    path: &Path,
-    source_format: &str,
-    target_format: &str,
-    content: &str,
-    marker: &str,
-) {
-    match target_format {
-        "txt" => fs::write(path, to_plain_text(content, source_format)).unwrap(),
-        "md" => fs::write(path, to_markdown(content, source_format)).unwrap(),
-        "html" => fs::write(path, to_html(content, source_format)).unwrap(),
-        "rtf" => fs::write(path, to_rtf(content, source_format)).unwrap(),
-        "csv" => write_utf8_csv(path, &to_csv(content, source_format).unwrap()).unwrap(),
-        "json" => fs::write(path, to_json(content, source_format).unwrap()).unwrap(),
-        "xml" => fs::write(path, to_xml(content, source_format)).unwrap(),
-        "docx" => write_docx(path, content, source_format).unwrap(),
-        "odt" => write_odt(path, content, source_format).unwrap(),
-        "epub" => write_epub(path, content, source_format).unwrap(),
-        "pdf" => fs::write(path, simple_pdf("target.pdf", marker)).unwrap(),
-        other => panic!("unsupported target in test: {other}"),
-    }
-}
-
 pub(super) fn read_document_target(path: &Path, target_format: &str) -> String {
     match target_format {
         "pdf" => pdf_extract::extract_text(path).unwrap(),
@@ -448,6 +424,12 @@ pub(super) fn read_document_target(path: &Path, target_format: &str) -> String {
 }
 
 fn assert_text_is_clean(value: &str, source_format: &str, phase: &str) {
+    for word in ["déjà", "façade", "Noël", "élève", "cœur"] {
+        assert!(
+            value.contains(word),
+            "{source_format} {phase} lost {word:?}: {value:?}"
+        );
+    }
     for bad in ["Jâ", "dÃ", "Ã©", "Ã¨", "Ã§", "Â", "\u{fffd}"] {
         assert!(
             !value.contains(bad),

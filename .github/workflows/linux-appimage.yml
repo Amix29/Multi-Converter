@@ -25,6 +25,14 @@ on:
       - "tools/updater-signature-verifier/**"
       - "tools/engine-packages.linux.config.json"
       - "src-tauri/src/**"
+      - "src-tauri/tests/**"
+      - "src-tauri/build.rs"
+      - "src-tauri/Cargo.toml"
+      - "src-tauri/Cargo.lock"
+      - "scripts/cargo-test-temp.mjs"
+      - "tests/fixtures/formats/**"
+      - "scripts/test-native-formats.mjs"
+      - "tools/format-tests/**"
       - "src-tauri/tauri.linux.conf.json"
       - "src-tauri/tauri.conf.json"
       - "package.json"
@@ -97,6 +105,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12.10"
 
       - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
         with:
@@ -265,6 +277,14 @@ jobs:
 
       - name: Prepare and verify real Linux engines
         run: npm run test:linux:conversions
+
+      - name: Retain native format-pair results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: format-pairs-linux-x64
+          path: test-results/native-formats/linux-x64.json
+          if-no-files-found: error
 
       - name: Run Linux host tests
         env:

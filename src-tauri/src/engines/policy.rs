@@ -122,6 +122,10 @@ pub(super) fn engine_candidates(
         if prefers_pandoc(source.id, target_id) {
             return vec!["pandoc", "rust-text"];
         }
+        // Calc's CSV importer cannot export Writer documents.
+        if source.id == "csv" && is_rich_document_target(target_id) {
+            return vec!["rust-text"];
+        }
         if prefers_libreoffice(source.id, target_id) {
             return vec!["libreoffice", "rust-text"];
         }

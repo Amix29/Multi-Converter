@@ -34,7 +34,7 @@ pub(in crate::converters) fn convert_with_libreoffice(
         crate::private_temp::builder(".multi-converter-lo-output-").tempdir_in(out_dir)?;
     emit_progress(app, job_id, 24, "Conversion LibreOffice");
     let filter = match target_format {
-        "txt" => "txt:Text",
+        "txt" => "txt:Text (encoded):UTF8",
         "html" => "html:XHTML Writer File",
         other => other,
     };
@@ -73,7 +73,7 @@ pub(in crate::converters) fn convert_with_libreoffice(
     );
     result?;
     move_external_output(
-        input_path,
+        &engine_input,
         engine_output_dir.path(),
         output_path,
         target_format,

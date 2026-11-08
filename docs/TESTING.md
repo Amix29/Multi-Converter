@@ -4,6 +4,30 @@ This document describes the current desktop release test split by platform. The 
 
 Historical V1.0.5 and V1.0.6 status commands remain documented where release workflows still use their recorded evidence. They are not the current V1.0.7 completion gate.
 
+## Native format-pair matrix
+
+`npm run test:formats` opens the 45 checksum-pinned synthetic inputs through
+the Tauri file-description and conversion commands. The expected routes are
+reviewed separately from the runtime registry in `tools/format-tests/expectations.py`.
+The suite requires an exact match for each source, including static and animated
+GIF. Missing engines, missing routes and invalid outputs fail the run.
+
+Windows x64 and Linux x64 each have 589 expected routes. Apple Silicon has
+553 because AMR import and export are disabled. The runner uses the staged
+platform engines. Linux also needs a display or Xvfb. Each GitHub native
+conversion job retains its JSON result under the `format-pairs-<platform>`
+artifact. A targeted run such as `npm run test:formats -- --source pdf`
+writes a separate partial report.
+
+The matrix checks decoded pixels, audible tone, container and codec identity,
+document structure and source-specific text. Video exports must retain motion
+and match the source's early and late frames within a lossy color tolerance.
+The two-page PDF must produce two distinct page images in content order.
+Deliberately damaged outputs and
+unsupported conversion requests exercise the rejection paths on every run.
+The corpus covers canonical format pairs with the default conversion settings.
+The installed-app, OCR and fidelity suites exercise separate behaviors.
+
 ## Editor Removal (2026-10-29)
 
 Document/PDF editing is cancelled. The frontend suite retains conversion,

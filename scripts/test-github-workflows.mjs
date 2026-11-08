@@ -48,6 +48,11 @@ const linuxSidecarStagingJob = workflowJob(linuxSidecarStagingWorkflow, "stage")
 const linuxAppImageBuildJob = workflowJob(linuxAppImageWorkflow, "build");
 const windowsPdfiumStagingJob = workflowJob(windowsPdfiumStagingWorkflow, "stage");
 
+assert.match(packageJson.scripts["test:conversions"], /&& npm run test:formats$/, "The conversion gate must run every advertised pair");
+for (const [job, platform] of [[windowsBuildJob, "windows-x64"], [macosConversionsJob, "macos-aarch64"], [linuxAppImageBuildJob, "linux-x64"]]) {
+  assert.ok(job.includes(`path: test-results/native-formats/${platform}.json`), `Missing native format report for ${platform}`);
+}
+
 assertWindowsPdfiumWorkflowContracts({ workflow: windowsPdfiumStagingWorkflow, job: windowsPdfiumStagingJob });
 
 assertWindowsCiContracts({ packageJson, buildWorkflow, windowsBuildJob, windowsCiGateScript });
