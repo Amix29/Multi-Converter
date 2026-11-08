@@ -25,6 +25,35 @@ See `MIGRATION_SVELTE_EXECUTION.md` for measured platform evidence and open gate
 
 ## Windows x64
 
+### Installed footprint
+
+The NSIS post-install hook runs an installer-only Rust helper as the installing
+user. Its compiled file list comes from the desktop and Windows resource maps.
+It requests Windows Overlay Filter XPRESS16K on FFmpeg, ffprobe and the
+LibreOffice, PDFium and Pandoc files of at least 32 KiB. The application,
+OCR worker, five FP32 models and libvips use their original file storage.
+The helper measures the resulting storage for the Installed Apps estimate.
+Locked, read-only, multiply-linked or redirected files may keep their original
+allocation. A filesystem without WOF can still run the app.
+
+To compare a baseline and a candidate, install them into separate directories
+on the same Windows volume. Exercise the installed Tauri conversion and OCR
+commands using an isolated WebView profile and temporary directory. Close the
+apps before measuring. Use Python 3.12+ and include first-use data in the audit:
+
+```powershell
+python tools/windows-footprint/verify.py --baseline "<old install>" --installed "<new install>" --cache "<new WebView profile>" --cache "<app temp>" --report footprint.json
+python tools/windows-footprint/compare.py --baseline "<old install>" --installed "<new install>" --output "<new results folder>" --pairs 8
+```
+
+The audit checks the SHA-256 of each application file, reverses model storage
+in memory and compares all five ONNX hashes with the official source lock.
+It records Windows file allocation and a separate cluster-rounded bound. Both
+must stay below 750,000,000 bytes including supplied caches. The paired benchmark
+checks rendered and recognized outputs and records individual elapsed times.
+Run timing comparisons sequentially on an idle machine. Repeat the size and
+integrity audit after a repair or an update of the reference installation.
+
 ### Engine-size profiles
 
 `npm run test:engine-profiles` validates selective ZIP copying, bounded metadata
