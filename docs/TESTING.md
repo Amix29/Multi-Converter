@@ -107,7 +107,14 @@ The [native worker guide](../tools/ocr-runtime/native-worker/README.md) describe
 explicit source preparation; its five official FP32 ONNX files are stored with
 an invertible byte shuffle and restored/hash-checked in memory before inference.
 
-`npm run prepare:windows-resources` stages immutable resources through hardlinks
+`npm run prepare:windows-resources` verifies the native OCR tree against its
+compiled profile and stages the v3 LibreOffice files used by NSIS. The older
+slim Python OCR profile is retained for historical compatibility checks.
+The Windows build job decodes the resulting installer, checks the packaged files
+and restores all five models for SHA-256 verification before uploading the
+installer, its SHA-256 and the payload report as `verified-windows-x64-installer`.
+
+Office preparation stages immutable resources through hardlinks
 or decodes each required ZIP entry once on a fresh host. `--check` is read-only
 and required before bundling. `python tools/engine-profiles/audit-dictionary-profile.py`
 independently checks dictionary XML semantics, including all retained hyphenation

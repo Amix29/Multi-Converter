@@ -4,7 +4,7 @@ import os from "node:os";
 import { spawn, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { fileHash } from "./lib/direct-engine-resources.mjs";
-import { readWindowsProfiles, validateOcrProfileMarker } from "./lib/windows-engine-profile.mjs";
+import { readOfficeProfile, validateOcrProfileMarker } from "./lib/windows-engine-profile.mjs";
 import { nsisBinaryExpectation } from "./lib/tauri-bundle-binary.mjs";
 import { nativeOcrRoot, verifyNativeOcr } from "./lib/native-ocr-profile.mjs";
 
@@ -13,7 +13,7 @@ const argument = name => process.argv[process.argv.indexOf(name) + 1];
 if (!process.argv.includes("--installer")) throw Error("Usage: --installer <setup.exe> [--report <json>]");
 const installer = path.resolve(argument("--installer"));
 const sevenZip = process.env.MULTI_CONVERTER_7ZIP ?? path.join(process.env.ProgramFiles ?? "C:/Program Files", "7-Zip/7z.exe");
-const { office: profile } = await readWindowsProfiles(process.cwd());
+const profile = await readOfficeProfile(process.cwd());
 const ocrProfile = await verifyNativeOcr();
 const lock = JSON.parse(await fs.readFile("src-tauri/ocr-runtime-lock.json", "utf8"));
 const selected = lock.platformSelections.find(item => item.platform === "windows-x64");

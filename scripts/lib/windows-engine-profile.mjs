@@ -10,18 +10,6 @@ export async function readOfficeProfile(root) {
   return { ...base, ...office };
 }
 
-export async function readOcrProfile(root) {
-  const ocr = JSON.parse(await fs.readFile(path.join(root, "src-tauri/windows-ocr-profile.json"), "utf8"));
-  const lock = JSON.parse(await fs.readFile(path.join(root, "src-tauri/ocr-runtime-lock.json"), "utf8"));
-  const original = lock.platformSelections.find(item => item.platform === "windows-x64").artifact;
-  for (const key of ["fileCount", "totalBytes", "aggregateSha256"]) if (original[key] !== ocr.sourceArtifact[key]) throw Error("OCR profile origin disagrees with reference lock");
-  return ocr;
-}
-
-export async function readWindowsProfiles(root) {
-  return { office: await readOfficeProfile(root), ocr: await readOcrProfile(root) };
-}
-
 export function validateOcrProfileMarker(manifest, profile) {
   if (manifest.distributionProfile !== profile.profileId || manifest.sourceAggregateSha256 !== profile.sourceArtifact.aggregateSha256) throw Error("OCR distribution marker differs from approved profile");
   for (const key of ["fileCount", "totalBytes", "aggregateSha256"]) if (manifest[key] !== profile.artifact[key]) throw Error("OCR distribution metadata differs from approved artifact");

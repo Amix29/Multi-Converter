@@ -198,8 +198,7 @@ mod tests {
                 .aggregate_sha256,
             selected.artifact.as_ref().unwrap().aggregate_sha256
         );
-        let approved: ProfileLock =
-            serde_json::from_str(include_str!("../../windows-ocr-profile.json")).unwrap();
+        let approved = approved().unwrap();
         fs::write(
             &manifest,
             serde_json::json!({"distributionProfile": approved.profile_id,
@@ -207,12 +206,17 @@ mod tests {
             .to_string(),
         )
         .unwrap();
+        let mut historical = selected.clone();
+        historical.artifact = Some(approved.source_artifact.clone());
         assert_eq!(
-            expectation(temp.path(), &selected)
+            expectation(temp.path(), &historical)
                 .unwrap()
                 .aggregate_sha256,
             approved.artifact.aggregate_sha256
         );
+        let mut mismatched = historical;
+        mismatched.artifact.as_mut().unwrap().aggregate_sha256 = "wrong".into();
+        assert!(expectation(temp.path(), &mismatched).is_err());
         for marker in [
             r#"{"distributionProfile":"unknown"}"#,
             r#"{"distributionProfile":"windows-offline-ocr-v1","sourceAggregateSha256":"wrong"}"#,

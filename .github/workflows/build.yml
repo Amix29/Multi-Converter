@@ -32,11 +32,14 @@ jobs:
     name: Windows x64 quality gate
     if: github.event_name != 'workflow_dispatch' || inputs.conversion_platform == 'full'
     runs-on: windows-2025
-    timeout-minutes: 120
+    timeout-minutes: 180
     env:
       CARGO_TERM_COLOR: always
       RUST_BACKTRACE: 1
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      CARGO_INCREMENTAL: 0
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -108,6 +111,33 @@ jobs:
       - run: cargo install cargo-audit --locked
         if: steps.cargo-audit-cache.outputs.cache-hit != 'true'
       - run: npm run test:windows:ci
+
+      - name: Verify the Windows installer payload
+        id: installer
+        shell: pwsh
+        run: |
+          $version = (Get-Content -Raw package.json | ConvertFrom-Json).version
+          $name = "Multi-Converter_${version}_x64-setup.exe"
+          $bundle = Join-Path ([IO.Path]::GetTempPath()) 'mc-cargo-target-tauri-dev/release/bundle/nsis'
+          $installer = Get-Item -LiteralPath (Join-Path $bundle $name)
+          if ($installer.Length -gt 350000000) { throw 'Installer exceeds the 350 MB limit' }
+          $out = New-Item -ItemType Directory -Path (Join-Path $env:RUNNER_TEMP 'verified-installer')
+          npm run verify:windows-engine-package -- --installer $installer.FullName --report "$out/payload.json"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Copy-Item -LiteralPath $installer.FullName -Destination $out.FullName
+          $sha = (Get-FileHash -LiteralPath "$out/$name" -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($sha -ne (Get-Content -Raw "$out/payload.json" | ConvertFrom-Json).installerSha256) {
+            throw 'Installer differs from verified payload'
+          }
+          Set-Content -LiteralPath "$out/$name.sha256" -Value "$sha  $name" -Encoding ascii
+          "dir=$($out.FullName)" >> $env:GITHUB_OUTPUT
+      - name: Retain the verified Windows installer
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verified-windows-x64-installer
+          path: ${{ steps.installer.outputs.dir }}
+          if-no-files-found: error
+          compression-level: 0
 
       - name: Retain native format-pair results
         if: always()

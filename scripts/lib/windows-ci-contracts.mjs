@@ -31,7 +31,7 @@ export function assertWindowsCiContracts({ packageJson, buildWorkflow, windowsBu
   assert.equal(packageJson.scripts["test:windows:ci"], "node scripts/test-windows-ci-gate.mjs", "Windows CI validation wrapper must be exposed through npm");
 
   assert.match(buildWorkflow, /quality-gate:\s*\n\s+name:\s+Windows x64 quality gate/, "build workflow must keep the Windows job clearly named");
-  assert.match(windowsBuildJob, /timeout-minutes:\s+120/, "Windows quality gate must allow enough time for conversion tests and the full Tauri build");
+  assert.ok(Number(windowsBuildJob.match(/timeout-minutes:\s+(\d+)/)?.[1]) >= 120, "Windows quality gate must allow enough time for conversion tests and the full Tauri build");
   assert.match(windowsBuildJob, /id:\s+cargo-audit-cache/, "Windows CI must cache the cargo-audit binary");
   assert.match(windowsBuildJob, /~\/\.cargo\/bin\/cargo-audit\.exe/, "Windows CI cargo-audit cache must target the installed binary");
   assert.match(windowsBuildJob, /cargo install cargo-audit --locked\s*\n\s+if:\s+steps\.cargo-audit-cache\.outputs\.cache-hit != 'true'/, "Windows CI must skip cargo-audit installation on cache hits");
