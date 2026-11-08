@@ -21,9 +21,25 @@ failed the format assertion. The other five JPEG outputs passed during that
 injection. Swapping the two rendered PDF pages while preserving their original
 archive entry names was detected in both PNG and JPEG archives.
 
-The CI conversion jobs retain one full JSON report per native host. Apple
-Silicon and Linux x64 execution of this new matrix awaits those jobs. Installed
-package acceptance and OCR have their own gates.
+Three native GitHub Actions runs completed at `7bc6ecb3`. Each run staged
+its OCR worker and five locked models, exercised the desktop conversion
+command and retained a full JSON report. The corpus now includes a second
+two-page PDF that requires OCR on its short second page.
+
+| Host | Canonical format pairs | Additional mixed-PDF cases | Failed | Evidence |
+| --- | ---: | ---: | ---: | --- |
+| Windows x64 | 589 | 11 | 0 | [Run and JSON artifact](https://github.com/Amix29/Multi-Converter/actions/runs/42492863370) |
+| macOS Apple Silicon | 553 | 11 | 0 | [Run and JSON artifact](https://github.com/Amix29/Multi-Converter/actions/runs/42493462566) |
+| Linux x64 | 589 | 11 | 0 | [Run and JSON artifact](https://github.com/Amix29/Multi-Converter/actions/runs/42492896108) |
+
+All nine negative controls passed on each host. The reports contain one
+successful result per expected case. AMR has no enabled routes on macOS.
+The Windows working tree also passed the full 600-case suite locally.
+
+The [separate Windows build gate](https://github.com/Amix29/Multi-Converter/actions/runs/42492837972)
+stopped during packaging preparation. The rebuilt reference OCR runtime
+did not match the origin recorded for the legacy Windows OCR profile.
+Installed-package acceptance and the broader OCR corpus have separate gates.
 
 ## 2026-11-08 — Native conversion and OCR test coverage
 
