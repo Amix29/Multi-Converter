@@ -101,6 +101,7 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         env:
+          GH_TOKEN: ${{ github.token }}
           FFMPEG_MACOS_AARCH64_ARCHIVE_URL: ${{ vars.MC_FFMPEG_MACOS_AARCH64_ARCHIVE_URL }}
           FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256: ${{ vars.MC_FFMPEG_MACOS_AARCH64_ARCHIVE_SHA256 }}
           FFPROBE_MACOS_AARCH64_ARCHIVE_URL: ${{ vars.MC_FFPROBE_MACOS_AARCH64_ARCHIVE_URL }}
