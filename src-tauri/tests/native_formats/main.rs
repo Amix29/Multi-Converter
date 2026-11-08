@@ -47,7 +47,7 @@ fn main() {
             Ok(value) => json!({"ok": value}),
             Err(error) => json!({"error": error}),
         };
-        println!("{response}");
+        println!("MC_FORMAT_REPLY {response}");
         io::stdout().flush().expect("flush test response");
     }
 }

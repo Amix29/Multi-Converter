@@ -52,10 +52,13 @@ def driver():
     def call(op, **fields):
         child.stdin.write(json.dumps({"op": op, **fields}) + "\n")
         child.stdin.flush()
-        line = child.stdout.readline()
-        if not line:
+        for line in child.stdout:
+            if line.startswith("MC_FORMAT_REPLY "):
+                reply = json.loads(line.removeprefix("MC_FORMAT_REPLY "))
+                break
+            print(line, end="", file=sys.stderr)
+        else:
             raise RuntimeError(f"native driver stopped (status {child.poll()})")
-        reply = json.loads(line)
         if "error" in reply:
             raise ValueError(reply["error"])
         return reply["ok"]
