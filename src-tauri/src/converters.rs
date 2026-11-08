@@ -66,6 +66,7 @@ pub use contracts::{
     MediaMode, ProgressPayload, QualityProfile, Result,
 };
 pub use describe::describe_file_with_app;
+pub(crate) use describe::describe_for_import;
 pub(crate) use orchestrator::convert_registered;
 
 pub(crate) use external::{

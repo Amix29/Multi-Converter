@@ -74,8 +74,9 @@ def exercise(side, round_id):
     record("office-rendered-page", rendered.read_bytes())
     ocr = out / "ocr.json"
     request = {"schemaVersion": 1, "jobId": "benchmark", "input": str(image), "output": str(ocr.resolve())}
-    output = run("ocr-start-and-recognize", [root / "ocr/runtime/windows-x64/ocr-worker.exe",
-                 "--serve", "--models", root / "ocr/models", "--provider", "cpu"],
+    ocr_root = root / "ocr/native-v1" if (root / "ocr/native-v1").is_dir() else root / "ocr"
+    output = run("ocr-start-and-recognize", [ocr_root / "runtime/windows-x64/ocr-worker.exe",
+                 "--serve", "--models", ocr_root / "models", "--provider", "cpu"],
                  (json.dumps(request) + "\n").encode())
     replies = [json.loads(line) for line in output.splitlines()]
     if [entry["type"] for entry in replies] != ["ready", "completed"]:

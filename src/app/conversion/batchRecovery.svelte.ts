@@ -137,7 +137,7 @@ export function createBatchRecovery(options: {
       const descriptions = await api.describePaths(
         state.plan.files.map((file) => file.path),
       );
-      skipped(state.skippedFiles + descriptions.rejected.length);
+      skipped(state.skippedFiles + descriptions.rejected.length + descriptions.unsupportedCount);
       setPending(null);
       return descriptions.files.length
         ? { descriptions: descriptions.files, plan: state.plan }

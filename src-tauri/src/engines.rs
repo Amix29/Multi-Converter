@@ -13,8 +13,9 @@ pub use contracts::{
     DependencyBootstrap, DependencyCheck, EngineMode, EngineSelection, EngineState, ToolStatus,
 };
 #[allow(unused_imports)]
-pub use health::{bootstrap_dependencies, is_available, tool_statuses};
-pub use policy::{decorate_target, select_engine};
+pub use health::{bootstrap_dependencies, tool_statuses};
+pub use policy::select_engine;
+pub(crate) use policy::{EngineChecks, decorate_target};
 #[allow(unused_imports)]
 pub(crate) use process::smoke_test_external_path;
 pub use resolution::resolve_tool;

@@ -136,7 +136,6 @@
         await application.conversionWorkflow.resetAll();
         application.fileWorkflow.resetFiles();
       })}
-    onClearUnsupported={application.fileWorkflow.removeUnsupported}
     onDragOver={application.fileWorkflow.setIsDragOver}
     onDrop={application.fileWorkflow.handleHtmlDrop}
     onFormats={application.showFormats}

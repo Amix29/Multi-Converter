@@ -87,6 +87,7 @@ until the remaining gates close.
 - PDF hybrid extraction: usable native text first; local OCR for scanned pages.
 - Packaged local `PP-OCRv6_medium` resources, CPU selection, verification, progress,
   cancellation and cleanup, with no runtime model downloads or cloud fallback.
+- Import only convertible files from individual selections and nested folders. Report unsupported files with a localized count.
 - Start directly on file import, including on first launch. Keep the existing settings, feedback and update behavior.
 - Approved light/dark brand system, local system/light/dark preference, custom
   quality/media selectors, short accessible motion and glass navigation. Colored

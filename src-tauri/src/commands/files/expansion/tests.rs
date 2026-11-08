@@ -167,3 +167,26 @@ fn folder_import_does_not_follow_symbolic_links() {
     assert_eq!(expanded.files[0].import_origin.relative_path, "inside.txt");
     assert!(expanded.partial_import);
 }
+
+#[test]
+fn ignored_files_do_not_exhaust_the_supported_file_budget() {
+    let input = tempfile::tempdir().unwrap();
+    for index in 0..=MAX_IMPORT_FILES {
+        fs::write(
+            input.path().join(format!("ignored-{index}.unsupported")),
+            [],
+        )
+        .unwrap();
+    }
+    let nested = input.path().join("z-nested");
+    fs::create_dir(&nested).unwrap();
+    fs::write(nested.join("supported.PNG"), []).unwrap();
+    let batch = expand_file_paths(&[input.path().to_string_lossy().into_owned()]).unwrap();
+    assert_eq!(batch.files.len(), 1);
+    assert_eq!(
+        batch.files[0].import_origin.relative_path,
+        "z-nested/supported.PNG"
+    );
+    assert_eq!(batch.unsupported_count, MAX_IMPORT_FILES + 1);
+    assert!(!batch.partial_import);
+}

@@ -187,6 +187,10 @@ export function exportedFilesText(language: LanguageCode, count: number) {
   return t(language, pluralKey("file.exported", count), { count });
 }
 
+export function unsupportedFilesText(language: LanguageCode, count: number) {
+  return t(language, pluralKey("file.unsupportedImport", count), { count });
+}
+
 export function skippedFilesText(language: LanguageCode, count: number) {
   return t(language, pluralKey("file.skipped", count), { count });
 }

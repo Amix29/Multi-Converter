@@ -22,8 +22,8 @@ const expected = new Map();
 const direct = nativeOcrRoot;
 
 for (const [folder, prefix, manifestName, artifact] of [
-  [`${direct}/models`, "ocr/models/", "models-lock.json", ocrProfile.modelArtifact],
-  [`${direct}/runtime/windows-x64`, "ocr/runtime/windows-x64/", "runtime-manifest.json", ocrProfile.artifact],
+  [`${direct}/models`, "ocr/native-v1/models/", "models-lock.json", ocrProfile.modelArtifact],
+  [`${direct}/runtime/windows-x64`, "ocr/native-v1/runtime/windows-x64/", "runtime-manifest.json", ocrProfile.artifact],
 ]) {
   const manifest = JSON.parse(await fs.readFile(path.join(folder, manifestName), "utf8"));
   if (manifestName === "runtime-manifest.json") validateOcrProfileMarker(manifest, ocrProfile);
@@ -71,7 +71,7 @@ const office = [];
 const originalModels = JSON.parse(await fs.readFile("tools/ocr-runtime/native-worker/model-sources.json", "utf8"));
 const modelSources = new Map(originalModels.map(model => {
   const file = model.files.find(file => file.rfilename === "inference.onnx");
-  return [`ocr/models/${model.id}/inference.onnx`, { id: model.id, bytes: file.size, sha256: file.lfs.sha256 }];
+  return [`ocr/native-v1/models/${model.id}/inference.onnx`, { id: model.id, bytes: file.size, sha256: file.lfs.sha256 }];
 }));
 const restoredModels = [];
 let encodedModel = null;

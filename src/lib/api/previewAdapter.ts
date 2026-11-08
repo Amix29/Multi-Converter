@@ -51,8 +51,9 @@ export function createPreviewApi(): MultiConverterApi {
       ];
       if (previewParams.get("mockMediaFiles") === "1") return paths.slice(3, 5);
       if (previewParams.get("mockOcrImage") === "1") return paths.slice(1, 2);
-      if (previewParams.get("mockUnsupportedFiles") === "1") {
-        return [...paths.slice(0, 2), `${PREVIEW_ROOT}\\Documents\\archive.non-supported`];
+      const unsupported = previewParams.get("mockUnsupportedFiles");
+      if (unsupported === "1" || unsupported === "2") {
+        return [...paths.slice(0, 2), ...Array.from({ length: Number(unsupported) }, (_, i) => `${PREVIEW_ROOT}\\Documents\\archive-${i}.non-supported`)];
       }
       return previewParams.get("mockSingleFile") === "1" ? paths.slice(0, 1) : paths;
     },
@@ -91,11 +92,12 @@ export function createPreviewApi(): MultiConverterApi {
           : [".png", ".jpg", ".webp"].includes(extension) ? 1_536_000
           : [".wav", ".mp3", ".flac"].includes(extension) ? 8_192_000 : 2_048;
         const description = makePreviewFile(name, extension, size);
-        return previewParams.get("mockUnsupportedFiles") === "1" && name.endsWith(".non-supported")
+        return name.endsWith(".non-supported")
           ? { ...description, category: "Inconnu", categoryId: "unknown", targets: [] }
           : description;
       });
-      return { files, rejected: [], truncated: false };
+      const supported = files.filter(file => file.targets.some(target => target.engineAvailable && target.availability === "available"));
+      return { files: supported, unsupportedCount: files.length - supported.length, rejected: [], truncated: false };
     },
     async saveClipboardFiles(files) {
       return files.map((file, index) => `${PREVIEW_ROOT}\\Desktop\\clipboard-${index + 1}-${file.name || "file.txt"}`);

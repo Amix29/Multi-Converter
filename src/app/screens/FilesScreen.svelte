@@ -22,7 +22,6 @@
     recoveryContent?: Snippet;
     onAddFiles(): void;
     onClear(): void;
-    onClearUnsupported(): void;
     onDragOver(active: boolean): void;
     onDrop(event: DragEvent & { currentTarget: HTMLElement }): void;
     onFormats(): void;
@@ -31,12 +30,6 @@
   } = $props();
   let hasFiles = $derived(props.files.length > 0);
   let hasConvertibleFiles = $derived(props.files.some(hasAvailableTargets));
-  const unsupportedCount = $derived.by(() =>
-    props.files.reduce(
-      (count, file) => count + (hasAvailableTargets(file) ? 0 : 1),
-      0,
-    ),
-  );
   const controller1 = createVirtualGridWindow({
     get itemCount() {
       return props.files.length;
@@ -160,16 +153,6 @@
           disabled={props.isConverting}
           onclick={props.onClear}>{t(props.language, "upload.clear")}</Button
         >
-        {#if unsupportedCount > 0}<Button
-            variant="unstyled"
-            size="inherit"
-            class="secondary-button"
-            type="button"
-            disabled={props.isConverting}
-            onclick={props.onClearUnsupported}
-          >
-            {t(props.language, "upload.removeUnsupported")}
-          </Button>{/if}
       </div>
       {#if hasConvertibleFiles}<Button
           variant="unstyled"

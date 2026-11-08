@@ -253,9 +253,16 @@ fn resource_root(app: &AppHandle) -> Result<PathBuf, String> {
             return Ok(local);
         }
     }
+    // Older Windows installers shared ocr/runtime and ocr/models across engines.
+    // Keep historical files outside both the verifier and the DLL search path.
+    let bundled = if cfg!(target_os = "windows") {
+        "ocr/native-v1"
+    } else {
+        "ocr"
+    };
     app.path()
         .resource_dir()
-        .map(|path| path.join("ocr"))
+        .map(|path| path.join(bundled))
         .map_err(|error| format!("OCR_RESOURCE_DIR:{error}"))
 }
 

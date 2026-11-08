@@ -15,7 +15,7 @@ const commonResources = {
 assert.deepEqual(tauriConfig.bundle.resources, commonResources, "common configuration must include project notices without leaking Windows engines into Mac/Linux merges");
 const windowsResources = { ...tauriConfig.bundle.resources, ...windowsConfig.bundle.resources };
 assert.equal(windowsResources[`${directRoot}/libreoffice/`], "engines/libreoffice/compatible/");
-assert.equal(windowsResources["bundled-engine-profiles/windows-x64/native-v1/ocr/"], "ocr/");
+assert.equal(windowsResources["bundled-engine-profiles/windows-x64/native-v1/ocr/"], "ocr/native-v1/");
 assert.equal(windowsResources[`${directRoot}/ocr/`], undefined, "Windows must not bundle both Python and native OCR runtimes");
 assert.ok(!Object.values(windowsResources).some(value => value.includes("engine-archives")));
 assert.equal(windowsConfig.bundle.windows.nsis.compression, "lzma");

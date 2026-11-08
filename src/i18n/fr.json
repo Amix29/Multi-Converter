@@ -311,6 +311,8 @@
   "file.converted.other": "{count} fichiers convertis",
   "file.exported.one": "{count} fichier exporté.",
   "file.exported.other": "{count} fichiers exportés.",
+  "file.unsupportedImport.one": "Un fichier n’a pas pu être importé car son format n’est pas pris en charge.",
+  "file.unsupportedImport.other": "{count} fichiers n’ont pas pu être importés car leur format n’est pas pris en charge.",
   "file.skipped.one": "{count} fichier ignoré.",
   "file.skipped.other": "{count} fichiers ignorés.",
   "file.canceled.one": "{count} fichier annulé",

@@ -65,6 +65,7 @@ pub struct ImportedFileDescription {
 pub struct ImportBatchResult {
     pub files: Vec<ImportedFileDescription>,
     pub rejected: Vec<ImportRejection>,
+    pub unsupported_count: usize,
     pub truncated: bool,
 }
 

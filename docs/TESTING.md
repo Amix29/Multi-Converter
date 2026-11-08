@@ -40,8 +40,17 @@ and match the source's early and late frames within a lossy color tolerance.
 The two-page PDF must produce two distinct page images in content order.
 Deliberately damaged outputs and
 unsupported conversion requests exercise the rejection paths on every run.
-The corpus covers canonical format pairs with the default conversion settings.
-The installed-app, OCR and fidelity suites exercise separate behaviors.
+Each format pair runs with the compact, balanced and high job settings. Fixed-format
+outputs are decoded under all three settings as well. The tests inspect JPEG
+quantization tables, PDF page dimensions and MP2/AC3 stream bitrates to verify
+the profile where it changes those properties.
+
+On Windows the installed-app job drops a real French PNG into the packaged
+WebView, clicks the text-extraction button and checks three accented text lines.
+It repeats the check after an in-place installation with legacy OCR files,
+then changes one byte of the active ONNX Runtime DLL and requires the app to
+reject it. A mixed folder with 80 supported videos and two unsupported files
+exercises recursive import and the time to leave the analyzing state.
 
 ## Editor Removal (2026-10-29)
 

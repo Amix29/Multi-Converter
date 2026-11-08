@@ -13,18 +13,28 @@ pub(crate) async fn describe_paths(
         let expanded_paths = expansion::expand_file_paths(&paths)?;
         let mut rejected = expanded_paths.rejected;
         let mut files = Vec::new();
+        let mut unsupported_count = expanded_paths.unsupported_count;
+        let mut checks = crate::engines::EngineChecks::new(Some(&app));
         for expanded in expanded_paths.files {
-            let mut description =
-                match converters::describe_file_with_app(Some(&app), &expanded.path) {
-                    Ok(description) => description,
-                    Err(error) => {
-                        rejected.push(ImportRejection {
-                            path: expanded.path.to_string_lossy().to_string(),
-                            message: error.to_string(),
-                        });
-                        continue;
-                    }
-                };
+            let mut description = match converters::describe_for_import(&mut checks, &expanded.path)
+            {
+                Ok(description) => description,
+                Err(error) => {
+                    rejected.push(ImportRejection {
+                        path: expanded.path.to_string_lossy().to_string(),
+                        message: error.to_string(),
+                    });
+                    continue;
+                }
+            };
+            if !description
+                .targets
+                .iter()
+                .any(|target| target.engine_available && target.availability == "available")
+            {
+                unsupported_count += 1;
+                continue;
+            }
             if expanded.partial_import {
                 description.warnings.push(converters::FileWarning {
                     code: "partialFolderImport",
@@ -40,6 +50,7 @@ pub(crate) async fn describe_paths(
         Ok(ImportBatchResult {
             files,
             rejected,
+            unsupported_count,
             truncated: expanded_paths.partial_import,
         })
     })

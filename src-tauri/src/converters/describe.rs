@@ -4,7 +4,13 @@ pub fn describe_file_with_app(
     app: Option<&AppHandle>,
     file_path: impl AsRef<Path>,
 ) -> Result<FileDescription> {
-    let file_path = file_path.as_ref();
+    describe_for_import(&mut engines::EngineChecks::new(app), file_path.as_ref())
+}
+
+pub(crate) fn describe_for_import(
+    checks: &mut engines::EngineChecks<'_>,
+    file_path: &Path,
+) -> Result<FileDescription> {
     let stat = fs::metadata(file_path)?;
     let extension = file_path
         .extension()
@@ -78,7 +84,7 @@ pub fn describe_file_with_app(
                                 target.category_id == "images"
                             }
                     })
-                    .map(|target| engines::decorate_target(app, source, target))
+                    .map(|target| engines::decorate_target(checks, source, target))
                     .collect()
             })
             .unwrap_or_default(),

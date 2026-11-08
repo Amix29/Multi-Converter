@@ -103,13 +103,6 @@ pub fn bootstrap_dependencies(app: &AppHandle) -> Result<DependencyBootstrap, St
     })
 }
 
-pub fn is_available(app: Option<&AppHandle>, id: &str) -> bool {
-    let Some(tool) = TOOLS.iter().find(|tool| tool.id == id) else {
-        return false;
-    };
-    evaluate_tool(app, tool, false).available
-}
-
 pub(super) fn evaluate_tool(
     app: Option<&AppHandle>,
     tool: &ToolDef,

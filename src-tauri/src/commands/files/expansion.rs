@@ -18,6 +18,7 @@ pub(super) struct ExpandedPaths {
     #[cfg_attr(not(test), allow(dead_code))]
     pub(super) partial_import: bool,
     pub(super) rejected: Vec<ImportRejection>,
+    pub(super) unsupported_count: usize,
 }
 
 pub(super) struct ExpandedFile {
@@ -36,6 +37,7 @@ pub(super) fn expand_file_paths(paths: &[String]) -> CommandResult<ExpandedPaths
     let mut entries_seen = 0usize;
     let mut partial_import = false;
     let mut rejected = Vec::new();
+    let mut unsupported = HashSet::new();
 
     for raw_path in paths.iter().filter(|item| !item.trim().is_empty()) {
         if files.len() >= MAX_IMPORT_FILES {
@@ -76,6 +78,10 @@ pub(super) fn expand_file_paths(paths: &[String]) -> CommandResult<ExpandedPaths
             continue;
         }
         if metadata.is_file() {
+            if !known_extension(path) {
+                unsupported.insert(path.to_owned());
+                continue;
+            }
             root_files.push(ExpandedFile {
                 path: path.to_path_buf(),
                 import_origin: ImportOriginV1 {
@@ -109,6 +115,7 @@ pub(super) fn expand_file_paths(paths: &[String]) -> CommandResult<ExpandedPaths
                 &root_id,
                 &root_name,
                 &mut root_files,
+                &mut unsupported,
                 &mut visited_directories,
                 &mut root_partial,
                 0,
@@ -142,6 +149,7 @@ pub(super) fn expand_file_paths(paths: &[String]) -> CommandResult<ExpandedPaths
         files,
         partial_import,
         rejected,
+        unsupported_count: unsupported.len(),
     })
 }
 
@@ -152,6 +160,7 @@ fn collect_folder_files(
     root_id: &str,
     root_name: &str,
     files: &mut Vec<ExpandedFile>,
+    unsupported: &mut HashSet<PathBuf>,
     visited: &mut HashSet<PathBuf>,
     partial: &mut bool,
     depth: usize,
@@ -200,6 +209,10 @@ fn collect_folder_files(
             continue;
         }
         if metadata.is_file() {
+            if !known_extension(&child) {
+                unsupported.insert(child);
+                continue;
+            }
             let relative_path = normalized_relative_path(root, &child)?;
             files.push(ExpandedFile {
                 path: child,
@@ -231,6 +244,7 @@ fn collect_folder_files(
                 root_id,
                 root_name,
                 files,
+                unsupported,
                 visited,
                 partial,
                 depth + 1,
@@ -240,6 +254,19 @@ fn collect_folder_files(
         }
     }
     Ok(())
+}
+
+fn known_extension(path: &Path) -> bool {
+    static EXTENSIONS: std::sync::OnceLock<HashSet<&'static str>> = std::sync::OnceLock::new();
+    let extensions = EXTENSIONS.get_or_init(|| {
+        crate::registry::formats()
+            .into_iter()
+            .flat_map(|format| format.extensions.iter().copied())
+            .collect()
+    });
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| extensions.contains(ext.to_ascii_lowercase().as_str()))
 }
 
 fn normalized_relative_path(root: &Path, path: &Path) -> CommandResult<String> {

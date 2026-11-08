@@ -18,7 +18,7 @@ from xml.etree.ElementTree import ParseError
 from zipfile import BadZipFile
 
 from expectations import ALL, DOCUMENTS, EXTENSION, FIXTURES, targets
-from verify_outputs import require, run, verify
+from verify_outputs import jpeg_luma_quantization, require, run, verify
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -217,35 +217,43 @@ def exercise(call, report, selected, root):
             pair = source + "-" + target
             row = {"source": source, "target": target, "offeredEngine": t["engine"]}
             report["pairs"].append(row)
-            try:
-                require(t["engineAvailable"], f"unavailable engine {t['engine']}")
-                job = {
-                    "id": pair,
-                    "inputPath": str(source_path),
-                    "outputDir": str(root),
-                    "targetFormat": target,
-                }
-                result = call("convert", job=job)
-                output = Path(result["outputPath"]).resolve()
-                require(
-                    output.parent == root / pair and output.suffix == "." + t["extension"],
-                    "wrong output destination",
-                )
-                require(
-                    result["inputBytes"] == source_path.stat().st_size
-                    and result["outputBytes"] == output.stat().st_size > 0,
-                    "invalid byte counts",
-                )
-                row["engine"] = result["engine"]
-                row["warnings"] = [w["code"] for w in result["warnings"]]
-                verify(output, source, target, tools)
-                row["status"] = "pass"
-            except (ValueError, BadZipFile, ParseError, CsvError, subprocess.TimeoutExpired) as error:
-                row.update(status="fail", error=str(error))
-                print(f"FAIL {pair}: {error}", flush=True)
-            if digest(source_path) != hashes[filename]:
-                row.update(status="fail", error="source was modified")
-                raise ValueError(f"{pair} modified its input")
+            row["profiles"] = {}
+            for quality in ("compact", "balanced", "high"):
+                attempt = {}
+                row["profiles"][quality] = attempt
+                job_id = f"{pair}-{quality}"
+                try:
+                    require(t["engineAvailable"], f"unavailable engine {t['engine']}")
+                    job = {
+                        "id": job_id, "inputPath": str(source_path), "outputDir": str(root),
+                        "targetFormat": target, "qualityProfile": quality,
+                    }
+                    result = call("convert", job=job)
+                    output = Path(result["outputPath"]).resolve()
+                    require(output.parent == root / job_id and output.suffix == "." + t["extension"],
+                            "wrong output destination")
+                    require(result["inputBytes"] == source_path.stat().st_size
+                            and result["outputBytes"] == output.stat().st_size > 0, "invalid byte counts")
+                    require(result["qualityProfile"] == quality, "wrong reported quality")
+                    verify(output, source, target, tools, quality)
+                    if target == "jpg" and fmt != "pdf":
+                        attempt["lumaQuantization"] = jpeg_luma_quantization(output)
+                    attempt.update(engine=result["engine"], bytes=result["outputBytes"],
+                                   warnings=[w["code"] for w in result["warnings"]], status="pass")
+                    if quality == "balanced":
+                        row.update(engine=attempt["engine"], warnings=attempt["warnings"])
+                except (ValueError, BadZipFile, ParseError, CsvError, subprocess.TimeoutExpired) as error:
+                    attempt.update(status="fail", error=str(error))
+                    print(f"FAIL {job_id}: {error}", flush=True)
+                if digest(source_path) != hashes[filename]:
+                    row.update(status="fail", error="source was modified")
+                    raise ValueError(f"{job_id} modified its input")
+            row["status"] = "pass" if all(r["status"] == "pass" for r in row["profiles"].values()) else "fail"
+            if row["status"] == "pass" and target == "jpg" and fmt != "pdf":
+                compact, balanced, high = [row["profiles"][q]["lumaQuantization"] for q in ("compact", "balanced", "high")]
+                if not compact > balanced > high:
+                    row.update(status="fail", error="JPEG quantization does not follow the chosen quality")
+                    print(f"FAIL {pair}: {row['error']}", flush=True)
         passed = sum(r["status"] == "pass" for r in report["pairs"] if r["source"] == source)
         print(f"{source}: {passed}/{len(expected)}", flush=True)
 
@@ -272,6 +280,7 @@ def main():
         "host": host,
         "partial": bool(args.source),
         "expectedPairs": expected,
+        "expectedProfileConversions": 3 * expected,
         "negativeControls": [],
         "pairs": [],
         "passed": False,
@@ -285,6 +294,8 @@ def main():
             {s + "-" + t for s in selected for t in targets(s)},
             "executed pairs",
         )
+        for row in report["pairs"]:
+            check_set(row["profiles"], {"compact", "balanced", "high"}, "executed quality profiles")
         failures = [r for r in report["pairs"] if r["status"] != "pass"]
         require(not failures, f"{len(failures)} failed pairs, see {output}")
         report["passed"] = True

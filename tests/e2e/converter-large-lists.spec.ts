@@ -1,21 +1,20 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 
-test("removes unsupported imports in bulk before the Formats step", async ({ page }, testInfo) => {
-  skipUnlessDesktop(testInfo);
-  await openPreview(page, "/?mockUnsupportedFiles=1");
-
-  await page.getByRole("button", { name: "Parcourir" }).click();
-  await expect(page.locator(".file-ticket")).toHaveCount(3);
-  const removeUnsupported = page.getByRole("button", { name: "Retirer les fichiers non pris en charge" });
-  await expect(removeUnsupported).toBeVisible();
-  await removeUnsupported.click();
-
-  await expect(page.locator(".file-ticket")).toHaveCount(2);
-  await expect(removeUnsupported).toBeHidden();
-  await page.getByRole("button", { name: "Préparer la conversion" }).click();
-  await expect(page.locator(".rail-button")).toHaveCount(2);
-  await expect(page.locator(".rail-button:disabled")).toHaveCount(0);
-});
+for (const [count, warning] of [
+  [1, "Un fichier n’a pas pu être importé car son format n’est pas pris en charge."],
+  [2, "2 fichiers n’ont pas pu être importés car leur format n’est pas pris en charge."],
+] as const) {
+  test(`imports only convertible files and reports ${count} unsupported`, async ({ page }, testInfo) => {
+    skipUnlessDesktop(testInfo);
+    await openPreview(page, `/?mockUnsupportedFiles=${count}`);
+    await page.getByRole("button", { name: "Parcourir" }).click();
+    await expect(page.locator(".file-ticket")).toHaveCount(2);
+    await expect(page.getByText(warning, { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Préparer la conversion" }).click();
+    await expect(page.locator(".rail-button")).toHaveCount(2);
+    await expect(page.locator(".rail-button:disabled")).toHaveCount(0);
+  });
+}
 
 test("virtualizes a large output list while keeping filters and cancellation available", async ({ page }, testInfo) => {
   skipUnlessDesktop(testInfo);

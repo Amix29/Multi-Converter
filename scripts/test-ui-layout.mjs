@@ -52,8 +52,6 @@ assert.doesNotMatch(app + appTopbar + fileWorkflow, /pasteFromClipboard|clipboar
 assert.match(api, /saveClipboardFiles\(files: ClipboardFileInput\[\]\)/, "clipboard API contract is missing");
 assert.match(composition, /untrack[\s\S]*?bootStarted\.current[\s\S]*?bootstrapDependencies\(\)/, "engine bootstrap must be isolated from language dependencies");
 assert.match(fileWorkflow, /untrack[\s\S]*?onProgress[\s\S]*?disposed/, "native listeners must own teardown and avoid implicit language tracking");
-assert.match(filesScreen, /upload\.removeUnsupported/, "Files must expose a bulk action for unsupported imports");
-assert.match(fileWorkflow, /withoutUnsupportedFiles/, "bulk unsupported removal must use the shared pure helper");
 assert.match(formatScreen, /stablePartitionBySupport/, "Formats must keep compatible files before unsupported files");
 assert.match(largeListModel, /for \(const file of files\)[\s\S]*?supported[\s\S]*?unsupported/, "the supported-first partition must remain stable");
 assert.match(progressScreen, /progress\.filterAll[\s\S]*?progress\.filterErrors/, "output status filters are missing");

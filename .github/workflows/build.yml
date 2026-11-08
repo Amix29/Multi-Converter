@@ -156,6 +156,11 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: verified-windows-x64-installer
@@ -176,11 +181,45 @@ jobs:
           if ((Get-FileHash -LiteralPath "$install/multi-converter.exe").Hash -ne $payload.applicationBinary.sha256) {
             throw 'Installed application fingerprint changed'
           }
-          python tools/ocr-runtime/native-worker/test-lifecycle.py --worker "$install/ocr/runtime/windows-x64/ocr-worker.exe" --models "$install/ocr/models" --report "$dir/installed-ocr.json"
+          python tools/ocr-runtime/native-worker/test-lifecycle.py --worker "$install/ocr/native-v1/runtime/windows-x64/ocr-worker.exe" --models "$install/ocr/native-v1/models" --report "$dir/installed-ocr.json"
+      - name: Exercise the installed app on a clean install, after an upgrade and with a damaged active DLL
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP 'verified-installer'
+          $install = Join-Path $env:RUNNER_TEMP 'installed-converter'
+          $exe = Join-Path $install 'multi-converter.exe'
+          node scripts/test-installed-windows-ocr.mjs $exe "$dir/app-clean.json"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+          # Reproduce an upgrade in place with unowned files left by the Python runtime.
+          $legacy = Join-Path $install 'ocr/runtime/windows-x64/_internal/api-ms-win-core-console-l1-1-0.dll'
+          New-Item -ItemType Directory -Force (Split-Path $legacy) | Out-Null
+          Set-Content -LiteralPath $legacy -Value 'synthetic legacy DLL from a different build'
+          New-Item -ItemType Directory -Force "$install/ocr/models" | Out-Null
+          Set-Content -LiteralPath "$install/ocr/models/legacy.yml" -Value 'old model metadata'
+          $installer = Get-Item "$dir/Multi-Converter_*_x64-setup.exe"
+          $setup = Start-Process -FilePath $installer.FullName -ArgumentList @('/S', "/D=$install") -Wait -PassThru -WindowStyle Hidden
+          if ($setup.ExitCode -ne 0) { throw "Upgrade failed ($($setup.ExitCode))" }
+          if (!(Test-Path -LiteralPath $legacy)) { throw 'Missing legacy regression fixture' }
+          node scripts/test-installed-windows-ocr.mjs $exe "$dir/app-upgrade.json"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
+          # Change one byte without changing the size. A new app process must reject it before inference.
+          $active = Join-Path $install 'ocr/native-v1/runtime/windows-x64/onnxruntime.dll'
+          $stream = [IO.File]::Open($active, 'Open', 'ReadWrite', 'None')
+          try {
+            $stream.Position = $stream.Length - 1
+            $original = $stream.ReadByte()
+            $stream.Position = $stream.Length - 1
+            $stream.WriteByte($original -bxor 1)
+          } finally { $stream.Dispose() }
+          node scripts/test-installed-windows-ocr.mjs $exe "$dir/app-tamper.json" 'Ressource OCR modifiée: onnxruntime.dll'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: installed-windows-ocr-receipt
-          path: ${{ runner.temp }}/verified-installer/installed-ocr.json
+          path: |
+            ${{ runner.temp }}/verified-installer/installed-ocr.json
+            ${{ runner.temp }}/verified-installer/app-*.json
           if-no-files-found: error
 
   macos-code-check:

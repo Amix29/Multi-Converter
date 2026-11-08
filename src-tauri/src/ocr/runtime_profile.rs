@@ -11,8 +11,6 @@ struct ProfileLock {
     source_model_artifact: Option<ArtifactLock>,
     #[serde(default)]
     model_artifact: Option<ArtifactLock>,
-    #[serde(default)]
-    retired_model_files: Vec<ContentFile>,
 }
 
 static APPROVED: OnceLock<Result<ProfileLock, String>> = OnceLock::new();
@@ -47,17 +45,9 @@ fn approved() -> Result<&'static ProfileLock, String> {
 pub(super) fn retired_files(
     expected: &ArtifactLock,
 ) -> Result<Option<&'static [ContentFile]>, String> {
-    for profile in [approved()?, native()?] {
-        if same(expected, &profile.artifact) {
-            return Ok(Some(&profile.retired_files));
-        }
-        if profile
-            .model_artifact
-            .as_ref()
-            .is_some_and(|models| same(expected, models))
-        {
-            return Ok(Some(&profile.retired_model_files));
-        }
+    let legacy = approved()?;
+    if same(expected, &legacy.artifact) {
+        return Ok(Some(&legacy.retired_files));
     }
     Ok(None)
 }

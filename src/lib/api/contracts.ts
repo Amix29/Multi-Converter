@@ -36,6 +36,7 @@ export interface ImportBatchResult {
   files: FileDescription[];
   rejected: { path: string; message: string }[];
   truncated: boolean;
+  unsupportedCount: number;
 }
 
 export interface ImportOriginV1 {

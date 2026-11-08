@@ -26,7 +26,7 @@ export function bundleWindows(invoke, env) {
         "bundled-engine-profiles/windows-x64/v3/libreoffice/": null,
         "bundled-engine-profiles/windows-x64/native-v1/ocr/": null,
         [path.relative(source, path.join(alias, "libreoffice"))]: "engines/libreoffice/compatible/",
-        [path.relative(source, path.join(nativeAlias, "ocr"))]: "ocr/",
+        [path.relative(source, path.join(nativeAlias, "ocr"))]: "ocr/native-v1/",
       },
     } }));
     return invoke(["bundle", "--bundles", "nsis", "--config", config]);

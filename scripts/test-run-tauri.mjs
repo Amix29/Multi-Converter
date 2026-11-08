@@ -33,7 +33,7 @@ try {
     assert.equal(resources["bundled-engine-profiles/windows-x64/native-v1/ocr/"], null);
     assert.equal(resources["bundled-engine-profiles/windows-x64/v3/ocr/"], undefined);
     assert.equal(resources["bundled-engine-profiles/windows-x64/v3/libreoffice/"], null);
-    assert.equal(Object.values(resources).filter(Boolean).length, 2);
+    assert.deepEqual(Object.values(resources).filter(Boolean).sort(), ["engines/libreoffice/compatible/", "ocr/native-v1/"]);
     for (const key of Object.keys(resources).filter(key => resources[key])) {
       assert.ok(!path.isAbsolute(key) && key.includes("mc-pack-"), "Resource keys must resolve from src-tauri without a drive prefix");
     }

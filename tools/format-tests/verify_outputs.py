@@ -150,7 +150,7 @@ def verify_video_content(path, source, ffmpeg):
         require(error < 24, f"wrong video content: mean RGB error {error:.1f}/255")
 
 
-def verify_media(path, source, target, tools):
+def verify_media(path, source, target, tools, quality):
     metadata = probe(path, tools)
     streams = metadata["streams"]
     audio = [s for s in streams if s["codec_type"] == "audio"]
@@ -158,6 +158,11 @@ def verify_media(path, source, target, tools):
     if target in AUDIO:
         container, acodec = AUDIO_TYPES[target]
         require(not video, "audio export contains video")
+        cbr = {"mp2": (128000, 192000, 256000), "ac3": (192000, 448000, 640000)}
+        if target in cbr:
+            expected = cbr[target][("compact", "balanced", "high").index(quality)]
+            require(len(audio) == 1 and int(audio[0]["bit_rate"]) == expected,
+                    f"{target}/{quality}: wrong encoded bitrate")
     else:
         container, vcodec, acodec = VIDEO_TYPES[target]
         require(len(video) == 1 and video[0]["codec_name"] == vcodec, f"wrong video track: {target}")
@@ -229,7 +234,30 @@ def verify_image(path, target, tools):
         )
 
 
-def verify_pdf_pages(path, target, tools):
+def jpeg_luma_quantization(path):
+    # Read the luminance quantization table, independent of pixels and EXIF metadata.
+    data = path.read_bytes()
+    offset = 2
+    while offset + 4 <= len(data) and data[offset] == 255:
+        marker = data[offset + 1]
+        size = int.from_bytes(data[offset + 2:offset + 4], "big")
+        require(size >= 2 and offset + 2 + size <= len(data), "invalid JPEG segment")
+        if marker == 0xDB:
+            tables = data[offset + 4:offset + 2 + size]
+            while tables:
+                precision, table = divmod(tables[0], 16)
+                stride = precision + 1
+                require(precision <= 1 and len(tables) >= 1 + 64 * stride, "invalid JPEG DQT")
+                if table == 0:
+                    return sum(int.from_bytes(tables[i:i+stride], "big") for i in range(1, 1 + 64 * stride, stride))
+                tables = tables[1 + 64 * stride:]
+        if marker == 0xDA:
+            break
+        offset += 2 + size
+    raise ValueError("missing JPEG luminance table")
+
+
+def verify_pdf_pages(path, target, tools, source, quality):
     with ZipFile(path) as archive, tempfile.TemporaryDirectory() as tmp:
         entries = archive.infolist()
         require(len(entries) == 2, f"wrong PDF page count: {len(entries)}")
@@ -244,6 +272,12 @@ def verify_pdf_pages(path, target, tools):
             image_signature(data, target)
             page = Path(tmp) / f"page.{target}"
             page.write_bytes(data)
+            stream = probe(page, tools)["streams"][0]
+            # The committed two-page PDFs use Letter and A4 MediaBoxes respectively.
+            points = (612, 792) if source == "pdf" else (595.304, 841.890)
+            dpi = {"compact": 150, "balanced": 220, "high": 300}[quality]
+            for dimension, pt in zip(("width", "height"), points):
+                require(abs(stream[dimension] - pt * dpi / 72) <= 1, f"{quality}: wrong PDF render DPI")
             pixels = run(
                 tools["ffmpeg"],
                 "-v",
@@ -310,12 +344,12 @@ def verify_document(path, source, target, tools):
         require("Conversion locale" in text and "Total" in text, f"pdf->{target} lost a secondary line")
 
 
-def verify(path, source, target, tools):
+def verify(path, source, target, tools, quality="balanced"):
     if source in ("pdf", "mixed-pdf") and target in ("png", "jpg"):
-        verify_pdf_pages(path, target, tools)
+        verify_pdf_pages(path, target, tools, source, quality)
     elif target in DOCUMENTS:
         verify_document(path, source, target, tools)
     elif target in IMAGES:
         verify_image(path, target, tools)
     else:
-        verify_media(path, source, target, tools)
+        verify_media(path, source, target, tools, quality)

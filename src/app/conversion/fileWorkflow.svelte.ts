@@ -9,13 +9,12 @@ import {
   applyProgressBatch,
   preferredImportOrigin,
   selectUniqueImports,
-  withoutUnsupportedFiles,
 } from "./largeListModel";
 import {
   clamp,
   clipboardEventFiles,
   clipboardFileName,
-  hasAvailableDescriptionTargets,
+  unsupportedFilesText,
   isEditablePasteTarget,
   skippedFilesText,
   targetForFormat,
@@ -68,6 +67,7 @@ export function createFileWorkflow(options: {
     });
   });
   const addFiles = (incomingFiles: FileDescription[]) => {
+    let added = 0;
     let limitNoticeScheduled = false;
     setFiles((existing) => {
       const incomingByPath = new Map(
@@ -93,6 +93,7 @@ export function createFileWorkflow(options: {
           ),
         );
       }
+      added = selection.accepted.length;
       const incoming = selection.accepted.map<FileItem>((file) => ({
         ...file,
         id: crypto.randomUUID(),
@@ -100,9 +101,7 @@ export function createFileWorkflow(options: {
         selectedFormat: null,
         progress: 0,
         phase: "phase.waiting",
-        status: hasAvailableDescriptionTargets(file)
-          ? "pending"
-          : "unsupported",
+        status: "pending",
         result: null,
         convertedFormat: null,
         error: null,
@@ -111,30 +110,26 @@ export function createFileWorkflow(options: {
         ? [...promotedExisting, ...incoming]
         : promotedExisting;
     });
+    return added;
   };
+  let importsInFlight = 0;
+  let addedInBatch = 0;
+  let feedbackTimer: number;
   const importFiles = async (
     count: number | null,
     loader: () => Promise<FileDescription[]>,
   ) => {
-    let feedbackShown = false;
-    const timer = window.setTimeout(() => {
-      feedbackShown = true;
-      setImportFeedback({ state: "analyzing", count, visible: true });
-    }, 280);
+    if (importsInFlight++ === 0) {
+      addedInBatch = 0;
+      setImportFeedback(null);
+      feedbackTimer = window.setTimeout(() => {
+        setImportFeedback({ state: "analyzing", count, visible: true });
+      }, 280);
+    }
     try {
       const descriptions = await loader();
-      window.clearTimeout(timer);
-      if (descriptions.length) addFiles(descriptions);
-      if (feedbackShown || descriptions.length > 6) {
-        setImportFeedback({
-          state: "done",
-          count: descriptions.length,
-          visible: true,
-        });
-      }
+      addedInBatch += addFiles(descriptions);
     } catch (error) {
-      window.clearTimeout(timer);
-      setImportFeedback(null);
       options.showNotice(
         "error",
         translateBackendMessage(
@@ -142,10 +137,18 @@ export function createFileWorkflow(options: {
           error instanceof Error ? error.message : String(error || ""),
         ),
       );
+    } finally {
+      if (--importsInFlight === 0) {
+        window.clearTimeout(feedbackTimer);
+        const showDone = addedInBatch > 0 && (importFeedback?.state === "analyzing" || addedInBatch > 6);
+        setImportFeedback(showDone ? { state: "done", count: addedInBatch, visible: true } : null);
+      }
     }
   };
   const describePaths = async (paths: string[]) => {
     const result = await api.describePaths(paths);
+    const notices: string[] = [];
+    if (result.unsupportedCount) notices.push(unsupportedFilesText(options.language, result.unsupportedCount));
     if (result.rejected.length) {
       const details = result.rejected
         .slice(0, 5)
@@ -154,20 +157,15 @@ export function createFileWorkflow(options: {
             `${failure.path.split(/[\\/]/).pop()}: ${translateBackendMessage(options.language, failure.message)}`,
         )
         .join(" · ");
-      options.showNotice(
-        "error",
-        `${skippedFilesText(options.language, result.rejected.length)} ${details}`,
-      );
-    } else if (!result.files.length && paths.length) {
-      options.showNotice(
-        "error",
-        skippedFilesText(options.language, paths.length),
-      );
+      notices.push(`${skippedFilesText(options.language, result.rejected.length)} ${details}`);
+    } else if (!result.unsupportedCount && !result.files.length && paths.length) {
+      notices.push(skippedFilesText(options.language, paths.length));
     }
+    if (notices.length) options.showNotice(result.rejected.length ? "error" : "info", notices.join(" "));
     return result.files;
   };
   const addFilePaths = async (paths: string[]) => {
-    await importFiles(paths.length, async () => {
+    await importFiles(null, async () => {
       return describePaths(paths);
     });
   };
@@ -197,7 +195,7 @@ export function createFileWorkflow(options: {
         }),
       );
     }
-    await importFiles(nativePaths.length + localFiles.length, async () => {
+    await importFiles(nativePaths.length ? null : localFiles.length, async () => {
       const savedPaths = localFiles.length
         ? await api.saveClipboardFiles(
             await Promise.all(localFiles.map(toClipboardFileInput)),
@@ -307,8 +305,6 @@ export function createFileWorkflow(options: {
     if (paths.length) await addFilePaths(paths);
   };
   const resetFiles = () => setFiles([]);
-  const removeUnsupported = () =>
-    setFiles((items) => withoutUnsupportedFiles(items));
   const removeFile = (fileId: string) => {
     setFiles((items) => {
       const next = items.filter((file) => file.id !== fileId);
@@ -370,9 +366,6 @@ export function createFileWorkflow(options: {
     },
     get removeFile() {
       return removeFile;
-    },
-    get removeUnsupported() {
-      return removeUnsupported;
     },
     get resetFiles() {
       return resetFiles;

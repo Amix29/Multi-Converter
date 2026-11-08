@@ -89,7 +89,8 @@ locks = Path(__file__).resolve().parents[1] / "ocr-runtime/native-worker/model-s
 models = {}
 for model in json.loads(locks.read_text(encoding="utf8")):
     expected = next(f for f in model["files"] if f["rfilename"] == "inference.onnx")
-    encoded = after[f"ocr/models/{model['id']}/inference.onnx"].read_bytes()
+    model_dir = "ocr/native-v1/models" if (args.installed / "ocr/native-v1").is_dir() else "ocr/models"
+    encoded = after[f"{model_dir}/{model['id']}/inference.onnx"].read_bytes()
     n = expected["size"]
     if encoded[:8] != b"MCOSHF01" or len(encoded) != n + 16 or int.from_bytes(encoded[8:16], "little") != n:
         raise ValueError("Invalid lossless model container")

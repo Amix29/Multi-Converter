@@ -1,16 +1,44 @@
 use super::catalog::{TOOLS, tool_label};
-use super::contracts::EngineSelection;
-use super::health::{evaluate_tool, is_available};
+use super::contracts::{DependencyCheck, EngineSelection};
+use super::health::evaluate_tool;
 use crate::registry::{Format, TargetFormat};
+use std::collections::HashMap;
 use tauri::AppHandle;
 
-pub fn decorate_target(
-    app: Option<&AppHandle>,
+pub(crate) struct EngineChecks<'a> {
+    app: Option<&'a AppHandle>,
+    checks: HashMap<&'static str, DependencyCheck>,
+}
+
+impl<'a> EngineChecks<'a> {
+    pub(crate) fn new(app: Option<&'a AppHandle>) -> Self {
+        Self {
+            app,
+            checks: HashMap::new(),
+        }
+    }
+
+    fn get(&mut self, id: &'static str) -> Option<&DependencyCheck> {
+        let tool = TOOLS.iter().find(|tool| tool.id == id)?;
+        Some(
+            self.checks
+                .entry(id)
+                .or_insert_with(|| evaluate_tool(self.app, tool, false)),
+        )
+    }
+
+    fn available(&mut self, id: &'static str) -> bool {
+        self.get(id).is_some_and(|check| check.available)
+    }
+}
+
+pub(crate) fn decorate_target(
+    checks: &mut EngineChecks<'_>,
     source: &Format,
     mut target: TargetFormat,
 ) -> TargetFormat {
-    let selection = select_engine(
-        app,
+    let selection = select_with_checks(
+        checks,
         source,
         &target.format,
         &target.category_id,
@@ -34,8 +62,24 @@ pub fn select_engine(
     target_category_id: &str,
     builtin_engine: &str,
 ) -> EngineSelection {
+    select_with_checks(
+        &mut EngineChecks::new(app),
+        source,
+        target_id,
+        target_category_id,
+        builtin_engine,
+    )
+}
+
+fn select_with_checks(
+    checks: &mut EngineChecks<'_>,
+    source: &Format,
+    target_id: &str,
+    target_category_id: &str,
+    builtin_engine: &str,
+) -> EngineSelection {
     if builtin_engine == "ffmpeg" {
-        let ready = is_available(app, "ffmpeg") && is_available(app, "ffprobe");
+        let ready = checks.available("ffmpeg") && checks.available("ffprobe");
         return EngineSelection {
             id: "ffmpeg".to_string(),
             label: "FFmpeg".to_string(),
@@ -56,7 +100,7 @@ pub fn select_engine(
         .map(|id| tool_label(id).to_string())
         .collect::<Vec<_>>();
     for candidate in &candidates {
-        if is_candidate_available(app, candidate) {
+        if checks.available(candidate) {
             return EngineSelection {
                 id: (*candidate).to_string(),
                 label: tool_label(candidate).to_string(),
@@ -79,7 +123,7 @@ pub fn select_engine(
         plan: labels,
         #[cfg(test)]
         required_engine_ids: candidates.iter().map(|id| (*id).to_string()).collect(),
-        reason: unavailable_reason(app, &candidates, source, target_id, target_category_id),
+        reason: unavailable_reason(checks, &candidates, source, target_id, target_category_id),
     }
 }
 
@@ -141,15 +185,8 @@ pub(super) fn engine_candidates(
     }
 }
 
-fn is_candidate_available(app: Option<&AppHandle>, id: &str) -> bool {
-    let Some(tool) = TOOLS.iter().find(|tool| tool.id == id) else {
-        return false;
-    };
-    evaluate_tool(app, tool, false).available
-}
-
 fn unavailable_reason(
-    app: Option<&AppHandle>,
+    checks: &mut EngineChecks<'_>,
     candidates: &[&'static str],
     source: &Format,
     target_id: &str,
@@ -159,13 +196,11 @@ fn unavailable_reason(
         return fidelity_reason(source, target_id, target_category_id);
     }
     for id in candidates {
-        if let Some(tool) = TOOLS.iter().find(|tool| tool.id == *id) {
-            let check = evaluate_tool(app, tool, false);
-            if !check.available {
-                return check
-                    .blocked_reason
-                    .unwrap_or_else(|| "Moteur indisponible.".to_string());
-            }
+        if let Some(check) = checks.get(id).filter(|check| !check.available) {
+            return check
+                .blocked_reason
+                .clone()
+                .unwrap_or_else(|| "Moteur indisponible.".to_string());
         }
     }
     fidelity_reason(source, target_id, target_category_id)
