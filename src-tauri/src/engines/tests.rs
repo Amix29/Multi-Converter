@@ -53,6 +53,17 @@ fn ffmpeg_gyan_version_suffix_matches_expected_version() {
 }
 
 #[test]
+fn ffmpeg_accepts_the_pinned_linux_tag_and_rejects_other_patch_versions() {
+    assert!(process::expected_version_matches(
+        "8.1.1",
+        Some("n8.1.1-13-g83e8541aa6-20260613"),
+    ));
+    for wrong in ["8.1.10", "n8.1.11-linux64", "8.1.0"] {
+        assert!(!process::expected_version_matches("8.1.1", Some(wrong)));
+    }
+}
+
+#[test]
 fn markdown_to_pdf_uses_integrated_text_pipeline() {
     let md = get_format_by_id("md").unwrap();
     let pdf = get_format_by_id("pdf").unwrap();

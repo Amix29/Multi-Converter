@@ -204,6 +204,11 @@ def exercise(call, report, selected, root):
         source_path = root / ("entrée " + filename)
         shutil.copyfile(FIXTURES / filename, source_path)
         require(digest(source_path) == hashes[filename], f"fixture checksum: {filename}")
+        if source == "pdf":
+            inspection = root / "fixture-inspection.json"
+            run(tools["pdfium"], "--inspect-text", source_path, inspection)
+            pages = json.loads(inspection.read_bytes())["pages"]
+            require(len(pages) == 2 and all(p["usable"] for p in pages), "expected two native-text PDF pages")
         desc = call("describe", input=str(source_path))
         require(desc["sourceFormat"] == fmt, f"wrong imported format: {source}")
         check_set((t["format"] for t in desc["targets"]), expected, source)

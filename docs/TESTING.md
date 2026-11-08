@@ -19,6 +19,19 @@ conversion job retains its JSON result under the `format-pairs-<platform>`
 artifact. A targeted run such as `npm run test:formats -- --source pdf`
 writes a separate partial report.
 
+To run the three native jobs independently on `codex/test`, dispatch the
+`Build` workflow once per platform:
+
+```sh
+gh workflow run build.yml --ref codex/test -f conversion_platform=windows-x64
+gh workflow run build.yml --ref codex/test -f conversion_platform=macos-aarch64
+gh workflow run build.yml --ref codex/test -f conversion_platform=linux-x64
+```
+
+Each job stages the host's conversion engines and runs `npm run test:conversions`.
+Download the job's format-pair artifact to inspect the engine, outcome and
+diagnostic for an individual route.
+
 The matrix checks decoded pixels, audible tone, container and codec identity,
 document structure and source-specific text. Video exports must retain motion
 and match the source's early and late frames within a lossy color tolerance.

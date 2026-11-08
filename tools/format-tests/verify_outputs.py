@@ -265,7 +265,7 @@ def verify_pdf_pages(path, target, tools):
             text_widths.append(max(columns) - min(columns) + 1)
             digests.add(sha256(pixels).digest())
         require(len(digests) == 2, "duplicated PDF page")
-        # In the committed PDF, "Café Atlas 73111" spans a wider line than "Budget 41911".
+        # The committed PDF has a wider text block on its first page.
         require(text_widths[0] > text_widths[1] + 5, "reversed or incorrect PDF page content")
 
 
@@ -306,6 +306,8 @@ def verify_document(path, source, target, tools):
     index = DOCUMENTS.index(source)
     for token in ("Café", "Atlas", str(73100 + index), "Budget", str(41900 + index)):
         require(token in text, f"{source}->{target} lost {token!r}: {text[:220]!r}")
+    if source == "pdf":
+        require("Conversion locale" in text and "Total" in text, f"pdf->{target} lost a secondary line")
 
 
 def verify(path, source, target, tools):

@@ -148,5 +148,12 @@ pub(super) fn detect_tool_version(path: &Path) -> Option<String> {
 }
 
 pub(super) fn expected_version_matches(expected: &str, detected: Option<&str>) -> bool {
-    expected == COMPATIBLE_VERSION || detected.is_some_and(|version| version.starts_with(expected))
+    expected == COMPATIBLE_VERSION
+        || detected.is_some_and(|version| {
+            let version = version.strip_prefix('n').unwrap_or(version);
+            version == expected
+                || version
+                    .strip_prefix(expected)
+                    .is_some_and(|suffix| suffix.starts_with('-'))
+        })
 }
