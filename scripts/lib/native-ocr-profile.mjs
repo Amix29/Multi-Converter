@@ -76,7 +76,12 @@ export async function createContentManifest(root, name, extra) {
 export async function linkVerified(source, target, expected) {
   if (expected && await fileHash(source) !== expected) throw Error(`Changed native OCR source: ${source}`);
   await fs.mkdir(path.dirname(target), { recursive: true });
-  try { await fs.link(source, target); } catch (error) {
+  try {
+    await fs.link(source, target).catch(error => {
+      if (error.code !== "EXDEV") throw error;
+      return fs.copyFile(source, target, fs.constants.COPYFILE_EXCL);
+    });
+  } catch (error) {
     if (error.code !== "EEXIST" || !(await fs.lstat(target)).isFile()
       || await fileHash(target) !== (expected ?? await fileHash(source))) throw error;
   }
