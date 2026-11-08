@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "version": "14.51.36247.0",
+  "documentation": "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
+  "licenseUrl": "https://aka.ms/VCRedistLicense",
+  "archive": {
+    "file": "VC_redist.x64.exe",
+    "url": "https://download.visualstudio.microsoft.com/download/pr/ebdab8e5-1d7b-4d9f-a11b-cbb1720c3b12/843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C/VC_redist.x64.exe",
+    "bytes": 18731856,
+    "sha256": "843068991daaa1f73ad9f6239bce4d0f6a07a51f18c37ea2a867e9beca71295c"
+  },
+  "minimumCab": {
+    "offset": 630000,
+    "bytes": 18091661,
+    "sha256": "8b1595b5d0001e0747371ecfc2dccb604dc836fba0a778566e97a6bdb0816bb8",
+    "member": "a4",
+    "memberBytes": 1065893,
+    "memberSha256": "6e8ee73933678c55973e83366e48e948b394c7a36743a36b7224c95de979b13f"
+  },
+  "metadataCab": {
+    "offset": 479744,
+    "bytes": 140070,
+    "sha256": "25eec5c5812800d93950b5fa6768072d978127b42254a13f702be081f975805e",
+    "member": "u17"
+  },
+  "files": [
+    {
+      "sourceMember": "msvcp140_1.dll_amd64",
+      "path": "MSVCP140_1.dll",
+      "target": "MSVCP140_1.dll",
+      "bytes": 35768,
+      "sha256": "206c931bf90fdad8816de3b5e2ef80b2bcaa9406c89ecc05fe6fddffe251e982"
+    },
+    {
+      "sourceMember": "u17",
+      "path": "source-package-metadata.xml",
+      "target": "licenses/microsoft/source-package-metadata.xml",
+      "bytes": 7694,
+      "sha256": "0af0673e1f3ca87701e3c00d5ff004fccb00e2a983df1d72671c429cfef7f3c5"
+    }
+  ]
+}

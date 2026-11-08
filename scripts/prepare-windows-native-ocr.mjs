@@ -16,6 +16,7 @@ if (process.argv.includes("--check")) {
   const argument = name => { const index = process.argv.indexOf(name); if (index < 0 || !process.argv[index + 1]) throw Error(`Missing ${name}`); return path.resolve(process.argv[index + 1]); };
   const worker = argument("--worker");
   const ortRoot = argument("--ort-source");
+  const microsoftRoot = argument("--microsoft-source");
   const runtime = path.join(nativeOcrRoot, "runtime/windows-x64");
   await fs.mkdir(runtime, { recursive: true });
   const lock = await json("src-tauri/ocr-runtime-lock.json");
@@ -51,6 +52,10 @@ if (process.argv.includes("--check")) {
     if (!entry) throw Error(`Missing approved Microsoft runtime ${name}`);
     await stageOriginal(entry, path.join(runtime, name));
   }
+  const microsoft = await json(path.join(nativeWorkerSource, "microsoft-runtime-sources.json"));
+  for (const file of microsoft.files) {
+    await linkVerified(path.join(microsoftRoot, file.path), path.join(runtime, file.target), file.sha256);
+  }
   const isNotice = name => /(?:^|\/)(?:licenses?|licences?)(?:\/|$)/i.test(name)
     || /(?:^|\/)(?:licen[cs]e|copying|notice|copyright|authors)(?:[._-].*)?$/i.test(name);
   const notices = archive.entries.filter(entry => !entry.name.endsWith("/") && isNotice(entry.name));
@@ -62,6 +67,7 @@ if (process.argv.includes("--check")) {
   const manifest = await createContentManifest(runtime, "runtime-manifest.json", {
     distributionProfile: profileId, sourceAggregateSha256: selected.artifact.aggregateSha256,
     runtime: "Rust OAR 0.10.2 / ONNX Runtime 1.26.0", provider: "cpu", sourceWheel: ort.wheel,
+    sourceMicrosoftArchive: microsoft.archive,
   });
   const models = await json(path.join(nativeOcrRoot, "models/models-lock.json"));
   const originalModels = await json("src-tauri/ocr-resources/models/models-lock.json");

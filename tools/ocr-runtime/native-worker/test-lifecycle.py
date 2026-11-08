@@ -26,6 +26,7 @@ if not image.is_file():
 digest=lambda file:hashlib.sha256(file.read_bytes()).hexdigest()
 original=digest(image)
 environment={**os.environ,'MC_NATIVE_ORT_DLL':'must-not-be-used','MC_NATIVE_TRACE':''}
+loaded_modules=[]
 
 def start(executable=worker):
     process=subprocess.Popen([str(executable),'--serve','--models',str(models),'--provider','cpu'],
@@ -36,7 +37,23 @@ def start(executable=worker):
         for line in process.stdout:
             messages.put(json.loads(line))
     threading.Thread(target=read,daemon=True).start()
-    assert messages.get(timeout=30)=={'type':'ready','schemaVersion':1}
+    try:
+        assert messages.get(timeout=30)=={'type':'ready','schemaVersion':1}
+        script=("[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false); "
+            f"@(Get-Process -Id {process.pid}).Modules | "
+            "Where-Object { $_.ModuleName -match '^(msvcp140|vcruntime140|onnxruntime)' } | "
+            "Select-Object ModuleName,FileName | ConvertTo-Json -Compress")
+        query=subprocess.run(['powershell.exe','-NoProfile','-Command',script],capture_output=True,
+            text=True,encoding='utf-8',check=True,creationflags=subprocess.CREATE_NO_WINDOW)
+        modules=json.loads(query.stdout)
+        if isinstance(modules,dict):modules=[modules]
+        assert any(item['ModuleName'].lower()=='msvcp140_1.dll'for item in modules)
+        assert any(item['ModuleName'].lower()=='onnxruntime.dll'for item in modules)
+        for item in modules:assert Path(item['FileName']).resolve().parent==executable.parent
+        loaded_modules.append(modules)
+    except BaseException:
+        if process.poll()is None:process.terminate();process.wait(timeout=10)
+        raise
     return process,messages
 
 def send(process,job,input_path,target):
@@ -86,7 +103,8 @@ assert digest(image)==original
 report=dict(workerSha256=digest(worker),missingInput='failed without output',malformedRequest='failed; worker alive',
     sourceProtection='original input unchanged',cancel='terminated after 250ms; no final/partial file',
     restartRetry='completed',existingOutput='rejected; output unchanged',oversizedRequest='rejected with bounded read',
-    missingLocalDll='failed; no diagnostic/environment fallback',scope='Real worker protocol; not a GUI installation test')
+    missingLocalDll='failed; no diagnostic/environment fallback',loadedRuntimeModules=loaded_modules,
+    scope='Real worker protocol and loaded local DLL paths; not a GUI installation test')
 args.report.parent.mkdir(parents=True,exist_ok=True)
 args.report.write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(report),flush=True)

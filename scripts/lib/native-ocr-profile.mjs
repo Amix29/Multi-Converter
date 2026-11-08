@@ -47,7 +47,7 @@ export async function compiledSourceHash() {
   const hash = createHash("sha256");
   for (const folder of [nativeWorkerSource, "vendor/oar-ocr", "vendor/oar-ocr-core"]) {
     for (const relative of await regularFiles(folder)) {
-      if (!relative.endsWith(".rs") && !["Cargo.toml", "Cargo.lock", "model-sources.json", "runtime-sources.json"].includes(relative)) continue;
+      if (!relative.endsWith(".rs") && !["Cargo.toml", "Cargo.lock", "model-sources.json", "runtime-sources.json", "microsoft-runtime-sources.json"].includes(relative)) continue;
       // Source text has a stable identity across Git line-ending settings.
       // Resource/model/DLL identities remain strict hashes of their raw bytes.
       const text = (await fs.readFile(path.join(folder, relative), "utf8")).replaceAll("\r\n", "\n");

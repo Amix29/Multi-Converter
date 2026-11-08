@@ -79,16 +79,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install PyYAML==6.0.2
+          python -m pip install PyYAML==6.0.2 pefile==2023.2.7
           python tools/ocr-runtime/native-worker/download-sources.py --cache "$RUNNER_TEMP/native-ocr-sources"
+          python tools/ocr-runtime/native-worker/prepare-microsoft-runtime.py --cache "$RUNNER_TEMP/native-ocr-sources/microsoft"
           python tools/ocr-runtime/native-worker/prepare-models.py --onnx-source "$RUNNER_TEMP/native-ocr-sources/models" --output src-tauri/bundled-engine-profiles/windows-x64/native-v1/ocr/models --shuffle
           export CARGO_TARGET_DIR="$RUNNER_TEMP/mc-native-ocr-target"
           cargo fmt --manifest-path tools/ocr-runtime/native-worker/Cargo.toml -- --check
           cargo build --locked --release --manifest-path tools/ocr-runtime/native-worker/Cargo.toml --bin mc-offline-ocr
           cargo test --locked --release --manifest-path tools/ocr-runtime/native-worker/Cargo.toml --bin mc-offline-ocr
           cargo clippy --locked --release --manifest-path tools/ocr-runtime/native-worker/Cargo.toml --all-targets -- -D warnings
-          npm run prepare:windows-native-ocr -- --write-lock --worker "$CARGO_TARGET_DIR/release/mc-offline-ocr.exe" --ort-source "$RUNNER_TEMP/native-ocr-sources/onnxruntime"
+          npm run prepare:windows-native-ocr -- --write-lock --worker "$CARGO_TARGET_DIR/release/mc-offline-ocr.exe" --ort-source "$RUNNER_TEMP/native-ocr-sources/onnxruntime" --microsoft-source "$RUNNER_TEMP/native-ocr-sources/microsoft"
           npm run prepare:windows-native-ocr -- --check
+          python tools/ocr-runtime/native-worker/audit-runtime-imports.py --runtime src-tauri/bundled-engine-profiles/windows-x64/native-v1/ocr/runtime/windows-x64 --report tmp/native-ocr-imports-ci.json
           python tools/ocr-runtime/native-worker/test-lifecycle.py --worker src-tauri/bundled-engine-profiles/windows-x64/native-v1/ocr/runtime/windows-x64/ocr-worker.exe --models src-tauri/bundled-engine-profiles/windows-x64/native-v1/ocr/models --report tmp/native-ocr-lifecycle-ci.json
       - run: cargo install cargo-audit --locked
         if: steps.cargo-audit-cache.outputs.cache-hit != 'true'

@@ -7,9 +7,9 @@
     "aggregateSha256": "d386f7923fbea6fe6efa407b2f00d3e99e31ee9778027a67ca32e6b14adf759c"
   },
   "artifact": {
-    "fileCount": 540,
-    "totalBytes": 24594115,
-    "aggregateSha256": "5508c5805561f8ef2166b6e4f2093d3dd2ccf4221529e63c0c61588a1eaf3897"
+    "fileCount": 542,
+    "totalBytes": 24637577,
+    "aggregateSha256": "9ede857b6f7ee254c1c64bd197b3b086158e6b03293687f7f1eca1eabf46568f"
   },
   "sourceModelArtifact": {
     "fileCount": 21,
@@ -21,7 +21,7 @@
     "totalBytes": 184084883,
     "aggregateSha256": "13403729edccf21c324b077ee3ec573d11dca727c8a315d26b570d49beb3207d"
   },
-  "workerSourceSha256": "3440fa09a6c7e9dd0244779d4fdb407b28f8bfff93f5f222ff3a80d88245e617",
+  "workerSourceSha256": "3dd46b70660d2fc2637cbd72f12876e6ab71177990e2b6054a32cf133f201fd2",
   "workerCargoLockSha256": "b361aae9bf8581b0889e0a479c1df1d9f993e1fc93fc9ddb381a9138e39ba119",
   "retiredFiles": [
     {

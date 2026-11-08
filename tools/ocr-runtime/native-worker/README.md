@@ -27,6 +27,10 @@ as Python runtimes in the new Windows installer.
 1. Run `python tools/ocr-runtime/native-worker/download-sources.py --cache <cache>`.
    Existing sources are reused only after hash verification. Downloads happen
    explicitly during preparation, never during recognition.
+   Run `python tools/ocr-runtime/native-worker/prepare-microsoft-runtime.py --cache <cache>/microsoft`
+   to decode the pinned signed Microsoft package without executing it. This
+   supplies MSVCP140_1.dll 14.51.36247.0, matching the existing MSVC family,
+   plus the original source-package metadata containing Microsoft's license URL.
 2. With PyYAML 6.0.2 available, run
    `python tools/ocr-runtime/native-worker/prepare-models.py --onnx-source <cache>/models --output src-tauri/bundled-engine-profiles/windows-x64/native-v1/ocr/models --shuffle`.
    A validated interrupted preparation can use `--resume`; changed files are
@@ -34,7 +38,7 @@ as Python runtimes in the new Windows installer.
 3. Set `CARGO_TARGET_DIR` to an existing suitable build cache, then run
    `cargo build --locked --release --manifest-path tools/ocr-runtime/native-worker/Cargo.toml --bin mc-offline-ocr`.
 4. Curate the source-built binary with
-   `npm run prepare:windows-native-ocr -- --write-lock --worker <target>/release/mc-offline-ocr.exe --ort-source <cache>/onnxruntime`.
+   `npm run prepare:windows-native-ocr -- --write-lock --worker <target>/release/mc-offline-ocr.exe --ort-source <cache>/onnxruntime --microsoft-source <cache>/microsoft`.
    This links verified sources or decodes only required Microsoft DLL/notices
    from the original ZIP. It retains legacy notices and actual Rust dependency
    notices, with pinned supplemental texts where package archives omit them.
@@ -42,6 +46,10 @@ as Python runtimes in the new Windows installer.
    lifecycle test and Rust/packaging gates. Review the generated embedded lock.
    A rebuild on a different compiler/host can change executable identity; curate
    the reviewed source build before compiling the desktop app.
+   With the existing build-tool dependency pefile 2023.2.7, run
+   `python tools/ocr-runtime/native-worker/audit-runtime-imports.py --runtime src-tauri/bundled-engine-profiles/windows-x64/native-v1/ocr/runtime/windows-x64 --report tmp/native-ocr-imports.json`.
+   It rejects Microsoft redistributables resolved from the host instead of the
+   runtime folder, including delayed imports. This is not a clean-OS launch test.
 
 The Windows quality-gate workflow performs these steps after restoring the
 original provenance inputs, and checks worker formatting, tests, Clippy and
