@@ -1,5 +1,69 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-08 — Windows installed footprint below 750 MB
+
+The Windows x64 candidate combines the application from `2e907a86` with
+installer source `f15a30a1`. It stores eligible packaged files of 32 KiB or
+more with per-file XPRESS16K. Windows serves the original
+bytes on demand. The temporary installer helper needs standard user rights.
+The mechanism is documented by [Microsoft](https://learn.microsoft.com/en-us/windows/win32/api/wofapi/nf-wofapi-wofsetfiledatalocation).
+
+| Measurement on the same Windows NTFS volume | Decimal MB |
+| --- | ---: |
+| Lot 4 reference installation, Windows file allocation | 1,334.08 |
+| Selected installation, including uninstaller | 628.80 |
+| Selected installation after native use, with measured data | 640.39 |
+| Independent cluster-rounded estimate after native use | 648.45 |
+| Selected NSIS download | 341.64 |
+
+The installed files occupy **705,282,048 fewer bytes (52.87%)**. Both copies
+expose approximately 1.32 GB of logical file contents. The first-use total
+includes the separate WebView2 profile, managed temporary files, current app
+logs and recovery state. Prior development engine caches and the system's
+shared WebView2 runtime are outside that measurement. The test used separate
+installation directories on the current Windows account.
+
+The SHA-256 comparison confirmed **10,462 byte-identical payload files**,
+including the application, all conversion engines, dictionary and model files.
+Two legal notices differed only in checkout line endings. NSIS generated
+the uninstaller for each package.
+Every FP32 model restored to its official SHA-256. The installed worker passed
+all **40 OCR cases**, and all **11 native conversion groups** passed against
+the corresponding source engines.
+
+Six conversions passed through the installed Tauri backend, covering WebP,
+native/scanned PDF extraction, RTF to PDF, FLAC to WAV and HTML to Markdown.
+Five outputs had identical bytes. Rendering the LibreOffice PDF from each
+installation produced identical page pixels. The updater signature for NSIS
+SHA-256 `672c232ba32d1f93e94edb2df7191aeb41af61b5b393ab71eeb18fae1f23ce5e`
+verified with the configured public key. The installer has no Authenticode signature.
+
+In eight alternating pairs, starting the worker and recognizing a French image
+took a median of 4.205 s with this candidate and 3.965 s with the reference.
+A second profile at `747b83e7` kept the application's, OCR's and libvips'
+original file storage and occupied 730.72 MB after use. Its separate ten-pair
+series also showed a 254 ms median increase over the reference. These results
+cannot isolate a 240 ms cost due to OCR compression. The maintainer accepted
+the observed timings and selected the lighter candidate, saving another 90.33 MB.
+
+A focused six-pair comparison of the two profiles measured median worker
+startup at **691 vs 683 ms**, first recognition at **3,089 vs 3,031 ms** and
+second recognition on the same worker at **2,660 vs 2,803 ms** (compact first).
+Both installations returned the same French text in every run. These are
+same-host observations with a shared OS cache.
+
+Upgrading the original lot 4 setup directly to the selected candidate produced
+the same **628,800,048 bytes** of Windows file allocation as a fresh install.
+All 10,464 application payload files in the upgraded and fresh copies matched
+by SHA-256. The upgrade receipt lists the previously exercised profile's data
+separately from the upgraded program directory.
+
+The [measurement receipt](audits/2026-11-08/windows-installed-footprint.json)
+contains the Windows allocation figures, restored hashes, native workload
+samples and installation receipts. The [reproduction procedure](TESTING.md#installed-footprint)
+uses the installed executable and its local engines. Full release acceptance
+and publication remain open.
+
 ## 2026-11-08 — Native Windows OCR and 341.52 MB private setup verified
 
 The Windows source mapping now uses the separately locked native CPU profile;

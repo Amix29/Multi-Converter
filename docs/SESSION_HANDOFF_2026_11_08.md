@@ -1,5 +1,11 @@
 # Bilan et reprise de session — 8 novembre 2026
 
+Le travail ultérieur sur l’empreinte installée utilise ce lot 4 comme
+référence. La candidate Windows retenue occupe **628,80 Mo sur NTFS**,
+soit **640,39 Mo** avec les données mesurées après usage. Les cinq modèles
+OCR FP32 retrouvent leur SHA-256 officiel. Le bilan figure dans le
+[registre de validation](V1_0_7_VALIDATION.md).
+
 ## Point de reprise
 
 L'allègement Windows demandé est réalisé au niveau du paquet : **341,52 Mo**,

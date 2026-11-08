@@ -1,0 +1,976 @@
+{
+  "platform": "Windows x64 build 26300, NTFS, current user without administrator token, existing system WebView2",
+  "applicationSource": "2e907a86",
+  "selectedInstallerSource": "f15a30a1db62f7122efbc11b83690f4e0e5bf83c",
+  "package": {
+    "bytes": 341636835,
+    "sha256": "672c232ba32d1f93e94edb2df7191aeb41af61b5b393ab71eeb18fae1f23ce5e",
+    "verifiedPayloadFiles": 10464,
+    "applicationSha256": "b7709c4de9784db1c6a4dfe8a12809350580b67e9be9c22981b4567a9af14501",
+    "signature": "Cryptographic updater signature verified with the configured public key. Authenticode NotSigned."
+  },
+  "selectedFreshWithData": {
+    "baseline": {
+      "files": 10465,
+      "logicalBytes": 1317676325,
+      "clusterBytes": 4096,
+      "windowsFileAllocationBytes": 1334082096,
+      "clusterRoundedStoredBytes": 1341882368
+    },
+    "installed": {
+      "files": 10465,
+      "logicalBytes": 1317675939,
+      "clusterBytes": 4096,
+      "windowsFileAllocationBytes": 628800048,
+      "clusterRoundedStoredBytes": 636600320
+    },
+    "isolatedCaches": [
+      {
+        "files": 196,
+        "logicalBytes": 10716791,
+        "clusterBytes": 4096,
+        "windowsFileAllocationBytes": 10783304,
+        "clusterRoundedStoredBytes": 11038720
+      },
+      {
+        "files": 0,
+        "logicalBytes": 0,
+        "clusterBytes": 4096,
+        "windowsFileAllocationBytes": 0,
+        "clusterRoundedStoredBytes": 0
+      },
+      {
+        "files": 1,
+        "logicalBytes": 800558,
+        "clusterBytes": 4096,
+        "windowsFileAllocationBytes": 802816,
+        "clusterRoundedStoredBytes": 802816
+      },
+      {
+        "files": 1,
+        "logicalBytes": 53,
+        "clusterBytes": 4096,
+        "windowsFileAllocationBytes": 56,
+        "clusterRoundedStoredBytes": 4096
+      }
+    ],
+    "windowsAllocationWithCaches": 640386224,
+    "installedAndCacheBytes": 648445952,
+    "limitBytes": 750000000,
+    "byteIdenticalFiles": 10462,
+    "noticeLineEndingsOnly": {
+      "licenses/LICENSE.txt": {
+        "beforeSha256": "e0eedba615d5cd1b986afb6c5b3a4b1ae33713e7e9dc74d19daec5e3221f9d2e",
+        "afterSha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+      },
+      "licenses/NOTICE.txt": {
+        "beforeSha256": "a5ef3d50dae0f026ae000c55eb675a932027e6d4e767fc6592cc5a10820b3d3d",
+        "afterSha256": "f4f7a0907b47ed1a51e77c383ea30e033876a147619bfdcd56c94745e10c0fc2"
+      }
+    },
+    "candidateTreeSha256": "39d5d514262cb9d64b0643abcf05edfa5014105157d1223bb06149461a54c033",
+    "restoredOfficialModelSha256": {
+      "document-orientation": "af9a0a4f317ff0709ce752067807f819cb15d883f8ecad89f28df1c6ee2d9c92",
+      "document-unwarping": "54cab30dc2cf347b4f3d6971c833b1c3d84f5ef17280f1f6d15796bff20e63d6",
+      "textline-orientation": "38aa97cd4be591e0ad304e659f07ba30d946f27a63315433f6659c69c8778345",
+      "text-detection": "eb13b44b25bb36f89528b68720af8a61d9cf381176107f465db1757b65d086e1",
+      "text-recognition": "9c09abf0957f7968c7586464b7397b84ad2387a0497a351af40e9acc71b673ba"
+    },
+    "method": "FileStandardInfo.AllocationSize from Windows on every file; independently GetCompressedFileSizeW rounded up to a volume cluster per file. Includes uninstaller, excludes filesystem metadata. Every application payload compared by content; uninstaller generated separately by NSIS."
+  },
+  "directUpgradeFromLot4WithData": {
+    "baseline": {
+      "files": 10465,
+      "logicalBytes": 1317675939,
+      "clusterBytes": 4096,
+      "windowsFileAllocationBytes": 628800048,
+      "clusterRoundedStoredBytes": 636600320
+    },
+    "installed": {
+      "files": 10465,
+      "logicalBytes": 1317675939,
+      "clusterBytes": 4096,
+      "windowsFileAllocationBytes": 628800048,
+      "clusterRoundedStoredBytes": 636600320
+    },
+    "measuredData": [
+      {
+        "files": 197,
+        "logicalBytes": 12064855,
+        "clusterBytes": 4096,
+        "windowsFileAllocationBytes": 12131128,
+        "clusterRoundedStoredBytes": 12386304
+      },
+      {
+        "files": 0,
+        "logicalBytes": 0,
+        "clusterBytes": 4096,
+        "windowsFileAllocationBytes": 0,
+        "clusterRoundedStoredBytes": 0
+      },
+      {
+        "files": 1,
+        "logicalBytes": 806451,
+        "clusterBytes": 4096,
+        "windowsFileAllocationBytes": 806912,
+        "clusterRoundedStoredBytes": 806912
+      },
+      {
+        "files": 1,
+        "logicalBytes": 53,
+        "clusterBytes": 4096,
+        "windowsFileAllocationBytes": 56,
+        "clusterRoundedStoredBytes": 4096
+      }
+    ],
+    "appOcrVipsFilesMeasured": 780,
+    "appOcrVipsFilesWithSameAllocation": 780,
+    "windowsAllocationWithCaches": 641738144,
+    "installedAndCacheBytes": 649797632,
+    "limitBytes": 750000000,
+    "byteIdenticalFiles": 10464,
+    "noticeLineEndingsOnly": {},
+    "candidateTreeSha256": "39d5d514262cb9d64b0643abcf05edfa5014105157d1223bb06149461a54c033",
+    "restoredOfficialModelSha256": {
+      "document-orientation": "af9a0a4f317ff0709ce752067807f819cb15d883f8ecad89f28df1c6ee2d9c92",
+      "document-unwarping": "54cab30dc2cf347b4f3d6971c833b1c3d84f5ef17280f1f6d15796bff20e63d6",
+      "textline-orientation": "38aa97cd4be591e0ad304e659f07ba30d946f27a63315433f6659c69c8778345",
+      "text-detection": "eb13b44b25bb36f89528b68720af8a61d9cf381176107f465db1757b65d086e1",
+      "text-recognition": "9c09abf0957f7968c7586464b7397b84ad2387a0497a351af40e9acc71b673ba"
+    },
+    "method": "FileStandardInfo.AllocationSize from Windows on every file; independently GetCompressedFileSizeW rounded up to a volume cluster per file. Includes uninstaller, excludes filesystem metadata. Every application payload compared by content; uninstaller generated separately by NSIS."
+  },
+  "installationReceipts": [
+    {
+      "mode": "baseline",
+      "setupSha256": "EF7F89D2F05CDBF2CBAE940C86DA524F3A072A45D382406B66847E3110B0398D",
+      "estimatedKiB": 1286792,
+      "seconds": 65.4787961,
+      "exitCode": 0
+    },
+    {
+      "mode": "fresh",
+      "setupSha256": "672C232BA32D1F93E94EDB2DF7191AEB41AF61B5B393AB71EEB18FAE1F23CE5E",
+      "estimatedKiB": 600122,
+      "seconds": 73.1858105,
+      "exitCode": 0
+    },
+    {
+      "mode": "selected-baseline",
+      "setupSha256": "EF7F89D2F05CDBF2CBAE940C86DA524F3A072A45D382406B66847E3110B0398D",
+      "estimatedKiB": 1286792,
+      "seconds": 55.8872062,
+      "exitCode": 0
+    },
+    {
+      "mode": "selected-upgrade-from-baseline",
+      "setupSha256": "672C232BA32D1F93E94EDB2DF7191AEB41AF61B5B393AB71EEB18FAE1F23CE5E",
+      "estimatedKiB": 600122,
+      "seconds": 62.2411767,
+      "exitCode": 0
+    }
+  ],
+  "dataFoldersInOrder": [
+    "isolated WebView2 profile",
+    "managed temporary directory",
+    "entire current log folder",
+    "batch recovery state"
+  ],
+  "preexistingDataCheck": [
+    {
+      "folder": "tool-env",
+      "files": 38982,
+      "logicalBytes": 3300709076,
+      "recentFiles": 0,
+      "recentBytes": 0
+    },
+    {
+      "folder": "engines",
+      "files": 19613,
+      "logicalBytes": 1786663166,
+      "recentFiles": 0,
+      "recentBytes": 0
+    },
+    {
+      "folder": "ocr-runtime",
+      "files": 29712,
+      "logicalBytes": 2734089617,
+      "recentFiles": 0,
+      "recentBytes": 0
+    },
+    {
+      "folder": "EBWebView",
+      "files": 5020,
+      "logicalBytes": 310840250,
+      "recentFiles": 0,
+      "recentBytes": 0
+    }
+  ],
+  "selectiveRunPreexistingDataCheck": [
+    {
+      "name": "tool-env",
+      "files": 38982,
+      "modifiedDuringFinalUsage": 0,
+      "recentBytes": 0
+    },
+    {
+      "name": "engines",
+      "files": 19613,
+      "modifiedDuringFinalUsage": 0,
+      "recentBytes": 0
+    },
+    {
+      "name": "ocr-runtime",
+      "files": 29712,
+      "modifiedDuringFinalUsage": 0,
+      "recentBytes": 0
+    },
+    {
+      "name": "EBWebView",
+      "files": 5020,
+      "modifiedDuringFinalUsage": 0,
+      "recentBytes": 0
+    }
+  ],
+  "nativeTauri": {
+    "availableEngines": [
+      "ffmpeg",
+      "ffprobe",
+      "rust-image",
+      "resvg",
+      "rust-text",
+      "pdf-extract",
+      "pdfium",
+      "libreoffice",
+      "pandoc",
+      "libvips"
+    ],
+    "installedEnginePathsVerified": true,
+    "imageOcrMatchesReference": true,
+    "jobs": [
+      {
+        "target": "webp",
+        "engine": "libvips",
+        "exactContainer": true,
+        "candidateSha256": "febaa5b68ed5f630b70dcb9a3e1116203e232fad27e2e0030bd18419828d2809",
+        "referenceSha256": "febaa5b68ed5f630b70dcb9a3e1116203e232fad27e2e0030bd18419828d2809",
+        "renderedPageSha256": null
+      },
+      {
+        "target": "txt",
+        "engine": "pdf-extract",
+        "exactContainer": true,
+        "candidateSha256": "8cf8a058fad6b2645c62ba2f60c1d8af2b4654a6be1b461da72da61b9c0ee49e",
+        "referenceSha256": "8cf8a058fad6b2645c62ba2f60c1d8af2b4654a6be1b461da72da61b9c0ee49e",
+        "renderedPageSha256": null
+      },
+      {
+        "target": "txt",
+        "engine": "pdf-extract",
+        "exactContainer": true,
+        "candidateSha256": "a8e9b8d034711e3d9f2750c89d94e37cd254efe55c47d117c734bf5240e9a4b8",
+        "referenceSha256": "a8e9b8d034711e3d9f2750c89d94e37cd254efe55c47d117c734bf5240e9a4b8",
+        "renderedPageSha256": null
+      },
+      {
+        "target": "pdf",
+        "engine": "libreoffice",
+        "exactContainer": false,
+        "candidateSha256": "7fbb0f968dbd6248fe502f8093515f2bee07759b283b570135c02d564e570c04",
+        "referenceSha256": "fffe075d3088f2a4a410f2e0305709f87f33fd50cc05a10af72fdeb9bea71398",
+        "renderedPageSha256": "d4a18b32ff12245b05e906c407f49c1892a60452aa5696bc3d7d2ec4f2f14d6d"
+      },
+      {
+        "target": "wav",
+        "engine": "ffmpeg",
+        "exactContainer": true,
+        "candidateSha256": "276cd1625bbac874877909cbab256592c30a5264906826e1aceab55d3c952e4c",
+        "referenceSha256": "276cd1625bbac874877909cbab256592c30a5264906826e1aceab55d3c952e4c",
+        "renderedPageSha256": null
+      },
+      {
+        "target": "md",
+        "engine": "pandoc",
+        "exactContainer": true,
+        "candidateSha256": "4ea19d2a9543140d5bb34e3f933800f6e30dea6c25df5558485a1ba6783f9720",
+        "referenceSha256": "4ea19d2a9543140d5bb34e3f933800f6e30dea6c25df5558485a1ba6783f9720",
+        "renderedPageSha256": null
+      }
+    ],
+    "windowSha256": "aaf4b52705273121a86f6e4933fface66feeac021841b15ee6bd919197a46dc9"
+  },
+  "corpus": {
+    "cases": 40,
+    "model": "PP-OCRv6_medium",
+    "workerSha256": "95ade536e35ce087987305c0747e8ceb89683399d64a602436bfb82584a6aa49",
+    "cleanMean": 1,
+    "difficultMean": 1,
+    "observedRemoteConnections": 0,
+    "networkSamples": 74
+  },
+  "nativeMatrix": {
+    "passingGroups": 11,
+    "negativeHttpControl": "passed; no requests from the restricted FFmpeg or ffprobe"
+  },
+  "selectedVsLot4": {
+    "method": "Alternating fresh engine processes, shared OS cache, elapsed milliseconds",
+    "pairs": 8,
+    "outputSha256": {
+      "flac": "28d2f8c2da340d8e20d5d8ec1d60a60ea36c18705a4ddbfb65a512254ac1132c",
+      "ffprobe": "e6e620c6672a4ee64e9515a030e5210206c4d0a437beb0a12ba91a1f004f0739",
+      "pandoc": "4ea19d2a9543140d5bb34e3f933800f6e30dea6c25df5558485a1ba6783f9720",
+      "resized-png": "e9c1a832fea516f9552a8d145bd45bd10a55a05145a7a5809f74d39918a34b61",
+      "pdf-text": "f012953a226d7972d8de741b00e2f236ab26b8a27b9b24314e83d70fa6fdaece",
+      "office-rendered-page": "e05c64a35b918a043b84a4c740a55b098faaf2ea28ee9b2b345d2c76db6c3210",
+      "recognized-text": "a8e9b8d034711e3d9f2750c89d94e37cd254efe55c47d117c734bf5240e9a4b8"
+    },
+    "warmupMs": {
+      "ffmpeg-audio": {
+        "baseline": [
+          68.2871
+        ],
+        "installed": [
+          124.2552
+        ]
+      },
+      "ffprobe": {
+        "baseline": [
+          61.6923
+        ],
+        "installed": [
+          102.7767
+        ]
+      },
+      "pandoc": {
+        "baseline": [
+          110.6574
+        ],
+        "installed": [
+          196.8027
+        ]
+      },
+      "libvips": {
+        "baseline": [
+          109.3117
+        ],
+        "installed": [
+          86.3071
+        ]
+      },
+      "pdfium": {
+        "baseline": [
+          262.3925
+        ],
+        "installed": [
+          236.2586
+        ]
+      },
+      "libreoffice": {
+        "baseline": [
+          12882.9833
+        ],
+        "installed": [
+          11741.8513
+        ]
+      },
+      "ocr-start-and-recognize": {
+        "baseline": [
+          4817.5764
+        ],
+        "installed": [
+          5450.0143
+        ]
+      }
+    },
+    "rawMs": {
+      "ffmpeg-audio": {
+        "baseline": [
+          56.5056,
+          100.6654,
+          58.9563,
+          68.5376,
+          81.148,
+          79.9916,
+          71.7369,
+          74.8939
+        ],
+        "installed": [
+          54.6672,
+          60.4675,
+          55.8645,
+          62.1807,
+          165.0965,
+          156.159,
+          166.1847,
+          83.3356
+        ]
+      },
+      "ffprobe": {
+        "baseline": [
+          46.176,
+          65.7272,
+          51.6222,
+          56.0659,
+          57.8594,
+          58.8507,
+          60.2309,
+          62.0544
+        ],
+        "installed": [
+          47.029,
+          43.2786,
+          49.6805,
+          52.806,
+          128.7693,
+          150.3966,
+          139.5296,
+          63.1536
+        ]
+      },
+      "pandoc": {
+        "baseline": [
+          51.3755,
+          77.0641,
+          48.6017,
+          88.0416,
+          81.3631,
+          77.9436,
+          58.3401,
+          99.1265
+        ],
+        "installed": [
+          43.8775,
+          53.9839,
+          58.1232,
+          50.8637,
+          112.1755,
+          121.2961,
+          118.3776,
+          96.4553
+        ]
+      },
+      "libvips": {
+        "baseline": [
+          75.5261,
+          70.1031,
+          67.4786,
+          97.7496,
+          73.3933,
+          75.4151,
+          81.8376,
+          84.7913
+        ],
+        "installed": [
+          74.5333,
+          71.45,
+          68.9103,
+          72.5462,
+          134.5116,
+          103.2103,
+          122.856,
+          81.7971
+        ]
+      },
+      "pdfium": {
+        "baseline": [
+          54.8166,
+          63.1967,
+          40.8473,
+          234.6548,
+          41.133,
+          268.5742,
+          46.9917,
+          307.2339
+        ],
+        "installed": [
+          56.6057,
+          44.5586,
+          40.2233,
+          50.6565,
+          320.1643,
+          52.108,
+          70.981,
+          44.8884
+        ]
+      },
+      "libreoffice": {
+        "baseline": [
+          2712.0026,
+          2810.272,
+          3074.4475,
+          3689.9426,
+          3134.8994,
+          3517.3215,
+          3299.2687,
+          3433.8633
+        ],
+        "installed": [
+          2605.3967,
+          2869.6176,
+          2693.5031,
+          3448.5643,
+          4643.6019,
+          4646.1731,
+          5317.136,
+          2934.5398
+        ]
+      },
+      "ocr-start-and-recognize": {
+        "baseline": [
+          4120.1593,
+          5153.7529,
+          3542.4226,
+          3826.3828,
+          4079.0959,
+          4018.902,
+          3911.4292,
+          3435.8711
+        ],
+        "installed": [
+          5177.3167,
+          4339.2382,
+          3511.6768,
+          4207.2178,
+          4272.2939,
+          4202.7491,
+          3651.3868,
+          3739.2767
+        ]
+      }
+    },
+    "medianMs": {
+      "ffmpeg-audio": {
+        "baseline": 73.32,
+        "installed": 72.76,
+        "deltaMs": -0.56,
+        "deltaPercent": -0.76
+      },
+      "ffprobe": {
+        "baseline": 58.36,
+        "installed": 57.98,
+        "deltaMs": -0.38,
+        "deltaPercent": -0.65
+      },
+      "pandoc": {
+        "baseline": 77.5,
+        "installed": 77.29,
+        "deltaMs": -0.21,
+        "deltaPercent": -0.27
+      },
+      "libvips": {
+        "baseline": 75.47,
+        "installed": 78.17,
+        "deltaMs": 2.7,
+        "deltaPercent": 3.58
+      },
+      "pdfium": {
+        "baseline": 59.01,
+        "installed": 51.38,
+        "deltaMs": -7.63,
+        "deltaPercent": -12.93
+      },
+      "libreoffice": {
+        "baseline": 3217.08,
+        "installed": 3191.55,
+        "deltaMs": -25.53,
+        "deltaPercent": -0.79
+      },
+      "ocr-start-and-recognize": {
+        "baseline": 3965.17,
+        "installed": 4204.98,
+        "deltaMs": 239.81,
+        "deltaPercent": 6.05
+      }
+    }
+  },
+  "splitOcrTiming": {
+    "method": "Two real installs, six alternating pairs after a warm-up per side, separate worker ready/first and second recognition, shared Windows file cache; identical resource content.",
+    "fixture": "clean-fr.png",
+    "textSha256": "a8e9b8d034711e3d9f2750c89d94e37cd254efe55c47d117c734bf5240e9a4b8",
+    "samplesMs": {
+      "compact": [
+        {
+          "loadMs": 670.3874,
+          "firstRecognitionMs": 3135.3101,
+          "secondRecognitionMs": 2612.0438
+        },
+        {
+          "loadMs": 736.0322,
+          "firstRecognitionMs": 3261.2725,
+          "secondRecognitionMs": 2862.9944
+        },
+        {
+          "loadMs": 726.6436,
+          "firstRecognitionMs": 3641.5558,
+          "secondRecognitionMs": 2709.2153
+        },
+        {
+          "loadMs": 696.5049,
+          "firstRecognitionMs": 2820.0486,
+          "secondRecognitionMs": 2608.8541
+        },
+        {
+          "loadMs": 642.1524,
+          "firstRecognitionMs": 3042.3015,
+          "secondRecognitionMs": 2617.803
+        },
+        {
+          "loadMs": 686.0312,
+          "firstRecognitionMs": 2924.5138,
+          "secondRecognitionMs": 2703.1226
+        }
+      ],
+      "originalOcrStorage": [
+        {
+          "loadMs": 646.3888,
+          "firstRecognitionMs": 3063.3846,
+          "secondRecognitionMs": 3640.5066
+        },
+        {
+          "loadMs": 727.8507,
+          "firstRecognitionMs": 2887.5706,
+          "secondRecognitionMs": 2890.959
+        },
+        {
+          "loadMs": 716.2216,
+          "firstRecognitionMs": 3062.9559,
+          "secondRecognitionMs": 2867.9821
+        },
+        {
+          "loadMs": 688.3217,
+          "firstRecognitionMs": 3642.1905,
+          "secondRecognitionMs": 2690.9536
+        },
+        {
+          "loadMs": 651.0251,
+          "firstRecognitionMs": 2998.9552,
+          "secondRecognitionMs": 2738.0734
+        },
+        {
+          "loadMs": 678.0088,
+          "firstRecognitionMs": 2902.6325,
+          "secondRecognitionMs": 2726.9283
+        }
+      ]
+    },
+    "medianMs": {
+      "compact": {
+        "loadMs": 691.27,
+        "firstRecognitionMs": 3088.81,
+        "secondRecognitionMs": 2660.46
+      },
+      "originalOcrStorage": {
+        "loadMs": 683.17,
+        "firstRecognitionMs": 3030.96,
+        "secondRecognitionMs": 2803.03
+      }
+    }
+  },
+  "alternative": {
+    "installerSource": "747b83e7",
+    "bytes": 341692193,
+    "sha256": "04e7588300e377a5a7ffac043e730ca9663362f153e744917d3428731e01dcfa",
+    "afterUseBytes": 730716072,
+    "preservedFileAllocations": 780,
+    "pairedVsLot4": {
+      "method": "Alternating fresh engine processes, shared OS cache, elapsed milliseconds",
+      "pairs": 10,
+      "outputSha256": {
+        "flac": "28d2f8c2da340d8e20d5d8ec1d60a60ea36c18705a4ddbfb65a512254ac1132c",
+        "ffprobe": "e6e620c6672a4ee64e9515a030e5210206c4d0a437beb0a12ba91a1f004f0739",
+        "pandoc": "4ea19d2a9543140d5bb34e3f933800f6e30dea6c25df5558485a1ba6783f9720",
+        "resized-png": "e9c1a832fea516f9552a8d145bd45bd10a55a05145a7a5809f74d39918a34b61",
+        "pdf-text": "f012953a226d7972d8de741b00e2f236ab26b8a27b9b24314e83d70fa6fdaece",
+        "office-rendered-page": "e05c64a35b918a043b84a4c740a55b098faaf2ea28ee9b2b345d2c76db6c3210",
+        "recognized-text": "a8e9b8d034711e3d9f2750c89d94e37cd254efe55c47d117c734bf5240e9a4b8"
+      },
+      "warmupMs": {
+        "ffmpeg-audio": {
+          "baseline": [
+            58.9149
+          ],
+          "installed": [
+            70.2414
+          ]
+        },
+        "ffprobe": {
+          "baseline": [
+            48.0899
+          ],
+          "installed": [
+            57.5721
+          ]
+        },
+        "pandoc": {
+          "baseline": [
+            74.5458
+          ],
+          "installed": [
+            59.1025
+          ]
+        },
+        "libvips": {
+          "baseline": [
+            72.6574
+          ],
+          "installed": [
+            78.0526
+          ]
+        },
+        "pdfium": {
+          "baseline": [
+            54.0161
+          ],
+          "installed": [
+            61.8628
+          ]
+        },
+        "libreoffice": {
+          "baseline": [
+            9879.8014
+          ],
+          "installed": [
+            9372.7051
+          ]
+        },
+        "ocr-start-and-recognize": {
+          "baseline": [
+            3794.4358
+          ],
+          "installed": [
+            3511.1504
+          ]
+        }
+      },
+      "rawMs": {
+        "ffmpeg-audio": {
+          "baseline": [
+            61.4798,
+            62.6057,
+            79.7179,
+            72.7859,
+            82.42,
+            137.0356,
+            76.0848,
+            80.2411,
+            69.1939,
+            60.5189
+          ],
+          "installed": [
+            55.2635,
+            60.5731,
+            79.0462,
+            109.5037,
+            73.9944,
+            148.1323,
+            108.4067,
+            98.0339,
+            62.9343,
+            66.4596
+          ]
+        },
+        "ffprobe": {
+          "baseline": [
+            42.4277,
+            46.9654,
+            65.378,
+            54.1635,
+            72.9054,
+            102.9246,
+            56.5836,
+            60.0486,
+            46.9721,
+            46.3347
+          ],
+          "installed": [
+            44.7386,
+            43.2312,
+            60.4154,
+            77.0793,
+            54.7966,
+            96.4459,
+            85.3893,
+            77.5292,
+            48.3847,
+            154.2377
+          ]
+        },
+        "pandoc": {
+          "baseline": [
+            45.9551,
+            52.0872,
+            63.0284,
+            56.3791,
+            66.5049,
+            108.5978,
+            60.998,
+            68.3769,
+            55.2943,
+            46.538
+          ],
+          "installed": [
+            44.5233,
+            51.228,
+            65.3736,
+            82.944,
+            54.6489,
+            98.0912,
+            82.3632,
+            87.542,
+            50.5719,
+            50.6436
+          ]
+        },
+        "libvips": {
+          "baseline": [
+            62.814,
+            76.063,
+            94.1479,
+            82.7061,
+            97.4016,
+            153.5378,
+            85.5112,
+            97.6153,
+            73.4426,
+            63.1222
+          ],
+          "installed": [
+            67.3466,
+            65.2075,
+            94.2815,
+            121.7708,
+            86.8536,
+            154.4235,
+            126.0332,
+            123.2446,
+            73.8739,
+            87.5525
+          ]
+        },
+        "pdfium": {
+          "baseline": [
+            39.9192,
+            44.4531,
+            53.5096,
+            46.1126,
+            54.9629,
+            107.8576,
+            45.3024,
+            51.9049,
+            53.1733,
+            40.5299
+          ],
+          "installed": [
+            37.0328,
+            40.8721,
+            56.0996,
+            63.1774,
+            45.1442,
+            103.6856,
+            69.0026,
+            70.8378,
+            45.4895,
+            61.9223
+          ]
+        },
+        "libreoffice": {
+          "baseline": [
+            3398.7067,
+            3030.4825,
+            4282.4972,
+            3533.3685,
+            3780.0752,
+            5224.159,
+            4754.6222,
+            4318.284,
+            3086.3224,
+            2953.5346
+          ],
+          "installed": [
+            2771.8105,
+            2901.8491,
+            3832.0961,
+            4135.8651,
+            3100.1061,
+            4317.0387,
+            3978.9487,
+            5563.5264,
+            2849.2799,
+            2840.9261
+          ]
+        },
+        "ocr-start-and-recognize": {
+          "baseline": [
+            3700.2077,
+            4993.6211,
+            5135.9763,
+            5265.2739,
+            4609.001,
+            4483.1374,
+            5020.382,
+            4417.4654,
+            3726.4713,
+            3871.9598
+          ],
+          "installed": [
+            3639.0003,
+            3670.2154,
+            5490.7888,
+            4864.9,
+            5362.0289,
+            5622.4642,
+            5019.9228,
+            4734.6305,
+            3878.9662,
+            3347.3125
+          ]
+        }
+      },
+      "medianMs": {
+        "ffmpeg-audio": {
+          "baseline": 74.44,
+          "installed": 76.52,
+          "deltaMs": 2.08,
+          "deltaPercent": 2.79
+        },
+        "ffprobe": {
+          "baseline": 55.37,
+          "installed": 68.75,
+          "deltaMs": 13.38,
+          "deltaPercent": 24.16
+        },
+        "pandoc": {
+          "baseline": 58.69,
+          "installed": 60.01,
+          "deltaMs": 1.32,
+          "deltaPercent": 2.25
+        },
+        "libvips": {
+          "baseline": 84.11,
+          "installed": 90.92,
+          "deltaMs": 6.81,
+          "deltaPercent": 8.1
+        },
+        "pdfium": {
+          "baseline": 49.01,
+          "installed": 59.01,
+          "deltaMs": 10.0,
+          "deltaPercent": 20.4
+        },
+        "libreoffice": {
+          "baseline": 3656.72,
+          "installed": 3466.1,
+          "deltaMs": -190.62,
+          "deltaPercent": -5.21
+        },
+        "ocr-start-and-recognize": {
+          "baseline": 4546.07,
+          "installed": 4799.77,
+          "deltaMs": 253.7,
+          "deltaPercent": 5.58
+        }
+      }
+    }
+  },
+  "selection": "Maintainer chose the smaller packaged storage profile after reviewing OCR timings. Both use the same five official FP32 models."
+}

@@ -5,6 +5,12 @@
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
 - Last documentation review: **2026-11-08**.
 - Release status: **not ready**.
+- The Windows installed-footprint work targets **750 MB** after installation
+  and first use. The selected private **341.64 MB** NSIS installs **628.80 MB**
+  on the tested NTFS volume. First-use data brings the measured total to
+  **640.39 MB**. All five full-precision OCR modules match their official hashes.
+  The maintainer preferred this profile after reviewing the measured timings. See the
+  [installed-footprint validation](V1_0_7_VALIDATION.md).
 - Session handoff: [2026-11-08 closeout and restart notes](SESSION_HANDOFF_2026_11_08.md),
   including installer/decompressed/installed-size distinctions and remaining gates.
 - Windows weight-reduction lot 4 integrates a Rust/ONNX CPU worker while keeping
@@ -45,8 +51,8 @@
 - Workspace: standalone `Développement/Multi-Converter`;
   [location, rules and worktree recovery](LOCAL_WORKSPACE.md).
 - Historical NSIS/AppImage/DMG candidates at `8b510138` and the initial Svelte
-  NSIS candidate at `adf7b8ce` remain preserved. The current private Windows NSIS
-  candidate was refreshed on 2026-11-08 from `2e907a86`: **341.52 MB**, with
+  NSIS candidate at `adf7b8ce` remain preserved. The lot 4 Windows NSIS
+  reference was built on 2026-11-08 from `2e907a86`: **341.52 MB**, with
   native offline OCR, the existing title-bar fix and Office v3 resources;
   [build/integrity receipt](audits/2026-11-08/engine-lot4/windows-candidate.json).
   The preceding 2026-11-06 and lot 3 candidates remain preserved by move.

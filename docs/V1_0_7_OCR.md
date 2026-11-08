@@ -9,6 +9,11 @@ Runtime locks, packaged models and original-file protection are unchanged.
 
 ## 2026-11-08 — Windows native distribution profile
 
+The selected installed-footprint profile at `f15a30a1` uses transparent
+Windows compression. The installed worker, dictionary and encoded FP32 models
+are byte-identical to the lot 4 reference. The [installed validation](V1_0_7_VALIDATION.md)
+also checks the five original ONNX hashes after reversing model storage.
+
 Windows now integrates a separate Rust CPU worker using OAR 0.10.2 and ONNX
 Runtime 1.26.0 with all five official full-precision medium modules. The
 original 18,708-character dictionary, document/text-line orientation and UVDoc
