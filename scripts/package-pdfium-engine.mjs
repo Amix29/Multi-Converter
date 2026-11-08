@@ -53,7 +53,7 @@ async function writeChecksum(manifestPath, engine) {
   const actual = await sha256File(archivePath);
   if (engine.sha256 !== actual) throw new Error("Le manifeste PDFium ne correspond pas a l'archive generee.");
   if (actual !== provenance.package.archiveSha256 || engine.compressedSizeBytes !== provenance.package.archiveSizeBytes) {
-    throw new Error("L'archive PDFium generee ne correspond pas au verrou candidat.");
+    throw new Error(`L'archive PDFium generee ne correspond pas au verrou candidat: ${engine.compressedSizeBytes} octets, SHA-256 ${actual}, taille installee ${engine.installedSizeBytes}.`);
   }
   if (engine.installedSizeBytes !== provenance.package.installedSizeBytes) {
     throw new Error("La taille installee PDFium ne correspond pas au verrou candidat.");
