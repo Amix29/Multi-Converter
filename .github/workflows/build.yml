@@ -7,17 +7,30 @@ on:
       - "docs/**"
   pull_request:
   workflow_dispatch:
+    inputs:
+      conversion_platform:
+        description: Run only the native conversion suite for this host
+        type: choice
+        options: [full, windows-x64, macos-aarch64, linux-x64]
+        default: full
 
 permissions:
   contents: read
 
 concurrency:
-  group: build-${{ github.ref }}
+  group: build-${{ github.ref }}-${{ inputs.conversion_platform || 'full' }}
   cancel-in-progress: true
 
 jobs:
+  conversions:
+    if: github.event_name == 'workflow_dispatch' && inputs.conversion_platform != 'full'
+    uses: ./.github/workflows/native-format-tests.yml
+    with:
+      platform: ${{ inputs.conversion_platform }}
+
   quality-gate:
     name: Windows x64 quality gate
+    if: github.event_name != 'workflow_dispatch' || inputs.conversion_platform == 'full'
     runs-on: windows-2025
     timeout-minutes: 120
     env:
@@ -105,6 +118,7 @@ jobs:
           if-no-files-found: error
 
   macos-code-check:
+    if: github.event_name != 'workflow_dispatch' || inputs.conversion_platform == 'full'
     name: macOS code check (${{ matrix.rust-target }})
     runs-on: macos-latest
     timeout-minutes: 60
@@ -161,6 +175,7 @@ jobs:
       - run: node scripts/cargo-test-temp.mjs clippy --manifest-path src-tauri/Cargo.toml --target ${{ matrix.rust-target }} --all-targets -- -D warnings
 
   macos-host-tests:
+    if: github.event_name != 'workflow_dispatch' || inputs.conversion_platform == 'full'
     name: macOS host unit tests
     runs-on: macos-latest
     timeout-minutes: 60
@@ -200,6 +215,7 @@ jobs:
       - run: npm run clippy:pdfium-wrapper
 
   linux-code-check:
+    if: github.event_name != 'workflow_dispatch' || inputs.conversion_platform == 'full'
     name: Linux x64 code check
     runs-on: ubuntu-22.04
     timeout-minutes: 60

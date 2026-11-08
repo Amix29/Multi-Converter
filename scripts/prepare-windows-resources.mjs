@@ -19,6 +19,17 @@ const selection = lock.platformSelections.find(item => item.platform === "window
 const checkOnly = process.argv.includes("--check");
 if (process.platform !== "win32" || process.arch !== "x64") throw Error("Windows x64 staging requires a Windows x64 host");
 
+// A conversion-only CI worker needs the exact shipping Office profile.
+// Keep its verified output outside the release profile directory.
+const officeArg = process.argv.indexOf("--test-office-dir");
+if (officeArg >= 0) {
+  const destination = path.resolve(process.argv[officeArg + 1]);
+  await fs.mkdir(destination);
+  await stageOffice(destination);
+  await verifyOffice(destination);
+  process.exit(0);
+}
+
 if (await exists(current)) {
   await verify(current);
   console.log("Windows direct resources verified: Office/UI profile, slim OCR runtime and unchanged five models");
@@ -92,9 +103,13 @@ async function stageOcr(destination) {
   }
 }
 
-async function verify(destination) {
+async function verifyOffice(destination) {
   const office = await treeManifest(path.join(destination, "libreoffice"));
   if (JSON.stringify(office) !== JSON.stringify(policy.expectedLibreOffice)) throw Error(`Office direct profile integrity mismatch: ${JSON.stringify(office)}`);
+}
+
+async function verify(destination) {
+  await verifyOffice(destination);
   for (const key of ["fileCount", "totalBytes", "aggregateSha256"]) if (selection.artifact[key] !== ocrProfile.sourceArtifact[key]) throw Error("OCR profile source lock changed");
   const runtimeManifest = await verifyContent(path.join(destination, "ocr/runtime/windows-x64"), "runtime-manifest.json", ocrProfile.artifact);
   validateOcrProfileMarker(runtimeManifest, ocrProfile);

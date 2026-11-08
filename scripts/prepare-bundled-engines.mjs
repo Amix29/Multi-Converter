@@ -191,7 +191,9 @@ async function stageCompressedBundledEngine(engine) {
     await downloadVerified(engine.downloadUrl, source, engine.sha256, engine.id);
     await fs.copyFile(source, target);
   }
-  const result = spawnSync(process.execPath, ["scripts/prepare-windows-resources.mjs"], {
+  const resourceArgs = ["scripts/prepare-windows-resources.mjs"];
+  if (options.testOfficeDir) resourceArgs.push("--test-office-dir", options.testOfficeDir);
+  const result = spawnSync(process.execPath, resourceArgs, {
     cwd: root, stdio: "inherit", windowsHide: true,
   });
   if (result.error || result.status !== 0) throw new Error("LibreOffice profile preparation failed");
@@ -248,7 +250,11 @@ function parseOptions(values) {
   };
   for (let index = 0; index < values.length; index += 1) {
     const value = values[index];
-    if (value === "--asset-dir") {
+    if (value === "--test-office-dir") {
+      const directory = values[++index];
+      if (!directory) throw new Error("--test-office-dir requires an empty directory.");
+      parsed.testOfficeDir = path.resolve(directory);
+    } else if (value === "--asset-dir") {
       const next = values[++index];
       if (!next) throw new Error("--asset-dir requires a directory.");
       parsed.assetDir = path.resolve(next);
