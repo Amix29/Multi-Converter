@@ -220,6 +220,7 @@ jobs:
           path: |
             ${{ runner.temp }}/verified-installer/installed-ocr.json
             ${{ runner.temp }}/verified-installer/app-*.json
+            ${{ runner.temp }}/verified-installer/app-clean-*.png
           if-no-files-found: error
 
   macos-code-check:

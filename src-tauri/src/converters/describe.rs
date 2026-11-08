@@ -1,5 +1,6 @@
 use super::*;
 
+#[cfg(any(test, feature = "native-format-tests"))]
 pub fn describe_file_with_app(
     app: Option<&AppHandle>,
     file_path: impl AsRef<Path>,

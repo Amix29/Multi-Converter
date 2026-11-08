@@ -65,6 +65,7 @@ pub use contracts::{
     ImportBatchResult, ImportOriginKind, ImportOriginV1, ImportRejection, ImportedFileDescription,
     MediaMode, ProgressPayload, QualityProfile, Result,
 };
+#[cfg(any(test, feature = "native-format-tests"))]
 pub use describe::describe_file_with_app;
 pub(crate) use describe::describe_for_import;
 pub(crate) use orchestrator::convert_registered;

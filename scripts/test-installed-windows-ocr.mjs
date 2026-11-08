@@ -48,6 +48,13 @@ try {
     event: "tauri://drag-drop", payload: { paths },
   }), paths);
   await page.getByRole("button", { name: /Parcourir|Browse/i }).waitFor();
+  assert.equal(await page.getByRole("dialog").count(), 0, "File import must be directly available on first launch");
+  const capture = async name => {
+    if (path.basename(report) === "app-clean.json") {
+      await page.screenshot({ path: path.join(path.dirname(report), `app-clean-${name}.png`) });
+    }
+  };
+  await capture("start");
   await drop([path.resolve(cases[0].input)]);
   await page.locator(".file-ticket").first().waitFor();
   await page.getByRole("button", { name: /Extraire le texte|Extract text/i }).click();
@@ -63,9 +70,11 @@ try {
     if (await error.isVisible()) throw Error(await error.innerText());
     const text = (await result.inputValue()).normalize("NFC").toLowerCase().replace(/\s+/gu, " ");
     for (const item of cases) assert(text.includes(item.expected.normalize("NFC").toLowerCase()), item.expected);
+    await capture("ocr");
     await page.keyboard.press("Escape");
     await dialog.waitFor({ state: "hidden" });
     folderImport = await checkFolderImport(page, drop, profile);
+    await capture("folder");
   }
   await writeFile(report, JSON.stringify({ runtime: info.runtime, provider: info.provider,
     fixture: cases[0].input, verifiedLines: expectedError ? 0 : cases.length,
