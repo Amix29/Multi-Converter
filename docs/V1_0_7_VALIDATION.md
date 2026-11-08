@@ -1,5 +1,25 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-08 — Native conversion and OCR test coverage
+
+On Windows x64 at `aaf914d4`, the standard Rust suite passed 203 tests and
+skipped 15. The separate conversion matrix passed all 11 native groups and
+the local HTTP control. The integrated PNG-to-WebP test checked the actual
+format, every decoded RGBA pixel and source preservation. The FFmpeg audio
+and video cases counted decoded frames in each required track.
+
+The complete OCR corpus passed 40 cases on 20 distinct synthetic input files
+with 19 worker requests. All five format cases passed after real Rust image
+normalization and OCR of each complete three-line image. Accuracy uses the
+documented case and whitespace normalization. Seven clean-language images
+supply the 21 clean text-block cases.
+
+Two temporary negative controls exercised the assertions. Substituting the
+PNG encoder for the WebP encoder failed the file-format assertion. Changing
+2026 to 2099 in the JPEG reference failed the OCR threshold at 98.52%.
+Both modifications were reversed before the complete runs. These tests
+exercised local source engines. Installed GUI acceptance remains open.
+
 ## 2026-11-08 — Windows installed footprint below 750 MB
 
 The Windows x64 candidate combines the application from `2e907a86` with
