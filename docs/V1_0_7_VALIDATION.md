@@ -36,10 +36,18 @@ All nine negative controls passed on each host. The reports contain one
 successful result per expected case. AMR has no enabled routes on macOS.
 The Windows working tree also passed the full 600-case suite locally.
 
-The [separate Windows build gate](https://github.com/Amix29/Multi-Converter/actions/runs/42492837972)
-stopped during packaging preparation. The rebuilt reference OCR runtime
-did not match the origin recorded for the legacy Windows OCR profile.
-Installed-package acceptance and the broader OCR corpus have separate gates.
+The [Windows installer build and fresh-runner install](https://github.com/Amix29/Multi-Converter/actions/runs/42505696329)
+passed at `e4efbb64`. Preparation verified the shipped native OCR profile
+and NSIS resolved the Office and OCR resources on the checkout volume.
+The full gate passed 600 conversion scenarios and all 40 OCR corpus cases.
+
+The resulting `Multi-Converter_1.0.7_x64-setup.exe` is 340,786,143 bytes,
+with SHA-256 `8c385f271c352da902a1c2b70953d35d536e2bbf085e78b9f775dbf8453ac32a`.
+The payload validator decoded 10,463 files and checked the five restored
+FP32 models against their pinned source hashes. A second Windows runner
+downloaded and installed that artifact, verified the installed application
+hash and exercised inference, cancellation and retry with the installed OCR
+worker. The manual GUI and upgrade acceptance matrix remains a release gate.
 
 ## 2026-11-08 — Native conversion and OCR test coverage
 
