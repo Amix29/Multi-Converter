@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-08T09:22:04.074Z",
+  "command": "npm run test:ocr:runtime",
+  "exitCode": 0,
+  "characterAccuracy": 1,
+  "recognitionMs": 2112,
+  "protocol": "schemaVersion 1, same as Tauri supervisor and corpus; legacy smoke request corrected without changing runtime",
+  "runtimeProfile": "windows-native-ocr-v1",
+  "scope": "Default-selector real worker smoke, no archive extraction or installed GUI"
+}

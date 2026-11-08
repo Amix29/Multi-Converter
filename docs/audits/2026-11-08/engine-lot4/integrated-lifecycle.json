@@ -1,0 +1,58 @@
+{
+  "workerSha256": "95ade536e35ce087987305c0747e8ceb89683399d64a602436bfb82584a6aa49",
+  "missingInput": "failed without output",
+  "malformedRequest": "failed; worker alive",
+  "sourceProtection": "original input unchanged",
+  "cancel": "terminated after 250ms; no final/partial file",
+  "restartRetry": "completed",
+  "existingOutput": "rejected; output unchanged",
+  "oversizedRequest": "rejected with bounded read",
+  "missingLocalDll": "failed; no diagnostic/environment fallback",
+  "loadedRuntimeModules": [
+    [
+      {
+        "ModuleName": "VCRUNTIME140.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\VCRUNTIME140.dll"
+      },
+      {
+        "ModuleName": "onnxruntime.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\onnxruntime.dll"
+      },
+      {
+        "ModuleName": "MSVCP140.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\MSVCP140.dll"
+      },
+      {
+        "ModuleName": "VCRUNTIME140_1.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\VCRUNTIME140_1.dll"
+      },
+      {
+        "ModuleName": "MSVCP140_1.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\MSVCP140_1.dll"
+      }
+    ],
+    [
+      {
+        "ModuleName": "VCRUNTIME140.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\VCRUNTIME140.dll"
+      },
+      {
+        "ModuleName": "onnxruntime.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\onnxruntime.dll"
+      },
+      {
+        "ModuleName": "MSVCP140_1.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\MSVCP140_1.dll"
+      },
+      {
+        "ModuleName": "MSVCP140.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\MSVCP140.dll"
+      },
+      {
+        "ModuleName": "VCRUNTIME140_1.dll",
+        "FileName": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr\\runtime\\windows-x64\\VCRUNTIME140_1.dll"
+      }
+    ]
+  ],
+  "scope": "Real worker protocol and loaded local DLL paths; not a GUI installation test"
+}

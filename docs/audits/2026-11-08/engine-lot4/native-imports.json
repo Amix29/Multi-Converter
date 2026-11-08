@@ -1,0 +1,301 @@
+{
+  "scope": "Normal/delayed PE imports on the observed Windows host; not a clean-OS launch test",
+  "files": [
+    {
+      "name": "MSVCP140.dll",
+      "sha256": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca",
+      "imports": [
+        {
+          "name": "api-ms-win-crt-convert-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-environment-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-heap-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-locale-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-math-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-runtime-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-stdio-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-string-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-time-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-utility-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "kernel32.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "vcruntime140.dll",
+          "resolution": "bundled locally"
+        },
+        {
+          "name": "vcruntime140_1.dll",
+          "resolution": "bundled locally"
+        }
+      ]
+    },
+    {
+      "name": "MSVCP140_1.dll",
+      "sha256": "206c931bf90fdad8816de3b5e2ef80b2bcaa9406c89ecc05fe6fddffe251e982",
+      "imports": [
+        {
+          "name": "api-ms-win-crt-heap-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-runtime-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "kernel32.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "msvcp140.dll",
+          "resolution": "bundled locally"
+        },
+        {
+          "name": "vcruntime140.dll",
+          "resolution": "bundled locally"
+        }
+      ]
+    },
+    {
+      "name": "ocr-worker.exe",
+      "sha256": "95ade536e35ce087987305c0747e8ceb89683399d64a602436bfb82584a6aa49",
+      "imports": [
+        {
+          "name": "api-ms-win-core-synch-l1-2-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-heap-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-locale-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-math-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-runtime-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-stdio-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-string-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "bcryptprimitives.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "kernel32.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "ntdll.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "vcruntime140.dll",
+          "resolution": "bundled locally"
+        }
+      ]
+    },
+    {
+      "name": "onnxruntime.dll",
+      "sha256": "efa14dc0f3e8d6e4fc7ce0b9b5aa70d6e27deec908af05c1fa9a37270f57460b",
+      "imports": [
+        {
+          "name": "advapi32.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "api-ms-win-core-path-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-convert-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-filesystem-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-heap-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-locale-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-math-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-runtime-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-stdio-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-string-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-time-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "dbghelp.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "dxgi.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "kernel32.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "msvcp140.dll",
+          "resolution": "bundled locally"
+        },
+        {
+          "name": "msvcp140_1.dll",
+          "resolution": "bundled locally"
+        },
+        {
+          "name": "setupapi.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "vcruntime140.dll",
+          "resolution": "bundled locally"
+        },
+        {
+          "name": "vcruntime140_1.dll",
+          "resolution": "bundled locally"
+        }
+      ]
+    },
+    {
+      "name": "onnxruntime_providers_shared.dll",
+      "sha256": "44396f2913e798df4121384f37f84a4b79aa1229ea9467bd35e48711cd6cdf22",
+      "imports": [
+        {
+          "name": "api-ms-win-crt-runtime-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "kernel32.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "vcruntime140.dll",
+          "resolution": "bundled locally"
+        }
+      ]
+    },
+    {
+      "name": "VCRUNTIME140.dll",
+      "sha256": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7",
+      "imports": [
+        {
+          "name": "api-ms-win-crt-convert-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-heap-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-runtime-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-stdio-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-string-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "kernel32.dll",
+          "resolution": "Windows System32 on observed host"
+        }
+      ]
+    },
+    {
+      "name": "VCRUNTIME140_1.dll",
+      "sha256": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e",
+      "imports": [
+        {
+          "name": "api-ms-win-crt-heap-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-runtime-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "api-ms-win-crt-string-l1-1-0.dll",
+          "resolution": "Windows API set"
+        },
+        {
+          "name": "kernel32.dll",
+          "resolution": "Windows System32 on observed host"
+        },
+        {
+          "name": "vcruntime140.dll",
+          "resolution": "bundled locally"
+        }
+      ]
+    }
+  ],
+  "missing": [],
+  "result": "passed"
+}

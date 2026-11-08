@@ -79,3 +79,31 @@ They are already represented by the migrated history; blindly applying the stash
 would restore obsolete status text. The original Cargo.toml bytes are unchanged.
 See [the integration receipt](audits/2026-11-01/svelte-migration/local-integration.json)
 and [execution ledger](MIGRATION_SVELTE_EXECUTION.md). No push/publication occurred.
+
+## Windows native OCR integration — 2026-11-08
+
+Application source `2e907a86` is fast-forwarded locally from
+`codex/migrate-svelte` to the primary `codex/test` checkout. The pre-existing
+Cargo.toml bytes remain unchanged; no push or publication occurs. See
+[the integration receipt](audits/2026-11-08/engine-lot4/source-integration-dll-closure.json).
+
+The separately locked native OCR profile is available in both checkouts through
+547 NTFS hardlinks. Only eight mutable JSON metadata files (166,757 bytes) are
+copied to isolate later explicit preparation; the exact profile verifies from
+the primary checkout too. See
+[resource staging](audits/2026-11-08/engine-lot4/integration-resources.json).
+Original OCR/runtime/engine sources and previous v2/v3 profiles are retained.
+The preceding native profile is moved to `windows-x64/native-before-msvc-closure/ocr`
+in the primary checkout, retaining its immutable hardlinked payload without
+copying it. Its original staging receipt is preserved separately. The real
+worker lifecycle passes from the accented primary path with all observed
+Microsoft/ONNX runtime modules loaded locally.
+
+Before rebuilding, the lot 3 setup/signature and source application binary were
+moved to preserved directories under the existing Tauri build cache. Their
+original hashes match the
+[relocation receipt](audits/2026-11-08/engine-lot4/artifact-preservation.json).
+The task-created incomplete NSIS research counter is recoverable from Recycle
+Bin; it is not an accepted installer. User application data and installed
+applications are untouched. Final lot 4 measurements and proof limits live in
+[the execution ledger](ENGINE_REDUCTION_EXECUTION.md).

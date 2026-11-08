@@ -1,0 +1,133 @@
+{
+  "collected": "2026-11-08T07:59:40.061Z",
+  "scope": "Intermediate experiments; not final installer or installed acceptance",
+  "rejected": [
+    "native scalar: Japanese quality gate",
+    "linear/crop-only variants: same Japanese failure",
+    "Python ONNX complete archive: over target",
+    "incomplete NSIS counter: not accepted as evidence"
+  ],
+  "files": [
+    {
+      "file": "model-shuffles.json",
+      "bytes": 4303,
+      "sha256": "c30f558f74bd3bca622c96e5d0717cbfa5a0d6213e2062a12833e8a522e0c2e7"
+    },
+    {
+      "file": "model-bitplanes.json",
+      "bytes": 2101,
+      "sha256": "3ac2e9f209b260bf26bb4eaa758d816048b9a5711285c1dba16f0e8f4069d433"
+    },
+    {
+      "file": "archive-integrity.json",
+      "bytes": 388,
+      "sha256": "b96180c2c706d4f58f609a95fbc9def664f6e4161703d83b75e86ce167a7176a"
+    },
+    {
+      "file": "archive-onnx-integrity.json",
+      "bytes": 388,
+      "sha256": "49d431a3bf202dc6453e9f66f853194cf67084b00af712e0eaa9c01322f2333f"
+    },
+    {
+      "file": "archive-native-integrity.json",
+      "bytes": 387,
+      "sha256": "62f60d1d633bc0ec39236e5cdca3081d80674c94c6326940872a8939c7967dfb"
+    },
+    {
+      "file": "onnx-model-sources.json",
+      "bytes": 5101,
+      "sha256": "0622532da4b3a9a463acf1b308d1d299cc6fc07b4449b425aaa8f0d949bac3f3"
+    },
+    {
+      "file": "onnx-graph-audit.json",
+      "bytes": 3223,
+      "sha256": "629843482619a086951b5c40f9af418788199c3f6900cef1cb879ce88910c2e2"
+    },
+    {
+      "file": "onnx-corpus-noarena.json",
+      "bytes": 9378,
+      "sha256": "e8d0c480e7e45a26d397d69b28f733a24adc935c10a1120da3d01c9324a0929f"
+    },
+    {
+      "file": "onnx-frozen-corpus.json",
+      "bytes": 9302,
+      "sha256": "d259ba5c871dd80a53e6e499421105b1fc60f2eccba5894baa729fe96e786850"
+    },
+    {
+      "file": "onnx-level0-corpus.json",
+      "bytes": 9319,
+      "sha256": "d8e8632203a8c5acf064551b5c13e31b4a189c7379b0ca72aa90717d2ccae1fa"
+    },
+    {
+      "file": "pyz-level0.json",
+      "bytes": 416,
+      "sha256": "2d7736b4df015e8b170e4463747694356d8ffe205ce4463cb22cc3f5571cc700"
+    },
+    {
+      "file": "model-shuffles-onnx.json",
+      "bytes": 2672,
+      "sha256": "8fbd9ef797828cca3d2a8f7a1b97eba3355c187e1025e33d2859164c824055e8"
+    },
+    {
+      "file": "native-dictionary.json",
+      "bytes": 347,
+      "sha256": "e436637e3d51850817bd9812e5f07cf5697294332f5e4c5ee5d7b6b9d34db94c"
+    },
+    {
+      "file": "native-scalar-corpus.json",
+      "bytes": 9329,
+      "sha256": "8259ab163e506fa25ab9b51911a1ac062aef66c3c0b366326761c5c27d695ea7"
+    },
+    {
+      "file": "native-linear-ja.json",
+      "bytes": 898,
+      "sha256": "48d9e23047122c92945fc0ab6215bf2bf07e32f1c72b1d00c9973ba9784fd80b"
+    },
+    {
+      "file": "native-crop-ja.json",
+      "bytes": 898,
+      "sha256": "b5d023af37df9aaebec52460b4bb53490e4cc5c8beb262ac516ad861723660ab"
+    },
+    {
+      "file": "native-dynamic-corpus.json",
+      "bytes": 9377,
+      "sha256": "11fee8e75be28175def3568ec697ded7ff3edcf175fe90ed60ae5cf035c53bf5"
+    },
+    {
+      "file": "native-aligned-corpus.json",
+      "bytes": 9384,
+      "sha256": "84a925523a778c4e0f1d7d39f8a4830cb0c7a8a92a055a705033e447811d61bb"
+    },
+    {
+      "file": "native-encoded-corpus.json",
+      "bytes": 9482,
+      "sha256": "3e99ee5e13b2773656bf3c962e2221240ce860920543ca2268d3c07a702b5ab9"
+    },
+    {
+      "file": "resize-oracle.json",
+      "bytes": 2683,
+      "sha256": "df9fd740ef916130304fd0ffdfba932ce927fea3775f11c533de64ae29fb4b79"
+    },
+    {
+      "file": "crop-oracle.json",
+      "bytes": 4147,
+      "sha256": "36a6f33ea0b9619b7b64fa4fad65b29553e752c01153c965910ded5e5425cba3"
+    },
+    {
+      "file": "rectified-comparison.json",
+      "bytes": 342,
+      "sha256": "e22fd119e61b079842f4a53bc21d811bf776f1064b47f80d62e5fdaf0b5017be"
+    },
+    {
+      "file": "native-dynamic-trace-comparison.json",
+      "bytes": 321,
+      "sha256": "ae7379d1d0f0c98ae789c1d21a745b0f379e25d19b39f1ea3007e466ce5668b9"
+    },
+    {
+      "file": "ort-source-verification.json",
+      "bytes": 901,
+      "sha256": "95cd953932222046f3d400b265e4d74aea416122bc49b3ebbaaaffed217dd620"
+    }
+  ],
+  "serializationScope": "JSON-report hashes in this historical index refer to private raw reports before path redaction/LF normalization; evidence-index.json records the documentary copies."
+}

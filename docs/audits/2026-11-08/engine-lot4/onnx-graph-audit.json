@@ -1,0 +1,170 @@
+[
+  {
+    "model": "document-orientation",
+    "opsets": [
+      [
+        "",
+        7
+      ]
+    ],
+    "tensorTypes": {
+      "FLOAT": 148,
+      "INT64": 8
+    },
+    "operators": {
+      "Constant": 156,
+      "Conv": 32,
+      "BatchNormalization": 27,
+      "HardSigmoid": 30,
+      "Mul": 31,
+      "GlobalAveragePool": 3,
+      "Identity": 11,
+      "Reshape": 5,
+      "Add": 5,
+      "Relu": 2,
+      "Shape": 1,
+      "Slice": 1,
+      "Concat": 1,
+      "MatMul": 1,
+      "Softmax": 1
+    },
+    "onnxChecker": "passed",
+    "reducedPrecisionOrQuantizedTensors": false
+  },
+  {
+    "model": "document-unwarping",
+    "opsets": [
+      [
+        "",
+        16
+      ]
+    ],
+    "tensorTypes": {
+      "INT64": 25,
+      "FLOAT": 257
+    },
+    "operators": {
+      "Shape": 3,
+      "Identity": 61,
+      "Slice": 4,
+      "Squeeze": 4,
+      "Concat": 4,
+      "Resize": 2,
+      "Conv": 45,
+      "BatchNormalization": 44,
+      "Relu": 41,
+      "Add": 42,
+      "Unsqueeze": 2,
+      "Pad": 2,
+      "PRelu": 1,
+      "Reshape": 2,
+      "Transpose": 1,
+      "GridSample": 1
+    },
+    "onnxChecker": "passed",
+    "reducedPrecisionOrQuantizedTensors": false
+  },
+  {
+    "model": "text-detection",
+    "opsets": [
+      [
+        "",
+        14
+      ]
+    ],
+    "tensorTypes": {
+      "FLOAT": 226
+    },
+    "operators": {
+      "Conv": 122,
+      "Relu": 16,
+      "MaxPool": 1,
+      "Concat": 2,
+      "ReduceMean": 5,
+      "HardSigmoid": 5,
+      "Mul": 31,
+      "Div": 13,
+      "Erf": 13,
+      "Add": 59,
+      "Resize": 6,
+      "ConvTranspose": 2,
+      "Sigmoid": 1
+    },
+    "onnxChecker": "passed",
+    "reducedPrecisionOrQuantizedTensors": false
+  },
+  {
+    "model": "text-recognition",
+    "opsets": [
+      [
+        "",
+        11
+      ]
+    ],
+    "tensorTypes": {
+      "FLOAT": 215,
+      "INT64": 39
+    },
+    "operators": {
+      "Conv": 62,
+      "Add": 109,
+      "Identity": 143,
+      "Relu": 11,
+      "MaxPool": 1,
+      "Concat": 3,
+      "ReduceMean": 16,
+      "HardSigmoid": 6,
+      "Mul": 46,
+      "Div": 19,
+      "Erf": 14,
+      "AveragePool": 1,
+      "BatchNormalization": 3,
+      "Sigmoid": 5,
+      "Shape": 4,
+      "Slice": 8,
+      "Squeeze": 8,
+      "Reshape": 8,
+      "Transpose": 9,
+      "Sub": 5,
+      "Pow": 5,
+      "Sqrt": 5,
+      "MatMul": 13,
+      "Softmax": 3,
+      "Unsqueeze": 1
+    },
+    "onnxChecker": "passed",
+    "reducedPrecisionOrQuantizedTensors": false
+  },
+  {
+    "model": "textline-orientation",
+    "opsets": [
+      [
+        "",
+        7
+      ]
+    ],
+    "tensorTypes": {
+      "FLOAT": 148,
+      "INT64": 8
+    },
+    "operators": {
+      "Constant": 156,
+      "Conv": 32,
+      "BatchNormalization": 27,
+      "HardSigmoid": 30,
+      "Mul": 31,
+      "GlobalAveragePool": 3,
+      "Identity": 11,
+      "Reshape": 5,
+      "Add": 5,
+      "Relu": 2,
+      "Shape": 1,
+      "Slice": 1,
+      "Concat": 1,
+      "MatMul": 1,
+      "Softmax": 1
+    },
+    "onnxChecker": "passed",
+    "reducedPrecisionOrQuantizedTensors": false
+  }
+]

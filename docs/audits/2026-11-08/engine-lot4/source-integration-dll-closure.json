@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-08T09:01:38.6648600Z",
+  "source": "2e907a86",
+  "target": "%USERPROFILE%\\Développement\\Multi-Converter",
+  "branch": "codex/test",
+  "before": "1b7bcc6d",
+  "after": "2e907a86ccc562305f9991ea9fcb94ceb9f2fb09",
+  "preservedPreviousNativeProfile": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-before-msvc-closure\\ocr",
+  "preexistingCargoSha256": "8913aff785eb5ba7605312df34b81efe66a031de3177e8ca27cc6dc703c087ba",
+  "pushOrPublication": false
+}

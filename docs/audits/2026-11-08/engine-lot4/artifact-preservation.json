@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-08T08:07:27.4934907Z",
+  "operation": "Moved previous bundle and application binary before rebuilding; no artifact overwritten",
+  "preserved": [
+    {
+      "path": "%LOCALAPPDATA%\\Temp\\mc-cargo-target-svelte-migration\\release\\bundle-preserved-1794124648748\\nsis\\Multi-Converter_1.0.7_x64-setup.exe",
+      "bytes": 499243548,
+      "sha256": "af92620203820b683aa8d4c8ed03000c617aaaf8a05da5a8fa3fa94cf8a8f5ca"
+    },
+    {
+      "path": "%LOCALAPPDATA%\\Temp\\mc-cargo-target-svelte-migration\\release\\bundle-preserved-1794124648748\\nsis\\Multi-Converter_1.0.7_x64-setup.exe.sig",
+      "bytes": 428,
+      "sha256": "bc66552f01ad21c102cc98920a37f83b3bcf5c2a310bb127794664fa431dfb5e"
+    },
+    {
+      "path": "%LOCALAPPDATA%\\Temp\\mc-cargo-target-svelte-migration\\release\\source-preserved-lot3\\multi-converter.exe",
+      "bytes": 27163648,
+      "sha256": "57bf2b4fd3e8011413198729c6d4f1605fbf5cec62241672bf5e0c1ac00b839f"
+    }
+  ],
+  "originalsVerified": true
+}

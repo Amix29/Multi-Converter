@@ -1,5 +1,58 @@
 # Multi-Converter V1.0.7 Validation
 
+## 2026-11-08 — Native Windows OCR and 341.52 MB private setup verified
+
+The Windows source mapping now uses the separately locked native CPU profile;
+the global original runtime/model identities and other platforms are unchanged.
+All five official full-precision ONNX modules and the original dictionary remain
+enabled. The 542-file runtime is 24,637,577 bytes, and the encoded model tree
+is 11 files / 184,084,883 bytes. Every model is restored only in memory and
+checked against its compiled official SHA before inference. No Python runtime,
+model-download feature or diagnostic DLL override is used by the shipped worker.
+
+The aligned worker passes all 40 cases at 100% clean/difficult accuracy; the
+encoded-model standalone variant repeats this with 104 network samples and
+zero observed remote connections. UVDoc's diagnosed 512x512 pre-resize is fixed:
+3,420,000 output pixel components match the reference exactly. Linear resize
+and cubic perspective crop have independent strict OpenCV pixel comparisons.
+The initial Japanese failure was rejected without text corrections or weaker
+thresholds. DLL/notices are verified against the pinned official PyPI wheel;
+original and Rust dependency notices are retained.
+
+Source `2e907a86` passes the canonical check, 203 Rust tests (15 default
+ignores), app/worker Clippy, 11 real conversion groups, negative HTTP control,
+direct-profile integrity, worker unit/lifecycle tests and all four Rust audits.
+ZIP 8.6 blocked the first candidate; the vendored upstream manifest now pins
+the fixed ZIP 9.0.0 without advisory exceptions or OCR source changes.
+The exact rebuilt worker SHA begins `95ade536`; its full 40-case corpus is
+100% clean/difficult, with 108 network samples and zero remote connections
+observed. Maximum sampled working set is 233,357,312 bytes; speed/memory
+sampling during a concurrent build is not a controlled comparative benchmark.
+PDFium's seven native CLI tests, nine engine-profile tests, source budgets,
+staged license hashes and preparation-tool reproduction also pass.
+The PE import audit identified a missing host-provided MSVCP140_1.dll and now
+passes with the pinned Microsoft DLL included. Real module paths confirm local
+loading of all five observed Microsoft/ONNX DLLs, repeated from the accented
+integration checkout; seven PE normal/delayed import checks pass. This does not
+establish a clean-OS or installed-GUI launch.
+See [final gates](audits/2026-11-08/engine-lot4/validation-gates.json) and
+[supplemental evidence](audits/2026-11-08/engine-lot4/supplemental-gates.json).
+
+The native release application and frontend build pass. The exact NSIS is
+**341,519,995 bytes / 341.52 MB**, **31.59%** below lot 3 and **65.84%** below
+the original. It meets the requested **350,000,000-byte ceiling**. All
+**10,464 files / 1,317,504,996 logical bytes** are decoded/hash-verified without
+extracting the engine tree; all five stored ONNX files restore to their exact
+official SHA. Container CRC and cryptographic updater signature checks pass.
+Authenticode is `NotSigned`. See [the final receipt](audits/2026-11-08/engine-lot4/windows-candidate.json)
+and [payload audit](audits/2026-11-08/engine-lot4/windows-payload.json).
+The 326,987,635-byte research archive is fully decoded/hash-checked but contains
+the rejected first scalar worker, so it is not a distributable setup. The
+interrupted NSIS counter and the DLL-diagnostic partial NSIS are rejected.
+The 1.32 GB decompressed logical payload is not an installed physical-size measurement. No GUI installation,
+public release, Linux/macOS preparation or user-cache cleanup is performed.
+See [the evolving lot 4 ledger](ENGINE_REDUCTION_LOT4.md).
+
 ## 2026-11-07 — Engine reduction lot 3: slim OCR and Office UI resources
 
 Application source `1c066776` keeps all five offline models and original

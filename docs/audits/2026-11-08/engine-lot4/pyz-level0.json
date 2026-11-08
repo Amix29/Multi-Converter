@@ -1,0 +1,18 @@
+{
+  "allModulePayloadsByteIdentical": 4323,
+  "otherEmbeddedPayloads": "byte identical",
+  "compression": [
+    {
+      "variant": "onnx-runtime-v3",
+      "rawBytes": 23379898,
+      "lzmaBytes": 23165097,
+      "seconds": 13.76600000000326
+    },
+    {
+      "variant": "onnx-runtime-level0",
+      "rawBytes": 54161273,
+      "lzmaBytes": 12781025,
+      "seconds": 71.4059999999954
+    }
+  ]
+}

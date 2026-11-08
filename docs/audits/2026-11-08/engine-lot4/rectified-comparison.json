@@ -1,0 +1,13 @@
+{
+  "shape": [
+    570,
+    2000,
+    3
+  ],
+  "maximumPixelDelta": 238,
+  "meanPixelDelta": 5.444926315789473,
+  "different": 313731,
+  "total": 3420000,
+  "referenceSha256": "a9ed5c5603c37d26e3288ca7c0329870269c437a07723dd5437a5a7f62276991",
+  "nativeSha256": "898b8764ac65ee42b7bf2d0223abfe7b5431903822580b4b7e34c33e953d1917"
+}

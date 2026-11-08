@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-08T08:23:23.945Z",
+  "packages": [
+    {
+      "name": "oar-ocr",
+      "version": "0.10.2",
+      "registryPackageSha256": "5efb1b5c83d5e18cf0082b4222b420b3c193694bbd2d27e78fbad5ee29ab517d",
+      "identicalSourceFiles": 20,
+      "changed": [
+        {
+          "path": "Cargo.toml",
+          "registrySha256": "bb96b43834476c891acaf66407a126bb636d138209be69ed6239a2bf6eeeef9c",
+          "currentSha256": "55d176ff639fb35b627e2771adc178d7f3d1480a9deccf3adf7c0fda8c694812"
+        }
+      ]
+    },
+    {
+      "name": "oar-ocr-core",
+      "version": "0.10.2",
+      "registryPackageSha256": "1814eaa88485c76f152d282415018949125b4c303b82e4a1960c1a68d63588a1",
+      "identicalSourceFiles": 130,
+      "changed": [
+        {
+          "path": "src/models/classification/pp_lcnet.rs",
+          "registrySha256": "3b0fefb4944dd27143e308d05b5c0e705dd44086991193f7db771729ae08c807",
+          "currentSha256": "b092d27cdcd093dc54f98b35b58bb1f92d7d6df6daa326e9fc39179d24fc9467"
+        },
+        {
+          "path": "src/models/recognition/crnn.rs",
+          "registrySha256": "bca31443d64c73dd29e0c323e244a0607d4468102d1fad93fad0e1703bae623e",
+          "currentSha256": "66867abd5ced5a4fea4c3d8d99a7b57ec46f1cac268437ab6b628b1ec666e4d1"
+        },
+        {
+          "path": "src/models/rectification/uvdoc.rs",
+          "registrySha256": "dbd14028a430cae8e50adfa6394e41a691aa79fffcdb8e17406833b3010926c9",
+          "currentSha256": "56fd3c68649a6b77939fb3a8ed84b5ba65372c95d0daa2fd2c5800e2991efac4"
+        },
+        {
+          "path": "src/processors/resize_detection.rs",
+          "registrySha256": "f6e9ee00867c88519be45a0dc8a46710d13c6d6d1cf44f18c49e74d7728ce87e",
+          "currentSha256": "f0ad75fe970f14bc5ed6d29d3092439d334a509145885ffad59ed8eacaa47332"
+        },
+        {
+          "path": "src/processors/resize_recognition.rs",
+          "registrySha256": "07bf5347d00b246a982e12b3e5bcb9aebad815c9a55f4aa52c2ad85bc20052e6",
+          "currentSha256": "7e184ea84f49fc49372f962bbac18fc1ed1667717652ef2d4fe66b2b1b65e8a7"
+        },
+        {
+          "path": "src/utils/image.rs",
+          "registrySha256": "639fec0a8994e4d79bb167a8c816c382696c0e99f87bdcac99586e9721878d1f",
+          "currentSha256": "2de51b6056773499a936f116214ed4244aeb0d09ea941fd6adfd3078ff1e1375"
+        },
+        {
+          "path": "src/utils/transform.rs",
+          "registrySha256": "c0891ec3831cfa86a2a9b968797f3f3e6b4ba0b2b16695c2ce27d4bb99c14b63",
+          "currentSha256": "2e0367af1eca9c975f5cd697bd4b2c14cc21fcda655e1a885c6242737655da77"
+        }
+      ]
+    }
+  ],
+  "scope": "Compare all vendored Rust source and Cargo.toml against the checksum-verified Cargo registry packages; notices/documentation separately retained"
+}

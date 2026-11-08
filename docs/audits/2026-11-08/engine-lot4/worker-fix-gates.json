@@ -1,0 +1,38 @@
+{
+  "started": "2026-11-08T08:14:40.818Z",
+  "tasks": [
+    {
+      "name": "audit",
+      "exitCode": 0,
+      "seconds": 3.674
+    },
+    {
+      "name": "fmt",
+      "exitCode": 0,
+      "seconds": 0.431
+    },
+    {
+      "name": "build",
+      "exitCode": 0,
+      "seconds": 146.497
+    },
+    {
+      "name": "unit",
+      "exitCode": 0,
+      "seconds": 23.56
+    },
+    {
+      "name": "clippy",
+      "exitCode": 0,
+      "seconds": 5.548
+    },
+    {
+      "name": "curate",
+      "exitCode": 0,
+      "seconds": 6.275
+    }
+  ],
+  "active": null,
+  "state": "passed",
+  "finished": "2026-11-08T08:17:46.810Z"
+}

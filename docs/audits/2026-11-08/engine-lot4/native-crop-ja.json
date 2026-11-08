@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "platform": "windows-x64",
+  "runtimeArchiveSha256": null,
+  "directExecutable": "../../../../AppData/Local/Temp/mc-cargo-target-tauri-dev/release/mc-native-ocr-probe.exe",
+  "workerPrefix": [],
+  "modelsDirectory": "tmp/engine-lot4/native-models",
+  "runtimeExtractionMs": 0,
+  "runtimeInitializationMs": 1420,
+  "peakWorkerWorkingSetBytes": 232808448,
+  "memoryMeasurement": "Maximum of sampled main-process RSS/working-set values; child processes excluded.",
+  "medianRecognitionMs": 6202,
+  "cleanMean": 0.9411764705882353,
+  "difficultMean": null,
+  "networkSamples": 7,
+  "observedWorkerConnections": [],
+  "results": [
+    {
+      "id": "clean-ja-3",
+      "kind": "ocr-image",
+      "accuracy": 0.9411764705882353,
+      "elapsedMs": 6202,
+      "workerWorkingSetBytes": 232808448,
+      "actual": "端末内のフアイルを安全に処理します"
+    }
+  ]
+}

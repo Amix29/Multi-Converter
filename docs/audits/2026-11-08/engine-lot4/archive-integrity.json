@@ -1,0 +1,8 @@
+{
+  "archiveBytes": 465516611,
+  "archiveSha256": "31d8a88b728cbd988a13406bb4a51680a83126a00155354d8150dd2188b10c85",
+  "verifiedFiles": 14922,
+  "verifiedBytes": 1905642479,
+  "proof": "Every archived member decoded to SHA-256 and matched to its exact source; no extraction to disk",
+  "limits": "Experimental compression archive only; not a setup or installed application acceptance"
+}

@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-08T08:17:19.7895418Z",
+  "rejectedDependency": "zip 8.6.0",
+  "advisories": [
+    "RUSTSEC-2026-0367",
+    "RUSTSEC-2026-0368",
+    "RUSTSEC-2026-0369",
+    "RUSTSEC-2026-0429"
+  ],
+  "resolution": "Vendor oar-ocr 0.10.2 unchanged source with ZIP manifest pinned to =9.0.0",
+  "newAuditExceptions": [],
+  "scope": "Dependency correction only; no OCR algorithms/models/settings changed",
+  "finalValidation": "Required on rebuilt worker"
+}

@@ -1,0 +1,31 @@
+{
+  "date": "2026-11-08T08:27:48.6267066Z",
+  "applicationSource": "1b7bcc6d5aa55a10f6c70a616c51977fda001210",
+  "extraChecks": [
+    {
+      "command": "cargo fmt (app and native worker)",
+      "result": "passed"
+    },
+    {
+      "command": "npm run test:engine-profiles",
+      "result": "9 passed"
+    },
+    {
+      "command": "npm run test:pdfium-wrapper",
+      "result": "7 native CLI tests passed"
+    },
+    {
+      "command": "staged supplemental license SHA checks",
+      "result": "6 passed"
+    },
+    {
+      "command": "npm run test:secret-leaks, test:source-structure, test:rust-structure",
+      "result": "passed on indexed sources"
+    },
+    {
+      "command": "git diff --cached --check",
+      "result": "passed before source checkpoint"
+    }
+  ],
+  "boundaries": "No installed GUI/updater acceptance; GitHub-hosted workflow was not dispatched"
+}

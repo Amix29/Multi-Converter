@@ -1,0 +1,111 @@
+{
+  "opencvVersion": "4.10.0",
+  "seed": 735173,
+  "cases": [
+    {
+      "source": [
+        91,
+        37
+      ],
+      "target": [
+        29,
+        13
+      ],
+      "maxDelta": 0,
+      "different": 0,
+      "total": 1131,
+      "referenceSha256": "21f0b70dcba293839b968e5e528014004afc1a8393d6137e9bc2db4d3a3d8819",
+      "nativeSha256": "21f0b70dcba293839b968e5e528014004afc1a8393d6137e9bc2db4d3a3d8819"
+    },
+    {
+      "source": [
+        17,
+        23
+      ],
+      "target": [
+        43,
+        61
+      ],
+      "maxDelta": 0,
+      "different": 0,
+      "total": 7869,
+      "referenceSha256": "a197b22ccd4fa7a651488c6daae10a73de20bf37c629eb740df043bd14f5ee96",
+      "nativeSha256": "a197b22ccd4fa7a651488c6daae10a73de20bf37c629eb740df043bd14f5ee96"
+    },
+    {
+      "source": [
+        1,
+        19
+      ],
+      "target": [
+        7,
+        11
+      ],
+      "maxDelta": 0,
+      "different": 0,
+      "total": 231,
+      "referenceSha256": "0b88840828369bd27ec90e9c6a79caae2de7572a2a4f1df71b1034cdea4f84e9",
+      "nativeSha256": "0b88840828369bd27ec90e9c6a79caae2de7572a2a4f1df71b1034cdea4f84e9"
+    },
+    {
+      "source": [
+        23,
+        1
+      ],
+      "target": [
+        17,
+        8
+      ],
+      "maxDelta": 0,
+      "different": 0,
+      "total": 408,
+      "referenceSha256": "a8eab1960ea3a0d55cc672d6c97a8602efb8468055aecf5a95e4442cccecfa49",
+      "nativeSha256": "a8eab1960ea3a0d55cc672d6c97a8602efb8468055aecf5a95e4442cccecfa49"
+    },
+    {
+      "source": [
+        5,
+        7
+      ],
+      "target": [
+        5,
+        7
+      ],
+      "maxDelta": 0,
+      "different": 0,
+      "total": 105,
+      "referenceSha256": "36e834cc245d88ef3eb8d6a602d305eaeaac45dd74f44ef98fb31e8b9b6c487c",
+      "nativeSha256": "36e834cc245d88ef3eb8d6a602d305eaeaac45dd74f44ef98fb31e8b9b6c487c"
+    },
+    {
+      "source": [
+        197,
+        83
+      ],
+      "target": [
+        114,
+        48
+      ],
+      "maxDelta": 0,
+      "different": 0,
+      "total": 16416,
+      "referenceSha256": "22293fdb686c34ff45fc3bef89763cc97034e2bee84d12b6fa7cedd2a85320c9",
+      "nativeSha256": "22293fdb686c34ff45fc3bef89763cc97034e2bee84d12b6fa7cedd2a85320c9"
+    },
+    {
+      "source": [
+        123,
+        83
+      ],
+      "target": [
+        71,
+        48
+      ],
+      "maxDelta": 0,
+      "different": 0,
+      "total": 10224,
+      "referenceSha256": "2852ee05d44c0f0cb3f84ad17a78f77cc77a842d890ba1f2ac641ededb4a013b",
+      "nativeSha256": "2852ee05d44c0f0cb3f84ad17a78f77cc77a842d890ba1f2ac641ededb4a013b"
+    }
+  ]
+}

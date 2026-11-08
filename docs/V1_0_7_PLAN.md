@@ -3,8 +3,16 @@
 ## Status
 
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
-- Last documentation review: **2026-11-07**.
+- Last documentation review: **2026-11-08**.
 - Release status: **not ready**.
+- Windows weight-reduction lot 4 integrates a Rust/ONNX CPU worker while keeping
+  all five medium modules, full precision, the original dictionary and offline
+  processing. The autonomous worker and reversible model-storage variant pass
+  the 40-case corpus at 100%. Runtime preparation is about 25 MB instead of
+  612 MB, excluding models. Integrated gates pass and the exact NSIS is
+  **341,519,995 bytes / 341.52 MB**, below the requested 350 MB ceiling.
+  All payload files, the five restored models, CRC and updater signature verify.
+  Installed-GUI acceptance remains pending. [Evidence and limits](ENGINE_REDUCTION_LOT4.md).
 - Package-weight audit completed on 2026-11-07:
   [measurements and optimization proposals](ENGINE_SIZE_AUDIT_2026_11.md).
   The maintainer authorized execution afterwards. Lot 1 built a private setup
@@ -18,15 +26,15 @@
   including strict hashes for known leftover resources. See the
   [current artifact measurements and proof limits](ENGINE_REDUCTION_EXECUTION.md)
   and [lot 3 report](ENGINE_REDUCTION_LOT3.md).
-  The indicative 300 MB target is not reached; no quality-changing substitute
-  is adopted to force it. Installed-GUI acceptance remains pending. No
+  Lot 3 did not reach 300 MB; lot 4 now meets the renewed 350 MB ceiling while
+  keeping full-precision models and formats. Installed-GUI acceptance remains pending. No
   user-cache cleanup or Linux/macOS preparation is included.
 - Active migration architecture: desktop Svelte 5 + Tailwind 4 + shadcn-svelte,
   retaining Rust/Tauri/TypeScript/Vite. The maintainer approved it on 2026-11-01;
   [execution mandate and acceptance](MANDAT_MIGRATION_SVELTE.md). Source porting is complete on `codex/migrate-svelte`; see the
   [execution ledger](MIGRATION_SVELTE_EXECUTION.md). The site is outside this
   migration, and installed/final-source platform gates must be renewed.
-- Current application-source checkpoint: `1c066776` (slim Windows OCR/Office profiles and verified upgrade compatibility, retaining native title-bar themes), implementation branch
+- Current application-source checkpoint: `2e907a86` (native Windows FP32 OCR, complete local DLL closure and reversible model storage, retaining v3 Office and native title-bar themes), implementation branch
   `codex/migrate-svelte`; locally integrated on `codex/test`. Documentation-only
   commits may follow this functional checkpoint.
 - Native title-bar appearance was verified in a Windows development window on

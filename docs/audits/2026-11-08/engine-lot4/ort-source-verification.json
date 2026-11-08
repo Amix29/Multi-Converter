@@ -1,0 +1,27 @@
+{
+  "wheelSha256": "a26374dc7fbcaae593601086b242120e13f2310558df0991da6dd8b8fac00414",
+  "wheelBytes": 13026427,
+  "verifiedFiles": [
+    {
+      "path": "capi/onnxruntime.dll",
+      "bytes": 16783672,
+      "sha256": "efa14dc0f3e8d6e4fc7ce0b9b5aa70d6e27deec908af05c1fa9a37270f57460b"
+    },
+    {
+      "path": "capi/onnxruntime_providers_shared.dll",
+      "bytes": 21816,
+      "sha256": "44396f2913e798df4121384f37f84a4b79aa1229ea9467bd35e48711cd6cdf22"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1094,
+      "sha256": "c250d6278f0b47a6439fb7592b08b58a55eb9f535aa49a1db63211c3f982b674"
+    },
+    {
+      "path": "ThirdPartyNotices.txt",
+      "bytes": 331175,
+      "sha256": "fb0af774b4d7cffc5b9d046f2aaeade2f37df2f80abf8033c95dfffcc77a8866"
+    }
+  ],
+  "proof": "Every selected DLL/notice matches the pinned official PyPI wheel; decoded only to hashes"
+}

@@ -7,7 +7,51 @@ including editor-only OCR layers, was cancelled. Earlier editor references in
 this record are historical; the retained PDF flow extracts text for conversion.
 Runtime locks, packaged models and original-file protection are unchanged.
 
-## 2026-11-07 — Windows distribution profile
+## 2026-11-08 — Windows native distribution profile
+
+Windows now integrates a separate Rust CPU worker using OAR 0.10.2 and ONNX
+Runtime 1.26.0 with all five official full-precision medium modules. The
+original 18,708-character dictionary, document/text-line orientation and UVDoc
+unwarping remain enabled. No model tier reduction, quantization, cloud fallback
+or recognition-time download is introduced. Mac/Linux retain their original
+reference runtime selections.
+
+`windows-native-ocr-profile.json` holds compiled Windows runtime/model
+expectations separately from the immutable original source locks. The prepared
+runtime has 542 files / 24,637,577 bytes, including Microsoft DLLs and notices;
+the model tree has 11 files / 184,084,883 bytes. A lossless four-plane byte
+shuffle is reversed only in memory, and every restored model must match its
+compiled official ONNX SHA. The dictionary and local ONNX DLL are independently
+hash-checked. The normal worker ignores diagnostic DLL/trace overrides.
+
+Runtime and model markers must form a matching approved pair. Rust hashes all
+active files and rejects unknown content. Exact original hashes alone permit
+known legacy files left by an upgrade. Original archives, model sources and
+historical installers are preserved. The old reference-lock `official` value
+identifies the source artifact; current Windows runtime info reports `native`.
+
+The autonomous encoded-model worker passes all 40 cases at 100% clean/difficult
+accuracy with no observed remote connections. Full-resolution UVDoc output is
+pixel-identical to the reference on the diagnosed Japanese fixture; resize and
+perspective crop have independent strict OpenCV pixel comparisons. The initial
+512x512 Japanese regression was rejected and fixed, without text substitution
+or threshold relaxation. See [the detailed lot 4 ledger](ENGINE_REDUCTION_LOT4.md)
+and [reproduction instructions](../tools/ocr-runtime/native-worker/README.md).
+Integrated source/runtime gates and the native application build pass at
+`2e907a86`, including a renewed 40-case corpus on the corrected worker, full
+conversion groups and Rust dependency audits. The exact Windows setup is
+**341,519,995 bytes / 341.52 MB**; every payload file, five restored ONNX models,
+container CRC and updater signature verify. These results do not establish
+installed-GUI or release acceptance.
+
+Normal and delayed PE imports are checked across seven runtime binaries.
+MSVCP140_1.dll is included from the pinned signed Microsoft package, matching
+the existing 14.51.36247.0 runtime family. Real worker module enumeration proves
+that Microsoft and ONNX DLLs load from the local runtime directory, including
+from the accented primary checkout path. No Microsoft installer runs during
+preparation, and no host-MSVC fallback is accepted as packaging evidence.
+
+## 2026-11-07 — Previous Windows distribution profile
 
 The original runtime remains the authenticated 7,246-file source artifact.
 `windows-offline-ocr-v1` ships 4,990 files / 612,271,290 bytes, omitting only
@@ -26,18 +70,18 @@ modified/unknown extras are rejected. A full hardlinked upgrade overlay passes
 the real Rust verifier. Installed-GUI acceptance is still pending. See
 [lot 3 evidence and limits](ENGINE_REDUCTION_LOT3.md).
 
-## Status — current audit implementation, 2026-10-30
+## Status — implementation update, 2026-11-08
 
 - Target release: **V1.0.7**
 - Current metadata: **1.0.7**
 - Selected model: **PP-OCRv6_medium**
-- Windows implementation: **patched reference runtime built and packaged; smoke and full 40-case corpus passed**
-- Windows NSIS build: **local 8b510138 candidate built; unsigned; installed acceptance pending**
+- Windows implementation: **native Rust/ONNX CPU profile integrated; full 40-case corpus passed at 100%; integrated source/runtime gates passed**
+- Windows NSIS build: **native-profile local NSIS built and payload verified; installed acceptance pending**
 - Windows packaged application smoke: **previous checkpoint only; current application acceptance pending**
 - Current Windows correction fixture: **reviewed expected text matched exactly (100%)**
 - Linux x64: **official runtime built and packaged reproducibly; direct 40-case corpus passed and isolated extracted-archive four-case probe passed**
 - macOS Apple Silicon runtime: **official runtime built and packaged reproducibly; license inventory and full 40-case corpus passed; installed application acceptance pending**
-- Native ONNX candidate and accelerators: **not selected; official CPU runtime retained**
+- Native ONNX worker: **selected for Windows source integration; Mac/Linux reference CPU runtimes retained; no accelerator selected**
 - Privacy mode: **local only**
 
 Intel macOS is retired from V1.0.7. The previous Windows NSIS/Tauri receipts
@@ -61,9 +105,10 @@ checkpoint is closed, but this is not a release-ready or multiplatform OCR
 claim. The metadata moved to `1.0.7` for the Phase 8 native candidate, but
 publication remains blocked until every release gate passes.
 
-## Locked Runtime
+## Original source runtime locks
 
-`src-tauri/ocr-runtime-lock.json` is the deterministic source of truth:
+`src-tauri/ocr-runtime-lock.json` remains the deterministic origin contract.
+The Windows native distribution has its additional compiled profile above:
 
 | Component | Locked value |
 | --- | --- |
@@ -72,7 +117,7 @@ publication remains blocked until every release gate passes.
 | PaddleOCR | `3.7.0` |
 | PaddleX | `3.7.0` |
 | ONNX Runtime | `1.26.0` |
-| Windows selection | official sidecar, CPU |
+| Windows original source selection | official sidecar, CPU |
 
 The five official modules are document orientation, UVDoc unwarping, text-line
 orientation, PP-OCRv6 medium detection and PP-OCRv6 medium recognition. Their
@@ -81,7 +126,7 @@ origin URLs and individual SHA-256 values are committed in the lock file.
 The prepared model artifact contains 21 files and 185,082,003 bytes with
 aggregate SHA-256
 `e870fc5fe5287f8058a521fef3b5c8c9efe7a9d767b7110a4c5d41e12633c4bb`.
-The current Windows runtime contains 7,246 files and 660,643,156 bytes with
+The original Windows reference runtime contains 7,246 files and 660,643,156 bytes with
 aggregate SHA-256
 `d386f7923fbea6fe6efa407b2f00d3e99e31ee9778027a67ca32e6b14adf759c`.
 
@@ -90,11 +135,13 @@ tar paths. `build-ocr-reference-runtime.mjs` creates the pinned Windows
 reference sidecar. `prepare-ocr-runtime.mjs` writes per-file manifests and a
 236,811,152-byte optimal-compression ZIP, SHA-256
 `77da8356877fc3efc2da162a683983c66adc4e1b361d1f0f20c7bdae1c79b2ac`.
-Two consecutive packages matched exactly. At first use, Rust extracts this ZIP
+Two consecutive packages matched exactly. For this legacy archive path, Rust extracts the ZIP
 to the application-local data directory through a bounded path-safe reader,
 then verifies the manifests and every extracted file hash. Recognition never
 downloads models or selects a cloud fallback. Models remain separately
-packaged; their 21-file contents and hashes remain unchanged.
+packaged; these original 21-file contents and hashes remain unchanged. Current
+Windows native packaging ships the separate encoded-model profile and loads it
+without extracting a Python runtime or writing decoded models to disk.
 
 `inventory-ocr-runtime-licenses.mjs` records the exact Python distribution
 metadata and every embedded license-file hash in
@@ -107,11 +154,11 @@ three hashed platform locks include the reviewed Python security updates.
 
 DirectML, CoreML and OpenVINO remain disabled. They may be selected only after
 the required CPU parity and median-speed gates pass on the locked corpus. The
-native C++ ONNX candidate is likewise not selected because its size, speed and
-quality parity have not been measured. One package must contain one selected
-runtime only.
+earlier C++ ONNX candidate was not selected because its size, speed and
+quality parity had not been measured. One package must contain one selected
+runtime only. The current Windows Rust/ONNX decision is recorded above.
 
-For this checkpoint the explicit production decision is therefore the official
+For that historical checkpoint the explicit production decision was the official
 CPU sidecar. The native ONNX candidate and each accelerator are rejected from
 selection, rather than silently enabled, because no artifact has met the
 locked parity, size and speed thresholds. CPU fallback is the only evidenced
@@ -120,7 +167,7 @@ Windows behavior.
 ## Implemented Architecture
 
 ```text
-React image action / converter
+Svelte image action / converter
   -> typed Tauri OCR command
   -> one bounded OCR job
   -> validated temporary PNG or PDFium page render

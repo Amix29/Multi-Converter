@@ -1,0 +1,106 @@
+{
+  "scope": "Experimental compression only; no setup or runtime change",
+  "roundtrip": "Every shuffled buffer inverted and SHA256 compared in memory",
+  "models": [
+    {
+      "model": "document-orientation",
+      "bytes": 6788069,
+      "sha256": "af9a0a4f317ff0709ce752067807f819cb15d883f8ecad89f28df1c6ee2d9c92",
+      "cases": [
+        {
+          "width": 1,
+          "zlibBytes": 6300789,
+          "roundtrip": true,
+          "lzmaBytes": 6241926
+        },
+        {
+          "width": 4,
+          "zlibBytes": 5802172,
+          "roundtrip": true,
+          "lzmaBytes": 5734927
+        }
+      ],
+      "seconds": 9.88
+    },
+    {
+      "model": "document-unwarping",
+      "bytes": 31684150,
+      "sha256": "54cab30dc2cf347b4f3d6971c833b1c3d84f5ef17280f1f6d15796bff20e63d6",
+      "cases": [
+        {
+          "width": 1,
+          "zlibBytes": 29486309,
+          "roundtrip": true,
+          "lzmaBytes": 29139889
+        },
+        {
+          "width": 4,
+          "zlibBytes": 26865768,
+          "roundtrip": true,
+          "lzmaBytes": 26568318
+        }
+      ],
+      "seconds": 68.53
+    },
+    {
+      "model": "text-detection",
+      "bytes": 62032837,
+      "sha256": "eb13b44b25bb36f89528b68720af8a61d9cf381176107f465db1757b65d086e1",
+      "cases": [
+        {
+          "width": 1,
+          "zlibBytes": 33246214,
+          "roundtrip": true,
+          "lzmaBytes": 32260492
+        },
+        {
+          "width": 4,
+          "zlibBytes": 31236001,
+          "roundtrip": true,
+          "lzmaBytes": 30143845
+        }
+      ],
+      "seconds": 174.65
+    },
+    {
+      "model": "text-recognition",
+      "bytes": 76554979,
+      "sha256": "9c09abf0957f7968c7586464b7397b84ad2387a0497a351af40e9acc71b673ba",
+      "cases": [
+        {
+          "width": 1,
+          "zlibBytes": 66922506,
+          "roundtrip": true,
+          "lzmaBytes": 65875852
+        },
+        {
+          "width": 4,
+          "zlibBytes": 62348071,
+          "roundtrip": true,
+          "lzmaBytes": 61511951
+        }
+      ],
+      "seconds": 177.92
+    },
+    {
+      "model": "textline-orientation",
+      "bytes": 6777816,
+      "sha256": "38aa97cd4be591e0ad304e659f07ba30d946f27a63315433f6659c69c8778345",
+      "cases": [
+        {
+          "width": 1,
+          "zlibBytes": 6352810,
+          "roundtrip": true,
+          "lzmaBytes": 6278388
+        },
+        {
+          "width": 4,
+          "zlibBytes": 5755240,
+          "roundtrip": true,
+          "lzmaBytes": 5511378
+        }
+      ],
+      "seconds": 11.92
+    }
+  ]
+}

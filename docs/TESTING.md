@@ -32,9 +32,12 @@ reading, original-file preservation, dictionary policy and unsafe/duplicate path
 rejection. The canonical Windows engine validator checks the prepared direct
 profile and every retained OCR runtime/model file against the embedded locks.
 The original `windows-headless-v1` archive remains a historical reproducible lot;
-Windows packaging now uses the versioned `windows-x64/v3` resource tree with
-`windows-conversion-direct-v3` Office data and `windows-offline-ocr-v1`.
-The preceding v2 tree is preserved for older development processes.
+Windows packaging keeps `windows-conversion-direct-v3` Office data in the v3
+tree and uses `windows-native-ocr-v1` under `windows-x64/native-v1/ocr` for OCR.
+The previous OCR runtime and model trees remain provenance/recovery inputs.
+The [native worker guide](../tools/ocr-runtime/native-worker/README.md) describes
+explicit source preparation; its five official FP32 ONNX files are stored with
+an invertible byte shuffle and restored/hash-checked in memory before inference.
 
 `npm run prepare:windows-resources` stages immutable resources through hardlinks
 or decodes each required ZIP entry once on a fresh host. `--check` is read-only
@@ -47,20 +50,30 @@ that the frozen v3 byte-range edits preserve every non-UI XML component and
 root attribute. Profile tests reject altered source/output hashes and unsafe
 ranges. Both independent audits read source archives without extracting trees.
 
-On Windows, `test:ocr:corpus` uses the prepared v3 worker when available;
+On Windows, `test:ocr:corpus` prefers the prepared native worker/model pair,
+then the preserved v3 pair when the native profile is absent;
 `MULTI_CONVERTER_OCR_CORPUS_EXECUTABLE` overrides it explicitly and
 `MULTI_CONVERTER_OCR_CORPUS_REPORT` preserves previous reports. All five model
 hashes remain pinned. The ignored Rust test
 `prepared_direct_ocr_verifies_without_archive_extraction` hashes the complete
 direct tree; `MULTI_CONVERTER_OCR_TEST_ROOT` enables an isolated upgrade overlay.
-Only the 2,256 known retired source files may remain, each at its original
-size/SHA-256, and only for the new Windows runtime identity. Modified or unknown
-leftovers fail; model verification is unchanged.
+Only the retired runtime/model files listed in the selected compiled profile
+may remain, each at its original size/SHA-256. Modified or unknown leftovers and
+mixed native/legacy model/runtime markers fail. The original global locks and
+the other platforms remain unchanged. `test-lifecycle.py` exercises the real
+worker's cancellation/retry, malformed/oversized requests and source/output
+protection; run native worker Rust tests and Clippy separately from app gates.
+`audit-runtime-imports.py` checks normal/delayed PE imports and rejects MSVC
+resolved only from the host. The lifecycle probe also verifies actual loaded
+Microsoft/ONNX module paths. `prepare-microsoft-runtime.py` decodes the pinned
+signed source package without running its installer; see the worker guide.
 
 `verify:windows-engine-package` hashes every decoded file without extracting
 the installed tree. Its executable comparison reproduces only Tauri 2.11.2's
 unique `__TAURI_BUNDLE_TYPE_VAR_UNK` to `NSS` marker patch, then checks the
 entire resulting SHA-256. Tests reject ambiguous markers and other mutations.
+For native OCR it also reconstructs each of the five packaged ONNX models in
+memory and checks the full original official SHA-256, without a model cache.
 Container CRC and cryptographic updater-signature checks are separate gates.
 None of these checks replaces installed GUI or actual updater acceptance.
 

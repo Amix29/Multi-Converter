@@ -1,0 +1,87 @@
+[
+  {
+    "model": "document-orientation",
+    "sourceBytes": 6754166,
+    "sourceSha256": "e8d6e7c5d264507e40e58a655779059d616b20d7441ea22047d829eb3931989c",
+    "roundtrip": true,
+    "cases": [
+      {
+        "transform": "original",
+        "zstd19Bytes": 6269526
+      },
+      {
+        "transform": "bitplanes",
+        "zstd19Bytes": 5891595
+      }
+    ],
+    "seconds": 2.1019275999933598
+  },
+  {
+    "model": "document-unwarping",
+    "sourceBytes": 32054311,
+    "sourceSha256": "810488899520e0da843b9bd9769ba4949f1c81e357f0eceb12d4a7da459c3eca",
+    "roundtrip": true,
+    "cases": [
+      {
+        "transform": "original",
+        "zstd19Bytes": 29730281
+      },
+      {
+        "transform": "bitplanes",
+        "zstd19Bytes": 27529812
+      }
+    ],
+    "seconds": 20.257255800002895
+  },
+  {
+    "model": "text-detection",
+    "sourceBytes": 61960476,
+    "sourceSha256": "85218d2e3d98f5a21c58b4220627be923a97aee5db3cc71f39536ab31ac53960",
+    "roundtrip": true,
+    "cases": [
+      {
+        "transform": "original",
+        "zstd19Bytes": 36917696
+      },
+      {
+        "transform": "bitplanes",
+        "zstd19Bytes": 33676563
+      }
+    ],
+    "seconds": 40.16011169999547
+  },
+  {
+    "model": "text-recognition",
+    "sourceBytes": 76465087,
+    "sourceSha256": "1b01c79a914587933f615569e75de54f2e638ebb5d3f3b3c1b38c24ede8c7319",
+    "roundtrip": true,
+    "cases": [
+      {
+        "transform": "original",
+        "zstd19Bytes": 67231956
+      },
+      {
+        "transform": "bitplanes",
+        "zstd19Bytes": 62878128
+      }
+    ],
+    "seconds": 35.467012600005546
+  },
+  {
+    "model": "textline-orientation",
+    "sourceBytes": 6743918,
+    "sourceSha256": "0de2bcf996cf553e2b848dd7b1769dafffc6917b1ccdf55c1d8efe7909fbf743",
+    "roundtrip": true,
+    "cases": [
+      {
+        "transform": "original",
+        "zstd19Bytes": 6335036
+      },
+      {
+        "transform": "bitplanes",
+        "zstd19Bytes": 5677516
+      }
+    ],
+    "seconds": 3.6116669999973965
+  }
+]

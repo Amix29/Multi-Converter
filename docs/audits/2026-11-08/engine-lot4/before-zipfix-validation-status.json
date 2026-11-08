@@ -1,0 +1,52 @@
+{
+  "started": "2026-11-08T07:49:56.953Z",
+  "tasks": [
+    {
+      "name": "canonical",
+      "exitCode": 0,
+      "seconds": 125.568
+    },
+    {
+      "name": "rust",
+      "exitCode": 0,
+      "seconds": 166.378
+    },
+    {
+      "name": "clippy",
+      "exitCode": 0,
+      "seconds": 522.345
+    },
+    {
+      "name": "conversions",
+      "exitCode": 0,
+      "seconds": 95.879
+    },
+    {
+      "name": "native-integrity",
+      "exitCode": 0,
+      "seconds": 21.127
+    },
+    {
+      "name": "ocr-corpus",
+      "exitCode": 0,
+      "seconds": 143.383
+    },
+    {
+      "name": "worker-unit",
+      "exitCode": 0,
+      "seconds": 58.432
+    },
+    {
+      "name": "worker-clippy",
+      "exitCode": 0,
+      "seconds": 145.42
+    },
+    {
+      "name": "rust-audit",
+      "exitCode": 1,
+      "seconds": 21.57
+    }
+  ],
+  "active": null,
+  "finished": "2026-11-08T08:11:37.101Z"
+}

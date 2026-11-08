@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-08T08:25:35.653592+00:00",
+  "sourceReuse": "All five ONNX and wheel/DLL/notices reverified by production source helper; unreachable proxy configured",
+  "models": "Production prepare-models --resume verified and inverted every stored model against official raw bytes",
+  "modelArtifact": {
+    "fileCount": 11,
+    "totalBytes": 184084883,
+    "aggregateSha256": "13403729edccf21c324b077ee3ec573d11dca727c8a315d26b570d49beb3207d"
+  },
+  "storage": "Source/model/DLL payloads are NTFS hardlinks, inode identity asserted; only the small test manifest is copied",
+  "productionResourcesUnmodified": true
+}

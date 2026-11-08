@@ -98,7 +98,7 @@ function recognize(workerPath, modelsPath, inputPath, outputPath) {
         if (line) {
           const message = JSON.parse(line);
           if (message.type === "ready") {
-            child.stdin.write(`${JSON.stringify({ jobId: "runtime-smoke", input: inputPath, output: outputPath })}\n`);
+            child.stdin.write(`${JSON.stringify({ schemaVersion: 1, jobId: "runtime-smoke", input: inputPath, output: outputPath })}\n`);
           } else if (message.type === "completed") {
             completed = true;
             child.stdin.end();

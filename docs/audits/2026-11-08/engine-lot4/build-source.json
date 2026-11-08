@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-08T09:09:24.7356903Z",
+  "applicationSource": "2e907a86ccc562305f9991ea9fcb94ceb9f2fb09",
+  "fingerprints": [
+    {
+      "path": "src-tauri/Cargo.toml",
+      "bytes": 1309,
+      "sha256": "8913aff785eb5ba7605312df34b81efe66a031de3177e8ca27cc6dc703c087ba"
+    },
+    {
+      "path": "src-tauri/binaries/ffmpeg-x86_64-pc-windows-msvc.exe",
+      "bytes": 101457920,
+      "sha256": "228d7a8556258de907fdb55f36850078ebc7680b84ec30d84ea02e99bec1d1eb"
+    },
+    {
+      "path": "src-tauri/binaries/ffprobe-x86_64-pc-windows-msvc.exe",
+      "bytes": 101251072,
+      "sha256": "0fde260f5abd35c9cafd96f594cc76365a780c1b73a90e35b6a3409ea1db1bf0"
+    },
+    {
+      "path": "src-tauri/windows-native-ocr-profile.json",
+      "bytes": 1395157,
+      "sha256": "ce23e987db548fc073b615f37962b3f26e907a41bfccae2f0aa6fee319934c24"
+    },
+    {
+      "path": "tools/ocr-runtime/native-worker/Cargo.lock",
+      "bytes": 57237,
+      "sha256": "b361aae9bf8581b0889e0a479c1df1d9f993e1fc93fc9ddb381a9138e39ba119"
+    },
+    {
+      "path": "tools/ocr-runtime/native-worker/microsoft-runtime-sources.json",
+      "bytes": 1547,
+      "sha256": "533432b8c00e478bfdb51380b8539bc4bf5a4f199fec6eaf113596c1acfd6898"
+    }
+  ],
+  "preexistingExcludedChanges": [
+    "src-tauri/Cargo.toml",
+    "src-tauri/binaries/ffmpeg-x86_64-pc-windows-msvc.exe",
+    "src-tauri/binaries/ffprobe-x86_64-pc-windows-msvc.exe"
+  ],
+  "sourceScope": "All new source changes committed; existing Cargo and sidecar bytes preserved and used by the candidate",
+  "platform": "Windows x64 only",
+  "installedOrPublished": false
+}

@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-08T09:14:08.724Z",
+  "platform": "windows-x64",
+  "version": "1.0.7",
+  "installer": {
+    "path": "%LOCALAPPDATA%\\Temp\\mc-cargo-target-svelte-migration\\release\\bundle\\nsis\\Multi-Converter_1.0.7_x64-setup.exe",
+    "bytes": 341519995,
+    "decimalMB": 341.519995,
+    "sha256": "ef7f89d2f05cdbf2cbae940c86da524f3a072a45d382406b66847e3110b0398d"
+  },
+  "maximumBytes": 350000000,
+  "withinMaximum": true,
+  "baselineLot3Bytes": 499243548,
+  "savedBytes": 157723553,
+  "reductionFromLot3Percent": 31.5925070302561,
+  "application": {
+    "path": "%LOCALAPPDATA%\\Temp\\mc-cargo-target-svelte-migration\\release\\multi-converter.exe",
+    "bytes": 28487168,
+    "sha256": "f3495000cd71a4245d82d078e3b780a8936a3423616e6400e54fdba2c2ef8d7a",
+    "bundled": {
+      "bytes": 28487168,
+      "sha256": "b7709c4de9784db1c6a4dfe8a12809350580b67e9be9c22981b4567a9af14501",
+      "sourceSha256": "f3495000cd71a4245d82d078e3b780a8936a3423616e6400e54fdba2c2ef8d7a",
+      "transformation": "Exact Tauri UNK-to-NSS marker replacement",
+      "markerOffset": 24000624
+    }
+  },
+  "workerSourceSha256": "3dd46b70660d2fc2637cbd72f12876e6ab71177990e2b6054a32cf133f201fd2",
+  "workerCargoLockSha256": "b361aae9bf8581b0889e0a479c1df1d9f993e1fc93fc9ddb381a9138e39ba119",
+  "payload": {
+    "files": 10464,
+    "bytes": 1317504996,
+    "restoredOfficialModels": 5
+  },
+  "compression": "solid LZMA, 128 MiB dictionary",
+  "containerCRC": "passed",
+  "updaterSignature": {
+    "present": true,
+    "verified": true,
+    "bytes": 428,
+    "sha256": "25aedc0c63bee41ea8ece3405113eb7d9caa4af1cf0c6ca13095e302e0c3830b",
+    "method": "minisign streaming verification against configured updater public key"
+  },
+  "authenticode": "NotSigned",
+  "scope": "Built and decoded/hash-verified real NSIS installer; no installed GUI/updater acceptance or publication; no Linux/macOS preparation"
+}

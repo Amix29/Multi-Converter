@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-08T08:51:13.0862991Z",
+  "status": "rejected",
+  "reason": "Missing local MSVCP140_1 import; interrupted NSIS produced an incomplete file despite launcher exit 0; final 7-Zip archive verification rejected it",
+  "installerPath": "%LOCALAPPDATA%\\Temp\\mc-cargo-target-svelte-migration\\release\\bundle-rejected-before-msvc-closure\\nsis\\Multi-Converter_1.0.7_x64-setup.exe",
+  "bytes": 63963681,
+  "sha256": "a855560511e9d5cc25586ecb9ca9ecd345371f87d0812768284fac31252a123b",
+  "userInstaller": false
+}

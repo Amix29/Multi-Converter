@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-08T08:30:35.230Z",
+  "source": "%USERPROFILE%\\.codex\\worktrees\\multi-converter-svelte\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr",
+  "target": "%USERPROFILE%\\Développement\\Multi-Converter\\src-tauri\\bundled-engine-profiles\\windows-x64\\native-v1\\ocr",
+  "hardlinked": 545,
+  "metadataCopied": 8,
+  "metadataCopyBytes": 166064,
+  "reused": 0,
+  "result": "Verified exact native profile; no large payload copied; mutable JSON metadata isolated"
+}

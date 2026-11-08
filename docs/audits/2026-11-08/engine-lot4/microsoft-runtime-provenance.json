@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-08T09:06:01.0334242Z",
+  "sourcePackage": {
+    "url": "https://download.visualstudio.microsoft.com/download/pr/ebdab8e5-1d7b-4d9f-a11b-cbb1720c3b12/843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C/VC_redist.x64.exe",
+    "bytes": 18731856,
+    "sha256": "843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C",
+    "signature": "Valid",
+    "signer": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+    "version": "14.51.36247.0"
+  },
+  "runtimeFiles": [
+    {
+      "file": "VCRUNTIME140.dll",
+      "version": "14.51.36247.0",
+      "sha256": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7"
+    },
+    {
+      "file": "VCRUNTIME140_1.dll",
+      "version": "14.51.36247.0",
+      "sha256": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e"
+    },
+    {
+      "file": "MSVCP140.dll",
+      "version": "14.51.36247.0",
+      "sha256": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca"
+    },
+    {
+      "file": "MSVCP140_1.dll",
+      "version": "14.51.36247.0",
+      "sha256": "206c931bf90fdad8816de3b5e2ef80b2bcaa9406c89ecc05fe6fddffe251e982"
+    }
+  ],
+  "matchingSystem32SupplementSha256": "206c931bf90fdad8816de3b5e2ef80b2bcaa9406c89ecc05fe6fddffe251e982",
+  "installerExecuted": false,
+  "method": "Bounded verified CAB slices and Windows expand.exe; extract only the supplemental DLL and original license-link metadata; repeated preparation reuses exact files"
+}

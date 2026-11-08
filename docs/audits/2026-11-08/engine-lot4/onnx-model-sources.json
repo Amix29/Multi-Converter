@@ -1,0 +1,177 @@
+[
+  {
+    "id": "document-orientation",
+    "repo": "PaddlePaddle/PP-LCNet_x1_0_doc_ori_onnx",
+    "revision": "7330ab7039123e46af2dc03154b9969aa412c61d",
+    "license": "apache-2.0",
+    "files": [
+      {
+        "rfilename": ".gitattributes",
+        "blobId": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+        "size": 1519
+      },
+      {
+        "rfilename": "README.md",
+        "blobId": "9b803283cca861006e122a5160457774315bb6dd",
+        "size": 1770
+      },
+      {
+        "rfilename": "inference.onnx",
+        "blobId": "41d877995ea35fc263f1dba3fa1d7e05048f91fa",
+        "size": 6788069,
+        "lfs": {
+          "sha256": "af9a0a4f317ff0709ce752067807f819cb15d883f8ecad89f28df1c6ee2d9c92",
+          "size": 6788069,
+          "pointerSize": 132
+        }
+      },
+      {
+        "rfilename": "inference.yml",
+        "blobId": "be5ff4a823ed0dc4fb6fa8e228608ba9ab9fc01d",
+        "size": 766
+      }
+    ]
+  },
+  {
+    "id": "document-unwarping",
+    "repo": "PaddlePaddle/UVDoc_onnx",
+    "revision": "3bcf535371727d11e783101f79a504c68848aae3",
+    "license": "apache-2.0",
+    "files": [
+      {
+        "rfilename": ".gitattributes",
+        "blobId": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+        "size": 1519
+      },
+      {
+        "rfilename": "README.md",
+        "blobId": "9b9451f79803941f1d10c3577a2c50d7535bb875",
+        "size": 1066
+      },
+      {
+        "rfilename": "inference.onnx",
+        "blobId": "74ebb6941b979cd69ab47e2c217afdb88e629ce2",
+        "size": 31684150,
+        "lfs": {
+          "sha256": "54cab30dc2cf347b4f3d6971c833b1c3d84f5ef17280f1f6d15796bff20e63d6",
+          "size": 31684150,
+          "pointerSize": 133
+        }
+      },
+      {
+        "rfilename": "inference.yml",
+        "blobId": "7157cf42439ba68cc2e4149def1d8961025afeb9",
+        "size": 330
+      }
+    ]
+  },
+  {
+    "id": "textline-orientation",
+    "repo": "PaddlePaddle/PP-LCNet_x1_0_textline_ori_onnx",
+    "revision": "7fdcf3cf7061163eda7183b224aa334bd33068f7",
+    "license": "apache-2.0",
+    "files": [
+      {
+        "rfilename": ".gitattributes",
+        "blobId": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+        "size": 1519
+      },
+      {
+        "rfilename": "README.md",
+        "blobId": "188c40efc030e0f5565d8acedb60308ec0f9b73c",
+        "size": 1738
+      },
+      {
+        "rfilename": "inference.onnx",
+        "blobId": "63a24a10a1f8e8207eb969e55a9e38dc1f462b01",
+        "size": 6777816,
+        "lfs": {
+          "sha256": "38aa97cd4be591e0ad304e659f07ba30d946f27a63315433f6659c69c8778345",
+          "size": 6777816,
+          "pointerSize": 132
+        }
+      },
+      {
+        "rfilename": "inference.yml",
+        "blobId": "61977592412f3529cf153ed9c904f6700cb8b9a6",
+        "size": 735
+      }
+    ]
+  },
+  {
+    "id": "text-detection",
+    "repo": "PaddlePaddle/PP-OCRv6_medium_det_onnx",
+    "revision": "61323801669c338b7891481ec7bac61ce31b576a",
+    "license": "apache-2.0",
+    "files": [
+      {
+        "rfilename": ".gitattributes",
+        "blobId": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+        "size": 1519
+      },
+      {
+        "rfilename": "README.md",
+        "blobId": "ebe7e694b18a70cb232f84f48abc3ac0a21d33df",
+        "size": 16089
+      },
+      {
+        "rfilename": "inference.json",
+        "blobId": "548f60c00e9303a0323feceeae460256576671a6",
+        "size": 312150
+      },
+      {
+        "rfilename": "inference.onnx",
+        "blobId": "1fb73622f72ca070acc9b1cb5f543d2df1be090d",
+        "size": 62032837,
+        "lfs": {
+          "sha256": "eb13b44b25bb36f89528b68720af8a61d9cf381176107f465db1757b65d086e1",
+          "size": 62032837,
+          "pointerSize": 133
+        }
+      },
+      {
+        "rfilename": "inference.yml",
+        "blobId": "1c5c05809877e4c7385f899019fff0ac9017ca80",
+        "size": 886
+      }
+    ]
+  },
+  {
+    "id": "text-recognition",
+    "repo": "PaddlePaddle/PP-OCRv6_medium_rec_onnx",
+    "revision": "50c7eacafc52fa7bcf4194e8cd08e46f8558504b",
+    "license": "apache-2.0",
+    "files": [
+      {
+        "rfilename": ".gitattributes",
+        "blobId": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+        "size": 1519
+      },
+      {
+        "rfilename": "README.md",
+        "blobId": "5b53afaad90a25c8f5ec04d6d0193705bbe9b9fd",
+        "size": 16587
+      },
+      {
+        "rfilename": "inference.json",
+        "blobId": "9e0192344de3b69dacdb19dd735efbd06bd852f9",
+        "size": 221814
+      },
+      {
+        "rfilename": "inference.onnx",
+        "blobId": "d9f7b9d18a7bb0a789f41615d0a570173250aa12",
+        "size": 76554979,
+        "lfs": {
+          "sha256": "9c09abf0957f7968c7586464b7397b84ad2387a0497a351af40e9acc71b673ba",
+          "size": 76554979,
+          "pointerSize": 133
+        }
+      },
+      {
+        "rfilename": "inference.yml",
+        "blobId": "c53a96fcd315a86cb4748d2746f3d90941e1c6d8",
+        "size": 150580
+      }
+    ]
+  }
+]

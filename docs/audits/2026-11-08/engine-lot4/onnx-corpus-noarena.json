@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 1,
+  "platform": "windows-x64",
+  "runtimeArchiveSha256": null,
+  "directExecutable": "../../../../AppData/Local/Programs/Python/Python312/python.exe",
+  "workerPrefix": [
+    "-S",
+    "-X",
+    "utf8",
+    "tmp/onnx-probe-worker.py"
+  ],
+  "modelsDirectory": "tmp/engine-lot4/onnx-models",
+  "runtimeExtractionMs": 0,
+  "runtimeInitializationMs": 5422,
+  "peakWorkerWorkingSetBytes": 382369792,
+  "memoryMeasurement": "Maximum of sampled main-process RSS/working-set values; child processes excluded.",
+  "medianRecognitionMs": 2720,
+  "cleanMean": 1,
+  "difficultMean": 1,
+  "networkSamples": 49,
+  "observedWorkerConnections": [],
+  "results": [
+    {
+      "id": "clean-fr-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 2752,
+      "workerWorkingSetBytes": 380424192,
+      "actual": "multi converter protège vos fichiers locaux"
+    },
+    {
+      "id": "clean-fr-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 380424192,
+      "actual": "édition précise et conversion rapide"
+    },
+    {
+      "id": "clean-fr-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 380424192,
+      "actual": "document numéro 2026 avec accents français"
+    },
+    {
+      "id": "clean-en-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 2889,
+      "workerWorkingSetBytes": 379396096,
+      "actual": "local conversion keeps every document private"
+    },
+    {
+      "id": "clean-en-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 379396096,
+      "actual": "accurate editing and reliable text extraction"
+    },
+    {
+      "id": "clean-en-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 379396096,
+      "actual": "document number 2026 remains on this device"
+    },
+    {
+      "id": "clean-es-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 2679,
+      "workerWorkingSetBytes": 379006976,
+      "actual": "la conversión local protege cada documento"
+    },
+    {
+      "id": "clean-es-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 379006976,
+      "actual": "edición precisa y extracción de texto fiable"
+    },
+    {
+      "id": "clean-es-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 379006976,
+      "actual": "documento número 2026 con acentos españoles"
+    },
+    {
+      "id": "clean-de-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 2688,
+      "workerWorkingSetBytes": 373239808,
+      "actual": "lokale konvertierung schützt jedes dokument"
+    },
+    {
+      "id": "clean-de-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 373239808,
+      "actual": "präzise bearbeitung und sichere texterkennung"
+    },
+    {
+      "id": "clean-de-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 373239808,
+      "actual": "dokument nummer 2026 bleibt auf diesem gerät"
+    },
+    {
+      "id": "clean-it-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 2768,
+      "workerWorkingSetBytes": 379588608,
+      "actual": "la conversione locale protegge ogni documento"
+    },
+    {
+      "id": "clean-it-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 379588608,
+      "actual": "modifica precisa ed estrazione del testo"
+    },
+    {
+      "id": "clean-it-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 379588608,
+      "actual": "documento numero 2026 conservato sul dispositivo"
+    },
+    {
+      "id": "clean-pt-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 2811,
+      "workerWorkingSetBytes": 379060224,
+      "actual": "a conversão local protege cada documento"
+    },
+    {
+      "id": "clean-pt-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 379060224,
+      "actual": "edição precisa e extração de texto confiável"
+    },
+    {
+      "id": "clean-pt-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 379060224,
+      "actual": "documento número 2026 permanece neste dispositivo"
+    },
+    {
+      "id": "clean-ja-1",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 2470,
+      "workerWorkingSetBytes": 378195968,
+      "actual": "文書変換は安全で高品質です"
+    },
+    {
+      "id": "clean-ja-2",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 378195968,
+      "actual": "画像から文字を正確に読み取ります"
+    },
+    {
+      "id": "clean-ja-3",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 378195968,
+      "actual": "端末内のファイルを安全に処理します"
+    },
+    {
+      "id": "rotation-positive",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 3074,
+      "workerWorkingSetBytes": 374210560,
+      "actual": "texte français tourné et toujours lisible"
+    },
+    {
+      "id": "rotation-negative",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 374210560,
+      "actual": "reliable local text rotated to the left"
+    },
+    {
+      "id": "inclination-positive",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 374210560,
+      "actual": "texto inclinado para una prueba precisa"
+    },
+    {
+      "id": "inclination-negative",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 374210560,
+      "actual": "schräger text bleibt vollständig lesbar"
+    },
+    {
+      "id": "low-contrast",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 2385,
+      "workerWorkingSetBytes": 381714432,
+      "actual": "faible contraste mais reconnaissance locale"
+    },
+    {
+      "id": "noise",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 381714432,
+      "actual": "rumore visivo con testo italiano leggibile"
+    },
+    {
+      "id": "soft-focus",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 381714432,
+      "actual": "texto português levemente desfocado"
+    },
+    {
+      "id": "perspective-horizontal",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 1969,
+      "workerWorkingSetBytes": 382369792,
+      "actual": "photo en perspective pour ocr local"
+    },
+    {
+      "id": "perspective-combined",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 382369792,
+      "actual": "perspective image remains readable"
+    },
+    {
+      "id": "structured-multiline",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 1968,
+      "workerWorkingSetBytes": 381984768,
+      "actual": "référence 2026 première ligne structurée deuxième ligne structurée"
+    },
+    {
+      "id": "blank",
+      "kind": "ocr-image",
+      "accuracy": 1,
+      "elapsedMs": 1280,
+      "workerWorkingSetBytes": 380469248,
+      "actual": ""
+    },
+    {
+      "id": "pdf-native",
+      "kind": "pdf-hybrid",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "workerWorkingSetBytes": 380469248,
+      "actual": "native pdf text remains directly extractable"
+    },
+    {
+      "id": "pdf-scanned",
+      "kind": "pdf-hybrid",
+      "accuracy": 1,
+      "elapsedMs": 5030,
+      "workerWorkingSetBytes": 380575744,
+      "actual": "multi converter protège vos fichiers locaux édition précise et conversion rapide document numéro 2026 avec accents français"
+    },
+    {
+      "id": "pdf-mixed-multipage",
+      "kind": "pdf-hybrid",
+      "accuracy": 1,
+      "elapsedMs": 4849,
+      "workerWorkingSetBytes": 380579840,
+      "actual": "mixed pdf native first page multi converter protège vos fichiers locaux édition précise et conversion rapide document numéro 2026 avec accents français"
+    },
+    {
+      "id": "normalization-png",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "actual": "Local conversion keeps every document private"
+    },
+    {
+      "id": "normalization-jpeg",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "actual": "Local conversion keeps every document private"
+    },
+    {
+      "id": "normalization-webp",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "actual": "Local conversion keeps every document private"
+    },
+    {
+      "id": "normalization-tiff",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "actual": "Local conversion keeps every document private"
+    },
+    {
+      "id": "normalization-bmp",
+      "kind": "rust-normalization",
+      "accuracy": 1,
+      "elapsedMs": 0,
+      "actual": "Local conversion keeps every document private"
+    }
+  ]
+}

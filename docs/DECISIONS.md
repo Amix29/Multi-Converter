@@ -1,5 +1,28 @@
 # Multi-Converter Decisions
 
+## 2026-11-08 — Native Windows OCR with lossless model storage
+
+The maintainer renews the 300–350 MB target while retaining every format,
+quality and offline OCR. This authorizes a lighter implementation when validated;
+it supersedes the earlier temporary freeze on Windows runtime substitution.
+Keep all five official medium modules in full precision and the original
+dictionary. Use a separate Rust CPU process with pinned ONNX Runtime, bounded
+IPC, cancellation through the existing supervisor and no auto-download features.
+
+Retain original source artifacts and non-Windows runtime/model locks. Compile a
+distinct Windows runtime/model profile, reject mixed generations and hash every
+active resource. Only exact original hashes allow known upgrade leftovers.
+Store models with a reversible byte shuffle and verify their restored official
+SHA before inference; decode only in memory. Keep notices and provenance.
+
+The initial Japanese regression blocks adoption until fixed through faithful
+preprocessing, including full-resolution UVDoc. The aligned and encoded-model
+workers each pass the 40-case corpus at 100%. Source `2e907a86` includes the
+complete local Microsoft DLL closure, verified by PE imports and real module
+paths. Source/runtime gates pass and the exact private NSIS verifies at
+341,519,995 bytes, below 350 MB. Installed/release acceptance remains separate.
+See [lot 4](ENGINE_REDUCTION_LOT4.md).
+
 ## 2026-11-07 — Profile the Windows LibreOffice payload without changing its engine
 
 Keep the published engine manifest immutable as a source-of-origin contract.

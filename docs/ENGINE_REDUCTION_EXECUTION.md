@@ -1,6 +1,12 @@
 # Allègement des moteurs — exécution par lots
 
-## Contrat et état au 7 novembre 2026
+## Contrat et état au 8 novembre 2026
+
+Nouvelle tentative demandée après le lot 3 : cible 300 Mo, plafond 350 Mo,
+garanties inchangées. Le [lot 4 natif Windows](ENGINE_REDUCTION_LOT4.md) produit
+un véritable setup de **341 519 995 octets / 341,52 Mo**, sous le plafond de
+350 Mo. Le corpus OCR complet passe à 100 %, avec les cinq modules FP32 hors
+ligne et un runtime de 24,64 Mo. Les formats et le profil Office v3 sont conservés.
 
 Le mainteneur autorise l'allègement des moteurs actuels, y compris une
 distribution plus légère si elle conserve formats, qualité et OCR local.
@@ -9,17 +15,31 @@ Pas de changement de modèle, de téléchargement OCR à l'exécution, de conver
 cloud, de publication ni de préparation Linux/macOS. Les anciens artefacts et
 fichiers utilisateur sont conservés.
 
-Lot 3 : **setup Windows construit, contenu complet et signature updater validés**.
-La cible indicative de 300 Mo n'est pas atteinte. Arrêt au profil conservateur
-validé ; les cinq modèles hors ligne et les bibliothèques d'inférence/conversion
-restent inchangés. Voir [les changements, preuves et limites](ENGINE_REDUCTION_LOT3.md).
+Lot 4 : **setup Windows construit, contenu complet, CRC et signature updater
+validés**. La cible idéale de 300 Mo n'est pas atteinte ; le plafond demandé de
+350 Mo l'est, sans quantification ni retrait de formats. L'installation GUI reste
+à valider. Le [lot 3](ENGINE_REDUCTION_LOT3.md) est conservé comme référence.
 
 | Candidate Windows | Setup (octets) | Taille décimale |
 | --- | ---: | ---: |
 | Original avant allègement | 999 648 595 | 999,65 Mo |
 | Lot 1, profil Office ZIP | 845 749 678 | 845,75 Mo |
 | Lot 2, ressources directes + LZMA solide | 513 064 488 | 513,06 Mo |
-| Lot 3, profil OCR et ressources UI Office | **499 243 548** | **499,24 Mo** |
+| Lot 3, profil OCR et ressources UI Office | 499 243 548 | 499,24 Mo |
+| Lot 4, runtime OCR natif complet et modèles réversibles | **341 519 995** | **341,52 Mo** |
+
+Gain final : **157 723 553 octets / 31,59 %** face au lot 3, et environ
+**65,84 %** face à l'original. Les
+[10 464 fichiers / 1 317 504 996 octets logiques](audits/2026-11-08/engine-lot4/windows-payload.json)
+ont tous été décodés/hashés sans extraire l'arbre sur disque ; les cinq modèles
+ONNX du setup ont aussi été restaurés en mémoire et comparés aux SHA officiels.
+Ce volume décompressé n'est pas la taille physique mesurée d'une installation.
+Le [reçu final](audits/2026-11-08/engine-lot4/windows-candidate.json) lie le
+setup, le binaire source, le marqueur Tauri NSIS et la signature updater vérifiée.
+Authenticode reste `NotSigned`. Source `2e907a86` intégrée localement sur
+`codex/test`, sans installation, publication ni préparation Linux/macOS.
+
+### Référence conservée du lot 3
 
 Gain du lot 3 : **13 820 940 octets / 2,69 %** face au lot 2,
 soit **50,06 %** face à l'original. Le
