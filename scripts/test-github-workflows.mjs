@@ -304,9 +304,14 @@ assert.match(macosEngineStagingWorkflow, /permissions:[\s\S]*?actions:\s+read/, 
 assert.match(macosEngineStagingJob, /vars\.MC_ENABLE_MACOS_ENGINE_STAGING == '1'/, "codex/test macOS engine staging push runs must require an explicit repository variable gate");
 assert.match(macosEngineStagingJob, /runs-on:\s+macos-latest/, "macOS engine staging must run on macOS");
 assert.match(macosEngineStagingJob, /Prepare FFmpeg license input/, "macOS engine staging must prepare pinned FFmpeg license input before staging sidecars");
-assert.match(macosEngineStagingJob, /raw\.githubusercontent\.com\/FFmpeg\/FFmpeg\/n8\.1\.1/, "macOS engine staging must fetch FFmpeg license files from the expected source tag");
-assert.match(macosEngineStagingJob, /verify_download COPYING\.GPLv3 [a-f0-9]{64}/, "macOS engine staging must pin FFmpeg GPL license checksums");
-assert.match(macosEngineStagingJob, /FFMPEG_MACOS_LICENSE_FILE=\$bundle/, "macOS engine staging must pass the pinned FFmpeg license bundle to the preparation script");
+const licenseScript = "scripts/prepare-macos-ffmpeg-licenses.sh";
+const licensePreparation = fs.readFileSync(path.join(root, licenseScript), "utf8");
+for (const workflow of [macosEngineStagingJob, readWorkflow("native-format-tests.yml")]) {
+  assert.ok(workflow.includes("bash " + licenseScript), "macOS must stage the pinned FFmpeg licenses");
+}
+assert.match(licensePreparation, /raw\.githubusercontent\.com\/FFmpeg\/FFmpeg\/n8\.1\.1/, "macOS engine staging must fetch FFmpeg license files from the expected source tag");
+assert.match(licensePreparation, /verify_download COPYING\.GPLv3 [a-f0-9]{64}/, "macOS engine staging must pin FFmpeg GPL license checksums");
+assert.match(licensePreparation, /FFMPEG_MACOS_LICENSE_FILE=\$bundle/, "macOS engine staging must pass the pinned FFmpeg license bundle to the preparation script");
 assert.match(macosEngineStagingJob, /prepare:ffmpeg-engine:macos/, "macOS engine staging must prepare real FFmpeg sidecars");
 assert.match(macosEngineStagingJob, /shasum -a 256 "\$asset" > "\$asset\.sha256"/, "macOS engine staging must publish SHA-256 files for sidecars");
 assert.match(macosEngineStagingJob, /vars\.MC_FFMPEG_MACOS_AARCH64_ARCHIVE_URL/, "macOS engine staging push runs must read Apple Silicon FFmpeg URLs from repository variables");

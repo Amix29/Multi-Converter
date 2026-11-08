@@ -56,7 +56,8 @@ try {
     `${JSON.stringify(manifest, null, 2)}\n`,
   );
   await normalizeTimestamps(staging);
-  const temporaryArchive = path.join(os.tmpdir(), `multi-converter-ocr-runtime-${process.pid}.zip`);
+  await fs.mkdir(outputRoot, { recursive: true });
+  const temporaryArchive = path.join(outputRoot, `.multi-converter-ocr-runtime-${process.pid}.zip`);
   const comparisonArchive = path.join(os.tmpdir(), `multi-converter-ocr-runtime-${process.pid}-comparison.zip`);
   await fs.rm(temporaryArchive, { force: true });
   await fs.rm(comparisonArchive, { force: true });
@@ -67,8 +68,6 @@ try {
       throw new Error("Deux empaquetages OCR consécutifs ne sont pas identiques.");
     }
   }
-  await fs.mkdir(outputRoot, { recursive: true });
-  await fs.rm(outputArchive, { force: true });
   await fs.rename(temporaryArchive, outputArchive);
   await fs.rm(comparisonArchive, { force: true });
   const archiveStat = await fs.stat(outputArchive);

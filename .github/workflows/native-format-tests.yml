@@ -74,6 +74,10 @@ jobs:
           done
           npm run prepare:pdfium-engine:linux
 
+      - name: Prepare FFmpeg license input
+        if: runner.os == 'macOS'
+        run: bash scripts/prepare-macos-ffmpeg-licenses.sh
+
       - name: Stage native Apple Silicon conversion engines
         if: runner.os == 'macOS'
         shell: bash
