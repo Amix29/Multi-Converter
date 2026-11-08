@@ -22,8 +22,7 @@ try {
       if (!allowDownload) {
         throw new Error(`${model.id}: archive absente ou invalide. Fournissez ${archive} ou utilisez --allow-download pendant la préparation mainteneur.`);
       }
-      await download(model.url, archive);
-      if (!(await isVerified(archive, model.sha256))) throw new Error(`${model.id}: SHA-256 invalide après téléchargement.`);
+      await download(model, archive);
     }
     const entries = listArchive(archive);
     rejectUnsafeEntries(model.id, entries);
@@ -87,13 +86,30 @@ async function sha256(filePath) {
   return hash.digest("hex");
 }
 
-async function download(url, target) {
-  const response = await fetch(url, { redirect: "follow" });
-  if (!response.ok || !response.body) throw new Error(`Téléchargement OCR impossible (${response.status}) depuis ${url}`);
-  const temporary = `${target}.download`;
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  await fs.writeFile(temporary, bytes);
-  await fs.rename(temporary, target);
+async function download(model, target) {
+  const source = new URL(model.url);
+  const endpoints = [source];
+  if (source.hostname === "paddle-model-ecology.bj.bcebos.com") {
+    endpoints.push(new URL("/paddle-model-ecology" + source.pathname, "https://bj.bcebos.com"));
+  }
+  const temporary = `${target}.${process.pid}.download`;
+  const errors = [];
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, { redirect: "follow" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      await fs.writeFile(temporary, new Uint8Array(await response.arrayBuffer()));
+      if (!(await isVerified(temporary, model.sha256))) throw new Error("SHA-256 invalide");
+      await fs.rename(temporary, target);
+      return;
+    } catch (error) {
+      errors.push(error);
+      console.error(`${model.id}: ${endpoint.host}: ${error.message}`);
+    } finally {
+      await fs.rm(temporary, { force: true });
+    }
+  }
+  throw new AggregateError(errors, `Téléchargement du modèle verrouillé impossible: ${model.id}`);
 }
 
 function listArchive(archive) {
