@@ -6,14 +6,16 @@ Historical V1.0.5 and V1.0.6 status commands remain documented where release wor
 
 ## Native format-pair matrix
 
-`npm run test:formats` opens the 45 checksum-pinned synthetic inputs through
+`npm run test:formats` opens the 46 checksum-pinned synthetic inputs through
 the Tauri file-description and conversion commands. The expected routes are
 reviewed separately from the runtime registry in `tools/format-tests/expectations.py`.
 The suite requires an exact match for each source, including static and animated
 GIF. Missing engines, missing routes and invalid outputs fail the run.
 
 Windows x64 and Linux x64 each have 589 expected routes. Apple Silicon has
-553 because AMR import and export are disabled. The runner uses the staged
+553 because AMR import and export are disabled. Each host repeats all 11 PDF
+targets with a second fixture whose short second page requires the OCR worker.
+This gives 600 scenarios on Windows and Linux and 564 on macOS. The runner uses the staged
 platform engines. Linux also needs a display or Xvfb. Each GitHub native
 conversion job retains its JSON result under the `format-pairs-<platform>`
 artifact. A targeted run such as `npm run test:formats -- --source pdf`

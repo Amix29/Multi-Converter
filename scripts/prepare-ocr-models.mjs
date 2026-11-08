@@ -12,6 +12,7 @@ const lock = JSON.parse(await fs.readFile(path.join(root, "src-tauri", "ocr-runt
 const cacheDir = path.resolve(args.cacheDir ?? path.join(os.tmpdir(), "multi-converter-ocr-model-lock"));
 const outputDir = path.resolve(args.outputDir ?? path.join(root, "src-tauri", "ocr-resources", "models"));
 const allowDownload = args.allowDownload === true;
+const tar = process.platform === "win32" ? path.join(process.env.SystemRoot, "System32", "tar.exe") : "tar";
 
 await fs.mkdir(cacheDir, { recursive: true });
 const staging = await fs.mkdtemp(path.join(os.tmpdir(), "multi-converter-ocr-models-"));
@@ -28,7 +29,7 @@ try {
     rejectUnsafeEntries(model.id, entries);
     const extractDir = path.join(staging, model.id);
     await fs.mkdir(extractDir, { recursive: true });
-    run("tar", ["-xf", archive, "-C", extractDir], `${model.id}: extraction impossible`);
+    run(tar, ["-xf", archive, "-C", extractDir], `${model.id}: extraction impossible`);
     const modelRoot = await findModelRoot(extractDir);
     const destination = path.join(outputDir, model.id);
     await fs.rm(destination, { recursive: true, force: true });
@@ -113,7 +114,7 @@ async function download(model, target) {
 }
 
 function listArchive(archive) {
-  const result = spawnSync("tar", ["-tf", archive], { encoding: "utf8", windowsHide: true });
+  const result = spawnSync(tar, ["-tf", archive], { encoding: "utf8", windowsHide: true });
   if (result.status !== 0) throw new Error(`Archive OCR illisible: ${result.stderr || archive}`);
   return result.stdout.split(/\r?\n/).filter(Boolean);
 }

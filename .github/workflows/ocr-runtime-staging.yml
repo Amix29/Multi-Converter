@@ -16,12 +16,17 @@ on:
       - "tools/platform-runtime-provenance-lock.json"
       - "src-tauri/ocr-runtime-lock.json"
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      platform:
+        type: string
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: ocr-runtime-staging-${{ github.ref }}
+  group: ocr-runtime-staging-${{ github.ref }}-${{ inputs.platform || 'all' }}
   cancel-in-progress: false
 
 env:
@@ -56,21 +61,12 @@ jobs:
   runtime:
     name: Build official CPU runtime (${{ matrix.platform }})
     needs: models
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: ${{ matrix.timeout }}
+    runs-on: ${{ fromJSON('{"windows-x64":"windows-latest","macos-aarch64":"macos-latest","linux-x64":"ubuntu-22.04"}')[matrix.platform] }}
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - platform: windows-x64
-            runner: windows-latest
-            timeout: 180
-          - platform: macos-aarch64
-            runner: macos-latest
-            timeout: 180
-          - platform: linux-x64
-            runner: ubuntu-22.04
-            timeout: 180
+        platform: ${{ fromJSON(inputs.platform && format('["{0}"]', inputs.platform) || '["windows-x64","macos-aarch64","linux-x64"]') }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -159,4 +155,4 @@ jobs:
     needs: [models, runtime]
     runs-on: ubuntu-22.04
     steps:
-      - run: echo "All three official CPU runtimes and the shared model artifact were produced."
+      - run: echo "The requested CPU runtimes and shared model artifact were produced."

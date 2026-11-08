@@ -197,18 +197,18 @@ def exercise(call, report, selected, root):
     controls(tools, root, report)
     reject_invalid_jobs(call, root, report)
     for source in selected:
-        fmt = "gif" if source == "animated-gif" else source
+        fmt = {"animated-gif": "gif", "mixed-pdf": "pdf"}.get(source, source)
         ext = EXTENSION.get(fmt, fmt)
-        filename = "animated.gif" if source == "animated-gif" else "sample." + ext
+        filename = {"animated-gif": "animated.gif", "mixed-pdf": "mixed.pdf"}.get(source, "sample." + ext)
         expected = targets(source)
         source_path = root / ("entrée " + filename)
         shutil.copyfile(FIXTURES / filename, source_path)
         require(digest(source_path) == hashes[filename], f"fixture checksum: {filename}")
-        if source == "pdf":
+        if fmt == "pdf":
             inspection = root / "fixture-inspection.json"
             run(tools["pdfium"], "--inspect-text", source_path, inspection)
             pages = json.loads(inspection.read_bytes())["pages"]
-            require(len(pages) == 2 and all(p["usable"] for p in pages), "expected two native-text PDF pages")
+            require([p["usable"] for p in pages] == [True, source == "pdf"], f"unexpected text layers: {source}")
         desc = call("describe", input=str(source_path))
         require(desc["sourceFormat"] == fmt, f"wrong imported format: {source}")
         check_set((t["format"] for t in desc["targets"]), expected, source)
@@ -252,10 +252,11 @@ def exercise(call, report, selected, root):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", action="append", choices=sorted(ALL | {"animated-gif"}))
+    sources = ALL | {"animated-gif", "mixed-pdf"}
+    parser.add_argument("--source", action="append", choices=sorted(sources))
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
-    selected = sorted(set(args.source or ALL | {"animated-gif"}), key=lambda s: (s not in DOCUMENTS, s))
+    selected = sorted(set(args.source or sources), key=lambda s: (s not in DOCUMENTS, s))
     expected = sum(len(targets(source)) for source in selected)
     host = {"win32": "windows-x64", "darwin": "macos-aarch64", "linux": "linux-x64"}[sys.platform]
     architecture = platform.machine().lower()

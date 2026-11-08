@@ -303,7 +303,7 @@ def verify_document(path, source, target, tools):
             text = " ".join(ElementTree.fromstring(text).itertext())
         elif target == "csv":
             text = " ".join(field for row in csv.reader(io.StringIO(text), strict=True) for field in row)
-    index = DOCUMENTS.index(source)
+    index = DOCUMENTS.index("pdf" if source == "mixed-pdf" else source)
     for token in ("Café", "Atlas", str(73100 + index), "Budget", str(41900 + index)):
         require(token in text, f"{source}->{target} lost {token!r}: {text[:220]!r}")
     if source == "pdf":
@@ -311,7 +311,7 @@ def verify_document(path, source, target, tools):
 
 
 def verify(path, source, target, tools):
-    if source == "pdf" and target in ("png", "jpg"):
+    if source in ("pdf", "mixed-pdf") and target in ("png", "jpg"):
         verify_pdf_pages(path, target, tools)
     elif target in DOCUMENTS:
         verify_document(path, source, target, tools)

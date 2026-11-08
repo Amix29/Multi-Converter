@@ -20,7 +20,7 @@ def targets(source):
         return set(VIDEO)
     if source == "doc":
         return {"docx", "odt", "rtf", "pdf", "html", "txt", "epub"}
-    if source == "pdf":
+    if source in {"pdf", "mixed-pdf"}:
         return {"txt", "md", "html", "csv", "json", "xml", "docx", "odt", "rtf", "png", "jpg"}
     if source in DOCUMENTS:
         return set(DOCUMENTS) - {"doc", source}

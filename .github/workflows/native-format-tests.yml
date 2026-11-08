@@ -11,7 +11,13 @@ permissions:
   contents: read
 
 jobs:
+  ocr:
+    uses: ./.github/workflows/ocr-runtime-staging.yml
+    with:
+      platform: ${{ inputs.platform }}
+
   native:
+    needs: ocr
     name: Native conversions (${{ inputs.platform }})
     runs-on: ${{ fromJSON('{"windows-x64":"windows-2025","macos-aarch64":"macos-latest","linux-x64":"ubuntu-22.04"}')[inputs.platform] }}
     timeout-minutes: 120
@@ -33,6 +39,19 @@ jobs:
           python-version: "3.12.10"
       - uses: dtolnay/rust-toolchain@d86e0fa8f147d6539442c26a61ebba8becc19489 # 1.96.0
       - run: npm ci
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ocr-models
+          path: ${{ runner.temp }}/ocr-models
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ocr-runtime-${{ inputs.platform }}
+          path: ${{ runner.temp }}/ocr-runtime
+      - name: Verify the same-run OCR worker and models
+        shell: bash
+        env:
+          PLATFORM: ${{ inputs.platform }}
+        run: npm run stage:ocr-runtime-artifacts -- --platform "$PLATFORM" --runtime-dir "$RUNNER_TEMP/ocr-runtime" --models-dir "$RUNNER_TEMP/ocr-models"
 
       - name: Stage the verified Windows conversion engines
         if: runner.os == 'Windows'
