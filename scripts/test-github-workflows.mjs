@@ -3,20 +3,21 @@ import fs from "node:fs";
 import path from "node:path";
 import { assertWorkflowActionPins, reviewedRustAction } from "./lib/workflow-action-pins.mjs";
 
+import { readWorkflow, workflowJob } from "./lib/workflow-source.mjs";
 import { assertWindowsCiContracts } from "./lib/windows-ci-contracts.mjs";
 import { assertWindowsPdfiumWorkflowContracts } from "./lib/windows-pdfium-workflow-contracts.mjs";
 
 const root = process.cwd(), packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 assertWorkflowActionPins(root);
-const buildWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "build.yml"), "utf8");
-const releaseWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "release.yml"), "utf8");
-const macosEngineStagingWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-engine-staging.yml"), "utf8");
-const macosLibvipsRuntimeWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-libvips-runtime.yml"), "utf8");
-const macosDmgWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-dmg.yml"), "utf8");
-const macosConversionsWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "macos-conversions.yml"), "utf8");
-const linuxEngineStagingWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "linux-engine-staging.yml"), "utf8");
-const linuxSidecarStagingWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "linux-sidecar-staging.yml"), "utf8");
-const linuxAppImageWorkflow = fs.readFileSync(path.join(root, ".github", "workflows", "linux-appimage.yml"), "utf8");
+const buildWorkflow = readWorkflow("build.yml");
+const releaseWorkflow = readWorkflow("release.yml");
+const macosEngineStagingWorkflow = readWorkflow("macos-engine-staging.yml");
+const macosLibvipsRuntimeWorkflow = readWorkflow("macos-libvips-runtime.yml");
+const macosDmgWorkflow = readWorkflow("macos-dmg.yml");
+const macosConversionsWorkflow = readWorkflow("macos-conversions.yml");
+const linuxEngineStagingWorkflow = readWorkflow("linux-engine-staging.yml");
+const linuxSidecarStagingWorkflow = readWorkflow("linux-sidecar-staging.yml");
+const linuxAppImageWorkflow = readWorkflow("linux-appimage.yml");
 const windowsPdfiumStagingWorkflow = readWorkflow("windows-pdfium-engine-staging.yml");
 const macosEngineReleaseScript = fs.readFileSync(path.join(root, "scripts", "prepare-macos-engine-release-assets.mjs"), "utf8");
 const macosLibvipsRuntimeScript = fs.readFileSync(path.join(root, "scripts", "build-libvips-macos-runtime.mjs"), "utf8");
@@ -507,16 +508,6 @@ assert.match(linuxEngineReleaseScript, /verifySha256/, "Linux staged engine help
 assert.match(linuxEngineReleaseScript, /Unexpected local Linux engine assets/, "Linux staged engine helper must reject extra files in local workflow artifacts");
 
 console.log("GitHub workflow contract tests passed.");
-
-function workflowJob(workflow, jobName) {
-  const match = workflow.match(new RegExp(`^  ${jobName}:\\r?\\n([\\s\\S]*?)(?=^  [A-Za-z0-9_-]+:\\r?\\n|(?![\\s\\S]))`, "m"));
-  assert.ok(match, `workflow job is missing: ${jobName}`);
-  return match[0];
-}
-
-function readWorkflow(fileName) {
-  return fs.readFileSync(path.join(root, ".github", "workflows", fileName), "utf8");
-}
 
 function assertCodexTestBuildGate(job, label) {
   assert.doesNotMatch(job, /MC_ENABLE_CODEX_TEST_BUILD/, `${label} must run on the development branch without a hidden opt-in variable`);
