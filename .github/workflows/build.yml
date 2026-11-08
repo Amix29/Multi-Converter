@@ -147,6 +147,42 @@ jobs:
           path: test-results/native-formats/windows-x64.json
           if-no-files-found: error
 
+  installed-windows:
+    name: Install and exercise the verified Windows package
+    needs: quality-gate
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          lfs: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: verified-windows-x64-installer
+          path: ${{ runner.temp }}/verified-installer
+      - name: Verify the download, install silently and exercise the installed OCR worker
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP 'verified-installer'
+          $payload = Get-Content -LiteralPath "$dir/payload.json" -Raw | ConvertFrom-Json
+          $version = (Get-Content -Raw package.json | ConvertFrom-Json).version
+          $installer = Get-Item -LiteralPath "$dir/Multi-Converter_${version}_x64-setup.exe"
+          if ((Get-FileHash -LiteralPath $installer.FullName).Hash -ne $payload.installerSha256) {
+            throw 'Downloaded NSIS fingerprint changed'
+          }
+          $install = Join-Path $env:RUNNER_TEMP 'installed-converter'
+          $setup = Start-Process -FilePath $installer.FullName -ArgumentList @('/S', "/D=$install") -Wait -PassThru -WindowStyle Hidden
+          if ($setup.ExitCode -ne 0) { throw "NSIS exited with $($setup.ExitCode)" }
+          if ((Get-FileHash -LiteralPath "$install/multi-converter.exe").Hash -ne $payload.applicationBinary.sha256) {
+            throw 'Installed application fingerprint changed'
+          }
+          python tools/ocr-runtime/native-worker/test-lifecycle.py --worker "$install/ocr/runtime/windows-x64/ocr-worker.exe" --models "$install/ocr/models" --report "$dir/installed-ocr.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: installed-windows-ocr-receipt
+          path: ${{ runner.temp }}/verified-installer/installed-ocr.json
+          if-no-files-found: error
+
   macos-code-check:
     if: github.event_name != 'workflow_dispatch' || inputs.conversion_platform == 'full'
     name: macOS code check (${{ matrix.rust-target }})

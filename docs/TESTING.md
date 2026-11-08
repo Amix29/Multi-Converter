@@ -113,6 +113,9 @@ slim Python OCR profile is retained for historical compatibility checks.
 The Windows build job decodes the resulting installer, checks the packaged files
 and restores all five models for SHA-256 verification before uploading the
 installer, its SHA-256 and the payload report as `verified-windows-x64-installer`.
+A fresh Windows runner downloads that artifact, checks its digest, runs NSIS
+silently, compares the installed application hash and exercises the installed
+OCR worker with the packaged models. Its receipt is `installed-windows-ocr-receipt`.
 
 Office preparation stages immutable resources through hardlinks
 or decodes each required ZIP entry once on a fresh host. `--check` is read-only
