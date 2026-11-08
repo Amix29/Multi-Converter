@@ -2,16 +2,24 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 
-export async function readWindowsProfiles(root) {
+export async function readOfficeProfile(root) {
   const policyRoot = path.join(root, "tools/engine-profiles");
   const base = JSON.parse(await fs.readFile(path.join(policyRoot, "windows-libreoffice-v2.json"), "utf8"));
   const office = JSON.parse(await fs.readFile(path.join(policyRoot, "windows-libreoffice-v3.json"), "utf8"));
   if (office.basePolicy !== "windows-libreoffice-v2.json" || office.sourceArchiveSha256 !== base.sourceArchiveSha256) throw Error("Office profile origins disagree");
+  return { ...base, ...office };
+}
+
+export async function readOcrProfile(root) {
   const ocr = JSON.parse(await fs.readFile(path.join(root, "src-tauri/windows-ocr-profile.json"), "utf8"));
   const lock = JSON.parse(await fs.readFile(path.join(root, "src-tauri/ocr-runtime-lock.json"), "utf8"));
   const original = lock.platformSelections.find(item => item.platform === "windows-x64").artifact;
   for (const key of ["fileCount", "totalBytes", "aggregateSha256"]) if (original[key] !== ocr.sourceArtifact[key]) throw Error("OCR profile origin disagrees with reference lock");
-  return { office: { ...base, ...office }, ocr };
+  return ocr;
+}
+
+export async function readWindowsProfiles(root) {
+  return { office: await readOfficeProfile(root), ocr: await readOcrProfile(root) };
 }
 
 export function validateOcrProfileMarker(manifest, profile) {

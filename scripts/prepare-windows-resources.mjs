@@ -5,7 +5,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { inspectFilterableZip, readZipEntry } from "./lib/filtered-zip.mjs";
 import { retainLibreOfficeFile } from "./lib/libreoffice-profile.mjs";
 import { fileHash, stageEntry, treeManifest, verifyContent } from "./lib/direct-engine-resources.mjs";
-import { readWindowsProfiles, retainOcrFile, deriveOcrManifest, filterRegistryBytes, validateOcrProfileMarker } from "./lib/windows-engine-profile.mjs";
+import { readOfficeProfile, readOcrProfile, retainOcrFile, deriveOcrManifest, filterRegistryBytes, validateOcrProfileMarker } from "./lib/windows-engine-profile.mjs";
 import { verifyNativeOcr } from "./lib/native-ocr-profile.mjs";
 
 const root = process.cwd();
@@ -13,9 +13,7 @@ const sourceRoot = path.join(root, "src-tauri");
 const profileRoot = path.join(sourceRoot, "bundled-engine-profiles/windows-x64");
 const current = path.join(profileRoot, "v3");
 const policyRoot = path.join(import.meta.dirname, "../tools/engine-profiles");
-const { office: policy, ocr: ocrProfile } = await readWindowsProfiles(root);
-const lock = await json(path.join(sourceRoot, "ocr-runtime-lock.json"));
-const selection = lock.platformSelections.find(item => item.platform === "windows-x64");
+const policy = await readOfficeProfile(root);
 const checkOnly = process.argv.includes("--check");
 if (process.platform !== "win32" || process.arch !== "x64") throw Error("Windows x64 staging requires a Windows x64 host");
 
@@ -30,6 +28,9 @@ if (officeArg >= 0) {
   process.exit(0);
 }
 
+const ocrProfile = await readOcrProfile(root);
+const lock = await json(path.join(sourceRoot, "ocr-runtime-lock.json"));
+const selection = lock.platformSelections.find(item => item.platform === "windows-x64");
 if (await exists(current)) {
   await verify(current);
   console.log("Windows direct resources verified: Office/UI profile, slim OCR runtime and unchanged five models");
