@@ -5,6 +5,8 @@
 - Development version: **V1.0.7**; published baseline: **V1.0.6**.
 - Last documentation review: **2026-11-08**.
 - Release status: **not ready**.
+- Session handoff: [2026-11-08 closeout and restart notes](SESSION_HANDOFF_2026_11_08.md),
+  including installer/decompressed/installed-size distinctions and remaining gates.
 - Windows weight-reduction lot 4 integrates a Rust/ONNX CPU worker while keeping
   all five medium modules, full precision, the original dictionary and offline
   processing. The autonomous worker and reversible model-storage variant pass
@@ -44,10 +46,10 @@
   [location, rules and worktree recovery](LOCAL_WORKSPACE.md).
 - Historical NSIS/AppImage/DMG candidates at `8b510138` and the initial Svelte
   NSIS candidate at `adf7b8ce` remain preserved. The current private Windows NSIS
-  candidate was refreshed on 2026-11-07 from `1c066776`, including the native
-  title-bar fix and lighter OCR/LibreOffice resources;
-  [build/integrity receipt](audits/2026-11-07/engine-lot3/windows-candidate.json).
-  The preceding 2026-11-06 candidate remains archived by move.
+  candidate was refreshed on 2026-11-08 from `2e907a86`: **341.52 MB**, with
+  native offline OCR, the existing title-bar fix and Office v3 resources;
+  [build/integrity receipt](audits/2026-11-08/engine-lot4/windows-candidate.json).
+  The preceding 2026-11-06 and lot 3 candidates remain preserved by move.
   Installed acceptance and new migrated AppImage/DMG packages remain open.
   No candidate is published.
 - macOS targets Apple Silicon on macOS 15 and later; Windows x64 and Linux x64 remain supported.

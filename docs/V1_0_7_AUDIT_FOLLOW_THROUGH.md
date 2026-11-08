@@ -1,6 +1,20 @@
 # V1.0.7 audit follow-through — 2026-10-30
 
-## Current handoff — 2026-11-01
+## Current handoff — 2026-11-08
+
+The current functional Windows source is `2e907a86`, integrated locally on
+`codex/test`. Its private NSIS is **341,519,995 bytes / 341.52 MB** with all
+formats and five full-precision offline OCR modules retained. Source/runtime
+gates, complete payload hashes, container CRC and updater signature pass.
+The roughly **1.32 GB logical decompressed content is not a measured installed
+physical size**. Installed GUI/updater acceptance and renewed Svelte Mac/Linux
+packages remain open; no publication or new platform preparation occurs.
+
+Use the [session handoff](SESSION_HANDOFF_2026_11_08.md),
+[current plan](V1_0_7_PLAN.md) and [combined validation](V1_0_7_VALIDATION.md).
+The entries below retain their historical source/host boundaries.
+
+## UI handoff — 2026-11-01 (historical)
 
 Functional application source `853aa081` is integrated locally on `codex/test`;
 maintenance branch: `codex/app-design-system`. The approved identity now drives

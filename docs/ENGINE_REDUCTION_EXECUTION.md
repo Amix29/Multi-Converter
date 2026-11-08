@@ -39,6 +39,16 @@ setup, le binaire source, le marqueur Tauri NSIS et la signature updater vérifi
 Authenticode reste `NotSigned`. Source `2e907a86` intégrée localement sur
 `codex/test`, sans installation, publication ni préparation Linux/macOS.
 
+### Empreinte après installation — précision de fin de session
+
+Le setup de **341,52 Mo** et le contenu logique de **1,32 Go décompressés** sont
+deux mesures différentes. Le second donne un ordre de grandeur pour une
+installation neuve ; la taille physique occupée après installation n'a pas été
+mesurée. L'allocation du disque, les fichiers générés et les caches peuvent
+modifier cette empreinte. Une mise à jour/réparation peut aussi conserver des
+moteurs antérieurs. Aucun reste utilisateur n'est supprimé pour afficher un
+gain artificiel. Voir le [bilan de reprise](SESSION_HANDOFF_2026_11_08.md).
+
 ### Référence conservée du lot 3
 
 Gain du lot 3 : **13 820 940 octets / 2,69 %** face au lot 2,

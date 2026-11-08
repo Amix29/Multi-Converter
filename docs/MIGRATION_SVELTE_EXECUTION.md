@@ -1,10 +1,28 @@
 # Exécution de la migration desktop Svelte
 
-État au 6 novembre 2026 : **portage source réalisé ; acceptation installée encore ouverte**.
+État au 8 novembre 2026 : **portage source réalisé ; acceptation installée encore ouverte**.
 Source du portage initial : **`adf7b8ce`**, branche de réalisation
 `codex/migrate-svelte`. Intégration locale effectuée sur **`codex/test`**, après sauvegarde contrôlée
-des modifications initiales ; installation propre et `check` complet y passent. Aucun push ni publication.
+des modifications initiales ; installation propre des dépendances et `check` complet
+y passent. Cela ne désigne pas une installation du logiciel. Aucun push ni publication.
 Le site Next.js et le backend Rust/Tauri gardent leurs frontières.
+
+## Clôture du 8 novembre 2026
+
+La candidate Windows courante provient de `2e907a86` et fait **341,52 Mo**,
+avec l'interface Svelte, la barre de titre liée aux thèmes, les formats conservés
+et les cinq modules OCR FP32 hors ligne. Le runtime OCR est désormais natif
+Rust/ONNX ; les sources originales et les ressources des autres plateformes
+sont préservées. Les gates source/runtime, le contenu du setup, son CRC et sa
+signature updater passent. La taille logique décompressée est d'environ **1,32 Go** ;
+la taille réellement occupée après installation reste à mesurer.
+
+L'installation GUI et les nouveaux paquets Linux/macOS restent ouverts ; ces
+préparations ne sont pas relancées. Voir le
+[bilan de session](SESSION_HANDOFF_2026_11_08.md), le
+[lot 4](ENGINE_REDUCTION_LOT4.md) et le
+[reçu actuel](audits/2026-11-08/engine-lot4/windows-candidate.json).
+Les sections suivantes décrivent leurs checkpoints historiques.
 
 ## Installateur Windows actualisé le 6 novembre 2026
 

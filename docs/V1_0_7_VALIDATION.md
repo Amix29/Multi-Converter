@@ -53,6 +53,12 @@ The 1.32 GB decompressed logical payload is not an installed physical-size measu
 public release, Linux/macOS preparation or user-cache cleanup is performed.
 See [the evolving lot 4 ledger](ENGINE_REDUCTION_LOT4.md).
 
+Session closeout: [handoff and outstanding acceptance](SESSION_HANDOFF_2026_11_08.md).
+The 341.52 MB setup is compressed. Approximately 1.32 GB describes verified
+logical content for a fresh install, not measured allocation on disk. Actual
+installed size and upgrade leftovers/cache size remain unmeasured. No installed
+acceptance or user-cache cleanup has been performed as part of this size audit.
+
 ## 2026-11-07 — Engine reduction lot 3: slim OCR and Office UI resources
 
 Application source `1c066776` keeps all five offline models and original
