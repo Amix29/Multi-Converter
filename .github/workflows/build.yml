@@ -11,8 +11,12 @@ on:
       conversion_platform:
         description: Run only the native conversion suite for this host
         type: choice
-        options: [full, windows-x64, macos-aarch64, linux-x64]
+        options: [full, windows-x64, macos-aarch64, linux-x64, installed-windows]
         default: full
+      installer_run_id:
+        description: For installed-windows only, retest a verified installer from the same product sources
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -23,7 +27,7 @@ concurrency:
 
 jobs:
   conversions:
-    if: github.event_name == 'workflow_dispatch' && inputs.conversion_platform != 'full'
+    if: github.event_name == 'workflow_dispatch' && inputs.conversion_platform != 'full' && inputs.conversion_platform != 'installed-windows'
     uses: ./.github/workflows/native-format-tests.yml
     with:
       platform: ${{ inputs.conversion_platform }}
@@ -150,12 +154,30 @@ jobs:
   installed-windows:
     name: Install and exercise the verified Windows package
     needs: quality-gate
+    if: ${{ !cancelled() && (needs.quality-gate.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.conversion_platform == 'installed-windows')) }}
+    permissions:
+      contents: read
+      actions: read
     runs-on: windows-2025
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           lfs: false
+          fetch-depth: ${{ inputs.conversion_platform == 'installed-windows' && '0' || '1' }}
+      - name: Validate the source of the existing installer
+        if: inputs.conversion_platform == 'installed-windows'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN: ${{ inputs.installer_run_id }}
+        run: |
+          if ($env:SOURCE_RUN -notmatch '^[0-9]+$') { throw 'Supply a numeric installer_run_id' }
+          $source = gh run view $env:SOURCE_RUN --json event,workflowName,headBranch,headSha,jobs | ConvertFrom-Json
+          if ($source.event -ne 'push' -or $source.workflowName -ne 'Build' -or $source.headBranch -ne $env:GITHUB_REF_NAME) { throw 'Unexpected installer source' }
+          if (@($source.jobs | Where-Object { $_.name -eq 'Windows x64 quality gate' -and $_.conclusion -eq 'success' }).Count -ne 1) { throw 'Installer verification did not pass' }
+          git diff --quiet $source.headSha $env:GITHUB_SHA -- . ':(exclude).github/workflows/build.yml' ':(exclude)scripts/test-installed-windows-ocr.mjs'
+          if ($LASTEXITCODE) { throw 'The installer and current product sources differ' }
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
@@ -164,6 +186,8 @@ jobs:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: verified-windows-x64-installer
+          run-id: ${{ inputs.conversion_platform == 'installed-windows' && inputs.installer_run_id || github.run_id }}
+          github-token: ${{ github.token }}
           path: ${{ runner.temp }}/verified-installer
       - name: Verify the download, install silently and exercise the installed OCR worker
         shell: pwsh
@@ -184,7 +208,14 @@ jobs:
           python tools/ocr-runtime/native-worker/test-lifecycle.py --worker "$install/ocr/native-v1/runtime/windows-x64/ocr-worker.exe" --models "$install/ocr/native-v1/models" --report "$dir/installed-ocr.json"
       - name: Exercise the installed app on a clean install, after an upgrade and with a damaged active DLL
         shell: pwsh
+        env:
+          MC_TEST_WEBVIEW_PORT: 19222
         run: |
+          # Elevated WebView2 hosts can ignore environment browser arguments.
+          # Scope the loopback test port to this executable on the ephemeral runner.
+          $key = 'HKLM:\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments'
+          New-Item -Path $key -Force | Out-Null
+          New-ItemProperty -Path $key -Name 'multi-converter.exe' -PropertyType String -Force -Value "--remote-debugging-address=127.0.0.1 --remote-debugging-port=$env:MC_TEST_WEBVIEW_PORT" | Out-Null
           $dir = Join-Path $env:RUNNER_TEMP 'verified-installer'
           $install = Join-Path $env:RUNNER_TEMP 'installed-converter'
           $exe = Join-Path $install 'multi-converter.exe'

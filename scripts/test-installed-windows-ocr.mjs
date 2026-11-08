@@ -15,7 +15,7 @@ const cases = corpus.cases.filter(item => item.input.endsWith("/clean-fr.png"));
 assert(cases.length >= 3);
 const profile = await mkdtemp(path.join(os.tmpdir(), "mc-installed-ocr-webview-"));
 const listener = createServer();
-await new Promise((resolve, reject) => listener.once("error", reject).listen(0, "127.0.0.1", resolve));
+await new Promise((resolve, reject) => listener.once("error", reject).listen(Number(process.env.MC_TEST_WEBVIEW_PORT ?? 0), "127.0.0.1", resolve));
 const port = listener.address().port;
 await new Promise(resolve => listener.close(resolve));
 const child = spawn(path.resolve(executable), [], {
